@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "DreamHome",
+    "slug": "dreamhome",
+    "scheme": "dreamhome",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        { "photosPermission": "用于选取家具照片/视频生成 3D 组件" }
+      ],
+      [
+        "expo-camera",
+        { "cameraPermission": "用于拍摄线下家具生成 3D 组件" }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "用于语音编辑你的梦想之家"
+      }
+    },
+    "android": {
+      "permissions": ["CAMERA", "RECORD_AUDIO"]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    }
+  }
+}
