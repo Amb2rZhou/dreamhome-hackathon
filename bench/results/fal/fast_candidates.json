@@ -1,0 +1,53 @@
+[
+  {
+    "model": "hy_turbo_tex",
+    "img": "sofa",
+    "gen_sec": 26.39,
+    "dl_sec": 12.28,
+    "bytes": 3823152
+  },
+  {
+    "model": "hy_turbo_tex",
+    "img": "chair",
+    "gen_sec": 24.58,
+    "dl_sec": 7.55,
+    "bytes": 2698072
+  },
+  {
+    "model": "hy_mini_turbo",
+    "img": "sofa",
+    "gen_sec": 22.28,
+    "dl_sec": 14.06,
+    "bytes": 3832916
+  },
+  {
+    "model": "hy_mini_turbo",
+    "img": "chair",
+    "gen_sec": 22.68,
+    "dl_sec": 12.08,
+    "bytes": 2773708
+  },
+  {
+    "model": "trellis_fast",
+    "img": "sofa",
+    "gen_sec": 64.87,
+    "error": "ConnectError: EOF occurred in violation of protocol (_ssl.c:1129)"
+  },
+  {
+    "model": "trellis_fast",
+    "img": "chair",
+    "gen_sec": 24.82,
+    "dl_sec": 3.3,
+    "bytes": 699996
+  },
+  {
+    "model": "sam3_objects",
+    "img": "sofa",
+    "error": "FalClientHTTPError: [{'loc': ['body', 'prompt'], 'msg': 'Auto-segmentation produced no masks. Try a different prompt, provide mask_urls, or lower detection_threshold (cur"
+  },
+  {
+    "model": "sam3_objects",
+    "img": "chair",
+    "error": "FalClientHTTPError: [{'loc': ['body', 'prompt'], 'msg': 'Auto-segmentation produced no masks. Try a different prompt, provide mask_urls, or lower detection_threshold (cur"
+  }
+]

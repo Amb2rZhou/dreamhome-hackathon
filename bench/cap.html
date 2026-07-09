@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script type="module" src="model-viewer.min.js"></script>
+  <style>
+    html, body { margin: 0; background: #f4f2ec; }
+    model-viewer { width: 320px; height: 300px; background: #f4f2ec; }
+  </style>
+</head>
+<body>
+  <model-viewer id="mv" loading="eager" interpolation-decay="0"
+    camera-orbit="35deg 70deg 105%" shadow-intensity="1"
+    exposure="1.05" environment-image="neutral"></model-viewer>
+  <script>
+    const q = new URLSearchParams(location.search);
+    const mv = document.getElementById('mv');
+    mv.src = q.get('model');
+    const name = q.get('name') || 'cap';
+    function isBlank(im) {
+      const t = document.createElement('canvas'); t.width = 32; t.height = 32;
+      const tx = t.getContext('2d'); tx.drawImage(im, 0, 0, 32, 32);
+      const d = tx.getImageData(0, 0, 32, 32).data;
+      let min = 255, max = 0;
+      for (let i = 0; i < d.length; i += 4) { const v = d[i] + d[i + 1] + d[i + 2]; min = Math.min(min, v); max = Math.max(max, v); }
+      return (max - min) < 20;
+    }
+    const load = s => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = s; });
+    mv.addEventListener('load', async () => {
+      document.title = 'LOADED';
+      for (let tries = 0; tries < 40; tries++) {
+        await new Promise(r => setTimeout(r, 1500));
+        const im = await load(mv.toDataURL('image/png'));
+        if (isBlank(im)) { document.title = 'BLANK try' + tries; continue; }
+        const c = document.createElement('canvas'); c.width = 320; c.height = 300;
+        const x = c.getContext('2d'); x.fillStyle = '#f4f2ec'; x.fillRect(0, 0, 320, 300);
+        const s = Math.min(320 / im.width, 300 / im.height), w = im.width * s, h = im.height * s;
+        x.drawImage(im, (320 - w) / 2, (300 - h) / 2, w, h);
+        try {
+          await fetch('http://127.0.0.1:8124/' + name, { method: 'POST', body: c.toDataURL('image/jpeg', 0.88) });
+          document.title = 'SAVED';
+        } catch (e) {}
+        return;
+      }
+    });
+  </script>
+</body>
+</html>

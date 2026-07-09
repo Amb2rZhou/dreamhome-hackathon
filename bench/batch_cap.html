@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script type="module" src="model-viewer.min.js"></script>
+  <style>
+    html, body { margin: 0; background: #f4f2ec; }
+    model-viewer { width: 320px; height: 300px; background: #f4f2ec; }
+    #st { font: 600 14px -apple-system, sans-serif; padding: 8px 12px; }
+  </style>
+</head>
+<body>
+  <div id="st"></div>
+  <div id="slot"></div>
+  <script>
+    // ?list=dir/img,dir/img,...  → 逐个加载 results/fal/<dir>/<img>.glb,截图 POST 到 8124,名字 <img>_<dir>
+    // 每个条目新建 model-viewer:换 src 会残留旧帧,后台标签页 toDataURL 拿到 stale frame
+    const items = (new URLSearchParams(location.search).get('list') || '').split(',').filter(Boolean);
+    const slot = document.getElementById('slot');
+    const st = document.getElementById('st');
+    const load = s => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = s; });
+    function isBlank(im) {
+      const t = document.createElement('canvas'); t.width = 32; t.height = 32;
+      const tx = t.getContext('2d'); tx.drawImage(im, 0, 0, 32, 32);
+      const d = tx.getImageData(0, 0, 32, 32).data;
+      let min = 255, max = 0;
+      for (let i = 0; i < d.length; i += 4) { const v = d[i] + d[i + 1] + d[i + 2]; min = Math.min(min, v); max = Math.max(max, v); }
+      return (max - min) < 20;
+    }
+    function once(el, ev) { return new Promise(r => el.addEventListener(ev, r, { once: true })); }
+    (async () => {
+      for (let i = 0; i < items.length; i++) {
+        const [dir, img] = items[i].split('/');
+        document.title = `${i + 1}/${items.length} ${dir}/${img}`;
+        st.textContent = document.title;
+        slot.innerHTML = '';
+        const mv = document.createElement('model-viewer');
+        mv.setAttribute('loading', 'eager');
+        mv.setAttribute('interpolation-decay', '0');
+        mv.setAttribute('camera-orbit', '35deg 70deg 105%');
+        mv.setAttribute('shadow-intensity', '1');
+        mv.setAttribute('exposure', '1.05');
+        mv.setAttribute('environment-image', 'neutral');
+        slot.appendChild(mv);
+        const loaded = Promise.race([once(mv, 'load'), once(mv, 'error').then(() => 'ERR')]);
+        mv.src = `results/fal/${dir}/${img}.glb`;
+        if (await loaded === 'ERR') { document.title += ' ERR'; continue; }
+        for (let tries = 0; tries < 60; tries++) {
+          await new Promise(r => setTimeout(r, 1200));
+          const im = await load(mv.toDataURL('image/png'));
+          if (isBlank(im)) { document.title = `${i + 1}/${items.length} BLANK t${tries}`; continue; }
+          const c = document.createElement('canvas'); c.width = 320; c.height = 300;
+          const x = c.getContext('2d'); x.fillStyle = '#f4f2ec'; x.fillRect(0, 0, 320, 300);
+          const s = Math.min(320 / im.width, 300 / im.height), w = im.width * s, h = im.height * s;
+          x.drawImage(im, (320 - w) / 2, (300 - h) / 2, w, h);
+          try { await fetch('http://127.0.0.1:8124/' + img + '_' + dir, { method: 'POST', body: c.toDataURL('image/jpeg', 0.88) }); } catch (e) {}
+          break;
+        }
+      }
+      document.title = 'DONE';
+      st.textContent = 'DONE';
+    })();
+  </script>
+</body>
+</html>
