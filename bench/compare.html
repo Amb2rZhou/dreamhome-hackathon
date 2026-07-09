@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script type="module" src="model-viewer.min.js"></script>
+  <style>
+    html, body { margin: 0; background: #eceae4; font: 14px/1.4 -apple-system, system-ui, sans-serif; }
+    h1 { font-size: 18px; margin: 12px 16px 6px; color: #2b2723; }
+    .row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 0 12px 12px; }
+    .cell { background: #fff; border-radius: 10px; overflow: hidden; }
+    .cell .tag { font-weight: 600; padding: 6px 10px; color: #2b2723; border-bottom: 1px solid #e5e1d8; }
+    .cell img, .cell model-viewer { width: 100%; height: 340px; object-fit: contain; display: block; background: #f4f2ec; }
+  </style>
+</head>
+<body>
+  <h1 id="title"></h1>
+  <div class="row" id="row"></div>
+  <script>
+    const q = new URLSearchParams(location.search);
+    const img = q.get('img') || 'sofa';
+    document.getElementById('title').textContent = '评测对比：' + img;
+    const row = document.getElementById('row');
+    row.insertAdjacentHTML('beforeend',
+      `<div class="cell"><div class="tag">原图</div><img src="evalset/${img}.jpg"></div>`);
+    const models = ['triposr', 'trellis', 'hunyuan'];
+    let loaded = 0;
+    for (const m of models) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.innerHTML = `<div class="tag">${m}</div>
+        <model-viewer src="results/fal/${m}/${img}.glb" loading="eager" interpolation-decay="0"
+          camera-orbit="35deg 70deg 105%" shadow-intensity="1"
+          exposure="1.05" environment-image="neutral"></model-viewer>`;
+      row.appendChild(cell);
+      const mv = cell.querySelector('model-viewer');
+      mv.addEventListener('load', () => { if (++loaded === models.length) done(); });
+      mv.addEventListener('error', () => { if (++loaded === models.length) done(); });
+    }
+    const load = s => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = s; });
+    // WebGL 画布在后台标签页会取到空白帧——采样像素判空
+    function isBlank(im) {
+      const t = document.createElement('canvas'); t.width = 32; t.height = 32;
+      const tx = t.getContext('2d'); tx.drawImage(im, 0, 0, 32, 32);
+      const d = tx.getImageData(0, 0, 32, 32).data;
+      let min = 255, max = 0;
+      for (let i = 0; i < d.length; i += 4) { const v = d[i] + d[i + 1] + d[i + 2]; min = Math.min(min, v); max = Math.max(max, v); }
+      return (max - min) < 20;
+    }
+    async function capture() {
+      const els = [document.querySelector('.cell img'), ...document.querySelectorAll('model-viewer')];
+      const labels = ['original', 'TripoSR', 'TRELLIS', 'Hunyuan3D v2'];
+      const cw = 320, ch = 300;
+      const c = document.createElement('canvas'); c.width = cw * 4; c.height = ch + 26;
+      const x = c.getContext('2d'); x.fillStyle = '#f4f2ec'; x.fillRect(0, 0, c.width, c.height);
+      x.fillStyle = '#2b2723'; x.font = '600 14px sans-serif';
+      let blanks = 0;
+      for (let k = 0; k < 4; k++) {
+        const el = els[k];
+        const im = await load(el.tagName === 'IMG' ? el.src : el.toDataURL('image/png'));
+        if (el.tagName !== 'IMG' && isBlank(im)) blanks++;
+        const s = Math.min(cw / im.width, ch / im.height), w = im.width * s, h = im.height * s;
+        x.fillText(labels[k], k * cw + 10, 17);
+        x.drawImage(im, k * cw + (cw - w) / 2, 26 + (ch - h) / 2, w, h);
+      }
+      return { url: c.toDataURL('image/jpeg', 0.8), blanks };
+    }
+    async function done() {
+      document.title = 'LOADED';
+      for (let tries = 0; tries < 40; tries++) {
+        await new Promise(r => setTimeout(r, 1500));
+        const { url, blanks } = await capture();
+        if (blanks > 0) { document.title = 'BLANK x' + blanks + ' try' + tries; continue; }
+        try {
+          await fetch('http://127.0.0.1:8124/' + img, { method: 'POST', body: url });
+          document.title = 'SAVED';
+        } catch (e) { /* 接收器没开时忽略 */ }
+        return;
+      }
+    }
+  </script>
+</body>
+</html>

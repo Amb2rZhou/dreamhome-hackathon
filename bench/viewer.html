@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script type="module" src="model-viewer.min.js"></script>
+  <style>
+    html, body { margin: 0; height: 100%; background: #eceae4; }
+    model-viewer { width: 100vw; height: 100vh; }
+    #label {
+      position: fixed; top: 12px; left: 16px; z-index: 10;
+      font: 600 15px/1.3 -apple-system, system-ui, sans-serif; color: #2b2723;
+      background: rgba(255,255,255,.8); padding: 4px 10px; border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div id="label"></div>
+  <model-viewer id="mv" camera-controls interpolation-decay="0"
+    camera-orbit="35deg 70deg 105%" shadow-intensity="1"
+    exposure="1.05" environment-image="neutral"></model-viewer>
+  <script>
+    const q = new URLSearchParams(location.search);
+    const model = q.get('model');
+    document.getElementById('label').textContent = q.get('label') || model || '';
+    const mv = document.getElementById('mv');
+    if (model) mv.src = model;
+    // 载入完成后打个标记，截图前可轮询
+    mv.addEventListener('load', () => { document.title = 'LOADED'; });
+  </script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+[
+  {
+    "model": "triposr",
+    "img": "sofa",
+    "gen_sec": 94.5,
+    "dl_sec": 5.43,
+    "bytes": 1882656,
+    "file": "results/fal/triposr/sofa.glb"
+  },
+  {
+    "model": "triposr",
+    "img": "chair",
+    "gen_sec": 6.91,
+    "dl_sec": 4.79,
+    "bytes": 1492708,
+    "file": "results/fal/triposr/chair.glb"
+  },
+  {
+    "model": "triposr",
+    "img": "armchair",
+    "gen_sec": 5.98,
+    "dl_sec": 10.9,
+    "bytes": 2248168,
+    "file": "results/fal/triposr/armchair.glb"
+  },
+  {
+    "model": "triposr",
+    "img": "plant",
+    "gen_sec": 9.55,
+    "dl_sec": 9.76,
+    "bytes": 3273024,
+    "file": "results/fal/triposr/plant.glb"
+  },
+  {
+    "model": "triposr",
+    "img": "lamp",
+    "gen_sec": 7.75,
+    "dl_sec": 11.15,
+    "bytes": 875708,
+    "file": "results/fal/triposr/lamp.glb"
+  },
+  {
+    "model": "triposr",
+    "img": "cabinet",
+    "gen_sec": 8.2,
+    "dl_sec": 3.93,
+    "bytes": 2399336,
+    "file": "results/fal/triposr/cabinet.glb"
+  },
+  {
+    "model": "trellis",
+    "img": "sofa",
+    "gen_sec": 24.87,
+    "dl_sec": 4.61,
+    "bytes": 1371248,
+    "file": "results/fal/trellis/sofa.glb"
+  },
+  {
+    "model": "trellis",
+    "img": "chair",
+    "gen_sec": 16.3,
+    "dl_sec": 4.44,
+    "bytes": 1272848,
+    "file": "results/fal/trellis/chair.glb"
+  },
+  {
+    "model": "trellis",
+    "img": "armchair",
+    "gen_sec": 18.87,
+    "dl_sec": 4.35,
+    "bytes": 1240796,
+    "file": "results/fal/trellis/armchair.glb"
+  },
+  {
+    "model": "trellis",
+    "img": "plant",
+    "gen_sec": 24.1,
+    "dl_sec": 6.94,
+    "bytes": 2351812,
+    "file": "results/fal/trellis/plant.glb"
+  },
+  {
+    "model": "trellis",
+    "img": "lamp",
+    "gen_sec": 16.46,
+    "dl_sec": 5.94,
+    "bytes": 1361824,
+    "file": "results/fal/trellis/lamp.glb"
+  },
+  {
+    "model": "trellis",
+    "img": "cabinet",
+    "gen_sec": 21.25,
+    "dl_sec": 9.7,
+    "bytes": 1303628,
+    "file": "results/fal/trellis/cabinet.glb"
+  },
+  {
+    "model": "hunyuan",
+    "img": "sofa",
+    "gen_sec": 9.94,
+    "dl_sec": 15.15,
+    "bytes": 5515716,
+    "file": "results/fal/hunyuan/sofa.glb"
+  },
+  {
+    "model": "hunyuan",
+    "img": "chair",
+    "gen_sec": 10.58,
+    "dl_sec": 12.73,
+    "bytes": 5539092,
+    "file": "results/fal/hunyuan/chair.glb"
+  },
+  {
+    "model": "hunyuan",
+    "img": "armchair",
+    "gen_sec": 10.41,
+    "dl_sec": 14.86,
+    "bytes": 10385696,
+    "file": "results/fal/hunyuan/armchair.glb"
+  },
+  {
+    "model": "hunyuan",
+    "img": "plant",
+    "gen_sec": 10.28,
+    "dl_sec": 16.41,
+    "bytes": 13407296,
+    "file": "results/fal/hunyuan/plant.glb"
+  },
+  {
+    "model": "hunyuan",
+    "img": "lamp",
+    "gen_sec": 9.55,
+    "dl_sec": 46.71,
+    "bytes": 4537052,
+    "file": "results/fal/hunyuan/lamp.glb"
+  },
+  {
+    "model": "hunyuan",
+    "img": "cabinet",
+    "gen_sec": 15.06,
+    "dl_sec": 9.06,
+    "bytes": 6587412,
+    "file": "results/fal/hunyuan/cabinet.glb"
+  }
+]

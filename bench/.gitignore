@@ -1,0 +1,5 @@
+.fal_key
+.hf_token
+venv/
+results/**/*.glb
+results/**/*.obj
