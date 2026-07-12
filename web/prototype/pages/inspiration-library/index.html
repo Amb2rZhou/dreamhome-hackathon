@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#f5fbf6" />
+  <title>DreamHome · 灵感库</title>
+  <link rel="stylesheet" href="./dreamhome-d-system.css" />
+  <style>
+    body { margin: 0; min-height: 100vh; font-family: var(--dh-font-sans); background: linear-gradient(90deg, #e7eee5, #f6faf4 48%, #e3ece1); color: var(--dh-fg-primary); }
+    .preview-stage { min-height: 100vh; display: grid; place-items: center; padding: 28px 18px; }
+    .library-shell { position: relative; }
+    .status-icons { display: flex; align-items: center; gap: 5px; height: 17px; line-height: 17px; transform: translateY(-6px); }
+    .status-icons > span { display: block; height: 17px; line-height: 17px; font-size: 12px; font-weight: var(--dh-font-weight-bold); }
+    .status-time { display: block; height: 18px; line-height: 18px; font-size: 15px; font-weight: var(--dh-font-weight-bold); letter-spacing: -.02em; transform: translateY(-3px); }
+    .bars { display: flex; gap: 2px; align-items: end; height: 13px; }.bars i { width: 3px; border-radius: 2px; background: currentColor; }.bars i:nth-child(1){height:6px}.bars i:nth-child(2){height:9px}.bars i:nth-child(3){height:12px}
+    .bat { width: 23px; height: 12px; border: 1.5px solid currentColor; border-radius: 3px; position: relative; }.bat::before { content:""; position:absolute; inset:2px; width:13px; border-radius:1px; background:currentColor; }.bat::after { content:""; position:absolute; right:-4px; top:3px; width:2px; height:4px; border-radius:2px; background:currentColor; }
+    .library-app { box-sizing:border-box; height: calc(100% - 50px); padding: 0 16px; display:flex; flex-direction:column; overflow:hidden; }
+    .library-header { display:flex; align-items:center; justify-content:space-between; padding-top: 2px; }
+    .back-button, .tool-button { width: 38px; height: 38px; display:grid; place-items:center; border:0; border-radius:50%; background: rgba(255,255,255,.76); color:var(--dh-fg-primary); box-shadow:var(--dh-shadow-soft); font-family:inherit; text-decoration:none; font-size:20px; cursor:pointer; }
+    .library-title { margin:0; font-size:15px; letter-spacing:var(--dh-tracking-title); line-height:1; font-weight:var(--dh-font-weight-heavy); }
+    .library-title small { display:block; margin-top:4px; font-size:10px; letter-spacing:0; color:var(--dh-fg-muted); font-weight:var(--dh-font-weight-bold); }
+    .tool-row { display:flex; gap:8px; }
+    .tool-button { font-size:16px; }
+    .search-bar { height:42px; padding:0 13px; border-radius:var(--dh-radius-lg); background:rgba(255,255,255,.72); border:var(--dh-card-border); box-shadow:var(--dh-shadow-soft); display:flex; align-items:center; gap:8px; color:var(--dh-fg-muted); font-size:12px; font-weight:var(--dh-font-weight-semibold); }
+    .search-bar button { margin-left:auto; border:0; background:transparent; color:var(--dh-color-sage-600); font-size:17px; cursor:pointer; }
+    .library-content { flex: 1; min-height: 0; display:flex; flex-direction:column; gap:22px; overflow-y:auto; overscroll-behavior:contain; padding:15px 0 var(--dh-tabbar-safe-space); scrollbar-width:none; }
+    .library-content::-webkit-scrollbar { display:none; }
+    .library-module { padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
+    .library-module--recent { padding-bottom:0; }
+    .library-module--room { padding-bottom:0; }
+    .library-module--category { padding-bottom:0; }
+    .section-head { display:flex; justify-content:space-between; align-items:center; margin:0 0 9px; }.section-head h2 { margin:0; font-size:15px; letter-spacing:var(--dh-tracking-title); }.section-head button { border:0; background:transparent; color:var(--dh-color-sage-600); font:inherit; font-size:11px; font-weight:var(--dh-font-weight-bold); }
+    .recent-scroll { display:flex; gap:10px; overflow-x:auto; padding:1px 1px 5px; scrollbar-width:none; }.recent-scroll::-webkit-scrollbar { display:none; }
+    .asset-card { min-width:112px; border:0; padding:0; text-align:left; background:transparent; color:inherit; cursor:pointer; }.asset-image { position:relative; height:102px; border-radius:22px; overflow:hidden; box-shadow:var(--dh-shadow-card); background:#e7eee5; }.asset-image::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,transparent 45%,rgba(29,36,31,.1)); }
+    .asset-image .shape { position:absolute; }.chair { width:53px; height:50px; left:28px; bottom:15px; background:#c78f6a; border-radius:25px 25px 12px 12px; box-shadow:inset 0 12px rgba(255,255,255,.18); }.chair::before { content:""; position:absolute; width:34px; height:38px; left:10px; top:-29px; background:#e3b397; border-radius:18px 18px 6px 6px; }.lamp { width:7px; height:54px; left:50px; bottom:13px; background:#6d756d; border-radius:5px; }.lamp::before { content:""; position:absolute; width:37px; height:23px; left:-15px; top:-15px; background:#efd788; border-radius:50% 50% 8px 8px; }.shelf { width:65px; height:68px; left:25px; bottom:14px; background:repeating-linear-gradient(180deg,#a47b5d 0 6px,transparent 6px 22px); border-left:5px solid #a47b5d; border-right:5px solid #a47b5d; }.plant { width:35px; height:45px; left:39px; bottom:13px; border-radius:48% 52% 45% 55%; background:#9ab58e; }.plant::before,.plant::after { content:""; position:absolute; width:25px; height:42px; border-radius:50% 10% 50% 10%; background:#75966f; }.plant::before{left:-13px;top:-10px;transform:rotate(-28deg)}.plant::after{right:-12px;top:-14px;transform:rotate(32deg)}
+    .asset-card b { display:block; margin:8px 2px 0; font-size:12px; letter-spacing:var(--dh-tracking-body); }.asset-card span { display:block; margin:2px 2px 0; font-size:10px; color:var(--dh-fg-muted); }
+    .room-grid { display:grid; grid-template-columns:1.22fr .78fr; grid-template-rows:58px 47px 38px 44px; gap:8px; }.room-card { position:relative; min-height:0; height:auto; padding:11px; overflow:hidden; border:0; border-radius:var(--dh-radius-xl); text-align:left; color:var(--dh-fg-primary); cursor:pointer; box-shadow:var(--dh-shadow-card); }.room-card b { position:relative; z-index:1; font-size:14px; letter-spacing:var(--dh-tracking-body); }.room-card span { position:relative; z-index:1; display:block; margin-top:3px; color:var(--dh-fg-secondary); font-size:10px; font-weight:var(--dh-font-weight-semibold); }.room-card.living { grid-row:span 2; background:linear-gradient(145deg,#d8e7d2,#fff7eb); }.room-card.bedroom { background:linear-gradient(145deg,#f2d9d4,#fbf9ec); }.room-card.kitchen { background:linear-gradient(145deg,#e8e4d5,#f9f5e9); }.room-card.dining { background:linear-gradient(145deg,#f5e1c8,#fbf7ed); }.room-card.kids { background:linear-gradient(145deg,#dce7ef,#f6f9ed); }.room-card.study { background:linear-gradient(145deg,#e2ddd4,#f7f3eb); }.room-card.balcony { background:linear-gradient(145deg,#d9eee6,#f4fbf3); }.room-card.bath { background:linear-gradient(145deg,#dce9ef,#f6fafb); }.room-card.dining,.room-card.kids,.room-card.study,.room-card.balcony,.room-card.bath { padding:9px; }.room-card.dining b,.room-card.kids b,.room-card.study b,.room-card.balcony b,.room-card.bath b { font-size:12px; }.room-card.dining span,.room-card.kids span,.room-card.study span,.room-card.balcony span,.room-card.bath span { font-size:9px; }.room-card.study { grid-column:span 2; }.room-card.balcony,.room-card.bath { min-height:38px; }
+    .room-object { position:absolute; right:-4px; bottom:-11px; transform:rotate(-7deg); }.sofa { width:91px; height:38px; border-radius:21px 21px 12px 12px; background:#c38b79; }.sofa::before{content:"";position:absolute;width:42px;height:30px;left:24px;top:-22px;border-radius:15px 15px 5px 5px;background:#dfb3a4}.bed { width:92px; height:51px; border-radius:14px; background:#c7b5a5; }.bed::before {content:"";position:absolute;width:80px;height:21px;left:6px;top:6px;border-radius:10px;background:#fff7ed}.bed::after {content:"";position:absolute;width:40px;height:12px;left:13px;top:10px;border-radius:7px;background:#e2c2bc}.kitchen-mark { width:52px; height:27px; border-radius:4px 4px 10px 10px; background:#a9b68f; }.kitchen-mark::before{content:"";position:absolute;width:28px;height:17px;left:11px;top:-13px;border:4px solid #899673;border-bottom:0;border-radius:13px 13px 0 0}.dining-mark { width:45px; height:21px; border-radius:50%; background:#b8896d; }.dining-mark::before,.dining-mark::after{content:"";position:absolute;width:8px;height:27px;border-radius:5px;background:#ccb49a;top:3px}.dining-mark::before{left:3px}.dining-mark::after{right:3px}.kids-mark { width:31px; height:31px; border-radius:50%; background:#d1a65f; }.kids-mark::before{content:"";position:absolute;width:17px;height:12px;left:7px;top:-8px;border-radius:50% 50% 0 0;background:#c88970}
+    .category-row { display:grid; grid-template-columns:repeat(4,1fr); gap:13px 7px; }.category { border:0; padding:0; background:transparent; cursor:pointer; color:var(--dh-fg-primary); }.category-icon { width:46px; height:46px; margin:0 auto 5px; border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,.8); box-shadow:var(--dh-shadow-soft); font-size:20px; }.category span { display:block; font-size:10px; font-weight:var(--dh-font-weight-semibold); }
+    .library-tabbar { margin-top:auto; }.library-tabbar .dh-tab { border:0; background:transparent; padding:0; cursor:pointer; font:inherit; }.library-tabbar .dh-tab:nth-child(2) { opacity:1; }.library-tabbar .dh-tab:nth-child(2) .dh-tab-icon { background:var(--dh-tab-active-bg); color:var(--dh-tab-active-fg); }.library-tabbar .dh-tab:first-child { opacity:.55; }.library-tabbar .dh-tab:first-child .dh-tab-icon { background:transparent; color:var(--dh-fg-secondary); }
+    .toast { position:absolute; z-index:30; left:50%; bottom:70px; transform:translateX(-50%) translateY(10px); opacity:0; padding:9px 12px; width:max-content; max-width:250px; border-radius:var(--dh-radius-pill); background:rgba(29,36,31,.9); color:white; font-size:11px; font-weight:var(--dh-font-weight-semibold); box-shadow:var(--dh-shadow-soft); pointer-events:none; transition:.2s ease; }.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+  <main class="preview-stage">
+    <section class="dh-phone-shell library-shell" aria-label="DreamHome 灵感库">
+      <div class="dh-screen dh-root">
+        <div class="dh-island" aria-hidden="true"></div>
+        <div class="dh-statusbar"><span class="status-time">9:41</span><div class="status-icons" aria-hidden="true"><div class="bars"><i></i><i></i><i></i></div><span>5G</span><div class="bat"></div></div></div>
+        <div class="library-app">
+          <header class="library-header">
+            <a class="back-button" href="../main-interface-v1/index.html" aria-label="返回主界面">‹</a>
+            <div><h1 class="library-title">灵感库</h1></div>
+            <div class="tool-row"><button class="tool-button" data-toast="打开筛选" aria-label="搜索灵感">⌕</button></div>
+          </header>
+          <main class="library-content">
+            <section class="library-module library-module--recent" aria-label="最近收集">
+              <div class="section-head"><h2>最近收集</h2><button data-toast="查看全部收藏">查看全部</button></div>
+              <div class="recent-scroll" aria-label="最近收集的家居组件">
+                <button class="asset-card" data-toast="胡桃木单椅"><div class="asset-image"><span class="shape chair"></span></div><b>胡桃木单椅</b><span>来自：拍一张</span></button>
+                <button class="asset-card" data-toast="落地阅读灯"><div class="asset-image" style="background:#e7ece4"><span class="shape lamp"></span></div><b>落地阅读灯</b><span>来自：刷一刷</span></button>
+                <button class="asset-card" data-toast="原木收纳架"><div class="asset-image" style="background:#f1e7d8"><span class="shape shelf"></span></div><b>原木收纳架</b><span>来自：画一笔</span></button>
+                <button class="asset-card" data-toast="龟背竹绿植"><div class="asset-image" style="background:#e4efe0"><span class="shape plant"></span></div><b>龟背竹绿植</b><span>来自：拍一张</span></button>
+              </div>
+            </section>
+            <section class="library-module library-module--room" aria-label="按空间收纳">
+              <div class="section-head"><h2>按空间收纳</h2><button data-toast="管理空间分类">管理</button></div>
+              <div class="room-grid" aria-label="空间分类">
+                <button class="room-card living" data-toast="进入客厅灵感"><b>客厅</b><span>18 件心动家居</span><i class="room-object sofa"></i></button>
+                <button class="room-card bedroom" data-toast="进入卧室灵感"><b>卧室</b><span>12 件心动家居</span><i class="room-object bed"></i></button>
+                <button class="room-card kitchen" data-toast="进入厨房灵感"><b>厨房</b><span>8 件心动家居</span><i class="room-object kitchen-mark"></i></button>
+                <button class="room-card dining" data-toast="进入餐厅灵感"><b>餐厅</b><span>6 件</span><i class="room-object dining-mark"></i></button>
+                <button class="room-card kids" data-toast="进入儿童房灵感"><b>儿童房</b><span>4 件</span><i class="room-object kids-mark"></i></button>
+                <button class="room-card study" data-toast="进入书房灵感"><b>书房</b><span>9 件心动家居</span><i class="room-object shelf"></i></button>
+                <button class="room-card balcony" data-toast="进入阳台灵感"><b>阳台</b><span>5 件</span><i class="room-object plant"></i></button>
+                <button class="room-card bath" data-toast="进入卫浴灵感"><b>卫浴</b><span>3 件</span><i class="room-object kitchen-mark"></i></button>
+              </div>
+            </section>
+            <section class="library-module library-module--category" aria-label="按品类归纳">
+              <div class="section-head"><h2>按品类归纳</h2></div>
+              <div class="category-row" aria-label="家居品类">
+                <button class="category" data-toast="查看座椅"><i class="category-icon">🪑</i><span>座椅</span></button>
+                <button class="category" data-toast="查看灯具"><i class="category-icon">💡</i><span>灯具</span></button>
+                <button class="category" data-toast="查看收纳"><i class="category-icon">🗄️</i><span>收纳</span></button>
+                <button class="category" data-toast="查看装饰"><i class="category-icon">🪴</i><span>装饰</span></button>
+                <button class="category" data-toast="查看沙发"><i class="category-icon">🛋️</i><span>沙发</span></button>
+                <button class="category" data-toast="查看桌几"><i class="category-icon">🪵</i><span>桌几</span></button>
+                <button class="category" data-toast="查看床具"><i class="category-icon">🛏️</i><span>床具</span></button>
+                <button class="category" data-toast="查看柜体"><i class="category-icon">🚪</i><span>柜体</span></button>
+                <button class="category" data-toast="查看挂画"><i class="category-icon">🖼️</i><span>挂画</span></button>
+                <button class="category" data-toast="查看床品"><i class="category-icon">🧺</i><span>床品</span></button>
+                <button class="category" data-toast="查看厨具"><i class="category-icon">🍳</i><span>厨具</span></button>
+                <button class="category" data-toast="查看卫浴"><i class="category-icon">🫧</i><span>卫浴</span></button>
+              </div>
+            </section>
+          </main>
+        </div>
+        <nav class="dh-tabbar library-tabbar" aria-label="底部导航"><a class="dh-tab" href="../main-interface-v1/index.html" aria-label="首页"><i class="dh-tab-icon">⌂</i></a><button class="dh-tab" aria-label="灵感库"><i class="dh-tab-icon">◇</i></button><a class="dh-tab" href="../my-home/index.html" aria-label="我的家"><i class="dh-tab-icon">▣</i></a></nav>
+        <div class="toast" id="toast"></div><div class="dh-home-indicator" aria-hidden="true"></div>
+      </div>
+    </section>
+  </main>
+  <script>
+    const toast = document.querySelector('#toast'); let timer;
+    document.querySelectorAll('[data-toast]').forEach((item) => item.addEventListener('click', () => { toast.textContent = item.dataset.toast; toast.classList.add('show'); clearTimeout(timer); timer = setTimeout(() => toast.classList.remove('show'), 1500); }));
+  </script>
+</body>
+</html>

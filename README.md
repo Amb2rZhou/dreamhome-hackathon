@@ -43,6 +43,12 @@
 - **语音**：圈选后语音追问（"这是什么风格？配我家吗？"）、语音操控组装（"把沙发挪到窗边"）、语音修正尺寸（"这个柜子是一米二的"）
 - **"一次看见，自然延展为理解与互动"**：看见 → 摘抄 → 组装 → 邀请好友进入，一条完整的体验重组链路
 
+## 前端交互原型
+
+GitHub Pages 公共预览：<https://amb2rzhou.github.io/dreamhome-hackathon/prototype/>
+
+静态原型位于 [`web/prototype/`](web/prototype/)，包含主界面、生成入口、灵感库与“我的家”交互。页面入口、mock 模式和团队协作方式见 [`web/prototype/README.md`](web/prototype/README.md)。
+
 ## 技术方案
 
 详见 [docs/tech-feasibility.md](docs/tech-feasibility.md)。
