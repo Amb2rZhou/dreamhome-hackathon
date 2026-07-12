@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="theme-color" content="#f5fbf6" />
+  <title>DreamHome · Main Interface V1</title>
+  <link rel="stylesheet" href="./dreamhome-d-system.css" />
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--dh-font-sans);
+      color: var(--dh-fg-primary);
+      background: linear-gradient(90deg, #e7eee5, #f6faf4 48%, #e3ece1);
+    }
+
+    .preview-stage {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 28px 18px;
+    }
+
+    .main-phone {
+      position: relative;
+    }
+
+    .dh-app {
+      box-sizing: border-box;
+      height: calc(100% - 50px);
+      padding: 0 16px var(--dh-tabbar-safe-space);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: none;
+    }
+
+    .dh-app::-webkit-scrollbar {
+      display: none;
+    }
+
+    .dh-app > * + * {
+      margin-top: var(--dh-space-3);
+    }
+
+    .status-time {
+      display: block;
+      height: 18px;
+      line-height: 18px;
+      font-size: 15px;
+      font-weight: var(--dh-font-weight-bold);
+      letter-spacing: -0.02em;
+      transform: translateY(-3px);
+    }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      height: 17px;
+      line-height: 17px;
+      transform: translateY(-6px);
+    }
+
+    .status-icons > span {
+      display: block;
+      height: 17px;
+      line-height: 17px;
+      font-size: 12px;
+      font-weight: var(--dh-font-weight-bold);
+    }
+
+    .bars {
+      display: flex;
+      gap: 2px;
+      align-items: end;
+      height: 13px;
+    }
+
+    .bars i {
+      width: 3px;
+      border-radius: 2px;
+      background: currentColor;
+    }
+
+    .bars i:nth-child(1) { height: 6px; }
+    .bars i:nth-child(2) { height: 9px; }
+    .bars i:nth-child(3) { height: 12px; }
+
+    .bat {
+      width: 23px;
+      height: 12px;
+      border: 1.5px solid currentColor;
+      border-radius: 3px;
+      position: relative;
+    }
+
+    .bat::before {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      width: 11px;
+      border-radius: 1px;
+      background: currentColor;
+    }
+
+    .bat::after {
+      content: "";
+      position: absolute;
+      right: -4px;
+      top: 3px;
+      width: 2px;
+      height: 4px;
+      border-radius: 2px;
+      background: currentColor;
+    }
+
+    .module-copy {
+      margin: 0;
+    }
+
+    .title-icon {
+      display: inline-block;
+      font-size: 1em;
+      line-height: 1;
+      vertical-align: -0.04em;
+    }
+
+    .dh-subitem-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      padding: 6px 8px;
+      border-radius: var(--dh-radius-md);
+      background: var(--dh-bg-surface-muted);
+      color: inherit;
+      text-decoration: none;
+      transition: transform .18s ease, background .18s ease;
+    }
+
+    .dh-subitem-link:active {
+      transform: scale(.975);
+      background: rgba(166, 193, 158, .42);
+    }
+
+    .dh-subitem-link:focus-visible {
+      outline: 2px solid var(--dh-color-sage-600);
+      outline-offset: 2px;
+    }
+
+    .dh-subitem-icon {
+      background: rgba(166, 193, 158, .72);
+      color: inherit;
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    .main-module-grid {
+      flex: 0 0 auto;
+      align-content: start;
+    }
+
+    .main-detail {
+      display: none;
+    }
+
+    .main-tabbar {
+      flex: 0 0 auto;
+    }
+
+    .main-detail b {
+      display: block;
+      margin-bottom: 4px;
+      font-size: var(--dh-text-md);
+      letter-spacing: var(--dh-tracking-body);
+    }
+
+    .main-detail span {
+      display: block;
+      color: var(--dh-fg-secondary);
+      font-size: var(--dh-text-xs);
+      line-height: 1.42;
+      font-weight: var(--dh-font-weight-semibold);
+    }
+
+    .dh-module-card {
+      border: 0;
+    }
+
+    .dh-module-grid > .dh-module-card:not(.dh-module-card--large) {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      padding-top: calc(var(--dh-space-4) + 5px);
+    }
+
+    .dh-module-link {
+      width: 100%;
+      color: inherit;
+      text-decoration: none;
+      font: inherit;
+      text-align: left;
+    }
+
+    .dh-module-card.is-selected {
+      box-shadow: 0 18px 36px rgba(112, 136, 111, .16);
+      outline: 0;
+    }
+
+    .main-tabbar .dh-tab {
+      border: 0;
+      background: transparent;
+      font: inherit;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .dh-mascot-button {
+      position: relative;
+      width: 46px;
+      height: 46px;
+      background: transparent;
+      box-shadow: none;
+      overflow: visible;
+      transform-style: preserve-3d;
+    }
+
+    .dh-mascot-button img {
+      width: 58px;
+      height: 58px;
+      display: block;
+      object-fit: contain;
+      transform: translate(0, -7px) perspective(420px) rotateX(2deg);
+      filter: drop-shadow(0 10px 14px rgba(63, 86, 64, .22));
+      transition: transform .28s ease, filter .28s ease;
+      animation: mascot-breathe 2.8s ease-in-out infinite;
+    }
+
+    .dh-mascot-button.is-tapped img {
+      animation: mascot-pop .58s cubic-bezier(.2, 1.35, .28, 1) both;
+    }
+
+    .dh-mascot-button.is-happy img {
+      animation: mascot-pop .58s cubic-bezier(.2, 1.35, .28, 1) both;
+    }
+
+    .dh-mascot-button.is-thinking img {
+      animation: mascot-think 1.1s ease-in-out infinite;
+    }
+
+    .dh-mascot-button.is-working img {
+      animation: mascot-work .2s linear infinite;
+    }
+
+    .dh-mascot-button.is-sleeping img {
+      animation: mascot-sleep 2s ease-in-out infinite;
+    }
+
+    .mascot-bubble {
+      position: absolute;
+      right: 43px;
+      top: 2px;
+      width: max-content;
+      max-width: 158px;
+      padding: 7px 10px;
+      border-radius: 16px 16px 4px 16px;
+      background: rgba(255, 255, 255, .94);
+      border: 1px solid rgba(255, 255, 255, .92);
+      box-shadow: 0 12px 28px rgba(63, 86, 64, .14);
+      color: var(--dh-fg-primary);
+      font-size: 9px;
+      line-height: 1.32;
+      font-weight: var(--dh-font-weight-semibold);
+      opacity: 0;
+      transform: translate(8px, -2px) scale(.96);
+      transform-origin: right top;
+      pointer-events: none;
+      transition: opacity .22s ease, transform .22s ease;
+      z-index: 8;
+    }
+
+    .mascot-bubble.is-visible {
+      opacity: 1;
+      transform: translate(0, -2px) scale(1);
+    }
+
+    @keyframes mascot-breathe {
+      0%, 100% { transform: translate(3px, -7px) perspective(420px) rotateX(2deg) translateY(0); }
+      50% { transform: translate(3px, -7px) perspective(420px) rotateX(2deg) translateY(-2px); }
+    }
+
+    @keyframes mascot-pop {
+      0% { transform: translate(3px, -7px) perspective(420px) rotateX(2deg) scale(1); }
+      46% { transform: translate(3px, -13px) perspective(420px) rotateX(2deg) scale(1.12); }
+      100% { transform: translate(3px, -7px) perspective(420px) rotateX(2deg) scale(1); }
+    }
+
+    @keyframes mascot-think {
+      0%, 100% { transform: translate(3px, -7px) perspective(420px) rotateX(2deg) rotate(-2deg); }
+      50% { transform: translate(3px, -9px) perspective(420px) rotateX(2deg) rotate(2deg); }
+    }
+
+    @keyframes mascot-work {
+      0%, 100% { transform: translate(3px, -7px) perspective(420px) rotateX(2deg) rotate(0); }
+      25% { transform: translate(2px, -8px) perspective(420px) rotateX(2deg) rotate(-2deg); }
+      75% { transform: translate(4px, -6px) perspective(420px) rotateX(2deg) rotate(2deg); }
+    }
+
+    @keyframes mascot-sleep {
+      0%, 100% { transform: translate(3px, -7px) perspective(420px) rotateX(2deg) rotate(-4deg); opacity: .9; }
+      50% { transform: translate(3px, -6px) perspective(420px) rotateX(2deg) rotate(-7deg); opacity: .72; }
+    }
+
+    .main-shell-note {
+      position: fixed;
+      left: 18px;
+      bottom: 18px;
+      max-width: 280px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.72);
+      color: var(--dh-fg-secondary);
+      box-shadow: var(--dh-shadow-soft);
+      font-size: 12px;
+      line-height: 1.5;
+      backdrop-filter: blur(16px);
+    }
+
+    @media (max-width: 420px) {
+      .preview-stage {
+        padding: 18px 10px;
+        min-height: 100svh;
+      }
+
+      .main-shell-note {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="preview-stage">
+    <section class="dh-phone-shell main-phone" aria-label="DreamHome iOS 主界面 V1">
+      <div class="dh-screen dh-root">
+        <div class="dh-island" aria-hidden="true"></div>
+        <div class="dh-statusbar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons" aria-hidden="true">
+            <div class="bars"><i></i><i></i><i></i></div>
+            <span>5G</span>
+            <div class="bat"></div>
+          </div>
+        </div>
+
+        <div class="dh-app">
+          <header class="dh-topbar">
+            <div>
+              <span class="dh-title-kicker dh-type-caption">DreamHome</span>
+              <h1 class="dh-type-app-title" style="margin:0">梦想豪宅</h1>
+            </div>
+            <button class="dh-icon-button dh-mascot-button" id="mascotButton" data-state="initial" aria-label="DreamHome 包公球">
+              <img id="mascotImage" src="./assets/mascot/states/mascot-initial.png" alt="" />
+              <span class="mascot-bubble" id="mascotBubble">今天想先收集哪一份灵感？</span>
+            </button>
+          </header>
+
+          <section class="dh-hero-card" aria-label="首页主视觉">
+            <h2 class="dh-type-hero" style="margin:0">从灵感收集到设计拼装，<br>陪你慢慢来。</h2>
+            <div class="dh-hero-blob" aria-hidden="true"></div>
+          </section>
+
+          <section class="dh-module-grid main-module-grid" aria-label="主功能入口">
+            <section class="dh-module-card dh-module-card--large is-selected" data-title="找灵感" data-copy="手绘、拍照上传、发现打包为同一个一级入口。进入后选择具体摘抄方式，把灵感生成 3D 组件。">
+              <h3 class="dh-type-card-title" style="margin:0 0 5px">找灵感 <span class="title-icon" aria-hidden="true">🔍</span></h3>
+              <p class="dh-type-body module-copy">一键收集奇思妙想</p>
+              <div class="dh-sublist">
+                <a class="dh-subitem-link" href="../draw/index.html" aria-label="画一笔，进入手绘功能">
+                  <span class="dh-subitem-icon">🎨</span><b class="dh-type-micro">画一笔</b>
+                </a>
+                <a class="dh-subitem-link" href="../capture/index.html" aria-label="拍一张，进入拍照上传功能">
+                  <span class="dh-subitem-icon">📷</span><b class="dh-type-micro">拍一张</b>
+                </a>
+                <a class="dh-subitem-link" href="../discover/index.html" aria-label="刷一刷，进入发现功能">
+                  <span class="dh-subitem-icon">☝️</span><b class="dh-type-micro">刷一刷</b>
+                </a>
+              </div>
+            </section>
+
+            <a class="dh-module-card dh-module-link" href="../inspiration-library/index.html" data-title="灵感库" data-copy="保存已生成的 3D 家具、软装、材质和风格信息，作为可复用的组件素材库。" aria-label="进入灵感库">
+              <h3 class="dh-type-card-title" style="margin:0 0 5px">灵感库<span class="title-icon" aria-hidden="true">🤔</span></h3>
+              <p class="dh-type-body module-copy">收藏每一件心动家居</p>
+            </a>
+
+            <a class="dh-module-card dh-module-link" href="../my-home/index.html" aria-label="进入我的家">
+              <h3 class="dh-type-card-title" style="margin:0 0 5px">我的家<span class="title-icon" aria-hidden="true">🏠</span></h3>
+              <p class="dh-type-body module-copy">随心搭出梦想中的家</p>
+            </a>
+          </section>
+
+          <section class="dh-detail-card main-detail" id="mainDetail" aria-live="polite">
+            <b>找灵感</b>
+            <span>手绘、拍照上传、发现打包为同一个一级入口。进入后选择具体摘抄方式，把灵感生成 3D 组件。</span>
+          </section>
+        </div>
+
+        <nav class="dh-tabbar main-tabbar" aria-label="底部导航">
+          <button class="dh-tab dh-tab--active" aria-label="首页"><i class="dh-tab-icon">⌂</i></button>
+          <a class="dh-tab" href="../inspiration-library/index.html" aria-label="灵感库"><i class="dh-tab-icon">◇</i></a>
+          <a class="dh-tab" href="../my-home/index.html" aria-label="我的家"><i class="dh-tab-icon">▣</i></a>
+        </nav>
+
+        <div class="dh-home-indicator" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <aside class="main-shell-note">
+      电脑端展示 iPhone 外壳；手机端打开时会自动铺满屏幕，并适配 iOS 安全区。
+    </aside>
+  </main>
+
+  <script>
+    const cards = document.querySelectorAll('.dh-module-card:not(.dh-module-link)');
+    const detail = document.querySelector('#mainDetail');
+    const mascotButton = document.querySelector('#mascotButton');
+    const mascotBubble = document.querySelector('#mascotBubble');
+    let bubbleTimer;
+
+    function getTimeGreeting(date = new Date()) {
+      const hour = date.getHours();
+      if (hour >= 5 && hour < 11) return '早安';
+      if (hour >= 11 && hour < 14) return '午安';
+      if (hour >= 14 && hour < 18) return '下午好';
+      if (hour >= 18 && hour < 23) return '晚上好';
+      return '夜深了';
+    }
+
+    function showMascotGreeting() {
+      mascotBubble.textContent = `${getTimeGreeting()}，今天想设计些什么呢？`;
+      mascotBubble.classList.add('is-visible');
+      mascotButton.classList.remove('is-tapped');
+      void mascotButton.offsetWidth;
+      mascotButton.classList.add('is-tapped');
+      clearTimeout(bubbleTimer);
+      bubbleTimer = setTimeout(() => mascotBubble.classList.remove('is-visible'), 2600);
+    }
+
+    mascotButton.addEventListener('click', showMascotGreeting);
+
+    cards.forEach((card) => {
+      card.addEventListener('click', () => {
+        cards.forEach((item) => item.classList.remove('is-selected'));
+        card.classList.add('is-selected');
+        detail.querySelector('b').textContent = card.dataset.title;
+        detail.querySelector('span').textContent = card.dataset.copy;
+      });
+    });
+  </script>
+</body>
+</html>
