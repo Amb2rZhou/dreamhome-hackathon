@@ -1,5 +1,21 @@
-"""全局配置：读环境变量，缺 key 时自动退化到 mock，保证监管机/无网也能跑通链路。"""
+"""全局配置：读 .env / 环境变量，缺 key 时自动退化到 mock。"""
 import os
+
+
+def _load_dotenv() -> None:
+    env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
+    if not os.path.exists(env_path):
+        return
+    with open(env_path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+_load_dotenv()
 
 
 def _env(key: str, default: str = "") -> str:
@@ -7,8 +23,11 @@ def _env(key: str, default: str = "") -> str:
 
 
 class Settings:
-    # 3D 生成 provider：tripo | meshy | mock（缺 key 时强制 mock）
+    # 3D 生成 provider：fal | tripo | meshy | mock（缺 key 时强制 mock）
     GEN3D_PROVIDER: str = _env("GEN3D_PROVIDER", "mock").lower()
+
+    FAL_KEY: str = _env("FAL_KEY")
+    FAL_TRELLIS_ENDPOINT: str = _env("FAL_TRELLIS_ENDPOINT", "fal-ai/trellis")
 
     TRIPO_API_KEY: str = _env("TRIPO_API_KEY")
     TRIPO_BASE_URL: str = _env("TRIPO_BASE_URL", "https://api.tripo3d.ai/v2/openapi")
@@ -28,6 +47,8 @@ class Settings:
     @property
     def effective_provider(self) -> str:
         """有 key 才用真 provider，否则一律 mock，避免线上 500。"""
+        if self.GEN3D_PROVIDER == "fal" and self.FAL_KEY:
+            return "fal"
         if self.GEN3D_PROVIDER == "tripo" and self.TRIPO_API_KEY:
             return "tripo"
         if self.GEN3D_PROVIDER == "meshy" and self.MESHY_API_KEY:

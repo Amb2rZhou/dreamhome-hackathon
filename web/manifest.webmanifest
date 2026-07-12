@@ -1,0 +1,16 @@
+{
+  "name": "DreamHome",
+  "short_name": "DreamHome",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f2efe9",
+  "theme_color": "#f2efe9",
+  "icons": [
+    {
+      "src": "./assets/mascot/mascot-happy.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

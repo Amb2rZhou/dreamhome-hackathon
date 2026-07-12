@@ -3,22 +3,139 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f2efe9">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>DreamHome</title>
-  <style>
-    body { margin: 0; min-height: 100svh; display: grid; place-items: center;
-      background: #f2efe9; color: #33302a;
-      font: 17px/1.6 -apple-system, "PingFang SC", sans-serif; }
-    main { text-align: center; padding: 24px; }
-    h1 { font-size: 22px; }
-    .ok { color: #4a7c37; font-weight: 600; }
-  </style>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <main>
-    <h1>DreamHome</h1>
-    <p class="ok">部署链路已打通 ✓</p>
-    <p id="t"></p>
+  <main class="app-shell">
+    <section class="workspace">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">DreamHome · TikTok Hackathon</p>
+          <h1>家的灵感摘抄本</h1>
+        </div>
+        <div class="status-pill" id="statusPill">离线预置可演示</div>
+      </header>
+
+      <section class="panel active" data-panel="image">
+        <div class="tool-grid two">
+          <div class="dropzone" id="imageDrop">
+            <input id="imageInput" type="file" accept="image/*">
+            <div class="drop-visual">
+              <span class="icon">↥</span>
+              <b>图生 3D</b>
+              <span>选择、拖拽或粘贴家具图片</span>
+            </div>
+            <img id="imagePreview" alt="">
+          </div>
+          <div class="generator">
+            <div class="generator-head">
+              <div>
+                <span class="step-label">TRELLIS 流程</span>
+                <h2 id="imageTitle">把看见的家具摘抄成组件</h2>
+              </div>
+              <button class="icon-button" id="fullscreenBtn" type="button" title="全屏预览">⤢</button>
+            </div>
+            <ol class="progress-list" id="imageProgress">
+              <li class="done">读取主体图</li>
+              <li class="active">点云理解</li>
+              <li>网格生成</li>
+              <li>材质打包</li>
+            </ol>
+            <label class="field">
+              <span>中文修改词</span>
+              <input id="promptInput" value="绿色绒面沙发，圆润靠背，适合客厅">
+            </label>
+            <div class="button-row">
+              <button class="primary" id="generateImageBtn" type="button">生成 3D 组件</button>
+              <button class="ghost" id="loadPresetBtn" type="button">换一件预置</button>
+            </div>
+            <p class="hint">fal key 只放后端 <code>.env</code>；页面只调用本地 API。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="camera">
+        <div class="tool-grid two">
+          <div class="camera-card">
+            <input id="cameraInput" type="file" accept="image/*" capture="environment">
+            <button class="capture-button" id="cameraButton" type="button">
+              <span>◎</span>
+              <b>拍一下家具</b>
+            </button>
+            <img id="cameraPreview" alt="">
+          </div>
+          <div class="generator compact">
+            <span class="step-label">相机摘抄</span>
+            <h2>线下看到心动家具，拍照入库</h2>
+            <p>浏览器会打开系统相机。桌面端会退化为选择图片。</p>
+            <button class="primary" id="generateCameraBtn" type="button">从照片生成</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="sketch">
+        <div class="sketch-layout">
+          <div class="canvas-wrap">
+            <canvas id="sketchCanvas" width="720" height="480"></canvas>
+          </div>
+          <aside class="sketch-tools">
+            <span class="step-label">画画生成</span>
+            <h2>手绘一个世上还没有的家具</h2>
+            <label class="field">
+              <span>希望它像什么</span>
+              <input id="sketchPrompt" value="一把云朵形单人椅，软包布艺">
+            </label>
+            <div class="button-row">
+              <button class="primary" id="generateSketchBtn" type="button">生成 3D</button>
+              <button class="ghost" id="clearSketchBtn" type="button">清空画布</button>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="library">
+        <div class="library-head">
+          <div>
+            <span class="step-label">组件库</span>
+            <h2>摘抄下来的灵感组件</h2>
+          </div>
+          <button class="ghost" id="seedLibraryBtn" type="button">补齐预置组件</button>
+        </div>
+        <div class="library-grid" id="libraryGrid"></div>
+      </section>
+
+      <section class="panel room-panel" data-panel="room">
+        <div class="room-stage">
+          <canvas id="roomCanvas"></canvas>
+          <div class="room-hud">
+            <button class="icon-button" id="roomZoomIn" type="button" title="放大">＋</button>
+            <button class="icon-button" id="roomZoomOut" type="button" title="缩小">－</button>
+            <button class="icon-button" id="roomRotate" type="button" title="旋转 45 度">↻</button>
+            <button class="icon-button danger" id="roomDelete" type="button" title="删除选中">⌫</button>
+          </div>
+          <div class="voice-bar">
+            <button id="voiceBtn" type="button">按住说：把沙发挪到窗边</button>
+            <span id="voiceText">支持放大、缩小、左移、右移、旋转、删除</span>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <nav class="tabbar" aria-label="DreamHome tabs">
+      <button class="tab active" data-tab="image" type="button"><span>▧</span><b>图生3D</b></button>
+      <button class="tab" data-tab="camera" type="button"><span>◉</span><b>拍照</b></button>
+      <button class="tab" data-tab="sketch" type="button"><span>✎</span><b>画画</b></button>
+      <button class="tab" data-tab="library" type="button"><span>▦</span><b>组件库</b></button>
+      <button class="tab" data-tab="room" type="button"><span>⌂</span><b>3D空间</b></button>
+    </nav>
   </main>
-  <script>document.getElementById('t').textContent = '构建于 ' + document.lastModified;</script>
+
+  <div class="toast" id="toast"></div>
+  <script type="module" src="./app.js?v=backend-fal"></script>
 </body>
 </html>

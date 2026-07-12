@@ -8,6 +8,9 @@ from ..config import settings
 @lru_cache(maxsize=1)
 def get_provider() -> Gen3DProvider:
     p = settings.effective_provider
+    if p == "fal":
+        from .fal import FalTrellisProvider
+        return FalTrellisProvider()
     if p == "tripo":
         from .tripo import TripoProvider
         return TripoProvider()
