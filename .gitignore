@@ -33,8 +33,3 @@ build/
 # ---- 系统 / 编辑器 ----
 .DS_Store
 *.log
-
-# ---- web 前端物料（可由脚本重生成，不入库）----
-# 第三方库与 PWA 图标体积大/为二进制，用 `node web/tools/setup-assets.mjs` 一键生成
-web/vendor/
-web/icons/

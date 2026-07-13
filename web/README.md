@@ -5,16 +5,17 @@
 
 ## 运行
 
-```bash
-# 1) 一次性物料：自托管前端依赖 + 生成 PWA 图标（不入 git，可重生成）
-node web/tools/setup-assets.mjs
+依赖（model-viewer / three）与图标已随仓库入库，克隆即可跑，无需任何构建步骤：
 
-# 2) 起一个「no-store」静态服务器（坑10：Chrome 对无头服务器的启发式缓存会让你调试旧代码）
-#    任意能发 Cache-Control:no-store 的静态服务都行，例如：
+```bash
+# 起一个「no-store」静态服务器（坑10：Chrome 对无头服务器的启发式缓存会让你调试旧代码）
+# 任意能发 Cache-Control:no-store 的静态服务都行，例如：
 npx --yes http-server web -c-1 -p 8123      # 或自写 no-store 服务器
 ```
 
 打开 `http://localhost:8123`。
+
+> 需要升级/重新生成 vendor 与图标时，跑 `node web/tools/setup-assets.mjs`（可选，非运行必需）。
 
 ## 注入 fal key
 
@@ -69,7 +70,5 @@ web/
 
 ## 部署
 
-`web/` 是纯静态目录，跑完 `setup-assets.mjs` 后可直接部署到 Vercel / Netlify / 腾讯云 COS。
+`web/` 是纯静态目录（依赖与图标已入库），可直接部署到 Vercel / Netlify / 腾讯云 COS，无需构建。
 中国大陆现场建议 COS（`*.myqcloud.com` 直连、免 ICP 备案）。
-
-> 注：本仓库的云端会话 git 为只读，二进制物料未推入远端——克隆后请先跑 `setup-assets.mjs`。
