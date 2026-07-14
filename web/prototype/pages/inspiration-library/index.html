@@ -3,108 +3,105 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#f5fbf6" />
   <title>DreamHome · 灵感库</title>
   <link rel="stylesheet" href="./dreamhome-d-system.css" />
+  <link rel="stylesheet" href="../shared/five-tabbar.css" />
   <style>
-    body { margin: 0; min-height: 100vh; font-family: var(--dh-font-sans); background: linear-gradient(90deg, #e7eee5, #f6faf4 48%, #e3ece1); color: var(--dh-fg-primary); }
-    .preview-stage { min-height: 100vh; display: grid; place-items: center; padding: 28px 18px; }
-    .library-shell { position: relative; }
-    .status-icons { display: flex; align-items: center; gap: 5px; height: 17px; line-height: 17px; transform: translateY(-6px); }
-    .status-icons > span { display: block; height: 17px; line-height: 17px; font-size: 12px; font-weight: var(--dh-font-weight-bold); }
-    .status-time { display: block; height: 18px; line-height: 18px; font-size: 15px; font-weight: var(--dh-font-weight-bold); letter-spacing: -.02em; transform: translateY(-3px); }
-    .bars { display: flex; gap: 2px; align-items: end; height: 13px; }.bars i { width: 3px; border-radius: 2px; background: currentColor; }.bars i:nth-child(1){height:6px}.bars i:nth-child(2){height:9px}.bars i:nth-child(3){height:12px}
-    .bat { width: 23px; height: 12px; border: 1.5px solid currentColor; border-radius: 3px; position: relative; }.bat::before { content:""; position:absolute; inset:2px; width:13px; border-radius:1px; background:currentColor; }.bat::after { content:""; position:absolute; right:-4px; top:3px; width:2px; height:4px; border-radius:2px; background:currentColor; }
-    .library-app { box-sizing:border-box; height: calc(100% - 50px); padding: 0 16px; display:flex; flex-direction:column; overflow:hidden; }
-    .library-header { display:flex; align-items:center; justify-content:space-between; padding-top: 2px; }
-    .back-button, .tool-button { width: 38px; height: 38px; display:grid; place-items:center; border:0; border-radius:50%; background: rgba(255,255,255,.76); color:var(--dh-fg-primary); box-shadow:var(--dh-shadow-soft); font-family:inherit; text-decoration:none; font-size:20px; cursor:pointer; }
-    .library-title { margin:0; font-size:15px; letter-spacing:var(--dh-tracking-title); line-height:1; font-weight:var(--dh-font-weight-heavy); }
-    .library-title small { display:block; margin-top:4px; font-size:10px; letter-spacing:0; color:var(--dh-fg-muted); font-weight:var(--dh-font-weight-bold); }
-    .tool-row { display:flex; gap:8px; }
-    .tool-button { font-size:16px; }
-    .search-bar { height:42px; padding:0 13px; border-radius:var(--dh-radius-lg); background:rgba(255,255,255,.72); border:var(--dh-card-border); box-shadow:var(--dh-shadow-soft); display:flex; align-items:center; gap:8px; color:var(--dh-fg-muted); font-size:12px; font-weight:var(--dh-font-weight-semibold); }
-    .search-bar button { margin-left:auto; border:0; background:transparent; color:var(--dh-color-sage-600); font-size:17px; cursor:pointer; }
-    .library-content { flex: 1; min-height: 0; display:flex; flex-direction:column; gap:22px; overflow-y:auto; overscroll-behavior:contain; padding:15px 0 var(--dh-tabbar-safe-space); scrollbar-width:none; }
-    .library-content::-webkit-scrollbar { display:none; }
-    .library-module { padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
-    .library-module--recent { padding-bottom:0; }
-    .library-module--room { padding-bottom:0; }
-    .library-module--category { padding-bottom:0; }
-    .section-head { display:flex; justify-content:space-between; align-items:center; margin:0 0 9px; }.section-head h2 { margin:0; font-size:15px; letter-spacing:var(--dh-tracking-title); }.section-head button { border:0; background:transparent; color:var(--dh-color-sage-600); font:inherit; font-size:11px; font-weight:var(--dh-font-weight-bold); }
-    .recent-scroll { display:flex; gap:10px; overflow-x:auto; padding:1px 1px 5px; scrollbar-width:none; }.recent-scroll::-webkit-scrollbar { display:none; }
-    .asset-card { min-width:112px; border:0; padding:0; text-align:left; background:transparent; color:inherit; cursor:pointer; }.asset-image { position:relative; height:102px; border-radius:22px; overflow:hidden; box-shadow:var(--dh-shadow-card); background:#e7eee5; }.asset-image::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,transparent 45%,rgba(29,36,31,.1)); }
-    .asset-image .shape { position:absolute; }.chair { width:53px; height:50px; left:28px; bottom:15px; background:#c78f6a; border-radius:25px 25px 12px 12px; box-shadow:inset 0 12px rgba(255,255,255,.18); }.chair::before { content:""; position:absolute; width:34px; height:38px; left:10px; top:-29px; background:#e3b397; border-radius:18px 18px 6px 6px; }.lamp { width:7px; height:54px; left:50px; bottom:13px; background:#6d756d; border-radius:5px; }.lamp::before { content:""; position:absolute; width:37px; height:23px; left:-15px; top:-15px; background:#efd788; border-radius:50% 50% 8px 8px; }.shelf { width:65px; height:68px; left:25px; bottom:14px; background:repeating-linear-gradient(180deg,#a47b5d 0 6px,transparent 6px 22px); border-left:5px solid #a47b5d; border-right:5px solid #a47b5d; }.plant { width:35px; height:45px; left:39px; bottom:13px; border-radius:48% 52% 45% 55%; background:#9ab58e; }.plant::before,.plant::after { content:""; position:absolute; width:25px; height:42px; border-radius:50% 10% 50% 10%; background:#75966f; }.plant::before{left:-13px;top:-10px;transform:rotate(-28deg)}.plant::after{right:-12px;top:-14px;transform:rotate(32deg)}
-    .asset-card b { display:block; margin:8px 2px 0; font-size:12px; letter-spacing:var(--dh-tracking-body); }.asset-card span { display:block; margin:2px 2px 0; font-size:10px; color:var(--dh-fg-muted); }
-    .room-grid { display:grid; grid-template-columns:1.22fr .78fr; grid-template-rows:58px 47px 38px 44px; gap:8px; }.room-card { position:relative; min-height:0; height:auto; padding:11px; overflow:hidden; border:0; border-radius:var(--dh-radius-xl); text-align:left; color:var(--dh-fg-primary); cursor:pointer; box-shadow:var(--dh-shadow-card); }.room-card b { position:relative; z-index:1; font-size:14px; letter-spacing:var(--dh-tracking-body); }.room-card span { position:relative; z-index:1; display:block; margin-top:3px; color:var(--dh-fg-secondary); font-size:10px; font-weight:var(--dh-font-weight-semibold); }.room-card.living { grid-row:span 2; background:linear-gradient(145deg,#d8e7d2,#fff7eb); }.room-card.bedroom { background:linear-gradient(145deg,#f2d9d4,#fbf9ec); }.room-card.kitchen { background:linear-gradient(145deg,#e8e4d5,#f9f5e9); }.room-card.dining { background:linear-gradient(145deg,#f5e1c8,#fbf7ed); }.room-card.kids { background:linear-gradient(145deg,#dce7ef,#f6f9ed); }.room-card.study { background:linear-gradient(145deg,#e2ddd4,#f7f3eb); }.room-card.balcony { background:linear-gradient(145deg,#d9eee6,#f4fbf3); }.room-card.bath { background:linear-gradient(145deg,#dce9ef,#f6fafb); }.room-card.dining,.room-card.kids,.room-card.study,.room-card.balcony,.room-card.bath { padding:9px; }.room-card.dining b,.room-card.kids b,.room-card.study b,.room-card.balcony b,.room-card.bath b { font-size:12px; }.room-card.dining span,.room-card.kids span,.room-card.study span,.room-card.balcony span,.room-card.bath span { font-size:9px; }.room-card.study { grid-column:span 2; }.room-card.balcony,.room-card.bath { min-height:38px; }
-    .room-object { position:absolute; right:-4px; bottom:-11px; transform:rotate(-7deg); }.sofa { width:91px; height:38px; border-radius:21px 21px 12px 12px; background:#c38b79; }.sofa::before{content:"";position:absolute;width:42px;height:30px;left:24px;top:-22px;border-radius:15px 15px 5px 5px;background:#dfb3a4}.bed { width:92px; height:51px; border-radius:14px; background:#c7b5a5; }.bed::before {content:"";position:absolute;width:80px;height:21px;left:6px;top:6px;border-radius:10px;background:#fff7ed}.bed::after {content:"";position:absolute;width:40px;height:12px;left:13px;top:10px;border-radius:7px;background:#e2c2bc}.kitchen-mark { width:52px; height:27px; border-radius:4px 4px 10px 10px; background:#a9b68f; }.kitchen-mark::before{content:"";position:absolute;width:28px;height:17px;left:11px;top:-13px;border:4px solid #899673;border-bottom:0;border-radius:13px 13px 0 0}.dining-mark { width:45px; height:21px; border-radius:50%; background:#b8896d; }.dining-mark::before,.dining-mark::after{content:"";position:absolute;width:8px;height:27px;border-radius:5px;background:#ccb49a;top:3px}.dining-mark::before{left:3px}.dining-mark::after{right:3px}.kids-mark { width:31px; height:31px; border-radius:50%; background:#d1a65f; }.kids-mark::before{content:"";position:absolute;width:17px;height:12px;left:7px;top:-8px;border-radius:50% 50% 0 0;background:#c88970}
-    .category-row { display:grid; grid-template-columns:repeat(4,1fr); gap:13px 7px; }.category { border:0; padding:0; background:transparent; cursor:pointer; color:var(--dh-fg-primary); }.category-icon { width:46px; height:46px; margin:0 auto 5px; border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,.8); box-shadow:var(--dh-shadow-soft); font-size:20px; }.category span { display:block; font-size:10px; font-weight:var(--dh-font-weight-semibold); }
-    .library-tabbar { margin-top:auto; }.library-tabbar .dh-tab { border:0; background:transparent; padding:0; cursor:pointer; font:inherit; }.library-tabbar .dh-tab:nth-child(2) { opacity:1; }.library-tabbar .dh-tab:nth-child(2) .dh-tab-icon { background:var(--dh-tab-active-bg); color:var(--dh-tab-active-fg); }.library-tabbar .dh-tab:first-child { opacity:.55; }.library-tabbar .dh-tab:first-child .dh-tab-icon { background:transparent; color:var(--dh-fg-secondary); }
-    .toast { position:absolute; z-index:30; left:50%; bottom:70px; transform:translateX(-50%) translateY(10px); opacity:0; padding:9px 12px; width:max-content; max-width:250px; border-radius:var(--dh-radius-pill); background:rgba(29,36,31,.9); color:white; font-size:11px; font-weight:var(--dh-font-weight-semibold); box-shadow:var(--dh-shadow-soft); pointer-events:none; transition:.2s ease; }.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    body { margin:0; min-height:100vh; background:linear-gradient(90deg,#e7eee5,#f6faf4 48%,#e3ece1); color:var(--dh-fg-primary); font-family:var(--dh-font-sans); }
+    .preview-stage { min-height:100vh; display:grid; place-items:center; padding:28px 18px; box-sizing:border-box; }
+    .library-shell { position:relative; }.library-app { height:calc(100% - 50px); padding:0 16px; display:flex; flex-direction:column; box-sizing:border-box; overflow:hidden; }
+    .status-icons { display:flex; align-items:center; gap:5px; height:17px; transform:translateY(-6px); }.status-time { font-size:15px; font-weight:var(--dh-font-weight-bold); transform:translateY(-3px); }.bars { display:flex; gap:2px; align-items:end; height:13px; }.bars i { width:3px; border-radius:2px; background:currentColor; }.bars i:nth-child(1){height:6px}.bars i:nth-child(2){height:9px}.bars i:nth-child(3){height:12px}.bat { width:23px;height:12px;border:1.5px solid currentColor;border-radius:3px;position:relative; }.bat::before{content:"";position:absolute;inset:2px;width:13px;background:currentColor;border-radius:1px}.bat::after{content:"";position:absolute;right:-4px;top:3px;width:2px;height:4px;background:currentColor;border-radius:2px}
+    .library-header { display:grid; place-items:center; min-height:42px; padding-top:3px; }.library-title{margin:0;font-size:16px;letter-spacing:0;font-weight:var(--dh-font-weight-heavy)}
+    .library-content { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; padding:14px 0 var(--dh-tabbar-safe-space); scrollbar-width:none; }.library-content::-webkit-scrollbar{display:none}.catalog-view[hidden],.library-home[hidden]{display:none!important}
+    .catalog-section { margin-bottom:16px; padding:11px 10px 12px; border:1px solid rgba(117,139,113,.18); border-radius:14px; background:rgba(255,255,255,.9); box-shadow:0 5px 14px rgba(69,89,67,.07); }.section-head { display:flex; align-items:center; justify-content:space-between; min-height:27px; margin-bottom:8px; }.section-tag { width:max-content; padding:5px 7px; border-radius:7px; background:var(--dh-color-sage-100); color:var(--dh-color-sage-800); font-size:11px; font-weight:var(--dh-font-weight-heavy); letter-spacing:0; }.all-button,.catalog-back { border:0; padding:4px 0; background:transparent; color:var(--dh-color-sage-700); font:inherit; font-size:11px; font-weight:var(--dh-font-weight-heavy); cursor:pointer; }
+    .component-rail { display:flex; flex-wrap:nowrap; gap:9px; overflow-x:auto; overscroll-behavior-x:contain; margin:0 -2px; padding:3px 3px 7px; scrollbar-width:none; }.component-rail::-webkit-scrollbar{display:none}.component-card,.furniture-card { position:relative; }.component-card { flex:0 0 79px; min-width:0; border:0; padding:0; background:transparent; color:inherit; text-align:left; cursor:pointer; }.component-card--floorplan b{font-size:9px}.component-visual { position:relative; height:72px; overflow:hidden; border:var(--dh-card-border); border-radius:8px; background:#edf2eb; box-shadow:var(--dh-shadow-soft); }.component-card b{display:block;overflow:hidden;margin:6px 1px 0;font-size:10px;letter-spacing:0;text-overflow:ellipsis;white-space:nowrap}.favorite-control{position:absolute;z-index:3;right:4px;top:4px;width:21px;height:21px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.87);color:var(--dh-color-sage-600);font-size:12px;line-height:1;cursor:pointer;box-shadow:0 2px 5px rgba(44,59,45,.13)}.favorite-control[aria-pressed="true"]{color:#be6959;background:#fff4ef}
+    .visual--floorplan{background:linear-gradient(135deg,#e3ecdf,#fbfaf2)}.visual--floorplan::before,.visual--floorplan::after{content:"";position:absolute;border:2px solid rgba(85,108,83,.52)}.visual--floorplan::before{inset:12px 14px}.visual--floorplan::after{left:37px;top:12px;bottom:12px;border-width:0 0 0 2px}.visual--floor{background:linear-gradient(130deg,var(--swatch),var(--accent))}.visual--floor.pattern-grain{background:repeating-linear-gradient(12deg,var(--swatch) 0 10px,var(--accent) 11px 12px)}.visual--floor.pattern-speckle{background:radial-gradient(circle at 20% 30%,var(--accent) 0 2px,transparent 2.5px),radial-gradient(circle at 75% 70%,var(--accent) 0 1.5px,transparent 2px),var(--swatch);background-size:18px 17px}.visual--floor.pattern-parquet{background:repeating-linear-gradient(45deg,var(--swatch) 0 9px,var(--accent) 10px 11px)}.visual--floor.pattern-stone{background:linear-gradient(120deg,var(--swatch) 46%,var(--accent) 47% 49%,var(--swatch) 50%)}.visual--wallpaper{background:var(--swatch)}.visual--wallpaper.pattern-linen{background:repeating-linear-gradient(90deg,var(--swatch) 0 4px,var(--accent) 5px 6px)}.visual--wallpaper.pattern-leaf{background:radial-gradient(ellipse at 25% 30%,var(--accent) 0 7px,transparent 8px),radial-gradient(ellipse at 70% 60%,var(--accent) 0 8px,transparent 9px),var(--swatch)}.visual--wallpaper.pattern-grid{background:linear-gradient(var(--accent) 1px,transparent 1px),linear-gradient(90deg,var(--accent) 1px,transparent 1px),var(--swatch);background-size:11px 11px}.visual--wallpaper.pattern-woven{background:repeating-linear-gradient(45deg,var(--swatch) 0 4px,var(--accent) 5px 6px)}
+    .furniture-tabs { display:flex; gap:6px; overflow-x:auto; margin:0 -2px; padding:1px 3px 9px; scrollbar-width:none; }.furniture-tabs::-webkit-scrollbar{display:none}.furniture-tab{flex:0 0 auto;border:1px solid rgba(110,132,107,.2);border-radius:999px;padding:5px 9px;background:rgba(255,255,255,.62);color:var(--dh-fg-secondary);font:inherit;font-size:10px;font-weight:var(--dh-font-weight-bold);cursor:pointer}.furniture-tab[aria-selected="true"]{border-color:var(--dh-color-sage-600);background:var(--dh-color-sage-600);color:white}
+    .furniture-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px 7px; }.furniture-card{min-width:0;border:0;padding:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.furniture-card .component-visual{height:62px}.furniture-card b{display:block;margin:5px 1px 0;overflow:hidden;font-size:9px;font-weight:var(--dh-font-weight-bold);text-overflow:ellipsis;white-space:nowrap}.visual--furniture{background:linear-gradient(145deg,#edf2e9,#fffaf2)}.object{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);background:var(--object);box-shadow:inset 0 8px rgba(255,255,255,.18)}.object--sofa{width:47px;height:22px;border-radius:12px 12px 5px 5px}.object--sofa::before{content:"";position:absolute;left:9px;top:-12px;width:29px;height:16px;border-radius:9px 9px 3px 3px;background:var(--accent)}.object--chair{width:25px;height:23px;border-radius:7px 7px 4px 4px}.object--chair::before{content:"";position:absolute;left:4px;top:-14px;width:17px;height:18px;border-radius:7px 7px 2px 2px;background:var(--accent)}.object--table{width:42px;height:15px;border-radius:50%;bottom:18px}.object--table::before{content:"";position:absolute;left:19px;top:12px;width:4px;height:20px;background:var(--accent)}.object--lamp{width:4px;height:36px;border-radius:2px;bottom:9px}.object--lamp::before{content:"";position:absolute;left:-10px;top:-10px;width:24px;height:13px;border-radius:50% 50% 3px 3px;background:var(--accent)}.object--bed{width:46px;height:25px;border-radius:5px}.object--bed::before{content:"";position:absolute;left:5px;top:4px;width:35px;height:10px;border-radius:4px;background:var(--accent)}.object--cabinet{width:39px;height:29px;border-radius:3px}.object--plant{width:22px;height:23px;border-radius:45% 55% 38% 62%;background:var(--accent)}.object--plant::before{content:"";position:absolute;left:-7px;top:-8px;width:15px;height:22px;border-radius:50% 0 50% 0;background:var(--object)}.all-card{display:grid;place-items:center;border:1px dashed rgba(96,119,94,.55)!important;border-radius:8px!important;background:rgba(224,235,220,.52)!important;color:var(--dh-color-sage-800)!important;font-size:10px;font-weight:var(--dh-font-weight-heavy);text-align:center}.all-card span{max-width:46px}
+    .catalog-toolbar{display:flex;align-items:center;gap:10px;margin:0 0 13px}.catalog-toolbar h2{margin:0;font-size:15px}.catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px}.catalog-grid .component-card{min-width:0}.catalog-grid .component-visual{height:86px}.empty-state{padding:24px 10px;text-align:center;color:var(--dh-fg-secondary);font-size:12px}.toast{position:absolute;z-index:40;left:50%;bottom:78px;transform:translateX(-50%) translateY(8px);opacity:0;padding:9px 12px;border-radius:999px;background:rgba(29,36,31,.9);color:white;font-size:11px;font-weight:var(--dh-font-weight-semibold);pointer-events:none;transition:.2s ease}.toast.show{opacity:1;transform:translateX(-50%)}
+    @media(max-width:420px){.preview-stage{min-height:100svh;padding:18px 10px}.library-app{padding:0 14px}.furniture-grid{gap:8px 6px}}
   </style>
 </head>
 <body>
   <main class="preview-stage">
-    <section class="dh-phone-shell library-shell" aria-label="DreamHome 灵感库">
+    <section class="dh-phone-shell library-shell" aria-label="DreamHome 平台灵感库">
       <div class="dh-screen dh-root">
         <div class="dh-island" aria-hidden="true"></div>
         <div class="dh-statusbar"><span class="status-time">9:41</span><div class="status-icons" aria-hidden="true"><div class="bars"><i></i><i></i><i></i></div><span>5G</span><div class="bat"></div></div></div>
         <div class="library-app">
-          <header class="library-header">
-            <a class="back-button" href="../main-interface-v1/index.html" aria-label="返回主界面">‹</a>
-            <div><h1 class="library-title">灵感库</h1></div>
-            <div class="tool-row"><button class="tool-button" data-toast="打开筛选" aria-label="搜索灵感">⌕</button></div>
-          </header>
+          <header class="library-header"><h1 class="library-title">灵感库</h1></header>
           <main class="library-content">
-            <section class="library-module library-module--recent" aria-label="最近收集">
-              <div class="section-head"><h2>最近收集</h2><button data-toast="查看全部收藏">查看全部</button></div>
-              <div class="recent-scroll" aria-label="最近收集的家居组件">
-                <button class="asset-card" data-toast="胡桃木单椅"><div class="asset-image"><span class="shape chair"></span></div><b>胡桃木单椅</b><span>来自：拍一张</span></button>
-                <button class="asset-card" data-toast="落地阅读灯"><div class="asset-image" style="background:#e7ece4"><span class="shape lamp"></span></div><b>落地阅读灯</b><span>来自：刷一刷</span></button>
-                <button class="asset-card" data-toast="原木收纳架"><div class="asset-image" style="background:#f1e7d8"><span class="shape shelf"></span></div><b>原木收纳架</b><span>来自：画一笔</span></button>
-                <button class="asset-card" data-toast="龟背竹绿植"><div class="asset-image" style="background:#e4efe0"><span class="shape plant"></span></div><b>龟背竹绿植</b><span>来自：拍一张</span></button>
-              </div>
-            </section>
-            <section class="library-module library-module--room" aria-label="按空间收纳">
-              <div class="section-head"><h2>按空间收纳</h2><button data-toast="管理空间分类">管理</button></div>
-              <div class="room-grid" aria-label="空间分类">
-                <button class="room-card living" data-toast="进入客厅灵感"><b>客厅</b><span>18 件心动家居</span><i class="room-object sofa"></i></button>
-                <button class="room-card bedroom" data-toast="进入卧室灵感"><b>卧室</b><span>12 件心动家居</span><i class="room-object bed"></i></button>
-                <button class="room-card kitchen" data-toast="进入厨房灵感"><b>厨房</b><span>8 件心动家居</span><i class="room-object kitchen-mark"></i></button>
-                <button class="room-card dining" data-toast="进入餐厅灵感"><b>餐厅</b><span>6 件</span><i class="room-object dining-mark"></i></button>
-                <button class="room-card kids" data-toast="进入儿童房灵感"><b>儿童房</b><span>4 件</span><i class="room-object kids-mark"></i></button>
-                <button class="room-card study" data-toast="进入书房灵感"><b>书房</b><span>9 件心动家居</span><i class="room-object shelf"></i></button>
-                <button class="room-card balcony" data-toast="进入阳台灵感"><b>阳台</b><span>5 件</span><i class="room-object plant"></i></button>
-                <button class="room-card bath" data-toast="进入卫浴灵感"><b>卫浴</b><span>3 件</span><i class="room-object kitchen-mark"></i></button>
-              </div>
-            </section>
-            <section class="library-module library-module--category" aria-label="按品类归纳">
-              <div class="section-head"><h2>按品类归纳</h2></div>
-              <div class="category-row" aria-label="家居品类">
-                <button class="category" data-toast="查看座椅"><i class="category-icon">🪑</i><span>座椅</span></button>
-                <button class="category" data-toast="查看灯具"><i class="category-icon">💡</i><span>灯具</span></button>
-                <button class="category" data-toast="查看收纳"><i class="category-icon">🗄️</i><span>收纳</span></button>
-                <button class="category" data-toast="查看装饰"><i class="category-icon">🪴</i><span>装饰</span></button>
-                <button class="category" data-toast="查看沙发"><i class="category-icon">🛋️</i><span>沙发</span></button>
-                <button class="category" data-toast="查看桌几"><i class="category-icon">🪵</i><span>桌几</span></button>
-                <button class="category" data-toast="查看床具"><i class="category-icon">🛏️</i><span>床具</span></button>
-                <button class="category" data-toast="查看柜体"><i class="category-icon">🚪</i><span>柜体</span></button>
-                <button class="category" data-toast="查看挂画"><i class="category-icon">🖼️</i><span>挂画</span></button>
-                <button class="category" data-toast="查看床品"><i class="category-icon">🧺</i><span>床品</span></button>
-                <button class="category" data-toast="查看厨具"><i class="category-icon">🍳</i><span>厨具</span></button>
-                <button class="category" data-toast="查看卫浴"><i class="category-icon">🫧</i><span>卫浴</span></button>
-              </div>
-            </section>
+            <div class="library-home" id="libraryHome"></div>
+            <section class="catalog-view" id="catalogView" hidden aria-live="polite"></section>
           </main>
         </div>
-        <nav class="dh-tabbar library-tabbar" aria-label="底部导航"><a class="dh-tab" href="../main-interface-v1/index.html" aria-label="首页"><i class="dh-tab-icon">⌂</i></a><button class="dh-tab" aria-label="灵感库"><i class="dh-tab-icon">◇</i></button><a class="dh-tab" href="../my-home/index.html" aria-label="我的家"><i class="dh-tab-icon">▣</i></a></nav>
-        <div class="toast" id="toast"></div><div class="dh-home-indicator" aria-hidden="true"></div>
+        <nav class="dh-tabbar dh-tabbar--five" aria-label="主功能导航"><a class="dh-tab" href="../draw/index.html" aria-label="画一笔"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/draw.svg" alt="" /></span></a><a class="dh-tab" href="../capture/index.html" aria-label="拍一张"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/capture.svg" alt="" /></span></a><a class="dh-tab dh-tab--core dh-tab--active" href="./index.html" aria-label="灵感库" aria-current="page"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/inspiration.svg" alt="" /></span></a><a class="dh-tab" href="../discover/index.html" aria-label="刷一刷"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/discover.svg" alt="" /></span></a><a class="dh-tab" href="../my-home/index.html" aria-label="我的家"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/my-home.svg" alt="" /></span></a></nav>
+        <div class="toast" id="toast" role="status" aria-live="polite"></div><div class="dh-home-indicator" aria-hidden="true"></div>
       </div>
     </section>
   </main>
-  <script>
-    const toast = document.querySelector('#toast'); let timer;
-    document.querySelectorAll('[data-toast]').forEach((item) => item.addEventListener('click', () => { toast.textContent = item.dataset.toast; toast.classList.add('show'); clearTimeout(timer); timer = setTimeout(() => toast.classList.remove('show'), 1500); }));
+  <script type="module">
+    import { COMPONENT_FAMILIES, FURNITURE_CATEGORIES, getAssets, getFavorites, toggleFavorite } from '../shared/asset-library-data.js';
+
+    const home = document.querySelector('#libraryHome');
+    const catalog = document.querySelector('#catalogView');
+    const toast = document.querySelector('#toast');
+    let activeFurnitureCategory = 'table';
+    let pressTimer = null;
+    let pressedId = null;
+    let toastTimer = null;
+
+    const labelByKind = Object.fromEntries(COMPONENT_FAMILIES.map((family) => [family.id, family.label]));
+    const showToast = (message) => { toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1500); };
+    const favoriteButton = (asset) => `<button class="favorite-control" data-favorite="${asset.id}" aria-label="收藏 ${asset.name}" aria-pressed="${getFavorites().has(asset.id)}">${getFavorites().has(asset.id) ? '♥' : '♡'}</button>`;
+    const visual = (asset) => {
+      if (asset.kind === 'floorplan') return `<div class="component-visual visual--floorplan"></div>`;
+      if (asset.kind === 'floor' || asset.kind === 'wallpaper') return `<div class="component-visual visual--${asset.kind} pattern-${asset.finish.pattern}" style="--swatch:${asset.finish.color};--accent:${asset.finish.accent}"></div>`;
+      const type = asset.primitive || 'cabinet';
+      return `<div class="component-visual visual--furniture" style="--object:${asset.color};--accent:${asset.accent}"><span class="object object--${type}"></span></div>`;
+    };
+    const card = (asset, className = 'component-card') => `<article class="${className}" data-asset="${asset.id}" tabindex="0">${favoriteButton(asset)}${visual(asset)}<b>${asset.name}</b></article>`;
+    const openCatalog = (kind, category = '') => { location.hash = `catalog=${kind}${category ? `:${category}` : ''}`; };
+    const renderHome = () => {
+      const previousTabs = home.querySelector('.furniture-tabs');
+      const previousTabScrollLeft = previousTabs?.scrollLeft || 0;
+      const rails = ['floorplan', 'floor', 'wallpaper'].map((kind) => {
+        const assets = getAssets(kind).slice(0, 5);
+        const cardClass = kind === 'floorplan' ? 'component-card component-card--floorplan' : 'component-card';
+        return `<section class="catalog-section"><div class="section-head"><span class="section-tag">${labelByKind[kind]}</span><button class="all-button" data-all="${kind}">全部</button></div><div class="component-rail">${assets.map((asset) => card(asset, cardClass)).join('')}</div></section>`;
+      }).join('');
+      const furniture = getAssets('furniture', activeFurnitureCategory).slice(0, 11);
+      const tabs = FURNITURE_CATEGORIES.map((category) => `<button class="furniture-tab" data-category="${category.id}" role="tab" aria-selected="${category.id === activeFurnitureCategory}">${category.label}</button>`).join('');
+      home.innerHTML = `${rails}<section class="catalog-section"><div class="section-head"><span class="section-tag">家具类</span></div><div class="furniture-tabs" role="tablist" aria-label="家具子类">${tabs}</div><div class="furniture-grid">${furniture.map((asset) => card(asset, 'furniture-card')).join('')}<button class="furniture-card all-card" data-all="furniture:${activeFurnitureCategory}" aria-label="查看全部${FURNITURE_CATEGORIES.find((item) => item.id === activeFurnitureCategory).label}"><span>查看全部</span></button></div></section>`;
+      const nextTabs = home.querySelector('.furniture-tabs');
+      const selectedTab = nextTabs?.querySelector('[aria-selected="true"]');
+      if (!nextTabs || !selectedTab) return;
+      nextTabs.scrollLeft = previousTabScrollLeft;
+      const railRect = nextTabs.getBoundingClientRect();
+      const tabRect = selectedTab.getBoundingClientRect();
+      if (tabRect.left < railRect.left) nextTabs.scrollLeft += tabRect.left - railRect.left;
+      if (tabRect.right > railRect.right) nextTabs.scrollLeft += tabRect.right - railRect.right;
+    };
+    const renderCatalog = (kind, category, favoriteOnly = false) => {
+      let assets = getAssets(kind, category);
+      if (favoriteOnly) assets = assets.filter((asset) => getFavorites().has(asset.id));
+      const title = favoriteOnly ? '已收藏' : `${labelByKind[kind]}${category ? ` · ${FURNITURE_CATEGORIES.find((item) => item.id === category)?.label || ''}` : ''}`;
+      home.hidden = true; catalog.hidden = false;
+      catalog.innerHTML = `<div class="catalog-toolbar"><button class="catalog-back" id="catalogBack">‹ 返回</button><h2>${title}</h2></div>${assets.length ? `<div class="catalog-grid">${assets.map(card).join('')}</div>` : '<p class="empty-state">还没有收藏组件。长按卡片或点击心形即可收藏。</p>'}`;
+    };
+    const route = () => {
+      const matched = location.hash.match(/^#catalog=([^:]+)(?::(.+))?$/);
+      if (!matched && location.hash !== '#favorites') { home.hidden = false; catalog.hidden = true; renderHome(); return; }
+      if (location.hash === '#favorites') { const favorites = getFavorites(); const first = [...favorites][0]; if (!first) { renderCatalog('furniture', '', true); return; } const asset = getAssets().find((item) => item.id === first); renderCatalog(asset.kind, '', true); return; }
+      renderCatalog(matched[1], matched[2] || '');
+    };
+    const toggle = (id) => { const before = getFavorites().has(id); toggleFavorite(id); showToast(before ? '已取消收藏' : '已收藏，可在我的家调用'); route(); };
+    document.addEventListener('click', (event) => { const favorite = event.target.closest('[data-favorite]'); if (favorite) { event.stopPropagation(); toggle(favorite.dataset.favorite); return; } const all = event.target.closest('[data-all]'); if (all) { const [kind, category] = all.dataset.all.split(':'); openCatalog(kind, category); return; } const tab = event.target.closest('[data-category]'); if (tab) { activeFurnitureCategory = tab.dataset.category; renderHome(); return; } if (event.target.closest('#catalogBack')) { history.back(); return; } const asset = event.target.closest('[data-asset]'); if (asset) showToast('长按可收藏组件'); });
+    document.addEventListener('pointerdown', (event) => { const asset = event.target.closest('[data-asset]'); if (!asset || event.target.closest('[data-favorite]')) return; pressedId = asset.dataset.asset; pressTimer = setTimeout(() => { if (pressedId) { toggle(pressedId); pressedId = null; } }, 600); });
+    ['pointerup', 'pointercancel', 'pointermove', 'pointerleave'].forEach((type) => document.addEventListener(type, () => { clearTimeout(pressTimer); pressedId = null; }));
+    window.addEventListener('hashchange', route);
+    route();
   </script>
 </body>
 </html>

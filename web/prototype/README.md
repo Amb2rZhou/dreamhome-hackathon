@@ -2,8 +2,7 @@
 
 静态交互原型，默认入口：
 
-- [主界面](./pages/main-interface-v1/index.html)
-- [灵感库](./pages/inspiration-library/index.html)
+- [灵感库（产品入口）](./pages/inspiration-library/index.html)
 - [我的家](./pages/my-home/index.html)
 
 GitHub Pages 发布地址：`https://amb2rzhou.github.io/dreamhome-hackathon/prototype/`
@@ -20,9 +19,9 @@ python3 -m http.server 5178 --directory web
 
 ## 目录约定
 
-- `pages/main-interface-v1/`：主界面与共享 D 组设计系统。
+- `pages/inspiration-library/`：平台级组件目录与用户收藏。
+- `pages/shared/`：共享导航、平台组件目录和收藏状态工具。
 - `pages/draw/`、`pages/capture/`、`pages/discover/`：三个生成入口原型。
-- `pages/inspiration-library/`：生成资产灵感库。
 - `pages/my-home/`：3D 场景、资产摆放和 `HomePlacement` mock 交互。
 
 各页面目前均为静态原型；页面间应使用相对链接，不能使用 `/pages/...` 这类根路径，以支持 GitHub Pages 的 `/dreamhome-hackathon/` 发布前缀。
