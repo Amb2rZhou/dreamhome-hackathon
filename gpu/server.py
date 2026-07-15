@@ -33,14 +33,17 @@ from pydantic import BaseModel
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-# 家具开集词表:英文给 DINO,映射回中文品类(与 backend 标签体系一致)
+# 家具开集词表:英文给 DINO,映射回中文品类(与 backend 标签体系一致)。
+# Grounding DINO 的 prompt 词数过多会互相稀释(18 词时 potted plant 直接检不出),
+# 所以拆成 ≤5 词的组,推理时同图多 prompt 一个 batch 跑。
 VOCAB = {
     "sofa": "沙发", "armchair": "单椅", "chair": "单椅", "stool": "单椅",
-    "bed": "床", "cabinet": "柜子", "wardrobe": "柜子", "shelf": "柜子",
-    "table": "桌子", "desk": "桌子", "lamp": "灯具", "chandelier": "灯具",
-    "rug": "地毯", "carpet": "地毯", "potted plant": "绿植",
+    "bed": "床", "cabinet": "柜子", "shelf": "柜子", "table": "桌子",
+    "desk": "桌子", "lamp": "灯具", "rug": "地毯", "potted plant": "绿植",
     "curtain": "窗帘", "mirror": "装饰", "painting": "装饰",
 }
+_KEYS = list(VOCAB)
+VOCAB_CHUNKS = [_KEYS[i:i + 5] for i in range(0, len(_KEYS), 5)]
 DETECT_THRESHOLD = 0.35
 
 app = FastAPI(title="DreamHome GPU inference")
@@ -50,11 +53,17 @@ _clip = None
 
 
 def get_detector():
+    """直接用 processor+model:HF pipeline 会对每个候选词单独跑前向(18 词 = 18 次推理,
+    base 5s / tiny 4s);拼成单条 prompt 一次前向即可全检出。
+    效果不够再 DETECT_MODEL=IDEA-Research/grounding-dino-base。"""
     global _detector
     if _detector is None:
-        from transformers import pipeline
-        _detector = pipeline("zero-shot-object-detection",
-                             model="IDEA-Research/grounding-dino-base", device=DEVICE)
+        import os
+        from transformers import AutoModelForZeroShotObjectDetection, AutoProcessor
+        name = os.environ.get("DETECT_MODEL", "IDEA-Research/grounding-dino-tiny")
+        processor = AutoProcessor.from_pretrained(name)
+        model = AutoModelForZeroShotObjectDetection.from_pretrained(name).to(DEVICE).eval()
+        _detector = (processor, model)
     return _detector
 
 
@@ -84,22 +93,50 @@ def health():
     return {"status": "ok", "device": DEVICE}
 
 
+def _iou(a, b):
+    ix = max(0.0, min(a[0] + a[2], b[0] + b[2]) - max(a[0], b[0]))
+    iy = max(0.0, min(a[1] + a[3], b[1] + b[3]) - max(a[1], b[1]))
+    inter = ix * iy
+    union = a[2] * a[3] + b[2] * b[3] - inter
+    return inter / union if union > 0 else 0.0
+
+
 @app.post("/detect")
 def detect(req: DetectIn):
     """返回与 backend services/detect.py 相同的结构:归一化 bbox + 中文品类。"""
     img = _decode(req.frame_data_uri)
+    img.thumbnail((800, 800))  # 检测不需要原图分辨率,缩到 800px 提速数倍
     W, H = img.size
-    results = get_detector()(img, candidate_labels=list(VOCAB.keys()),
-                             threshold=DETECT_THRESHOLD)
+    processor, model = get_detector()
+    # 同一张图 × 每组词一条 prompt,一个 batch 单次前向(prompt 约定:小写+句点)
+    texts = [" ".join(f"{k}." for k in chunk) for chunk in VOCAB_CHUNKS]
+    inputs = processor(images=[img] * len(texts), text=texts,
+                       return_tensors="pt", padding=True).to(DEVICE)
+    with torch.no_grad():
+        outputs = model(**inputs)
+    results = processor.post_process_grounded_object_detection(
+        outputs, inputs.input_ids, threshold=DETECT_THRESHOLD,
+        text_threshold=0.25, target_sizes=[(H, W)] * len(texts))
+    cands = []
+    for res in results:
+        phrases = res.get("text_labels") or res.get("labels")
+        for score, box, phrase in zip(res["scores"], res["boxes"], phrases):
+            x0, y0, x1, y1 = [float(v) for v in box]
+            # 命中的 phrase 可能是多词拼接,取词表里能对上的那个(长词优先,armchair≠chair)
+            cat = next((VOCAB[k] for k in sorted(VOCAB, key=len, reverse=True)
+                        if k in str(phrase)), "其他")
+            cands.append({
+                "bbox": [round(x0 / W, 3), round(y0 / H, 3),
+                         round((x1 - x0) / W, 3), round((y1 - y0) / H, 3)],
+                "category": cat,
+                "score": round(float(score), 3),
+            })
+    # 跨标签 NMS:同一区域会被多个词命中,只留分数最高的那个标签
+    cands.sort(key=lambda c: -c["score"])
     boxes = []
-    for r in results:
-        b = r["box"]
-        boxes.append({
-            "bbox": [round(b["xmin"] / W, 3), round(b["ymin"] / H, 3),
-                     round((b["xmax"] - b["xmin"]) / W, 3), round((b["ymax"] - b["ymin"]) / H, 3)],
-            "category": VOCAB.get(r["label"], "其他"),
-            "score": round(float(r["score"]), 3),
-        })
+    for c in cands:
+        if all(_iou(c["bbox"], k["bbox"]) < 0.6 for k in boxes):
+            boxes.append(c)
     return {"boxes": boxes}
 
 
