@@ -4,6 +4,16 @@
 > 交互式陪跑:新开终端 `cd ~/dreamhome-hackathon && claude`,说"按 docs/gpu-setup-guide.md 带我开通"。
 > 预期总耗时 40-60 分钟(不含实名审核),当天成本 ~15-30 元。
 
+## 国内环境硬约束(比赛在武汉、评委在境内,全链路必须国内直连)
+
+1. **GPU 机一定选国内地域**,上海/杭州 → 武汉延迟 ~20ms,相对 45-90s 的生成时间可忽略。
+2. **不绑域名、IP+端口直连**(9000/8000)→ 免 ICP 备案(备案要 1-2 周,来不及也没必要)。
+   小程序联调/演示用**开发版并勾选"不校验合法域名"**,不受备案限制。
+3. HuggingFace/Docker Hub/GitHub/raw.githubusercontent 在国内 ECS 上不可用或极慢:
+   权重走 hf-mirror(setup.sh 已内置)、Docker 镜像走加速器或本机中转、代码 clone 失败走 ghproxy。
+4. 打标签 API 主线用 **DashScope qwen-vl**(国内直连);Anthropic 只能在带代理的开发机上用。
+5. mock/种子数据的占位 GLB 已改为随仓库分发、从 backend `/samples` 本机出,无境外依赖。
+
 ## 第 1 步:账号与充值(10 min)
 
 1. https://www.aliyun.com 注册/登录,完成**个人实名认证**(支付宝扫脸,秒过)。
@@ -17,7 +27,7 @@
 | 配置项 | 选择 |
 |---|---|
 | 付费模式 | **按量付费** |
-| 地域 | 华东1(杭州)/ 华东2(上海)/ 华北2(北京)——哪个有 gn7i 库存且单价低选哪个 |
+| 地域 | **华东1(杭州)/ 华东2(上海)优先**(离武汉近,~20ms);无货再看华北2。GPU 机型一般没有武汉本地 region,不用纠结 |
 | 规格 | 筛选"异构计算 GPU" → **ecs.gn7i-c8g1.2xlarge**(A10 24G, 8核30G, ~12.71 元/时) |
 | ⚠️ 比价 | 同页搜 **gn8is**(L20 48G):若按量价 ≤ gn7i(社区见过 ~7.7 元/时),**直接选它**,更快更便宜 |
 | 镜像 | 公共镜像 **Ubuntu 22.04 64位**,✅ 勾选"**自动安装 GPU 驱动**"(选 CUDA 12.x 驱动组合) |
@@ -85,7 +95,9 @@ docker logs -f trellis    # 首跑下载 ~5GB 权重,等它 ready
 ```bash
 apt install -y python3-pip git
 git clone https://github.com/Amb2rZhou/dreamhome-hackathon.git /root/dreamhome
-cd /root/dreamhome/gpu && bash setup.sh     # 装检测/embedding 依赖并缓存权重
+# ECS 上 github 连不动时: git clone https://ghproxy.com/https://github.com/Amb2rZhou/dreamhome-hackathon.git
+# 或本机 scp -i 密钥.pem -r ~/dreamhome-hackathon/gpu root@<IP>:/root/dreamhome/
+cd /root/dreamhome/gpu && bash setup.sh     # 装依赖并缓存权重(已内置 hf-mirror)
 python3 server.py                            # 起 0.0.0.0:9000
 ```
 

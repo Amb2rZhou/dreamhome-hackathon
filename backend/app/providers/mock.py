@@ -7,12 +7,10 @@
 import time
 from typing import Dict
 from .base import Gen3DProvider, Gen3DResult
+from ..config import settings
 
-# Khronos 官方公开示例 GLB，稳定可访问，充当"生成结果"占位
-_SAMPLE_GLB = (
-    "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/"
-    "master/2.0/DamagedHelmet/glTF-Binary/DamagedHelmet.glb"
-)
+# 内置示例 GLB(backend/samples,随仓库分发)。不用境外 URL——评委/联调都在国内。
+_SAMPLE_GLB = f"{settings.PUBLIC_BASE_URL}/samples/Duck.glb"
 
 
 class MockProvider(Gen3DProvider):

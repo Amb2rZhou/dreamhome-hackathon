@@ -50,3 +50,8 @@ app.mount("/storage", StaticFiles(directory=_storage), name="storage")
 # 资产审核页(T7):浏览器开 /review
 _review = os.path.join(os.path.dirname(__file__), "..", "review")
 app.mount("/review", StaticFiles(directory=os.path.abspath(_review), html=True), name="review")
+
+# 内置占位 GLB(mock/种子数据用)。评委在国内,一切静态资源必须本机/国内源出,
+# 不能指向 raw.githubusercontent 等境外地址。
+_samples = os.path.join(os.path.dirname(__file__), "..", "samples")
+app.mount("/samples", StaticFiles(directory=os.path.abspath(_samples)), name="samples")

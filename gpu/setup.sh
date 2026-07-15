@@ -11,6 +11,10 @@ set -e
 
 PIP="pip install -i https://pypi.tuna.tsinghua.edu.cn/simple"
 
+# 国内机必须走 HF 镜像,否则权重下载卡死(比赛/评委都在境内,GPU 机选国内区)
+export HF_ENDPOINT=https://hf-mirror.com
+grep -q HF_ENDPOINT ~/.bashrc || echo 'export HF_ENDPOINT=https://hf-mirror.com' >> ~/.bashrc
+
 python -c "import torch" 2>/dev/null || $PIP torch --index-url https://download.pytorch.org/whl/cu121
 $PIP fastapi "uvicorn[standard]" pillow transformers accelerate timm
 

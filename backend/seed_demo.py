@@ -13,8 +13,8 @@ from app import db  # noqa: E402
 from app.config import settings  # noqa: E402
 
 GALLERY = os.path.join(os.path.dirname(__file__), "..", "web", "assets", "gallery")
-SAMPLE_GLB = ("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/"
-              "master/2.0/{name}/glTF-Binary/{name}.glb")
+# 占位 GLB 从本机 /samples 出(国内环境不能依赖境外静态源)
+SAMPLE_GLB = "{base}/samples/{name}.glb"
 
 # name, space, labels, 占位 GLB(Khronos 示例，真 GLB 由 pipeline 替换)
 ASSETS = [
@@ -29,7 +29,7 @@ ASSETS = [
      "chair.jpg", "SheenChair"),
     ("黑色金属多头吊灯", "客厅", {"category": "灯具", "sub": "吊灯", "colors": ["黑色"],
      "materials": ["金属"], "styles": ["工业风"], "features": ["多头"], "size_class": "中"},
-     "lamp.jpg", "Lantern"),
+     "lamp.jpg", "Duck"),
     ("原木色带抽屉边柜", "卧室", {"category": "柜子", "sub": "边柜", "colors": ["原木色"],
      "materials": ["实木"], "styles": ["北欧"], "features": ["带抽屉"], "size_class": "中"},
      "cabinet.jpg", "BoxTextured"),
@@ -68,7 +68,7 @@ def main() -> None:
             shutil.copy(src, os.path.join(thumb_dir, img))
         aid = db.insert_asset(
             name=name, space=space, labels=labels,
-            glb_url=SAMPLE_GLB.format(name=glb_name),
+            glb_url=SAMPLE_GLB.format(base=settings.PUBLIC_BASE_URL, name=glb_name),
             thumb_url=f"{settings.PUBLIC_BASE_URL}/storage/thumbs/{img}",
             source={}, status="ready", created_by="preset",
         )
