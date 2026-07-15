@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>DreamHome 资产审核</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+<style>
+  body { font-family: -apple-system, "PingFang SC", sans-serif; margin: 0; background: #f5f5f7; color: #1d1d1f; }
+  header { padding: 14px 20px; background: #fff; border-bottom: 1px solid #e5e5ea; display: flex; gap: 16px; align-items: baseline; }
+  h1 { font-size: 17px; margin: 0; } .muted { color: #86868b; font-size: 13px; }
+  main { padding: 16px 20px; max-width: 1200px; margin: 0 auto; }
+  h2 { font-size: 15px; margin: 20px 0 10px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .card { background: #fff; border-radius: 12px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .card img, .card model-viewer { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; background: #eee; }
+  .name { font-weight: 600; font-size: 14px; margin: 8px 0 2px; }
+  .tags { font-size: 12px; color: #515154; line-height: 1.6; min-height: 34px; }
+  .tag { background: #f0f0f2; border-radius: 4px; padding: 1px 6px; margin-right: 4px; display: inline-block; }
+  .status { font-size: 11px; padding: 1px 6px; border-radius: 4px; }
+  .ready { background: #d9f2e0; color: #1a7f37; } .generating { background: #fff3cd; color: #8a6d00; } .rejected { background: #fde2e2; color: #b42318; }
+  button { border: 0; border-radius: 7px; padding: 6px 10px; font-size: 13px; cursor: pointer; margin: 4px 4px 0 0; }
+  .ok { background: #1a7f37; color: #fff; } .no { background: #fde2e2; color: #b42318; } .plain { background: #f0f0f2; }
+  .pair { background: #fff; border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; gap: 12px; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .pair img { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; }
+</style>
+</head>
+<body>
+<header><h1>资产审核</h1><span class="muted" id="stats"></span></header>
+<main>
+  <h2>疑似重复(确认后合并:标签取并集,溯源保留)</h2>
+  <div id="dups" class="muted">加载中…</div>
+  <h2>全部资产</h2>
+  <div id="assets" class="grid"></div>
+</main>
+<script>
+const api = (p, opt) => fetch(p, opt).then(r => r.json());
+const tags = l => [l.sub, ...(l.colors||[]), ...(l.materials||[]), ...(l.styles||[]), ...(l.features||[]), l.size_class]
+  .filter(Boolean).map(t => `<span class="tag">${t}</span>`).join('');
+
+async function load() {
+  const assets = await api('/api/assets?include_all_status=true');
+  document.getElementById('stats').textContent =
+    `共 ${assets.length} · ready ${assets.filter(a=>a.status==='ready').length} · 生成中 ${assets.filter(a=>a.status==='generating').length}`;
+  document.getElementById('assets').innerHTML = assets.map(a => `
+    <div class="card">
+      ${a.glb_url ? `<model-viewer src="${a.glb_url}" camera-controls auto-rotate poster="${a.thumb_url}"></model-viewer>`
+                  : `<img src="${a.thumb_url}" onerror="this.style.opacity=.2">`}
+      <div class="name">${a.name} <span class="status ${a.status}">${a.status}</span></div>
+      <div class="tags">${a.labels.category} · ${tags(a.labels)}</div>
+      <div class="muted" style="font-size:11px">${a.source.video_id ? `来源 ${a.source.video_id} @ ${a.source.t_best}s` : '预置'}</div>
+      <button class="ok" onclick="patch('${a.asset_id}','ready')">通过</button>
+      <button class="no" onclick="patch('${a.asset_id}','rejected')">拒绝</button>
+    </div>`).join('');
+
+  const dups = await api('/api/assets/review/duplicates');
+  const byId = Object.fromEntries(assets.map(a => [a.asset_id, a]));
+  document.getElementById('dups').innerHTML = dups.length ? dups.map(d => `
+    <div class="pair">
+      <img src="${byId[d.a]?.thumb_url}"><img src="${byId[d.b]?.thumb_url}">
+      <div style="flex:1">
+        <b>${byId[d.a]?.name}</b> ↔ <b>${byId[d.b]?.name}</b>
+        <div class="muted">重合度 ${d.score} · 命中:${d.reason}</div>
+      </div>
+      <button class="plain" onclick="merge('${d.a}','${d.b}')">← 保留左</button>
+      <button class="plain" onclick="merge('${d.b}','${d.a}')">保留右 →</button>
+    </div>`).join('') : '<div class="muted">暂无疑似重复</div>';
+}
+async function patch(id, status) {
+  await api(`/api/assets/${id}`, {method:'PATCH', headers:{'content-type':'application/json'}, body: JSON.stringify({status})});
+  load();
+}
+async function merge(keep, drop) {
+  await api('/api/assets/merge', {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({keep_id: keep, drop_id: drop})});
+  load();
+}
+load();
+</script>
+</body>
+</html>
