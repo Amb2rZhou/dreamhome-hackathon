@@ -39,10 +39,37 @@ class Settings:
     ANTHROPIC_API_KEY: str = _env("ANTHROPIC_API_KEY")
     ANTHROPIC_MODEL: str = _env("ANTHROPIC_MODEL", "claude-opus-4-8")
 
+    # ---- 资产库(asset-library-plan.md) ----
+    # SQLite 库文件；默认放 storage 同级
+    DB_PATH: str = _env("DB_PATH", os.path.join(os.path.dirname(__file__), "..", "storage", "dreamhome.db"))
+    # 实时单帧检测 provider: mock | remote(自部署 GPU 推理服务)
+    DETECT_PROVIDER: str = _env("DETECT_PROVIDER", "mock").lower()
+    # AutoDL/RunPod 上 gpu/server.py 的地址，如 http://x.x.x.x:9000
+    REMOTE_GPU_URL: str = _env("REMOTE_GPU_URL", "")
+    # 打标签 provider: mock | anthropic | dashscope
+    LABELS_PROVIDER: str = _env("LABELS_PROVIDER", "mock").lower()
+    DASHSCOPE_API_KEY: str = _env("DASHSCOPE_API_KEY")
+    DASHSCOPE_VL_MODEL: str = _env("DASHSCOPE_VL_MODEL", "qwen-vl-max")
+
     # 上传文件落地目录（demo 用本地磁盘；生产换对象存储）
     STORAGE_DIR: str = _env("STORAGE_DIR", os.path.join(os.path.dirname(__file__), "..", "storage"))
     # 对外可访问的基址，用于拼 model_url（部署到 Vercel/服务器时改成公网域名）
     PUBLIC_BASE_URL: str = _env("PUBLIC_BASE_URL", "http://localhost:8000")
+
+    @property
+    def effective_detect_provider(self) -> str:
+        """有远端 GPU 地址才走 remote，否则 mock。"""
+        if self.DETECT_PROVIDER == "remote" and self.REMOTE_GPU_URL:
+            return "remote"
+        return "mock"
+
+    @property
+    def effective_labels_provider(self) -> str:
+        if self.LABELS_PROVIDER == "anthropic" and self.ANTHROPIC_API_KEY:
+            return "anthropic"
+        if self.LABELS_PROVIDER == "dashscope" and self.DASHSCOPE_API_KEY:
+            return "dashscope"
+        return "mock"
 
     @property
     def effective_provider(self) -> str:

@@ -37,6 +37,20 @@ uvicorn app.main:app --reload --port 8000
 - 无 `opencv` → 抽帧退到中间帧；无 `rembg` → 跳过去背景用原图；无 `PIL` → 草图不洗直接送。
 先跑通链路，再按需装重依赖提质量。
 
+## 资产库(docs/asset-library-plan.md)
+
+新增一组接口支撑「资产库优先」链路,交互契约见 plan 文档第五节,联调直接看 /docs:
+
+- `GET /api/assets` 浏览搜索 · `GET /api/assets/{id}` 详情含溯源 · `POST /api/assets/merge` 合并重复
+- `GET /api/videos/{id}/index` 整包时空索引(暂停本地查表) · `POST .../detect` 实时识别(lazy 写回)
+- `POST .../select` 圈选→标签匹配候选 · `POST .../select/confirm` 复用同款或生成新资产
+- `GET/POST /api/library*` 我的素材库
+- 浏览器开 `/review` = 资产审核页(通过/拒绝/合并重复)
+
+联调数据:`python seed_demo.py`(6 资产 + 1 已索引视频带轨迹 + 1 未索引视频)。
+离线批量:`python -m pipeline.run <video.mp4> --source-url <抖音链接>`,mock 可跑,
+真检测填 `REMOTE_GPU_URL`(gpu/setup.sh 起的推理服务)、真 3D 填 `FAL_KEY`。
+
 ## 结构
 
 ```

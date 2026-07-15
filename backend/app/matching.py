@@ -1,0 +1,76 @@
+"""同款匹配：品类硬过滤 + 标签重合度排序。
+
+只出建议、从不判定——结果给用户/审核确认(asset-library-plan.md 核心设计 B)。
+embedding 余弦留了钩子作并列排序辅助，hackathon 体量 numpy 都不必引。
+"""
+import json
+from typing import Optional
+
+from . import db
+
+# 参与重合度计算的列表字段及权重(品类是硬过滤不在此)
+_FIELDS = {"colors": 1.0, "materials": 1.2, "styles": 0.8, "features": 1.5}
+_SUGGEST_THRESHOLD = 0.35   # 只影响建议召回，不影响正确性；粗标即可
+_TOP_K = 3
+
+
+def _overlap(a: dict, b: dict) -> tuple[float, list[str]]:
+    """加权 Jaccard；返回 (分数, 命中标签列表) 供前端展示理由。"""
+    score_num, score_den, hits = 0.0, 0.0, []
+    for field, w in _FIELDS.items():
+        sa, sb = set(a.get(field) or []), set(b.get(field) or [])
+        if not sa and not sb:
+            continue
+        inter = sa & sb
+        score_num += w * len(inter)
+        score_den += w * len(sa | sb)
+        hits += sorted(inter)
+    if a.get("sub") and a.get("sub") == b.get("sub"):
+        score_num += 1.0
+        hits.insert(0, a["sub"])
+    score_den += 1.0
+    if a.get("size_class") and a.get("size_class") == b.get("size_class"):
+        score_num += 0.3
+    score_den += 0.3
+    return (score_num / score_den if score_den else 0.0), hits
+
+
+def match_candidates(labels: dict, *, exclude_asset_ids: Optional[set] = None) -> list[dict]:
+    """拿一次圈选/入库的标签，返回库内疑似同款 top-k：
+    [{asset_id, score, reason}]，score 降序。品类不同直接不候选。
+    """
+    category = labels.get("category", "")
+    if not category:
+        return []
+    out = []
+    for row in db.all_assets_raw(status="ready"):
+        if exclude_asset_ids and row["asset_id"] in exclude_asset_ids:
+            continue
+        asset_labels = json.loads(row["labels_json"] or "{}")
+        if asset_labels.get("category") != category:
+            continue
+        score, hits = _overlap(labels, asset_labels)
+        if score >= _SUGGEST_THRESHOLD:
+            out.append({"asset_id": row["asset_id"], "score": round(score, 3),
+                        "reason": "、".join(hits[:5])})
+    out.sort(key=lambda x: -x["score"])
+    return out[:_TOP_K]
+
+
+def duplicate_pairs() -> list[dict]:
+    """审核页用：全库扫"疑似重复"资产对(同品类且重合度高)。百级资产 O(n²) 无压力。"""
+    rows = db.all_assets_raw(status="ready")
+    parsed = [(r["asset_id"], json.loads(r["labels_json"] or "{}")) for r in rows]
+    pairs = []
+    for i in range(len(parsed)):
+        for j in range(i + 1, len(parsed)):
+            ida, la = parsed[i]
+            idb, lb = parsed[j]
+            if la.get("category") != lb.get("category"):
+                continue
+            score, hits = _overlap(la, lb)
+            if score >= _SUGGEST_THRESHOLD:
+                pairs.append({"a": ida, "b": idb, "score": round(score, 3),
+                              "reason": "、".join(hits[:5])})
+    pairs.sort(key=lambda x: -x["score"])
+    return pairs

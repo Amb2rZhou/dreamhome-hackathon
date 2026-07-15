@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .config import settings
-from .routers import video, photo, sketch, voice, jobs
+from .routers import video, photo, sketch, voice, jobs, assets, videos, library
 
 app = FastAPI(
     title="DreamHome API",
@@ -31,6 +31,10 @@ app.include_router(photo.router)
 app.include_router(sketch.router)
 app.include_router(voice.router)
 app.include_router(jobs.router)
+# 资产库(docs/asset-library-plan.md)
+app.include_router(assets.router)
+app.include_router(videos.router)
+app.include_router(library.router)
 
 
 @app.get("/api/health", tags=["health"])
@@ -42,3 +46,7 @@ async def health():
 _storage = os.path.abspath(settings.STORAGE_DIR)
 os.makedirs(_storage, exist_ok=True)
 app.mount("/storage", StaticFiles(directory=_storage), name="storage")
+
+# 资产审核页(T7):浏览器开 /review
+_review = os.path.join(os.path.dirname(__file__), "..", "review")
+app.mount("/review", StaticFiles(directory=os.path.abspath(_review), html=True), name="review")
