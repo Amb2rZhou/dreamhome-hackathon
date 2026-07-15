@@ -1,6 +1,6 @@
 # GPU 服务器部署现场记录(2026-07-16 凌晨)
 
-服务器:阿里云杭州 ecs.gn7i-c8g1.2xlarge(A10 24G),¥9.53/时,公网 IP `47.98.237.229`
+服务器:阿里云杭州 ecs.gn7i-c8g1.2xlarge(A10 24G),¥9.53/时,公网 IP `<公网IP·见backend/.env>`
 (注意:非固定 EIP,**停机重启后 IP 可能变**,变了要同步改 backend 的 REMOTE_GPU_URL 和本文档)
 
 ## 已完成并验收 ✅
