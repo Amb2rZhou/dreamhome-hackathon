@@ -167,11 +167,13 @@ user_library { user_id, asset_id, added_at, via(全选/单击/圈选) }
 
 ## 七、TODO(按依赖顺序,一个一个来)
 
-- [x] **T1 成本与资源核价** → **docs/cost-evaluation.md**:基线总成本 ≈¥150-200,3D 生成定走 fal
-      trellis($0.02/次),GPU 只租来跑检测。(剩:FAL_KEY 到位后跑 10 张实测对账。)
-- [~] **T2 GPU 环境搭建**:推理服务代码与装机脚本已备好(**gpu/server.py + setup.sh**,
-      Grounding DINO 检测 + CLIP embedding);剩:注册/租 AutoDL 4090 → 跑 setup.sh → backend
-      填 `REMOTE_GPU_URL` 联调。(个人电脑做控制端,绕开公司内网限制。)
+- [x] **T1 成本与资源核价** → **docs/cost-evaluation.md**。⚠️ 07-15 更新:fal 实测 **$0.1+/张**
+      (标价 $0.02 不符),决策改为**自部署 TRELLIS + 租 GPU 云服务器**(检测/追踪/3D 同机),
+      核价 v2 见该文档。backend 已支持 `GEN3D_PROVIDER=selfhost`(gpu/server.py /gen3d 队列)。
+- [~] **T2 GPU 环境搭建**:推理服务代码与装机脚本已备好(**gpu/server.py + setup.sh**:
+      Grounding DINO 检测 + CLIP embedding + **TRELLIS /gen3d 串行队列**);剩:租 GPU 云服务器
+      (选型见 cost-evaluation.md v2)→ 部署 → backend 填 `REMOTE_GPU_URL` 联调。
+      (个人电脑做控制端,绕开公司内网限制。)
 - [x] **T3 离线 pipeline v1** → **backend/pipeline/run.py**:抽帧→检测→IoU 关联追踪(CPU 基线,
       SAM2 留接口)→最佳帧(清晰度×面积)→抠图→3D+打标签并行→落库,合成视频 mock 全链路已跑通。
       真实效果验证等 T2 GPU + FAL_KEY。

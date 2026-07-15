@@ -26,7 +26,8 @@ async def detect_frame(video_id: str, t: float,
 
 async def _remote(frame_data_uri: Optional[str], video_id: str, t: float) -> list[dict]:
     payload = {"video_id": video_id, "t": t, "frame_data_uri": frame_data_uri}
-    async with httpx.AsyncClient(timeout=30) as client:
+    # trust_env=False: GPU 机直连,不走本机系统代理
+    async with httpx.AsyncClient(timeout=30, trust_env=False) as client:
         r = await client.post(f"{settings.REMOTE_GPU_URL.rstrip('/')}/detect", json=payload)
         r.raise_for_status()
         return r.json().get("boxes", [])

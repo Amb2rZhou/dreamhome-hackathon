@@ -74,6 +74,8 @@ class Settings:
     @property
     def effective_provider(self) -> str:
         """有 key 才用真 provider，否则一律 mock，避免线上 500。"""
+        if self.GEN3D_PROVIDER == "selfhost" and self.REMOTE_GPU_URL:
+            return "selfhost"
         if self.GEN3D_PROVIDER == "fal" and self.FAL_KEY:
             return "fal"
         if self.GEN3D_PROVIDER == "tripo" and self.TRIPO_API_KEY:
