@@ -214,7 +214,7 @@
       const templates=getFavoriteTemplates().slice(0,5);
       const cards=templates.map((asset)=>{ const template=TEMPLATES.find((item)=>item.id===asset.templateId); return `<button class="template-card ${state.selectedTemplateId === template.id ? 'is-selected' : ''}" data-template-id="${template.id}" aria-pressed="${state.selectedTemplateId === template.id}"><div class="plan-mini" aria-label="${template.name}户型图">${planThumbnail(template)}</div><b>${asset.name}</b><span>${template.meta}</span></button>`; }).join('');
       const browseCard='<a class="template-card template-card--all" href="../inspiration-library/index.html#catalog=floorplan" aria-label="查看全部户型类组件"><b>全部</b><span>浏览户型类组件库</span></a>';
-      const empty='<div class="template-empty"><img src="../../assets/mascot/mascot-idle.png" alt="" aria-hidden="true"><span>当前暂无收藏可用的户型哦～</span><a class="browse-floorplans" href="../inspiration-library/index.html#catalog=floorplan">去浏览</a></div>';
+      const empty='<div class="template-empty"><img src="../../assets/mascot/states/mascot-sleeping.png" alt="" aria-hidden="true"><span>当前暂无收藏可用的户型哦～</span><a class="browse-floorplans" href="../inspiration-library/index.html#catalog=floorplan">去浏览</a></div>';
       ui.templateGrid.innerHTML=templates.length ? `${cards}${browseCard}` : empty;
     }
     function selectTemplate(id) { state.selectedTemplateId = id; state.drawingFile=null; ui.drawingInput.value=''; ui.uploadName.textContent='支持PNG/JPG/WEBP格式的平面设计图'; ui.setupError.textContent = ''; renderTemplates(); }
