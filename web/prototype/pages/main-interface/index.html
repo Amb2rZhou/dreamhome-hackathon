@@ -6,9 +6,10 @@
   <title>DreamHome iPhone Demo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="../shared/mascot.css" />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,850&family=Noto+Serif+SC:wght@600;800;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root { --phone-w: 393px; --phone-h: 852px; --ink: #221a15; --sub: #75685c; --paper: #fff7e8; --paper-2: #f1dfc6; --clay: #c96d48; --moss: #627862; --blue: #263c54; --butter: #efc96d; --rose: #ddb0aa; --line: rgba(34, 26, 21, .12); --glass: rgba(255, 250, 239, .76); --shadow: 0 34px 90px rgba(37, 26, 18, .34); }
+    :root { --phone-w: 393px; --phone-h: 852px; --ink: #221a15; --sub: #75685c; --paper: #fff7e8; --paper-2: #f1dfc6; --clay: #6f8a6e; --moss: #627862; --blue: #263c54; --butter: #efc96d; --rose: #ddb0aa; --line: rgba(34, 26, 21, .12); --glass: rgba(255, 250, 239, .76); --shadow: 0 34px 90px rgba(37, 26, 18, .34); }
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 34px 18px; color: var(--ink); font-family: "Outfit", "Noto Serif SC", sans-serif; background: radial-gradient(circle at 18% 16%, rgba(239, 201, 109, .44), transparent 24%), radial-gradient(circle at 82% 18%, rgba(221, 176, 170, .42), transparent 27%), radial-gradient(circle at 50% 92%, rgba(98, 120, 98, .28), transparent 34%), linear-gradient(135deg, #fbf0df 0%, #ead8c3 50%, #cbb49d 100%); overflow-x: hidden; }
     body::before { content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .28; background-image: linear-gradient(rgba(38,60,84,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(38,60,84,.12) 1px, transparent 1px); background-size: 54px 54px; mask-image: radial-gradient(circle at center, black 0 54%, transparent 82%); }
@@ -34,7 +35,8 @@
     .hero-card { position: relative; min-height: 176px; border-radius: 34px; padding: 20px; overflow: hidden; background: rgba(255,250,239,.78); border: 1px solid rgba(34,26,21,.12); box-shadow: 0 18px 44px rgba(74, 52, 35, .16); backdrop-filter: blur(18px); }
     .hero-card .label { display: inline-flex; padding: 7px 10px; border-radius: 999px; background: rgba(98,120,98,.14); color: #536b55; font-size: 11px; font-weight: 900; letter-spacing: .08em; }
     .hero-card h2 { position: relative; z-index: 1; margin: 13px 0 8px; font-family: "Noto Serif SC", "Fraunces", serif; font-size: 31px; line-height: 1.05; letter-spacing: -.06em; }
-    .hero-card p { position: relative; z-index: 1; margin: 0; color: var(--sub); max-width: 228px; line-height: 1.48; font-size: 13px; font-weight: 600; }
+    .hero-card p { position: relative; z-index: 1; margin: 0; color: var(--sub); max-width: 198px; line-height: 1.48; font-size: 13px; font-weight: 600; }
+    .hero-mascot { position: absolute; right: 58px; bottom: 0; width: 72px; z-index: 2; }
     .sketch { position: absolute; right: -7px; bottom: -12px; width: 178px; height: 142px; opacity: .88; filter: drop-shadow(0 12px 16px rgba(34,26,21,.13)); }
     .draw-line { stroke-dasharray: 580; stroke-dashoffset: 580; animation: draw 2.1s ease forwards .4s; } @keyframes draw { to { stroke-dashoffset: 0; } }
     .quick-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -69,7 +71,7 @@
       <div class="phone"><div class="screen"><div class="dynamic-island" aria-hidden="true"></div><div class="statusbar"><div>9:41</div><div class="status-icons" aria-hidden="true"><div class="signal"><i></i><i></i><i></i></div><span style="font-size:11px;font-weight:900">5G</span><div class="battery"></div></div></div>
         <div class="app">
           <div class="top"><div class="brand"><strong>DreamHome</strong><span>家的灵感摘抄本</span></div><div class="avatar">DH</div></div>
-          <section class="hero-card"><span class="label">TODAY'S FLOW</span><h2>把刷到的好看，<br>摘抄成你的家。</h2><p>从视频、拍照、手绘收集灵感，生成 3D 组件后放进自己的户型。</p><svg class="sketch" viewBox="0 0 230 170" fill="none" aria-hidden="true"><path class="draw-line" d="M21 105C45 77 71 51 98 28C108 20 120 20 131 28C160 52 189 77 215 104M47 105V149H192V104M78 149V96H122V149M140 149V113H174V149M70 88C94 79 117 78 141 82C162 86 181 95 197 108" stroke="#221a15" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M43 49C60 42 78 39 96 42M153 40C177 42 195 50 207 62" stroke="#c96d48" stroke-width="5" stroke-linecap="round" opacity=".72"/></svg></section>
+          <section class="hero-card"><span class="label">TODAY'S FLOW</span><h2>把刷到的好看，<br>摘抄成你的家。</h2><p>从视频、拍照、手绘收集灵感，生成 3D 组件后放进自己的户型。</p><svg class="sketch" viewBox="0 0 230 170" fill="none" aria-hidden="true"><path class="draw-line" d="M21 105C45 77 71 51 98 28C108 20 120 20 131 28C160 52 189 77 215 104M47 105V149H192V104M78 149V96H122V149M140 149V113H174V149M70 88C94 79 117 78 141 82C162 86 181 95 197 108" stroke="#221a15" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M43 49C60 42 78 39 96 42M153 40C177 42 195 50 207 62" stroke="#6f8a6e" stroke-width="5" stroke-linecap="round" opacity=".72"/></svg><div class="hero-mascot" id="heroMascot"></div></section>
           <div class="quick-row"><div class="quick"><div class="quick-icon">🎙️</div><div><b>语音追问</b><small>这是什么风格？</small></div></div><div class="quick"><div class="quick-icon">🪑</div><div><b>3D 组件</b><small>生成后进资产</small></div></div></div>
           <div class="section-title"><h3>主功能入口</h3><span>3 个一级入口</span></div>
           <section class="entry-grid" aria-label="主界面入口"><button class="entry create selected" data-title="摘抄入口" data-copy="手绘、拍照上传、发现被打包到同一个一级入口里。进入后可以从线稿、真实照片或视频/灵感内容中生成 3D 组件。"><span class="num">01</span><h4>摘抄入口</h4><p>手绘 / 拍照上传 / 发现</p><div class="sub-list"><div class="sub"><i>✍️</i><div><b>手绘</b><small>边画边生成家具</small></div></div><div class="sub"><i>📷</i><div><b>拍照上传</b><small>线下家具转 3D</small></div></div><div class="sub"><i>🧭</i><div><b>发现</b><small>视频圈选与灵感探索</small></div></div></div><div class="orb"></div></button><button class="entry asset" data-title="资产" data-copy="这里对应仓库里的摘抄本：保存已经生成的 3D 家具、软装、材质和风格信息，后续可以直接拖入组装台。"><span class="num">02</span><h4>资产</h4><p>3D 组件素材库</p><div class="orb"></div></button><button class="entry assemble" data-title="组装" data-copy="扫描户型图生成 3D 空间，把资产中的组件摆进去，并用语音调整位置、尺寸和搭配。"><span class="num">03</span><h4>组装</h4><p>户型空间 + 摆放</p><div class="orb"></div></button></section>
@@ -78,5 +80,9 @@
     </section>
   </main>
   <script>const detail=document.querySelector('#detail'),toast=document.querySelector('#toast'),buttons=document.querySelectorAll('.entry');function showToast(t){toast.textContent=t;toast.classList.add('show');clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>toast.classList.remove('show'),1500)}buttons.forEach(btn=>{btn.addEventListener('click',()=>{buttons.forEach(item=>item.classList.remove('selected'));btn.classList.add('selected');detail.querySelector('h3').textContent=btn.dataset.title;detail.querySelector('p').textContent=btn.dataset.copy;showToast(`已选择：${btn.dataset.title}`)})});</script>
+  <script type="module">
+    import { createMascot } from '../shared/mascot.js';
+    createMascot(document.getElementById('heroMascot'), { dock: 'inline' });
+  </script>
 </body>
 </html>
