@@ -21,6 +21,12 @@ async def enhance_cutout(image_path: str, out_path: str, category: str = "") -> 
     provider = settings.ENHANCE_PROVIDER
     if provider == "off":
         return image_path
+    # 内容哈希缓存:同一张抠图+同品类,任何一轮重跑都不再花钱
+    from . import cache
+    key = cache.content_key(image_path, extra=f"{provider}|{category}")
+    hit = cache.get("enhance", key)
+    if hit and "_files" in hit:
+        return hit["_files"]["out.png"]
     try:
         if provider == "module":
             import enhance_custom  # 队友的模块,放 backend/ 下
@@ -30,7 +36,10 @@ async def enhance_cutout(image_path: str, out_path: str, category: str = "") -> 
                 result = enhance_custom.enhance(image_path, out_path)
             if asyncio.iscoroutine(result):
                 result = await result
-            return out_path if os.path.exists(out_path) else image_path
+            if os.path.exists(out_path):
+                cache.put("enhance", key, {}, files={"out.png": out_path})
+                return out_path
+            return image_path
         if provider == "cmd" and settings.ENHANCE_CMD:
             cmd = settings.ENHANCE_CMD.replace("{in}", shlex.quote(image_path)) \
                                       .replace("{out}", shlex.quote(out_path))
@@ -43,6 +52,7 @@ async def enhance_cutout(image_path: str, out_path: str, category: str = "") -> 
                 print("      ⚠️ 补全超时(120s),用原抠图")
                 return image_path
             if proc.returncode == 0 and os.path.exists(out_path):
+                cache.put("enhance", key, {}, files={"out.png": out_path})
                 return out_path
             print(f"      ⚠️ 补全命令失败(rc={proc.returncode}): {(err or b'')[-150:]}")
     except Exception as e:  # noqa: BLE001 增强失败不阻塞量产

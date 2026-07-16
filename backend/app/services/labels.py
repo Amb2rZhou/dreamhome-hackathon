@@ -31,10 +31,16 @@ async def extract_labels(image_path: Optional[str] = None, *,
                          category_hint: str = "") -> dict:
     provider = settings.effective_labels_provider
     try:
-        if provider == "anthropic" and image_path:
-            return await _anthropic(image_path, category_hint)
-        if provider == "dashscope" and image_path:
-            return await _dashscope(image_path, category_hint)
+        if provider in ("anthropic", "dashscope") and image_path:
+            from . import cache
+            key = cache.content_key(image_path, extra=f"labels|{provider}|{category_hint}")
+            hit = cache.get("labels", key)
+            if hit:
+                return hit["labels"]
+            fn = _anthropic if provider == "anthropic" else _dashscope
+            labels = await fn(image_path, category_hint)
+            cache.put("labels", key, {"labels": labels})
+            return labels
     except Exception:
         pass  # 打标签失败不阻断主链路，退 mock
     return _mock(image_path, category_hint)

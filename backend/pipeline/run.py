@@ -145,23 +145,40 @@ def cut_quality_ok(cut_path: str) -> tuple[bool, str]:
 
 
 async def gen3d(image_path: str, extra_image_paths: list[str] | None = None) -> tuple[str, str]:
-    """同步等待一次 3D 生成,返回 (glb_url, status)。批量场景串行即可(GPU 侧本身排队)。"""
+    """同步等待一次 3D 生成,返回 (glb_url, status)。批量场景串行即可(GPU 侧本身排队)。
+    带内容哈希缓存:同一(组)输入图重跑不重新生成。"""
+    from app.services import cache
+    key = cache.content_key(image_path, *(extra_image_paths or []),
+                            extra=settings.effective_provider)
+    hit = cache.get("gen3d", key)
+    if hit and hit.get("status") == "ready":
+        # GLB 已在本机 storage(model_url 指向它),直接复用
+        rel = hit["glb_url"].split("/storage/")[-1]
+        if os.path.exists(os.path.join(os.path.abspath(settings.STORAGE_DIR), rel)):
+            return hit["glb_url"], "ready"
     provider = get_provider()
     pjid = await provider.submit(image_path, extra_image_paths=extra_image_paths)
     for _ in range(150):
         await asyncio.sleep(2)
         res = await provider.poll(pjid)
         if res.status == "succeeded":
-            return res.model_url or "", "ready"
+            url = res.model_url or ""
+            cache.put("gen3d", key, {"glb_url": url, "status": "ready"})
+            return url, "ready"
         if res.status == "failed":
             return "", "rejected"
     return "", "rejected"
 
 
 async def embed_image(image_path: str) -> list[float] | None:
-    """抠图 → CLIP 向量(GPU /embed)。不可用时返回 None,聚类自动退化为品类判重。"""
+    """抠图 → CLIP 向量(GPU /embed)。不可用时返回 None,聚类自动退化为品类判重。带缓存。"""
     if not settings.REMOTE_GPU_URL:
         return None
+    from app.services import cache
+    key = cache.content_key(image_path, extra="clip-b32")
+    hit = cache.get("embed", key)
+    if hit:
+        return hit["v"]
     import base64
     import httpx
     with open(image_path, "rb") as f:
@@ -172,7 +189,9 @@ async def embed_image(image_path: str) -> list[float] | None:
                 r = await client.post(f"{settings.REMOTE_GPU_URL}/embed",
                                       json={"image_data_uri": uri})
                 r.raise_for_status()
-                return r.json()["embedding"]
+                v = r.json()["embedding"]
+                cache.put("embed", key, {"v": v})
+                return v
         except Exception:  # noqa: BLE001
             if attempt == 2:
                 return None
@@ -196,7 +215,18 @@ def _time_overlap_ratio(a: dict, b: dict) -> float:
     return inter / max(dur, 0.5)
 
 
-EMBED_MERGE_SIM = 0.82   # 同品类 + 外观相似度 ≥ 此值 → 认为是同一物体
+EMBED_MERGE_SIM = 0.82   # 同品类 + 外观相似度 ≥ 此值 → 认为是同一物体(大件)
+# 小物件抠图小、CLIP 区分度差(不同吊灯都是"天花板黑块"),阈值必须更高。
+# 拆错了审核页能一键合并,合错了救不回来 → 宁拆勿合。
+EMBED_MERGE_SIM_SMALL = 0.90
+SMALL_CATEGORIES = {"灯具", "装饰", "绿植"}
+# 一镜到底视频:两段轨迹时间隔得越久(多半已走到别的房间),要求越像才可合并
+TIME_GAP_PENALTY = 0.03  # 每隔 60s 提高阈值 0.03,上限 +0.06
+
+
+def _merge_threshold(category: str, gap_seconds: float) -> float:
+    base = EMBED_MERGE_SIM_SMALL if category in SMALL_CATEGORIES else EMBED_MERGE_SIM
+    return base + min(0.06, max(0.0, gap_seconds / 60.0) * TIME_GAP_PENALTY)
 # 多视角生成每簇用几张图。实测跨时刻抠图角度/光照差异大会互相打架(v3 质量回退),
 # 默认 1(单图);等补全模块把图洗干净后再调回 2-3 试
 MAX_VIEWS = int(os.environ.get("PIPELINE_MAX_VIEWS", "1"))
@@ -212,9 +242,13 @@ def cluster_tracks(tracks: list[dict], embeds: list) -> list[list[int]]:
             rep = tracks[cl[0]]
             if rep["category"] != tr["category"]:
                 continue
+            gap = max(tr["points"][0]["t"] - rep["points"][-1]["t"],
+                      rep["points"][0]["t"] - tr["points"][-1]["t"], 0.0)
             if embeds[i] is not None and embeds[cl[0]] is not None:
-                if _cos(embeds[i], embeds[cl[0]]) < EMBED_MERGE_SIM:
+                if _cos(embeds[i], embeds[cl[0]]) < _merge_threshold(tr["category"], gap):
                     continue
+            elif tr["category"] in SMALL_CATEGORIES:
+                continue  # 小物件没有向量时不盲合
             if _time_overlap_ratio(rep, tr) > 0.3:
                 continue  # 同时出现在两个位置 → 两个不同物体
             cl.append(i)
@@ -246,28 +280,38 @@ async def process(video_path: str, title: str, source_url: str) -> str:
                     status="processing")
 
     print(f"[2/6] 检测 (provider={settings.effective_detect_provider})")
-    detections, skipped = [], 0
+    from app.services import cache
+    detections, skipped, cached = [], 0, 0
     for idx, f in enumerate(frames):
-        import base64
-        with open(f["path"], "rb") as fh:
-            uri = "data:image/jpeg;base64," + base64.b64encode(fh.read()).decode()
-        boxes = None
-        for attempt in range(3):  # 单帧网络抖动重试,连败跳帧不炸整个视频
-            try:
-                boxes = await detect_frame(video_id, f["t"], uri)
-                break
-            except Exception as e:  # noqa: BLE001
-                if attempt == 2:
-                    skipped += 1
-                    print(f"      ⚠️ t={f['t']} 检测失败已跳过: {type(e).__name__}: {e}")
-                else:
-                    await asyncio.sleep(1.5 * (attempt + 1))
+        ck = cache.content_key(f["path"], extra=f"detect|{settings.effective_detect_provider}")
+        hit = cache.get("detect", ck)
+        if hit is not None:
+            boxes = hit["boxes"]
+            cached += 1
+        else:
+            import base64
+            with open(f["path"], "rb") as fh:
+                uri = "data:image/jpeg;base64," + base64.b64encode(fh.read()).decode()
+            boxes = None
+            for attempt in range(3):  # 单帧网络抖动重试,连败跳帧不炸整个视频
+                try:
+                    boxes = await detect_frame(video_id, f["t"], uri)
+                    cache.put("detect", ck, {"boxes": boxes})
+                    break
+                except Exception as e:  # noqa: BLE001
+                    if attempt == 2:
+                        skipped += 1
+                        print(f"      ⚠️ t={f['t']} 检测失败已跳过: {type(e).__name__}: {e}")
+                    else:
+                        await asyncio.sleep(1.5 * (attempt + 1))
         for box in boxes or []:
             detections.append({"t": f["t"], "bbox": box["bbox"],
                                "category": box["category"], "frame": f["path"]})
         if idx % 40 == 39:
             print(f"      检测进度 {idx+1}/{len(frames)}")
-    print(f"      {len(detections)} 个检测框" + (f"(跳过 {skipped} 帧)" if skipped else ""))
+    print(f"      {len(detections)} 个检测框"
+          + (f"(跳过 {skipped} 帧)" if skipped else "")
+          + (f"(缓存命中 {cached} 帧)" if cached else ""))
 
     print("[3/6] 跨帧关联成 track")
     tracks = link_tracks(detections)
