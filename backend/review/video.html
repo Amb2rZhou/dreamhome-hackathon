@@ -54,6 +54,17 @@ async function init() {
   tracks = idx.tracks;
   for (const a of await (await fetch('/api/assets?include_all_status=true')).json()) assets[a.asset_id] = a;
   document.title = `暂停识别 · ${meta.title}`;
+  // 溯源直达:?t=秒&asset_id=xx → 定位到该时刻暂停,光点亮起并自动打开该资产面板
+  const t0 = parseFloat(qs.get('t'));
+  if (!isNaN(t0)) v.addEventListener('loadedmetadata', () => {
+    v.currentTime = Math.max(0, t0);
+    v.pause();
+    const aid = qs.get('asset_id');
+    if (aid) setTimeout(() => {
+      const tr = tracks.find(x => x.asset_id === aid) || tracks.find(x => assets[x.asset_id]);
+      if (tr) showPanel(tr);
+    }, 600);
+  }, { once: true });
 }
 
 function bboxAt(tr, t) {
