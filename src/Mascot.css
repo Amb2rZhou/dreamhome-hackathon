@@ -1,0 +1,133 @@
+.mascot-root {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  z-index: 50;
+  touch-action: none;
+  cursor: grab;
+  transition: filter 0.2s;
+}
+.mascot-root.dragging { cursor: grabbing; }
+.mascot-img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  pointer-events: none;
+  transform: translate(0, -4px) perspective(420px) rotateX(2deg);
+  filter: drop-shadow(0 8px 12px rgba(63, 86, 64, 0.22));
+}
+.mascot-sleeping .mascot-img { animation: mascotBreathe 3.5s ease-in-out infinite; }
+@keyframes mascotBreathe {
+  0%, 100% { transform: translate(0, -4px) perspective(420px) rotateX(2deg) scale(1); }
+  50% { transform: translate(0, -2px) perspective(420px) rotateX(2deg) scale(1.04); }
+}
+.mascot-happy .mascot-img { animation: mascotHappy 1.6s ease-in-out infinite; }
+@keyframes mascotHappy {
+  0%, 100% { transform: translate(0, -4px) perspective(420px) rotateX(2deg) scale(1); }
+  50% { transform: translate(0, -10px) perspective(420px) rotateX(2deg) scale(1.06); }
+}
+.mascot-working .mascot-img { animation: mascotHammer 0.6s ease-in-out infinite; }
+@keyframes mascotHammer {
+  0%, 100% { transform: translate(0, -4px) perspective(420px) rotateX(2deg) rotate(-3deg); }
+  50% { transform: translate(2px, -2px) perspective(420px) rotateX(2deg) rotate(4deg); }
+}
+
+.mascot-sparks {
+  position: absolute;
+  top: -2px; right: 4px;
+  width: 18px; height: 18px;
+  pointer-events: none;
+}
+.mascot-sparks::before, .mascot-sparks::after {
+  content: "";
+  position: absolute;
+  width: 5px; height: 5px;
+  background: #ff9a55;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #ff7a3d;
+  animation: spark 0.7s ease-in-out infinite;
+}
+.mascot-sparks::before { left: 0; top: 4px; animation-delay: 0s; }
+.mascot-sparks::after { right: 0; top: 10px; animation-delay: 0.35s; }
+@keyframes spark {
+  0% { opacity: 0; transform: translateY(4px) scale(0.6); }
+  50% { opacity: 1; transform: translateY(-2px) scale(1); }
+  100% { opacity: 0; transform: translateY(-8px) scale(0.6); }
+}
+
+.mascot-bubble {
+  position: absolute;
+  bottom: 72px;
+  width: 230px;
+  background: #FFFDF8;
+  border-radius: 18px;
+  padding: 14px 14px 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  animation: bubbleIn 0.3s cubic-bezier(0.22,1,0.36,1);
+}
+.mascot-bubble.bubble-right {
+  left: 72px;
+  transform-origin: bottom left;
+}
+.mascot-bubble.bubble-left {
+  right: 72px;
+  transform-origin: bottom right;
+}
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(6px) scale(0.85); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.mascot-bubble.bubble-right::after {
+  content: "";
+  position: absolute;
+  bottom: 12px;
+  left: -7px;
+  border: 7px solid transparent;
+  border-right-color: #FFFDF8;
+  border-left: 0;
+}
+.mascot-bubble.bubble-left::after {
+  content: "";
+  position: absolute;
+  bottom: 12px;
+  right: -7px;
+  border: 7px solid transparent;
+  border-left-color: #FFFDF8;
+  border-right: 0;
+}
+.mascot-bubble-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1A1A1A;
+  line-height: 1.45;
+  white-space: normal;
+  word-break: break-word;
+}
+.mascot-bubble-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+  gap: 6px;
+}
+.mascot-bubble-x {
+  position: absolute;
+  top: 6px; right: 6px;
+  border: none;
+  background: transparent;
+  color: #B8B8B8;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.mascot-bubble-btn {
+  border: none;
+  background: #1A1A1A;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+}

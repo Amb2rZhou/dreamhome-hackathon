@@ -1,0 +1,155 @@
+.assemble-root {
+  position: absolute;
+  inset: 0;
+  background: #EDE9E1;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+}
+
+.asm-topbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px 10px;
+}
+.asm-back {
+  width: 32px; height: 32px;
+  border: none; background: #FFFDF8;
+  border-radius: 50%;
+  font-size: 18px; color: #1A1A1A;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.asm-title {
+  font-size: 18px; font-weight: 700; color: #1A1A1A;
+  letter-spacing: -0.2px;
+}
+.asm-title-wrap { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.asm-layout-tag {
+  align-self: flex-start;
+  border: none;
+  background: #F0EBE0;
+  color: #5c5246;
+  font-size: 10px; font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.asm-count {
+  font-size: 12px; color: #8A8A8A;
+  background: #FFFDF8;
+  padding: 5px 10px; border-radius: 999px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.asm-stage {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  touch-action: none;
+}
+.asm-stage canvas { display: block; width: 100% !important; height: 100% !important; touch-action: none; }
+
+.asm-panel {
+  flex-shrink: 0;
+  background: #FFFDF8;
+  border-radius: 20px 20px 0 0;
+  padding: 12px 14px 16px;
+  box-shadow: 0 -2px 16px rgba(0,0,0,0.06);
+}
+.asm-panel-title {
+  font-size: 12px; font-weight: 600; color: #8A8A8A;
+  padding: 0 4px 8px;
+}
+.asm-chips {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+.asm-chips::-webkit-scrollbar { display: none; }
+.asm-chip {
+  flex-shrink: 0;
+  width: 72px;
+  border: none;
+  background: #F7F4EE;
+  border-radius: 14px;
+  padding: 8px 6px;
+  cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  transition: transform 0.12s, background 0.12s;
+}
+.asm-chip:active { transform: scale(0.93); background: #EFEADF; }
+.asm-chip-img {
+  width: 44px; height: 44px; object-fit: contain;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.12));
+}
+.asm-chip-name {
+  font-size: 10px; color: #1A1A1A;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 60px;
+}
+
+.asm-active-bar {
+  position: absolute;
+  left: 14px; right: 14px;
+  bottom: 150px;
+  background: #1A1A1A;
+  border-radius: 16px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  animation: barUp 0.22s cubic-bezier(0.22,1,0.36,1);
+}
+@keyframes barUp { from { transform: translateY(12px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+.asm-active-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.asm-active-name { font-size: 13px; font-weight: 600; color: #fff; }
+.asm-active-hint { font-size: 10px; color: #B8B8B8; }
+.asm-voice-btn {
+  border: none;
+  background: #4dd0e1;
+  color: #00363a;
+  font-size: 12px; font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.asm-del-btn {
+  border: none;
+  background: rgba(255,255,255,0.12);
+  color: #ff8a80;
+  font-size: 12px; font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.asm-tip {
+  position: absolute;
+  left: 50%; bottom: 160px;
+  transform: translateX(-50%);
+  background: rgba(26,26,26,0.6);
+  color: #fff;
+  font-size: 11px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.asm-active-trace {
+  font-size: 10px;
+  color: #4dd0e1;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
