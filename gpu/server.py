@@ -145,7 +145,11 @@ def embed(req: EmbedIn):
     model, proc = get_clip()
     inputs = proc(images=_decode(req.image_data_uri), return_tensors="pt").to(DEVICE)
     with torch.no_grad():
-        feat = model.get_image_features(**inputs)[0]
+        feat = model.get_image_features(**inputs)
+    # 部分 transformers 版本返回输出对象而非张量,取 pooled 向量兜底
+    if not torch.is_tensor(feat):
+        feat = feat.pooler_output
+    feat = feat.flatten()
     feat = feat / feat.norm()
     return {"embedding": feat.cpu().tolist()}
 
@@ -161,15 +165,19 @@ GEN3D_BACKEND = os.environ.get("GEN3D_BACKEND_URL", "http://127.0.0.1:9001")
 
 
 class Gen3DIn(BaseModel):
-    image_data_uri: str
+    image_data_uri: str = ""            # 单图(兼容)
+    image_data_uris: list[str] = []     # 多角度图(2-4张)
 
 
 @app.post("/gen3d")
 def gen3d_submit(req: Gen3DIn):
     import httpx
+    uris = req.image_data_uris or ([req.image_data_uri] if req.image_data_uri else [])
+    if not uris:
+        raise HTTPException(422, "no image provided")
     try:
-        r = httpx.post(f"{GEN3D_BACKEND}/gen3d", json={"image_data_uri": req.image_data_uri},
-                       timeout=60, trust_env=False)
+        r = httpx.post(f"{GEN3D_BACKEND}/gen3d", json={"image_data_uris": uris},
+                       timeout=120, trust_env=False)
         r.raise_for_status()
         return r.json()
     except httpx.HTTPError as e:

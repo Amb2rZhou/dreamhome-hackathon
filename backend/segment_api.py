@@ -251,11 +251,30 @@ def bake_path_onto_image(im: Image.Image, pts: Optional[list]) -> Image.Image:
     return out
 
 
+
+# ---- 融合补丁(pipeline 离线量产接入,by Claude):品类约束 + 无轨迹 prompt 变体 ----
+# 离线 pipeline 的抠图没有用户圈选轨迹;原 prompt 提到"浅灰色虚线"会诱发模型把虚线画进输出。
+INPAINT_PROMPT_NO_PATH = (
+    "你正在处理一段家居视频中的一帧截图,画面主体是一件家具。"
+    ""
+    "请按以下要求处理:"
+    "1. 提取画面中的主体家具,去掉所有背景以及其他遮挡该家具的物体。"
+    "2. 基于家具的物理结构,补全被遮挡的缺失部分(如底座、腿、扶手等),使家具形态完整。"
+    "3. 补全部分的形状、结构、比例必须与可见部分精确衔接,符合该类家具的正常物理形态。"
+    "4. 不要改变家具可见部分的外形、比例和颜色,只补全被遮挡的缺失区域。"
+    "5. 最终输出统一为中性漫射光(flat lighting):不要保留任何方向性阴影、环境光反射或高光。"
+    "   但颜色、材质、纹理必须和原图可见部分完全一致——这是最重要的约束,因为后续用于3D贴图。"
+    "6. 只输出这件家具本身,不输出任何背景、阴影、其他物体、虚线或标记。"
+    "7. 最终输出透明背景。"
+)
+
+
 @app.post("/api/inpaint")
 async def inpaint(
     file: UploadFile = File(..., description="带场景的 bbox 原图截图"),
     bbox: Optional[str] = Form(None, description="圈选外接框 x,y,w,h"),
     path: Optional[str] = Form(None, description="用户轨迹 x1,y1;x2,y2;...（bbox 相对坐标）"),
+    category: Optional[str] = Form(None, description="家具品类提示(融合补丁,来自检测,如'床')"),
 ):
     """2D 实体家具提取：单输入，从视频帧直接提取完整家具，去背景+去遮挡+补全缺失。"""
     data = await file.read()
@@ -291,7 +310,11 @@ async def inpaint(
     b64 = base64.b64encode(buf.getvalue()).decode("ascii")
     image_data_url = f"data:image/png;base64,{b64}"
 
-    content = [{"image": image_data_url}, {"text": INPAINT_SYSTEM_PROMPT}]
+    prompt = INPAINT_SYSTEM_PROMPT if pts else INPAINT_PROMPT_NO_PATH
+    if category:
+        prompt = (f"目标家具的品类是「{category}」,输出必须仍然是一件「{category}」,"
+                  f"不得变成其他种类的家具。") + prompt
+    content = [{"image": image_data_url}, {"text": prompt}]
 
     # 不指定精确编辑区域，让模型按 prompt+path 编辑整个传入图
     bbox_list = [[]]

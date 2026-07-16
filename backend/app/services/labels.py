@@ -32,21 +32,27 @@ async def extract_labels(image_path: Optional[str] = None, *,
     provider = settings.effective_labels_provider
     try:
         if provider == "anthropic" and image_path:
-            return await _anthropic(image_path)
+            return await _anthropic(image_path, category_hint)
         if provider == "dashscope" and image_path:
-            return await _dashscope(image_path)
+            return await _dashscope(image_path, category_hint)
     except Exception:
         pass  # 打标签失败不阻断主链路，退 mock
     return _mock(image_path, category_hint)
 
 
-def _parse_json(text: str) -> dict:
+CATEGORIES = {"沙发", "单椅", "床", "柜子", "桌子", "灯具", "地毯", "绿植", "窗帘", "装饰", "其他"}
+
+
+def _parse_json(text: str, category_hint: str = "") -> dict:
     m = re.search(r"\{.*\}", text, re.S)
     data = json.loads(m.group(0)) if m else {}
     out = dict(_EMPTY)
     for k in out:
         if k in data:
             out[k] = data[k]
+    # 模型偶尔把整个枚举串回填 category("沙发|单椅|...")——校验兜底到检测品类
+    if out["category"] not in CATEGORIES:
+        out["category"] = category_hint if category_hint in CATEGORIES else "其他"
     return out
 
 
@@ -56,7 +62,7 @@ def _image_block_b64(image_path: str) -> tuple[str, str]:
         return mime, base64.b64encode(f.read()).decode()
 
 
-async def _anthropic(image_path: str) -> dict:
+async def _anthropic(image_path: str, category_hint: str = "") -> dict:
     mime, b64 = _image_block_b64(image_path)
     payload = {
         "model": settings.ANTHROPIC_MODEL,
@@ -76,10 +82,10 @@ async def _anthropic(image_path: str) -> dict:
         )
         r.raise_for_status()
         data = r.json()
-    return _parse_json("".join(b.get("text", "") for b in data.get("content", [])))
+    return _parse_json("".join(b.get("text", "") for b in data.get("content", [])), category_hint)
 
 
-async def _dashscope(image_path: str) -> dict:
+async def _dashscope(image_path: str, category_hint: str = "") -> dict:
     mime, b64 = _image_block_b64(image_path)
     payload = {
         "model": settings.DASHSCOPE_VL_MODEL,
@@ -96,7 +102,7 @@ async def _dashscope(image_path: str) -> dict:
         )
         r.raise_for_status()
         data = r.json()
-    return _parse_json(data["choices"][0]["message"]["content"])
+    return _parse_json(data["choices"][0]["message"]["content"], category_hint)
 
 
 # 文件名关键词 → mock 标签，保证无 key 时链路可跑、demo 数据像样

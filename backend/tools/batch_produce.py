@@ -68,10 +68,14 @@ def collect_inputs(arg: str) -> list[dict]:
 
 
 def download(url: str, key: str) -> str:
-    """yt-dlp 下载,返回本地路径。抖音分享链接(v.douyin.com 短链)可直接喂。"""
+    """下载视频,返回本地路径。抖音走 share 页直连(免登录),其他源走 yt-dlp。"""
     os.makedirs(DOWNLOAD_DIR, exist_ok=True)
     out = os.path.join(DOWNLOAD_DIR, f"{key}.mp4")
     if os.path.exists(out):
+        return out
+    if "douyin.com" in url:
+        from tools.douyin_dl import download as dy_download
+        dy_download(url, out)
         return out
     cmd = [YTDLP, "-f", "bv*[height>=720]+ba/b", "--merge-output-format", "mp4",
            "--no-playlist", "-o", out, url]
@@ -106,8 +110,9 @@ async def main() -> None:
             state["failed"].pop(it["key"], None)
             print(f"===== 完成 {video_id}({time.time()-t0:.0f}s)\n")
         except Exception as e:  # noqa: BLE001 单条失败不中断批次
-            state["failed"][it["key"]] = {"src": label, "error": str(e)[-300:]}
-            print(f"===== ❌ 失败: {e}\n")
+            state["failed"][it["key"]] = {"src": label,
+                                          "error": f"{type(e).__name__}: {e}"[-300:]}
+            print(f"===== ❌ 失败: {type(e).__name__}: {e}\n")
         save_state(state)
 
     print("\n========== 批次汇总 ==========")

@@ -20,13 +20,17 @@ class SelfhostTrellisProvider(Gen3DProvider):
     def __init__(self) -> None:
         self._base = settings.REMOTE_GPU_URL.rstrip("/")
 
-    async def submit(self, image_path: str, *, texture: bool = True, prompt: str = "") -> str:
-        mime = mimetypes.guess_type(image_path)[0] or "image/jpeg"
-        with open(image_path, "rb") as f:
-            uri = f"data:{mime};base64,{base64.b64encode(f.read()).decode()}"
+    async def submit(self, image_path: str, *, texture: bool = True, prompt: str = "",
+                     extra_image_paths: list[str] | None = None) -> str:
+        def to_uri(p: str) -> str:
+            mime = mimetypes.guess_type(p)[0] or "image/jpeg"
+            with open(p, "rb") as f:
+                return f"data:{mime};base64,{base64.b64encode(f.read()).decode()}"
+
+        uris = [to_uri(image_path)] + [to_uri(p) for p in (extra_image_paths or [])]
         # trust_env=False: GPU 机直连,不走本机系统代理(macOS 会读系统级代理设置)
-        async with httpx.AsyncClient(timeout=60, trust_env=False) as client:
-            r = await client.post(f"{self._base}/gen3d", json={"image_data_uri": uri})
+        async with httpx.AsyncClient(timeout=120, trust_env=False) as client:
+            r = await client.post(f"{self._base}/gen3d", json={"image_data_uris": uris})
             r.raise_for_status()
         return r.json()["job_id"]
 

@@ -63,19 +63,25 @@ def get_pipe():
 def _worker():
     from trellis.utils import postprocessing_utils
     while True:
-        job_id, img = _queue.get()
+        job_id, imgs = _queue.get()
         job = _jobs[job_id]
         try:
             job["status"] = "running"
             pipe = get_pipe()
             with torch.cuda.amp.autocast(enabled=True):
-                processed = pipe.preprocess_image(img)
+                processed = [pipe.preprocess_image(im) for im in imgs]
             with torch.inference_mode():
-                out = pipe.run(processed, seed=1, formats=["gaussian", "mesh"],
+                # 多图 = 多视角条件(采样步间轮转),单图退化为普通模式
+                out = pipe.run(processed if len(processed) > 1 else processed[0],
+                               seed=1, formats=["gaussian", "mesh"],
                                preprocess_image=False)
             glb = postprocessing_utils.to_glb(out["gaussian"][0], out["mesh"][0],
                                               simplify=0.95, texture_size=1024)
-            glb.export(os.path.join(FILES_DIR, f"{job_id}.glb"))
+            glb_path = os.path.join(FILES_DIR, f"{job_id}.glb")
+            glb.export(glb_path)
+            # trimesh 默认材质发黑(baseColorFactor=0.4 + metallic=1),导出后修正
+            from glb_material_fix import fix_glb_material
+            fix_glb_material(glb_path)
             job["status"] = "succeeded"
             torch.cuda.empty_cache()
         except Exception as e:  # noqa: BLE001 单次失败不带崩队列
@@ -92,7 +98,8 @@ def _ensure_worker():
 
 
 class Gen3DIn(BaseModel):
-    image_data_uri: str
+    image_data_uri: str = ""            # 单图(兼容)
+    image_data_uris: list[str] = []     # 多角度图(2-4张),质量更好
 
 
 @app.get("/health")
@@ -100,15 +107,23 @@ def health():
     return {"status": "ok", "loaded": _pipe is not None, "queue": _queue.qsize()}
 
 
+def _decode_uri(uri: str) -> Image.Image:
+    raw = base64.b64decode(uri.split(",", 1)[1])
+    return Image.open(io.BytesIO(raw)).convert("RGB")
+
+
 @app.post("/gen3d")
 def submit(req: Gen3DIn):
     _ensure_worker()
-    raw = base64.b64decode(req.image_data_uri.split(",", 1)[1])
-    img = Image.open(io.BytesIO(raw)).convert("RGB")
+    uris = req.image_data_uris or ([req.image_data_uri] if req.image_data_uri else [])
+    if not uris:
+        raise HTTPException(422, "no image provided")
+    imgs = [_decode_uri(u) for u in uris[:4]]  # 官方建议多视角 2-4 张
     job_id = uuid.uuid4().hex
-    _jobs[job_id] = {"status": "queued", "error": None, "created": time.time()}
-    _queue.put((job_id, img))
-    return {"job_id": job_id}
+    _jobs[job_id] = {"status": "queued", "error": None, "created": time.time(),
+                     "views": len(imgs)}
+    _queue.put((job_id, imgs))
+    return {"job_id": job_id, "views": len(imgs)}
 
 
 @app.get("/gen3d/{job_id}")

@@ -20,7 +20,8 @@ class MockProvider(Gen3DProvider):
         # provider_job_id -> 起始时间戳，用于模拟进度
         self._jobs: Dict[str, float] = {}
 
-    async def submit(self, image_path: str, *, texture: bool = True, prompt: str = "") -> str:
+    async def submit(self, image_path: str, *, texture: bool = True, prompt: str = "",
+                     extra_image_paths: list[str] | None = None) -> str:
         job_id = f"mock-{int(time.time() * 1000)}"
         self._jobs[job_id] = time.time()
         return job_id

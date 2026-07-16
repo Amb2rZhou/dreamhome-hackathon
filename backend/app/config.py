@@ -50,6 +50,9 @@ class Settings:
     LABELS_PROVIDER: str = _env("LABELS_PROVIDER", "mock").lower()
     DASHSCOPE_API_KEY: str = _env("DASHSCOPE_API_KEY")
     DASHSCOPE_VL_MODEL: str = _env("DASHSCOPE_VL_MODEL", "qwen-vl-max")
+    # 抠图补全(队友模块,契约见 docs/enhance-integration.md): off | module | cmd
+    ENHANCE_PROVIDER: str = _env("ENHANCE_PROVIDER", "off").lower()
+    ENHANCE_CMD: str = _env("ENHANCE_CMD", "")
 
     # 上传文件落地目录（demo 用本地磁盘；生产换对象存储）
     STORAGE_DIR: str = _env("STORAGE_DIR", os.path.join(os.path.dirname(__file__), "..", "storage"))
