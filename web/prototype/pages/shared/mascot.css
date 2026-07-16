@@ -1,5 +1,5 @@
 /* 包公球悬浮 widget:六态、呼吸浮动、抡锤、Zzz、队列徽标、通知胶囊 */
-.mascot-widget { position: absolute; z-index: 30; width: 64px; pointer-events: none; }
+.mascot-widget { position: absolute; z-index: 31; width: 64px; pointer-events: none; } /* 高于 tabbar(z=30)/与页面 toast 错层 */
 .mascot-widget[hidden] { display: none; }
 .mascot-widget[data-dock="right"] { right: 8px; top: 38%; }
 .mascot-widget[data-dock="bottom-right"] { right: 10px; bottom: calc(var(--dh-tabbar-safe-space, 100px) + 6px); }
@@ -17,10 +17,10 @@
   background: #be6959; color: #fff; font-size: 11px; font-weight: 800; display: grid; place-items: center;
   box-shadow: 0 3px 8px rgba(44,59,45,.3); }
 .mascot-badge[hidden] { display: none; }
-.mascot-notice { position: absolute; z-index: 40; top: 56px; left: 50%; transform: translateX(-50%) translateY(-12px); opacity: 0;
+.mascot-notice { position: absolute; z-index: 41; top: 56px; left: 50%; transform: translateX(-50%) translateY(-12px); opacity: 0; /* 高于 tabbar(z=30)/与页面 toast 错层 */
   display: flex; gap: 9px; align-items: center; width: max-content; max-width: 82%; padding: 8px 14px 8px 8px;
   border: 0; border-radius: 999px; background: rgba(255,255,255,.96); box-shadow: 0 10px 26px rgba(44,59,45,.24);
-  font: inherit; font-size: 12px; font-weight: 700; color: #2c3b2d; cursor: pointer; transition: .3s ease; pointer-events: none; }
+  font: inherit; font-size: 12px; font-weight: 700; color: #2c3b2d; cursor: pointer; transition: .3s ease; pointer-events: none; } /* transition .3s 须与 mascot.js NOTICE_FADE_MS 一致 */
 .mascot-notice.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 .mascot-notice[hidden] { display: none; }
 .mascot-notice img { width: 30px; height: 30px; object-fit: contain; }
