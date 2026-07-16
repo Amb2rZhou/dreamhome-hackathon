@@ -1,7 +1,209 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>DreamHome · 刷一刷</title><link rel="stylesheet" href="./dreamhome-d-system.css"/><link rel="stylesheet" href="../shared/five-tabbar.css"/><style>
-.feature-content{height:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px var(--dh-tabbar-safe-space);text-align:center}.feature-icon{width:72px;height:72px;padding:18px;border-radius:26px;background:var(--dh-color-sage-100);color:var(--dh-color-sage-700)}.feature-icon img{width:100%;height:100%;display:block}h1{margin:18px 0 8px;font-size:22px;letter-spacing:0}p{max-width:220px;margin:0;color:var(--dh-fg-secondary);font-size:13px;line-height:1.7}.feature-action{margin-top:22px;min-width:132px;height:42px;border:0;border-radius:15px;background:var(--dh-color-sage-600);color:white;font:inherit;font-size:13px;font-weight:var(--dh-font-weight-bold)}
-body { margin:0; min-width:320px; background:var(--dh-bg-canvas); }
-.preview-stage { min-height:100vh; display:grid; place-items:center; padding:28px 18px; box-sizing:border-box; }
-@media (max-width:420px) { .preview-stage { min-height:100svh; padding:18px 10px; } }
-</style></head><body><main class="preview-stage"><section class="dh-phone-shell"><div class="dh-screen"><div class="dh-statusbar"><span>9:41</span><span class="dh-dynamic-island"></span><span class="dh-status-icons">▮◔</span></div><div class="feature-content"><span class="feature-icon"><img src="../../assets/icons/navigation/discover.svg" alt=""/></span><h1>刷一刷</h1><p>装修视频信息流与家具圈选将在这里接入</p><button class="feature-action" type="button">即将接入</button></div><nav class="dh-tabbar dh-tabbar--five" aria-label="主功能导航"><a class="dh-tab" href="../draw/index.html" aria-label="画一笔"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/draw.svg" alt="" /></span></a><a class="dh-tab" href="../capture/index.html" aria-label="拍一张"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/capture.svg" alt="" /></span></a><a class="dh-tab dh-tab--core" href="../inspiration-library/index.html" aria-label="灵感库"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/inspiration.svg" alt="" /></span></a><a class="dh-tab dh-tab--active" href="./index.html" aria-label="刷一刷" aria-current="page"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/discover.svg" alt="" /></span></a><a class="dh-tab" href="../my-home/index.html" aria-label="我的家"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/my-home.svg" alt="" /></span></a></nav><div class="dh-home-indicator" aria-hidden="true"></div></div></section></main></body></html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DreamHome · 刷一刷</title>
+<link rel="stylesheet" href="./dreamhome-d-system.css" />
+<link rel="stylesheet" href="../shared/five-tabbar.css" />
+<link rel="stylesheet" href="../shared/mascot.css" />
+<style>
+body { margin: 0; min-width: 320px; background: var(--dh-bg-canvas); }
+.preview-stage { min-height: 100vh; display: grid; place-items: center; padding: 28px 18px; box-sizing: border-box; }
+@media (max-width: 420px) { .preview-stage { min-height: 100svh; padding: 18px 10px; } }
+.discover-shell .dh-statusbar { position: relative; z-index: 10; color: #fff; }
+/* 视频流:铺满屏幕,竖向贴屏滑动 */
+.feed { position: absolute; inset: 0; overflow-y: auto; scroll-snap-type: y mandatory; scrollbar-width: none; }
+.feed::-webkit-scrollbar { display: none; }
+.video-card { position: relative; height: 100%; scroll-snap-align: start; scroll-snap-stop: always; overflow: hidden;
+  background: radial-gradient(circle at 70% 24%, rgba(255,255,255,.16), transparent 42%), linear-gradient(165deg, var(--bg1), var(--bg2)); }
+.prop { position: absolute; border-radius: 14px; box-shadow: 0 14px 30px rgba(0,0,0,.35); object-fit: cover; }
+.card-caption { position: absolute; left: 14px; right: 88px; bottom: calc(var(--dh-tabbar-safe-space) + 6px); color: #fff; text-shadow: 0 1px 5px rgba(0,0,0,.45); }
+.card-caption b { display: block; font-size: 13px; margin-bottom: 3px; }
+.card-caption span { font-size: 11px; opacity: .92; line-height: 1.5; }
+/* 右侧动作栏 */
+.action-rail { position: absolute; z-index: 12; right: 10px; bottom: calc(var(--dh-tabbar-safe-space) + 10px); display: grid; gap: 14px; justify-items: center; }
+.rail-btn { display: grid; gap: 3px; justify-items: center; border: 0; padding: 0; background: transparent; color: #fff; font: inherit; font-size: 9px; font-weight: 700; cursor: pointer; text-shadow: 0 1px 4px rgba(0,0,0,.4); }
+.rail-btn i { font-style: normal; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; background: rgba(0,0,0,.28); }
+.rail-btn.is-active i { background: var(--dh-color-sage-600); }
+/* 圈选模式 */
+.lasso-layer { position: absolute; inset: 0; z-index: 20; display: none; background: rgba(10,16,11,.4); cursor: crosshair; touch-action: none; }
+.discover-shell.is-selecting .lasso-layer { display: block; }
+.lasso-hint { position: absolute; top: 64px; left: 50%; transform: translateX(-50%); padding: 7px 14px; border-radius: 999px; background: rgba(255,255,255,.92); color: #2c3b2d; font-size: 11px; font-weight: 700; pointer-events: none; }
+.lasso-box { position: absolute; border: 3px dashed #ffd76e; border-radius: 16px; background: rgba(255,215,110,.12); pointer-events: none; }
+/* 圈中后飞向包公球的克隆 */
+.fly-clone { position: fixed; z-index: 80; border-radius: 12px; object-fit: cover; pointer-events: none;
+  transition: transform .7s cubic-bezier(.3,.7,.3,1), opacity .7s ease; }
+.discover-toast { position: absolute; z-index: 40; left: 50%; bottom: calc(var(--dh-tabbar-safe-space) + 18px); transform: translateX(-50%) translateY(8px); opacity: 0; padding: 9px 13px; border-radius: 999px; background: rgba(29,36,31,.9); color: #fff; font-size: 11px; font-weight: 600; pointer-events: none; transition: .2s ease; }
+.discover-toast.show { opacity: 1; transform: translateX(-50%); }
+@media (prefers-reduced-motion: reduce) { .fly-clone { transition: none; } }
+</style>
+</head>
+<body>
+<main class="preview-stage">
+<section class="dh-phone-shell discover-shell" id="discoverShell">
+  <div class="dh-screen">
+    <div class="feed" id="feed">
+      <article class="video-card" style="--bg1:#8a9b85;--bg2:#3e4f40">
+        <img class="prop" data-item="sofa" src="../../assets/gallery/sofa.jpg" alt="奶油布艺沙发" style="left:8%;bottom:30%;width:56%;aspect-ratio:4/3" />
+        <img class="prop" data-item="lamp" src="../../assets/gallery/lamp.jpg" alt="落地阅读灯" style="right:8%;bottom:44%;width:24%;aspect-ratio:3/4" />
+        <div class="card-caption"><b>@奶油家居日记</b><span>60m² 小家的治愈客厅,沙发真的巨舒服 #奶油风</span></div>
+      </article>
+      <article class="video-card" style="--bg1:#9aa98c;--bg2:#55684f">
+        <img class="prop" data-item="armchair" src="../../assets/gallery/armchair.jpg" alt="复古扶手椅" style="left:14%;bottom:32%;width:44%;aspect-ratio:1" />
+        <img class="prop" data-item="plant" src="../../assets/gallery/plant.jpg" alt="龟背竹盆栽" style="right:10%;bottom:38%;width:26%;aspect-ratio:3/4" />
+        <div class="card-caption"><b>@阳台改造中</b><span>秋天的阅读角就该这样,一椅一绿植 #治愈系</span></div>
+      </article>
+      <article class="video-card" style="--bg1:#a89a83;--bg2:#5c5142">
+        <img class="prop" data-item="cabinet" src="../../assets/gallery/cabinet.jpg" alt="原木斗柜" style="left:20%;bottom:26%;width:56%;aspect-ratio:4/3" />
+        <div class="card-caption"><b>@木作研究所</b><span>入户第一眼,原木斗柜收纳力惊人 #玄关</span></div>
+      </article>
+      <article class="video-card" style="--bg1:#93a48e;--bg2:#46543f">
+        <img class="prop" data-item="chair" src="../../assets/gallery/chair.jpg" alt="曲木单椅" style="left:26%;bottom:30%;width:44%;aspect-ratio:3/4" />
+        <div class="card-caption"><b>@一把好椅子</b><span>百看不厌的曲木椅,餐厨通用 #经典设计</span></div>
+      </article>
+    </div>
+    <div class="dh-statusbar"><span>9:41</span><span class="dh-dynamic-island"></span><span class="dh-status-icons">▮◔</span></div>
+    <div class="action-rail">
+      <button class="rail-btn" type="button" data-like><i>♡</i>赞</button>
+      <button class="rail-btn" type="button"><i>💬</i>评论</button>
+      <button class="rail-btn" type="button"><i>↗</i>分享</button>
+      <button class="rail-btn" type="button" id="lassoToggle"><i>◌</i>圈选</button>
+    </div>
+    <div class="lasso-layer" id="lassoLayer"><span class="lasso-hint">圈住喜欢的家具,松手交给包公球</span></div>
+    <div class="discover-toast" id="discoverToast" role="status" aria-live="polite"></div>
+    <nav class="dh-tabbar dh-tabbar--five" aria-label="主功能导航"><a class="dh-tab" href="../draw/index.html" aria-label="画一笔"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/draw.svg" alt="" /></span></a><a class="dh-tab" href="../capture/index.html" aria-label="拍一张"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/capture.svg" alt="" /></span></a><a class="dh-tab dh-tab--core" href="../inspiration-library/index.html" aria-label="灵感库"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/inspiration.svg" alt="" /></span></a><a class="dh-tab dh-tab--active" href="./index.html" aria-label="刷一刷" aria-current="page"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/discover.svg" alt="" /></span></a><a class="dh-tab" href="../my-home/index.html" aria-label="我的家"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/my-home.svg" alt="" /></span></a></nav>
+    <div class="dh-home-indicator" aria-hidden="true"></div>
+  </div>
+</section>
+</main>
+<script type="module">
+import { createMascot } from '../shared/mascot.js';
+import { addCraftedAsset } from '../shared/asset-library-data.js';
+
+// 圈选目标 → crafted 资产字段(primitive/color/accent 供灵感库沿用现有 visual 渲染)
+const FEED_ITEMS = {
+  sofa:     { name: '奶油布艺沙发', category: 'sofa',     primitive: 'sofa',    color: '#e2ddd0', accent: '#af9f8e' },
+  lamp:     { name: '落地阅读灯',   category: 'lighting', primitive: 'lamp',    color: '#d5a25d', accent: '#fff2cf' },
+  armchair: { name: '复古扶手椅',   category: 'seating',  primitive: 'chair',   color: '#8da38a', accent: '#d5e1d0' },
+  plant:    { name: '龟背竹盆栽',   category: 'decor',    primitive: 'plant',   color: '#637b59', accent: '#cfb58d' },
+  cabinet:  { name: '原木斗柜',     category: 'cabinet',  primitive: 'cabinet', color: '#ba8f63', accent: '#e2c29a' },
+  chair:    { name: '曲木单椅',     category: 'seating',  primitive: 'chair',   color: '#7f5b44', accent: '#c8a682' },
+};
+
+const shell = document.getElementById('discoverShell');
+const screen = shell.querySelector('.dh-screen');
+const feed = document.getElementById('feed');
+const lassoLayer = document.getElementById('lassoLayer');
+const lassoToggle = document.getElementById('lassoToggle');
+const toast = document.getElementById('discoverToast');
+const mascot = createMascot(screen, { dock: 'right' });
+
+let toastTimer = null;
+function showToast(message) {
+  toast.textContent = message; toast.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
+}
+
+// —— 圈选 ————————————————————————
+let lassoBox = null, startX = 0, startY = 0;
+function setSelecting(on) {
+  shell.classList.toggle('is-selecting', on);
+  lassoToggle.classList.toggle('is-active', on);
+}
+lassoToggle.addEventListener('click', () => setSelecting(!shell.classList.contains('is-selecting')));
+
+lassoLayer.addEventListener('pointerdown', (event) => {
+  lassoLayer.setPointerCapture(event.pointerId);
+  startX = event.clientX; startY = event.clientY;
+  lassoBox = document.createElement('div');
+  lassoBox.className = 'lasso-box';
+  lassoLayer.appendChild(lassoBox);
+  drawLasso(event);
+});
+lassoLayer.addEventListener('pointermove', (event) => { if (lassoBox) drawLasso(event); });
+lassoLayer.addEventListener('pointerup', (event) => {
+  if (!lassoBox) return;
+  const rect = lassoBox.getBoundingClientRect();
+  lassoBox.remove(); lassoBox = null;
+  setSelecting(false);
+  const hit = hitProp(rect);
+  if (hit) feedToMascot(hit);
+  else showToast('没圈到家具,再试一次');
+});
+lassoLayer.addEventListener('pointercancel', () => { lassoBox?.remove(); lassoBox = null; setSelecting(false); });
+
+function drawLasso(event) {
+  const layer = lassoLayer.getBoundingClientRect();
+  const left = Math.min(startX, event.clientX) - layer.left;
+  const top = Math.min(startY, event.clientY) - layer.top;
+  Object.assign(lassoBox.style, {
+    left: `${left}px`, top: `${top}px`,
+    width: `${Math.abs(event.clientX - startX)}px`, height: `${Math.abs(event.clientY - startY)}px`,
+  });
+}
+
+// 圈选框与当前屏内 prop 求交,重叠面积 ≥ prop 面积 30% 判定圈中
+function hitProp(rect) {
+  let best = null, bestRatio = .3;
+  feed.querySelectorAll('.prop').forEach((prop) => {
+    const box = prop.getBoundingClientRect();
+    if (!box.width || box.bottom < 0 || box.top > innerHeight) return;
+    const overlapW = Math.min(rect.right, box.right) - Math.max(rect.left, box.left);
+    const overlapH = Math.min(rect.bottom, box.bottom) - Math.max(rect.top, box.top);
+    if (overlapW <= 0 || overlapH <= 0) return;
+    const ratio = (overlapW * overlapH) / (box.width * box.height);
+    if (ratio >= bestRatio) { bestRatio = ratio; best = prop; }
+  });
+  return best;
+}
+
+// —— 投喂 → 打造 → 通知 ————————————————
+let craftQueue = 0;
+let doneCount = 0;
+
+function flyToMascot(propEl) {
+  const from = propEl.getBoundingClientRect();
+  const to = mascot.el.getBoundingClientRect();
+  const clone = propEl.cloneNode();
+  clone.className = 'fly-clone';
+  Object.assign(clone.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px` });
+  document.body.appendChild(clone);
+  requestAnimationFrame(() => {
+    const dx = to.left + to.width / 2 - (from.left + from.width / 2);
+    const dy = to.top + to.height / 2 - (from.top + from.height / 2);
+    clone.style.transform = `translate(${dx}px, ${dy}px) scale(.15)`;
+    clone.style.opacity = '.15';
+  });
+  clone.addEventListener('transitionend', () => clone.remove());
+  setTimeout(() => clone.remove(), 900); /* reduced-motion 下无 transitionend 的兜底 */
+}
+
+function feedToMascot(propEl) {
+  const spec = FEED_ITEMS[propEl.dataset.item];
+  if (!spec) return;
+  flyToMascot(propEl);
+  craftQueue += 1;
+  mascot.queue(craftQueue);
+  mascot.setState('happy', { then: 'working' });
+  showToast(`包公球收到「${spec.name}」,开工!`);
+  const craftMs = 8000 + Math.random() * 7000; /* mock 异步:接真后端时换成任务轮询 */
+  setTimeout(() => {
+    addCraftedAsset({ id: `crafted-${propEl.dataset.item}-${Date.now()}`, ...spec });
+    doneCount += 1;
+    craftQueue -= 1;
+    mascot.queue(craftQueue);
+    if (craftQueue === 0) {
+      mascot.setState('happy', { then: 'idle' });
+      mascot.notify({
+        title: `${doneCount} 件 3D 资产已打造好 ✨`,
+        onTap: () => { location.href = '../inspiration-library/index.html'; },
+        duration: 10000,
+      });
+      doneCount = 0;
+    }
+  }, craftMs);
+}
+</script>
+</body>
+</html>
