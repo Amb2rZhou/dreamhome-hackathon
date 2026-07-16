@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="../shared/five-tabbar.css" />
 <link rel="stylesheet" href="../shared/mascot.css" />
 <style>
+:root { --dh-tabbar-z: 30; }
 body { margin: 0; min-width: 320px; background: var(--dh-bg-canvas); }
 .preview-stage { min-height: 100vh; display: grid; place-items: center; padding: 28px 18px; box-sizing: border-box; }
 @media (max-width: 420px) { .preview-stage { min-height: 100svh; padding: 18px 10px; } }
@@ -46,7 +47,7 @@ body { margin: 0; min-width: 320px; background: var(--dh-bg-canvas); }
     <div class="feed" id="feed">
       <article class="video-card" style="--bg1:#8a9b85;--bg2:#3e4f40">
         <img class="prop" data-item="sofa" src="../../assets/gallery/sofa.jpg" alt="奶油布艺沙发" style="left:8%;bottom:30%;width:56%;aspect-ratio:4/3" />
-        <img class="prop" data-item="lamp" src="../../assets/gallery/lamp.jpg" alt="落地阅读灯" style="right:8%;bottom:44%;width:24%;aspect-ratio:3/4" />
+        <img class="prop" data-item="lamp" src="../../assets/gallery/lamp.jpg" alt="落地阅读灯" style="right:8%;bottom:65%;width:22%;aspect-ratio:3/4" />
         <div class="card-caption"><b>@奶油家居日记</b><span>60m² 小家的治愈客厅,沙发真的巨舒服 #奶油风</span></div>
       </article>
       <article class="video-card" style="--bg1:#9aa98c;--bg2:#55684f">
@@ -114,8 +115,11 @@ function setSelecting(on) {
 lassoToggle.addEventListener('click', () => setSelecting(!shell.classList.contains('is-selecting')));
 
 lassoLayer.addEventListener('pointerdown', (event) => {
+  if (lassoBox) return; /* 多点触控守卫:第二根手指落下时忽略 */
   lassoLayer.setPointerCapture(event.pointerId);
-  startX = event.clientX; startY = event.clientY;
+  const layer = lassoLayer.getBoundingClientRect();
+  startX = Math.min(Math.max(event.clientX, layer.left), layer.right);
+  startY = Math.min(Math.max(event.clientY, layer.top), layer.bottom);
   lassoBox = document.createElement('div');
   lassoBox.className = 'lasso-box';
   lassoLayer.appendChild(lassoBox);
@@ -127,6 +131,7 @@ lassoLayer.addEventListener('pointerup', (event) => {
   const rect = lassoBox.getBoundingClientRect();
   lassoBox.remove(); lassoBox = null;
   setSelecting(false);
+  if (Math.hypot(rect.width, rect.height) < 10) { showToast('已退出圈选'); return; } /* 空圈视为取消 */
   const hit = hitProp(rect);
   if (hit) feedToMascot(hit);
   else showToast('没圈到家具,再试一次');
@@ -135,24 +140,30 @@ lassoLayer.addEventListener('pointercancel', () => { lassoBox?.remove(); lassoBo
 
 function drawLasso(event) {
   const layer = lassoLayer.getBoundingClientRect();
-  const left = Math.min(startX, event.clientX) - layer.left;
-  const top = Math.min(startY, event.clientY) - layer.top;
+  const x = Math.min(Math.max(event.clientX, layer.left), layer.right);
+  const y = Math.min(Math.max(event.clientY, layer.top), layer.bottom);
+  const left = Math.min(startX, x) - layer.left;
+  const top = Math.min(startY, y) - layer.top;
   Object.assign(lassoBox.style, {
     left: `${left}px`, top: `${top}px`,
-    width: `${Math.abs(event.clientX - startX)}px`, height: `${Math.abs(event.clientY - startY)}px`,
+    width: `${Math.abs(x - startX)}px`, height: `${Math.abs(y - startY)}px`,
   });
 }
 
-// 圈选框与当前屏内 prop 求交,重叠面积 ≥ prop 面积 30% 判定圈中
+// 圈选框与当前屏内 prop 求交,重叠面积 ≥ prop 面积或 lasso 面积的 30% 判定圈中(prop 内画小圈也算)
 function hitProp(rect) {
   let best = null, bestRatio = .3;
+  const feedRect = feed.getBoundingClientRect();
   feed.querySelectorAll('.prop').forEach((prop) => {
     const box = prop.getBoundingClientRect();
-    if (!box.width || box.bottom < 0 || box.top > innerHeight) return;
+    if (!box.width || box.bottom < feedRect.top || box.top > feedRect.bottom) return;
     const overlapW = Math.min(rect.right, box.right) - Math.max(rect.left, box.left);
     const overlapH = Math.min(rect.bottom, box.bottom) - Math.max(rect.top, box.top);
     if (overlapW <= 0 || overlapH <= 0) return;
-    const ratio = (overlapW * overlapH) / (box.width * box.height);
+    const propRatio = (overlapW * overlapH) / (box.width * box.height);
+    const lassoArea = rect.width * rect.height;
+    const lassoRatio = lassoArea > 0 ? (overlapW * overlapH) / lassoArea : 0;
+    const ratio = Math.max(propRatio, lassoRatio);
     if (ratio >= bestRatio) { bestRatio = ratio; best = prop; }
   });
   return best;
