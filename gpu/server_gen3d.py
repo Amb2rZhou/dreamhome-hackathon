@@ -77,7 +77,11 @@ def _worker():
                                preprocess_image=False)
             glb = postprocessing_utils.to_glb(out["gaussian"][0], out["mesh"][0],
                                               simplify=0.95, texture_size=1024)
-            glb.export(os.path.join(FILES_DIR, f"{job_id}.glb"))
+            glb_path = os.path.join(FILES_DIR, f"{job_id}.glb")
+            glb.export(glb_path)
+            # trimesh 默认材质发黑(baseColorFactor=0.4 + metallic=1),导出后修正
+            from glb_material_fix import fix_glb_material
+            fix_glb_material(glb_path)
             job["status"] = "succeeded"
             torch.cuda.empty_cache()
         except Exception as e:  # noqa: BLE001 单次失败不带崩队列
