@@ -7,6 +7,7 @@
   <title>DreamHome · 灵感库</title>
   <link rel="stylesheet" href="./dreamhome-d-system.css" />
   <link rel="stylesheet" href="../shared/five-tabbar.css" />
+  <link rel="stylesheet" href="../shared/mascot.css" />
   <style>
     body { margin:0; min-height:100vh; background:linear-gradient(90deg,#e7eee5,#f6faf4 48%,#e3ece1); color:var(--dh-fg-primary); font-family:var(--dh-font-sans); }
     .preview-stage { min-height:100vh; display:grid; place-items:center; padding:28px 18px; box-sizing:border-box; }
@@ -20,6 +21,8 @@
     .furniture-tabs { display:flex; gap:6px; overflow-x:auto; margin:0 -2px; padding:1px 3px 9px; scrollbar-width:none; }.furniture-tabs::-webkit-scrollbar{display:none}.furniture-tab{flex:0 0 auto;border:1px solid rgba(110,132,107,.2);border-radius:999px;padding:5px 9px;background:rgba(255,255,255,.62);color:var(--dh-fg-secondary);font:inherit;font-size:10px;font-weight:var(--dh-font-weight-bold);cursor:pointer}.furniture-tab[aria-selected="true"]{border-color:var(--dh-color-sage-600);background:var(--dh-color-sage-600);color:white}
     .furniture-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px 7px; }.furniture-card{min-width:0;border:0;padding:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.furniture-card .component-visual{height:62px}.furniture-card b{display:block;margin:5px 1px 0;overflow:hidden;font-size:9px;font-weight:var(--dh-font-weight-bold);text-overflow:ellipsis;white-space:nowrap}.visual--furniture{background:linear-gradient(145deg,#edf2e9,#fffaf2)}.object{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);background:var(--object);box-shadow:inset 0 8px rgba(255,255,255,.18)}.object--sofa{width:47px;height:22px;border-radius:12px 12px 5px 5px}.object--sofa::before{content:"";position:absolute;left:9px;top:-12px;width:29px;height:16px;border-radius:9px 9px 3px 3px;background:var(--accent)}.object--chair{width:25px;height:23px;border-radius:7px 7px 4px 4px}.object--chair::before{content:"";position:absolute;left:4px;top:-14px;width:17px;height:18px;border-radius:7px 7px 2px 2px;background:var(--accent)}.object--table{width:42px;height:15px;border-radius:50%;bottom:18px}.object--table::before{content:"";position:absolute;left:19px;top:12px;width:4px;height:20px;background:var(--accent)}.object--lamp{width:4px;height:36px;border-radius:2px;bottom:9px}.object--lamp::before{content:"";position:absolute;left:-10px;top:-10px;width:24px;height:13px;border-radius:50% 50% 3px 3px;background:var(--accent)}.object--bed{width:46px;height:25px;border-radius:5px}.object--bed::before{content:"";position:absolute;left:5px;top:4px;width:35px;height:10px;border-radius:4px;background:var(--accent)}.object--cabinet{width:39px;height:29px;border-radius:3px}.object--plant{width:22px;height:23px;border-radius:45% 55% 38% 62%;background:var(--accent)}.object--plant::before{content:"";position:absolute;left:-7px;top:-8px;width:15px;height:22px;border-radius:50% 0 50% 0;background:var(--object)}.all-card{display:grid;place-items:center;border:1px dashed rgba(96,119,94,.55)!important;border-radius:8px!important;background:rgba(224,235,220,.52)!important;color:var(--dh-color-sage-800)!important;font-size:10px;font-weight:var(--dh-font-weight-heavy);text-align:center}.all-card span{max-width:46px}
     .catalog-toolbar{display:flex;align-items:center;gap:10px;margin:0 0 13px}.catalog-toolbar h2{margin:0;font-size:15px}.catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px}.catalog-grid .component-card{min-width:0}.catalog-grid .component-visual{height:86px}.empty-state{padding:24px 10px;text-align:center;color:var(--dh-fg-secondary);font-size:12px}.toast{position:absolute;z-index:40;left:50%;bottom:78px;transform:translateX(-50%) translateY(8px);opacity:0;padding:9px 12px;border-radius:999px;background:rgba(29,36,31,.9);color:white;font-size:11px;font-weight:var(--dh-font-weight-semibold);pointer-events:none;transition:.2s ease}.toast.show{opacity:1;transform:translateX(-50%)}
+    .new-badge{position:absolute;z-index:3;left:4px;top:4px;padding:2px 5px;border-radius:6px;background:#be6959;color:#fff;font-size:8px;font-weight:800;letter-spacing:.04em;box-shadow:0 2px 5px rgba(44,59,45,.25)}
+    .empty-state img{display:block;width:56px;height:56px;object-fit:contain;margin:0 auto 8px;opacity:.9}
     @media(max-width:420px){.preview-stage{min-height:100svh;padding:18px 10px}.library-app{padding:0 14px}.furniture-grid{gap:8px 6px}}
   </style>
 </head>
@@ -42,15 +45,18 @@
     </section>
   </main>
   <script type="module">
-    import { COMPONENT_FAMILIES, FURNITURE_CATEGORIES, getAssets, getFavorites, toggleFavorite } from '../shared/asset-library-data.js';
+    import { COMPONENT_FAMILIES, FURNITURE_CATEGORIES, getAssets, getFavorites, toggleFavorite, getCraftedAssets, markCraftedSeen } from '../shared/asset-library-data.js';
+    import { createMascot } from '../shared/mascot.js';
 
     const home = document.querySelector('#libraryHome');
     const catalog = document.querySelector('#catalogView');
     const toast = document.querySelector('#toast');
-    let activeFurnitureCategory = 'table';
+    const newestCrafted = getCraftedAssets().find((item) => item.isNew);
+    let activeFurnitureCategory = newestCrafted?.category || 'table';
     let pressTimer = null;
     let pressedId = null;
     let toastTimer = null;
+    const mascot = createMascot(document.querySelector('.dh-screen'), { dock: 'bottom-right' });
 
     const labelByKind = Object.fromEntries(COMPONENT_FAMILIES.map((family) => [family.id, family.label]));
     const showToast = (message) => { toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1500); };
@@ -61,7 +67,7 @@
       const type = asset.primitive || 'cabinet';
       return `<div class="component-visual visual--furniture" style="--object:${asset.color};--accent:${asset.accent}"><span class="object object--${type}"></span></div>`;
     };
-    const card = (asset, className = 'component-card') => `<article class="${className}" data-asset="${asset.id}" tabindex="0">${favoriteButton(asset)}${visual(asset)}<b>${asset.name}</b></article>`;
+    const card = (asset, className = 'component-card') => `<article class="${className}" data-asset="${asset.id}" tabindex="0">${asset.isNew ? '<span class="new-badge">NEW</span>' : ''}${favoriteButton(asset)}${visual(asset)}<b>${asset.name}</b></article>`;
     const openCatalog = (kind, category = '') => { location.hash = `catalog=${kind}${category ? `:${category}` : ''}`; };
     const renderHome = () => {
       const previousTabs = home.querySelector('.furniture-tabs');
@@ -88,7 +94,7 @@
       if (favoriteOnly) assets = assets.filter((asset) => getFavorites().has(asset.id));
       const title = favoriteOnly ? '已收藏' : `${labelByKind[kind]}${category ? ` · ${FURNITURE_CATEGORIES.find((item) => item.id === category)?.label || ''}` : ''}`;
       home.hidden = true; catalog.hidden = false;
-      catalog.innerHTML = `<div class="catalog-toolbar"><button class="catalog-back" id="catalogBack">‹ 返回</button><h2>${title}</h2></div>${assets.length ? `<div class="catalog-grid">${assets.map(card).join('')}</div>` : '<p class="empty-state">还没有收藏组件。长按卡片或点击心形即可收藏。</p>'}`;
+      catalog.innerHTML = `<div class="catalog-toolbar"><button class="catalog-back" id="catalogBack">‹ 返回</button><h2>${title}</h2></div>${assets.length ? `<div class="catalog-grid">${assets.map(card).join('')}</div>` : `<p class="empty-state"><img src="../../assets/mascot/states/mascot-sleeping.png" alt="" aria-hidden="true">包公球在打盹……还没有收藏组件。<br>长按卡片或点击心形即可收藏。</p>`}`;
     };
     const route = () => {
       const matched = location.hash.match(/^#catalog=([^:]+)(?::(.+))?$/);
@@ -97,7 +103,7 @@
       renderCatalog(matched[1], matched[2] || '');
     };
     const toggle = (id) => { const before = getFavorites().has(id); toggleFavorite(id); showToast(before ? '已取消收藏' : '已收藏，可在我的家调用'); route(); };
-    document.addEventListener('click', (event) => { const favorite = event.target.closest('[data-favorite]'); if (favorite) { event.stopPropagation(); toggle(favorite.dataset.favorite); return; } const all = event.target.closest('[data-all]'); if (all) { const [kind, category] = all.dataset.all.split(':'); openCatalog(kind, category); return; } const tab = event.target.closest('[data-category]'); if (tab) { activeFurnitureCategory = tab.dataset.category; renderHome(); return; } if (event.target.closest('#catalogBack')) { history.back(); return; } const asset = event.target.closest('[data-asset]'); if (asset) showToast('长按可收藏组件'); });
+    document.addEventListener('click', (event) => { const favorite = event.target.closest('[data-favorite]'); if (favorite) { event.stopPropagation(); toggle(favorite.dataset.favorite); return; } const all = event.target.closest('[data-all]'); if (all) { const [kind, category] = all.dataset.all.split(':'); openCatalog(kind, category); return; } const tab = event.target.closest('[data-category]'); if (tab) { activeFurnitureCategory = tab.dataset.category; renderHome(); return; } if (event.target.closest('#catalogBack')) { history.back(); return; } const asset = event.target.closest('[data-asset]'); if (asset) { const target = getCraftedAssets().find((item) => item.id === asset.dataset.asset); if (target?.isNew) { markCraftedSeen(target.id); showToast(`「${target.name}」已收进灵感库`); route(); return; } showToast('长按可收藏组件'); } });
     document.addEventListener('pointerdown', (event) => { const asset = event.target.closest('[data-asset]'); if (!asset || event.target.closest('[data-favorite]')) return; pressedId = asset.dataset.asset; pressTimer = setTimeout(() => { if (pressedId) { toggle(pressedId); pressedId = null; } }, 600); });
     ['pointerup', 'pointercancel', 'pointermove', 'pointerleave'].forEach((type) => document.addEventListener(type, () => { clearTimeout(pressTimer); pressedId = null; }));
     window.addEventListener('hashchange', route);
