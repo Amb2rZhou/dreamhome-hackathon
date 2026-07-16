@@ -2,6 +2,14 @@
 const STATE_NAMES = ['initial', 'idle', 'thinking', 'working', 'happy', 'sleeping'];
 const HAPPY_MS = 1200, SLEEP_MS = 30000, NOTICE_MS = 6000, NOTICE_FADE_MS = 300; // NOTICE_FADE_MS 须与 mascot.css .mascot-notice 的 transition .3s 一致
 const stateUrl = (state) => new URL(`../../assets/mascot/states/mascot-${state}.png`, import.meta.url).href;
+// 姿态帧循环:利用同角色不同姿态图做二帧卡通动画,让本体(手/脸)动起来,而不只是整图位移
+// initial 与 idle 是同一站姿(睁眼/闭眼吐泡泡),硬切即"眨眼打瞌睡";happy↔initial 即"挥手蹦跳"
+const FRAME_LOOPS = {
+  idle: [['initial', 2400], ['idle', 1300]],
+  thinking: [['thinking', 2000], ['initial', 900]],
+  happy: [['happy', 450], ['initial', 350]],
+};
+const REDUCED_MOTION = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export function createMascot(host, options = {}) {
   const widget = document.createElement('div');
@@ -28,14 +36,23 @@ export function createMascot(host, options = {}) {
   let sleepTimer = null;
   let noticeTimer = null;
   let onNoticeTap = null;
+  let frameTimer = null;
+
+  function playFrames(loop, index = 0) {
+    const [pose, holdMs] = loop[index % loop.length];
+    face.src = stateUrl(pose);
+    frameTimer = setTimeout(() => playFrames(loop, index + 1), holdMs);
+  }
 
   function setState(state, { then } = {}) {
     if (!STATE_NAMES.includes(state)) { console.warn(`[mascot] unknown state: ${state}`); return; }
     clearTimeout(happyTimer);
+    clearTimeout(frameTimer);
     widget.dataset.state = '';
     void face.offsetWidth; /* 强制 reflow,同状态重复设置(如连续投喂的 happy)也能重启动画 */
     widget.dataset.state = state;
     face.src = stateUrl(state);
+    if (FRAME_LOOPS[state] && !REDUCED_MOTION) playFrames(FRAME_LOOPS[state]);
     if (state === 'happy' && then) {
       if (STATE_NAMES.includes(then)) happyTimer = setTimeout(() => setState(then), HAPPY_MS);
       else console.warn(`[mascot] unknown state: ${then}`);
@@ -86,12 +103,17 @@ export function createMascot(host, options = {}) {
       if (position !== 'right' && position !== 'bottom-right' && position !== 'inline') { console.warn(`[mascot] unknown dock: ${position}`); return; }
       widget.dataset.dock = position;
     },
-    show() { widget.hidden = false; },
+    show() {
+      widget.hidden = false;
+      clearTimeout(frameTimer);
+      if (FRAME_LOOPS[widget.dataset.state] && !REDUCED_MOTION) playFrames(FRAME_LOOPS[widget.dataset.state]);
+    },
     hide() {
       widget.hidden = true;
       dismiss();
       clearTimeout(happyTimer);
       clearTimeout(sleepTimer);
+      clearTimeout(frameTimer);
     },
     destroy() {
       WAKE_EVENT_TYPES.forEach((type) =>
@@ -99,6 +121,7 @@ export function createMascot(host, options = {}) {
       clearTimeout(happyTimer);
       clearTimeout(sleepTimer);
       clearTimeout(noticeTimer);
+      clearTimeout(frameTimer);
       widget.remove();
       notice.remove();
     },
