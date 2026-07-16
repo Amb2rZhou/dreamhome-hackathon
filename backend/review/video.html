@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>暂停识别演示</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+<style>
+  body { font-family: -apple-system, "PingFang SC", sans-serif; margin: 0; background: #111; color: #eee; display: flex; height: 100vh; }
+  #stage { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; background: #000; }
+  video { max-width: 100%; max-height: 100vh; }
+  #overlay { position: absolute; pointer-events: none; }
+  .marker { position: absolute; transform: translate(-50%, -50%); pointer-events: auto; cursor: pointer;
+            display: flex; align-items: center; gap: 7px; }
+  .marker .dot { width: 14px; height: 14px; border-radius: 50%; background: #fff; flex: none;
+                 box-shadow: 0 0 0 4px rgba(255,255,255,.35); animation: breathe 1.8s ease-in-out infinite; }
+  .marker .pill { background: rgba(0,0,0,.72); backdrop-filter: blur(6px); color: #fff; font-size: 13px;
+                  padding: 4px 11px; border-radius: 999px; white-space: nowrap; }
+  @keyframes breathe { 0%,100% { box-shadow: 0 0 0 4px rgba(255,255,255,.35);}
+                       50% { box-shadow: 0 0 0 9px rgba(255,255,255,.12);} }
+  #hint { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.55);
+          padding: 6px 14px; border-radius: 999px; font-size: 13px; }
+  #panel { width: 340px; background: #1b1b1f; padding: 16px; display: none; flex-direction: column; gap: 8px; }
+  #panel model-viewer { width: 100%; height: 300px; background: #26262c; border-radius: 12px; }
+  #panel h3 { margin: 4px 0 0; font-size: 16px; }
+  #panel .tags { font-size: 12px; color: #aaa; line-height: 1.8; }
+  #panel .tag2 { background: #2c2c33; border-radius: 4px; padding: 1px 7px; margin-right: 4px; display: inline-block; }
+  #panel .close { align-self: flex-end; background: none; border: 0; color: #888; font-size: 20px; cursor: pointer; }
+  #panel .empty { color: #999; font-size: 13px; line-height: 1.7; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <video id="v" controls playsinline></video>
+  <div id="overlay"></div>
+  <div id="hint">▶️ 播放中 · 任意时刻暂停试试</div>
+</div>
+<div id="panel">
+  <button class="close" onclick="panel.style.display='none'">✕</button>
+  <div id="panel-body"></div>
+</div>
+<script>
+const qs = new URLSearchParams(location.search);
+const v = document.getElementById('v'), overlay = document.getElementById('overlay');
+const hint = document.getElementById('hint'), panel = document.getElementById('panel');
+let tracks = [], assets = {};
+
+async function init() {
+  const vids = await (await fetch('/api/videos')).json();
+  const vid = qs.get('video_id') || (vids.find(x => x.status === 'indexed' && x.play_url.includes('/storage/')) || vids[0]).video_id;
+  const meta = vids.find(x => x.video_id === vid);
+  v.src = meta.play_url;
+  const idx = await (await fetch(`/api/videos/${vid}/index`)).json();
+  tracks = idx.tracks;
+  for (const a of await (await fetch('/api/assets?include_all_status=true')).json()) assets[a.asset_id] = a;
+  document.title = `暂停识别 · ${meta.title}`;
+}
+
+function bboxAt(tr, t) {
+  const fs = tr.frames;
+  if (!fs.length || t < tr.t_start - 0.35 || t > tr.t_end + 0.35) return null;
+  let lo = 0, hi = fs.length - 1;
+  while (lo < hi) { const m = (lo + hi) >> 1; fs[m].t < t ? lo = m + 1 : hi = m; }
+  const b = fs[lo], a = fs[Math.max(0, lo - 1)];
+  if (Math.abs(b.t - t) > 0.35 && Math.abs(a.t - t) > 0.35) return null;
+  if (a === b || b.t === a.t) return b.bbox;
+  const p = Math.min(1, Math.max(0, (t - a.t) / (b.t - a.t)));
+  return a.bbox.map((x, i) => x + (b.bbox[i] - x) * p);
+}
+
+function showBoxes() {
+  overlay.innerHTML = '';
+  const W = v.clientWidth, H = v.clientHeight;
+  const vr = v.videoWidth / v.videoHeight, er = W / H;
+  const dw = vr > er ? W : H * vr, dh = vr > er ? W / vr : H;
+  const ox = (W - dw) / 2, oy = (H - dh) / 2;
+  overlay.style.width = W + 'px'; overlay.style.height = H + 'px';
+  const t = v.currentTime;
+  let n = 0;
+  for (const tr of tracks) {
+    if (!tr.asset_id || !assets[tr.asset_id]) continue;  // 只标已生成资产,其余留给用户圈选
+    const bb = bboxAt(tr, t);
+    if (!bb) continue;
+    n++;
+    const el = document.createElement('div');
+    el.className = 'marker';
+    el.style.cssText = `left:${ox + (bb[0]+bb[2]/2)*dw}px; top:${oy + (bb[1]+bb[3]/2)*dh}px;`;
+    el.innerHTML = `<span class="dot"></span><span class="pill">${assets[tr.asset_id].name}</span>`;
+    el.onclick = () => showPanel(tr);
+    overlay.appendChild(el);
+  }
+  hint.textContent = n ? `⏸ ${n} 件同款可看 3D · 也可以圈选其他物品` : `⏸ 圈选任意家具,生成它的 3D 同款`;
+}
+
+function showPanel(tr) {
+  const body = document.getElementById('panel-body');
+  const a = tr.asset_id && assets[tr.asset_id];
+  if (a) {
+    const l = a.labels, tags = [l.sub, ...(l.colors||[]), ...(l.materials||[]), ...(l.styles||[]), ...(l.features||[])].filter(Boolean);
+    body.innerHTML = `<model-viewer src="${a.glb_url}" camera-controls auto-rotate shadow-intensity="1" poster="${a.thumb_url}"></model-viewer>
+      <h3>${a.name}</h3>
+      <div class="tags">${tags.map(x => `<span class="tag2">${x}</span>`).join('')}</div>
+      <div class="tags">来源 @ ${a.source.t_best}s · 从本视频自动生成</div>`;
+  } else {
+    body.innerHTML = `<div class="empty">这件「${tr.category}」还没生成 3D 资产。<br><br>
+      在正式 App 里,圈选它就会触发生成(约 40 秒),生成后所有用户共享这件资产。</div>`;
+  }
+  panel.style.display = 'flex';
+}
+
+v.addEventListener('pause', showBoxes);
+v.addEventListener('seeked', () => { if (v.paused) showBoxes(); });
+v.addEventListener('play', () => { overlay.innerHTML = ''; panel.style.display = 'none'; hint.textContent = '▶️ 播放中 · 任意时刻暂停试试'; });
+window.addEventListener('resize', () => { if (v.paused) showBoxes(); });
+init();
+</script>
+</body>
+</html>
