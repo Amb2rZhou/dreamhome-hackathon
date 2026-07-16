@@ -7,6 +7,7 @@
   <meta name="theme-color" content="#f5fbf6" />
   <title>DreamHome · 我的家</title>
   <link rel="stylesheet" href="./dreamhome-d-system.css" />
+  <link rel="stylesheet" href="../shared/mascot.css" />
   <style>
     :root { color-scheme: light; }
     body { margin: 0; min-height: 100vh; font-family: var(--dh-font-sans); color: var(--dh-fg-primary); background: linear-gradient(90deg, #e7eee5, #f6faf4 48%, #e3ece1); }
@@ -108,6 +109,7 @@
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { FURNITURE_CATEGORIES, getAsset, getAssets, getFavorites, isSupportedFloorplan } from '../shared/asset-library-data.js';
+    import { createMascot } from '../shared/mascot.js';
 
     const STORAGE_KEY = 'dreamhome.my-home.v1';
     const USE_MOCK_HOME_SERVICE = true;
@@ -153,6 +155,7 @@
     ];
     const state = { phase:'setup', project:null, selectedTemplateId:null, drawingFile:null, selectedRoomId:null, selectedPlacementId:null, selectedWindowSlotId:null, activeAssetCategory:'全部', drawerMode:'furniture', drawerExpanded:false, interaction:{mode:'orbit', pendingAssetId:null, pointerDown:null}, job:null, dirty:false };
     const ui = Object.fromEntries(['setupPhase','generationPhase','generationMascotStage','editorPhase','templateGrid','drawingInput','uploadName','setupError','generateButton','generationTitle','generationCopy','progressBar','backToSetup','retryButton','sceneHost','editorHomeName','editorHomeMeta','roomSelector','inspector','inspectorTitle','inspectorCopy','placementHint','assetDrawer','drawerToggle','drawerSummary','drawerModes','categoryTabs','assetRail','toast','liveRegion','resetViewButton','clearHomeButton','rotateLeft','rotateRight','moveSelected','deleteSelected'].map((id) => [id, document.getElementById(id)]));
+    const mascotWidget = createMascot(document.querySelector('.dh-screen'), { dock: 'bottom-right', state: 'thinking' });
     let sceneRuntime = null, pollTimer = null, toastTimer = null, saveTimer = null;
 
     const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -218,10 +221,10 @@
       ui.templateGrid.innerHTML=templates.length ? `${cards}${browseCard}` : empty;
     }
     function selectTemplate(id) { state.selectedTemplateId = id; state.drawingFile=null; ui.drawingInput.value=''; ui.uploadName.textContent='支持PNG/JPG/WEBP格式的平面设计图'; ui.setupError.textContent = ''; renderTemplates(); }
-    function updatePhases() { ui.setupPhase.style.display = state.phase === 'setup' ? 'flex' : 'none'; ui.generationPhase.classList.toggle('is-visible', ['submitting','polling','error'].includes(state.phase)); ui.editorPhase.classList.toggle('is-visible', state.phase === 'editor'); }
+    function updatePhases() { ui.setupPhase.style.display = state.phase === 'setup' ? 'flex' : 'none'; ui.generationPhase.classList.toggle('is-visible', ['submitting','polling','error'].includes(state.phase)); ui.editorPhase.classList.toggle('is-visible', state.phase === 'editor'); if (state.phase === 'setup') { mascotWidget.show(); mascotWidget.setState('thinking'); } else if (state.phase === 'editor') { mascotWidget.show(); } else { mascotWidget.hide(); } }
     function updateGeneration(status, progress, error = '') { const copy = {queued:['正在准备空间','正在读取你的户型信息'],processing:['正在生成 3D 户型','包公球正在装修你的梦想之家'],ready:['空间已准备好','正在进入你的 3D 家'],failed:['生成没有完成',error || '请检查图片或重新尝试']}[status] || ['正在准备空间','']; ui.generationMascotStage.dataset.status = status; ui.generationMascotStage.classList.toggle('is-constructing', status === 'processing'); ui.generationTitle.textContent = copy[0]; ui.generationCopy.textContent = copy[1]; ui.progressBar.style.width = `${progress}%`; ui.retryButton.hidden = status !== 'failed'; ui.backToSetup.textContent = status === 'failed' ? '返回选择' : '取消'; }
     async function startGeneration() { if (!state.selectedTemplateId && !state.drawingFile) { ui.setupError.textContent = '请选择一个户型模板，或上传一张设计图。'; return; } state.phase = 'submitting'; updatePhases(); updateGeneration('queued', 4); try { state.job = await homeSceneService.submitHomeGeneration({templateId:state.selectedTemplateId, drawingFile:state.drawingFile}); state.phase='polling'; pollJob(); } catch (error) { failGeneration(error.message); } }
-    async function pollJob() { clearTimeout(pollTimer); try { const jobState = await homeSceneService.getJob(state.job); const copyStatus = jobState.status === 'ready' ? 'ready' : jobState.status === 'failed' ? 'failed' : jobState.status; updateGeneration(copyStatus, jobState.progress, jobState.error); if (jobState.status === 'ready') { state.project = jobState.result; state.project.placements.forEach((placement) => placement.homeId = state.project.id); homeSceneService.saveProject(state.project); state.phase='editor'; updatePhases(); initEditor(); tell('3D 户型已生成，可以开始摆放'); return; } if (jobState.status === 'failed') { state.phase='error'; updatePhases(); return; } pollTimer = setTimeout(pollJob, 680); } catch (error) { failGeneration(error.message); } }
+    async function pollJob() { clearTimeout(pollTimer); try { const jobState = await homeSceneService.getJob(state.job); const copyStatus = jobState.status === 'ready' ? 'ready' : jobState.status === 'failed' ? 'failed' : jobState.status; updateGeneration(copyStatus, jobState.progress, jobState.error); if (jobState.status === 'ready') { state.project = jobState.result; state.project.placements.forEach((placement) => placement.homeId = state.project.id); homeSceneService.saveProject(state.project); state.phase='editor'; updatePhases(); initEditor(); mascotWidget.setState('happy', { then: 'idle' }); tell('3D 户型已生成，可以开始摆放'); return; } if (jobState.status === 'failed') { state.phase='error'; updatePhases(); return; } pollTimer = setTimeout(pollJob, 680); } catch (error) { failGeneration(error.message); } }
     function failGeneration(message) { clearTimeout(pollTimer); state.phase='error'; updatePhases(); updateGeneration('failed', 0, message); }
     function returnToSetup() { clearTimeout(pollTimer); state.phase='setup'; updatePhases(); }
 
