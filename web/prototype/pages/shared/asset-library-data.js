@@ -1,4 +1,5 @@
 const FAVORITES_KEY = 'dreamhome.asset-library.v1';
+const CRAFTED_KEY = 'dreamhome.crafted-assets.v1';
 
 export const COMPONENT_FAMILIES = [
   { id: 'floorplan', label: '户型类' },
@@ -81,6 +82,45 @@ export const COMPONENT_ASSETS = [
 ];
 
 export const ASSET_BY_ID = new Map(COMPONENT_ASSETS.map((item) => [item.id, item]));
+
+function readCrafted() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(CRAFTED_KEY) || '{}');
+    return Array.isArray(stored.items) ? stored.items : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeCrafted(items) {
+  localStorage.setItem(CRAFTED_KEY, JSON.stringify({ version: 1, items }));
+}
+
+function registerCrafted(item) {
+  if (ASSET_BY_ID.has(item.id)) return;
+  COMPONENT_ASSETS.unshift(item);
+  ASSET_BY_ID.set(item.id, item);
+}
+
+export function getCraftedAssets() {
+  return readCrafted();
+}
+
+export function addCraftedAsset(item) {
+  const crafted = { kind: 'furniture', source: 'discover', sourceType: 'discover', isNew: true, createdAt: Date.now(), dimensions: [1, .8, .6], ...item };
+  writeCrafted([crafted, ...readCrafted()]);
+  registerCrafted(crafted);
+  return crafted;
+}
+
+export function markCraftedSeen(id) {
+  writeCrafted(readCrafted().map((item) => (item.id === id ? { ...item, isNew: false } : item)));
+  const registered = ASSET_BY_ID.get(id);
+  if (registered) registered.isNew = false;
+}
+
+// 模块加载即把已打造资产并入目录(倒序遍历保证最新的排最前)
+readCrafted().slice().reverse().forEach(registerCrafted);
 
 export function getAssets(kind, category) {
   return COMPONENT_ASSETS.filter((item) => item.kind === kind && (!category || item.category === category));
