@@ -20,7 +20,7 @@ python3 -m http.server 5178 --directory web
 ## 目录约定
 
 - `pages/inspiration-library/`：平台级组件目录与用户收藏。
-- `pages/shared/`：共享导航、平台组件目录和收藏状态工具。
+- `pages/shared/`：共享导航、平台组件目录、收藏与已打造资产状态工具、包公球组件（`mascot.js`/`mascot.css`，透明立绘融入版式，六态各有专属动画）。
 - `pages/draw/`、`pages/capture/`、`pages/discover/`：三个生成入口原型。
 - `pages/my-home/`：3D 场景、资产摆放和 `HomePlacement` mock 交互。
 
