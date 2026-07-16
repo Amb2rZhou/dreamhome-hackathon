@@ -20,10 +20,6 @@ SAM2 视频级追踪(离线精确轨迹)后续加 /track,当前 pipeline 用 CPU
 import base64
 import io
 import os
-import queue
-import threading
-import time
-import uuid
 
 import torch
 from fastapi import FastAPI, HTTPException
@@ -154,53 +150,14 @@ def embed(req: EmbedIn):
     return {"embedding": feat.cpu().tolist()}
 
 
-# ---- 自部署 TRELLIS:单 GPU 串行队列,submit/poll 语义与 backend provider 对齐 ----
+# ---- 3D 生成:代理到 trellis-box 容器内的 server_gen3d.py(那边才有 trellis 环境) ----
+# 产物 GLB 写在共享目录(宿主挂载给容器),由本服务 /files 静态托管下发。
 
 FILES_DIR = os.path.abspath(os.environ.get("GEN3D_FILES_DIR", "./files"))
 os.makedirs(FILES_DIR, exist_ok=True)
 app.mount("/files", StaticFiles(directory=FILES_DIR), name="files")
 
-_gen_jobs: dict[str, dict] = {}          # job_id -> {status, error, created}
-_gen_queue: "queue.Queue[tuple[str, Image.Image]]" = queue.Queue()
-_trellis = None
-_worker_started = False
-
-
-def get_trellis():
-    """TRELLIS pipeline 懒加载(首次 ~1-2 分钟,之后常驻显存)。"""
-    global _trellis
-    if _trellis is None:
-        from trellis.pipelines import TrellisImageTo3DPipeline
-        _trellis = TrellisImageTo3DPipeline.from_pretrained(
-            os.environ.get("TRELLIS_MODEL", "microsoft/TRELLIS-image-large"))
-        _trellis.cuda()
-    return _trellis
-
-
-def _gen_worker():
-    while True:
-        job_id, img = _gen_queue.get()
-        job = _gen_jobs[job_id]
-        try:
-            job["status"] = "running"
-            pipe = get_trellis()
-            outputs = pipe.run(img, seed=1)
-            from trellis.utils import postprocessing_utils
-            glb = postprocessing_utils.to_glb(
-                outputs["gaussian"][0], outputs["mesh"][0],
-                simplify=0.95, texture_size=1024)
-            glb.export(os.path.join(FILES_DIR, f"{job_id}.glb"))
-            job["status"] = "succeeded"
-        except Exception as e:  # noqa: BLE001 生成失败不能带崩 worker
-            job["status"] = "failed"
-            job["error"] = f"{type(e).__name__}: {e}"
-
-
-def _ensure_worker():
-    global _worker_started
-    if not _worker_started:
-        threading.Thread(target=_gen_worker, daemon=True).start()
-        _worker_started = True
+GEN3D_BACKEND = os.environ.get("GEN3D_BACKEND_URL", "http://127.0.0.1:9001")
 
 
 class Gen3DIn(BaseModel):
@@ -209,23 +166,27 @@ class Gen3DIn(BaseModel):
 
 @app.post("/gen3d")
 def gen3d_submit(req: Gen3DIn):
-    _ensure_worker()
-    job_id = uuid.uuid4().hex
-    _gen_jobs[job_id] = {"status": "queued", "error": None, "created": time.time()}
-    _gen_queue.put((job_id, _decode(req.image_data_uri)))
-    return {"job_id": job_id}
+    import httpx
+    try:
+        r = httpx.post(f"{GEN3D_BACKEND}/gen3d", json={"image_data_uri": req.image_data_uri},
+                       timeout=60, trust_env=False)
+        r.raise_for_status()
+        return r.json()
+    except httpx.HTTPError as e:
+        raise HTTPException(503, f"gen3d worker unreachable: {e}")
 
 
 @app.get("/gen3d/{job_id}")
 def gen3d_status(job_id: str):
-    job = _gen_jobs.get(job_id)
-    if not job:
-        raise HTTPException(404, "job not found")
-    out = {"status": job["status"], "error": job["error"],
-           "queue_ahead": _gen_queue.qsize()}
-    if job["status"] == "succeeded":
-        out["glb_path"] = f"/files/{job_id}.glb"
-    return out
+    import httpx
+    try:
+        r = httpx.get(f"{GEN3D_BACKEND}/gen3d/{job_id}", timeout=30, trust_env=False)
+        if r.status_code == 404:
+            raise HTTPException(404, "job not found")
+        r.raise_for_status()
+        return r.json()
+    except httpx.HTTPError as e:
+        raise HTTPException(503, f"gen3d worker unreachable: {e}")
 
 
 if __name__ == "__main__":
