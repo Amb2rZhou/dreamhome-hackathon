@@ -1,7 +1,53 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>DreamHome · 拍一张</title><link rel="stylesheet" href="./dreamhome-d-system.css"/><link rel="stylesheet" href="../shared/five-tabbar.css"/><style>
-.feature-content{height:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px var(--dh-tabbar-safe-space);text-align:center}.feature-icon{width:72px;height:72px;padding:18px;border-radius:26px;background:var(--dh-color-sage-100);color:var(--dh-color-sage-700)}.feature-icon img{width:100%;height:100%;display:block}h1{margin:18px 0 8px;font-size:22px;letter-spacing:0}p{max-width:220px;margin:0;color:var(--dh-fg-secondary);font-size:13px;line-height:1.7}.feature-action{margin-top:22px;min-width:132px;height:42px;border:0;border-radius:15px;background:var(--dh-color-sage-600);color:white;font:inherit;font-size:13px;font-weight:var(--dh-font-weight-bold)}
-body { margin:0; min-width:320px; background:var(--dh-bg-canvas); }
-.preview-stage { min-height:100vh; display:grid; place-items:center; padding:28px 18px; box-sizing:border-box; }
-@media (max-width:420px) { .preview-stage { min-height:100svh; padding:18px 10px; } }
-</style></head><body><main class="preview-stage"><section class="dh-phone-shell"><div class="dh-screen"><div class="dh-statusbar"><span>9:41</span><span class="dh-dynamic-island"></span><span class="dh-status-icons">▮◔</span></div><div class="feature-content"><span class="feature-icon"><img src="../../assets/icons/navigation/capture.svg" alt=""/></span><h1>拍一张</h1><p>拍摄或上传家居图片，生成可复用的 3D 组件</p><button class="feature-action" type="button">选择图片</button></div><nav class="dh-tabbar dh-tabbar--five" aria-label="主功能导航"><a class="dh-tab" href="../draw/index.html" aria-label="画一笔"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/draw.svg" alt="" /></span></a><a class="dh-tab dh-tab--active" href="./index.html" aria-label="拍一张" aria-current="page"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/capture.svg" alt="" /></span></a><a class="dh-tab dh-tab--core" href="../inspiration-library/index.html" aria-label="灵感库"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/inspiration.svg" alt="" /></span></a><a class="dh-tab" href="../discover/index.html" aria-label="刷一刷"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/discover.svg" alt="" /></span></a><a class="dh-tab" href="../my-home/index.html" aria-label="我的家"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/my-home.svg" alt="" /></span></a></nav><div class="dh-home-indicator" aria-hidden="true"></div></div></section></main></body></html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DreamHome · 拍一张</title>
+<link rel="stylesheet" href="./dreamhome-d-system.css" />
+<link rel="stylesheet" href="../shared/five-tabbar.css" />
+<link rel="stylesheet" href="../shared/mascot.css" />
+<style>
+body { margin: 0; min-width: 320px; background: var(--dh-bg-canvas); }
+.preview-stage { min-height: 100vh; display: grid; place-items: center; padding: 28px 18px; box-sizing: border-box; }
+@media (max-width: 420px) { .preview-stage { min-height: 100svh; padding: 18px 10px; } }
+.feature-content { height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 14px 18px var(--dh-tabbar-safe-space); overflow-y: auto; scrollbar-width: none; }
+.feature-content::-webkit-scrollbar { display: none; }
+.feature-hero { position: relative; border-radius: 22px; padding: 18px 16px 20px; background:
+  radial-gradient(circle at 82% 20%, rgba(255,255,255,.5), transparent 46%), linear-gradient(150deg, #eef5ed, #d9e6d3);
+  border: 1px solid rgba(117,139,113,.2); box-shadow: 0 8px 22px rgba(69,89,67,.1); }
+.feature-hero .eyebrow { display: inline-block; padding: 4px 8px; border-radius: 7px; background: var(--dh-color-sage-100); color: var(--dh-color-sage-800); font-size: 10px; font-weight: var(--dh-font-weight-heavy); }
+.feature-hero h1 { margin: 10px 0 6px; font-size: 22px; letter-spacing: 0; }
+.feature-hero p { margin: 0; max-width: 190px; color: var(--dh-fg-secondary); font-size: 12px; line-height: 1.7; }
+.step-card { display: flex; gap: 11px; align-items: center; padding: 12px; border-radius: 16px; background: rgba(255,255,255,.88); border: 1px solid rgba(117,139,113,.16); box-shadow: 0 4px 12px rgba(69,89,67,.06); }
+.step-num { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--dh-color-sage-600); color: #fff; font-size: 12px; font-weight: var(--dh-font-weight-heavy); }
+.step-card b { display: block; font-size: 12.5px; margin-bottom: 2px; }
+.step-card span { display: block; color: var(--dh-fg-secondary); font-size: 10.5px; line-height: 1.5; }
+.feature-action { margin-top: auto; min-height: 44px; border: 0; border-radius: 15px; background: var(--dh-color-sage-600); color: #fff; font: inherit; font-size: 13px; font-weight: var(--dh-font-weight-bold); cursor: pointer; }
+.feature-action:active { transform: scale(.98); }
+</style>
+</head>
+<body>
+<main class="preview-stage">
+<section class="dh-phone-shell">
+  <div class="dh-screen">
+    <div class="dh-statusbar"><span>9:41</span><span class="dh-dynamic-island"></span><span class="dh-status-icons">▮◔</span></div>
+    <div class="feature-content">
+      <section class="feature-hero"><span class="eyebrow">PHOTO → 3D</span><h1>拍一张</h1><p>线下看到心动家具,拍下来交给包公球变成 3D 组件。</p></section>
+      <div class="step-card"><span class="step-num">1</span><div><b>拍摄或选图</b><span>对准家具主体,支持相册选取</span></div></div>
+      <div class="step-card"><span class="step-num">2</span><div><b>抠出主体</b><span>自动去背景,留下干净的家具</span></div></div>
+      <div class="step-card"><span class="step-num">3</span><div><b>生成 3D 组件</b><span>产出可复用组件,自动收进灵感库</span></div></div>
+      <button class="feature-action" type="button" id="featureAction">打开相机</button>
+    </div>
+    <nav class="dh-tabbar dh-tabbar--five" aria-label="主功能导航"><a class="dh-tab" href="../draw/index.html" aria-label="画一笔"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/draw.svg" alt="" /></span></a><a class="dh-tab dh-tab--active" href="./index.html" aria-label="拍一张" aria-current="page"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/capture.svg" alt="" /></span></a><a class="dh-tab dh-tab--core" href="../inspiration-library/index.html" aria-label="灵感库"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/inspiration.svg" alt="" /></span></a><a class="dh-tab" href="../discover/index.html" aria-label="刷一刷"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/discover.svg" alt="" /></span></a><a class="dh-tab" href="../my-home/index.html" aria-label="我的家"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/my-home.svg" alt="" /></span></a></nav>
+    <div class="dh-home-indicator" aria-hidden="true"></div>
+  </div>
+</section>
+</main>
+<script type="module">
+import { createMascot } from '../shared/mascot.js';
+const mascot = createMascot(document.querySelector('.dh-screen'), { dock: 'bottom-right', state: 'idle' });
+document.getElementById('featureAction').addEventListener('click', () => mascot.setState('happy', { then: 'idle' }));
+</script>
+</body>
+</html>
