@@ -4,6 +4,7 @@
 embedding 余弦留了钩子作并列排序辅助，hackathon 体量 numpy 都不必引。
 """
 import json
+import struct
 from typing import Optional
 
 from . import db
@@ -57,20 +58,47 @@ def match_candidates(labels: dict, *, exclude_asset_ids: Optional[set] = None) -
     return out[:_TOP_K]
 
 
+def pack_embedding(vec: list[float]) -> bytes:
+    return struct.pack(f"{len(vec)}f", *vec)
+
+
+def unpack_embedding(blob: bytes) -> list[float]:
+    return list(struct.unpack(f"{len(blob) // 4}f", blob))
+
+
+def _cos(a: list[float], b: list[float]) -> float:
+    return sum(x * y for x, y in zip(a, b))  # 向量已归一化
+
+
+# 外观相似度阈值:≥0.90 几乎必是同款;标签重合仅在无 embedding 时兜底
+_EMBED_DUP_THRESHOLD = 0.90
+
+
 def duplicate_pairs() -> list[dict]:
-    """审核页用：全库扫"疑似重复"资产对(同品类且重合度高)。百级资产 O(n²) 无压力。"""
+    """审核页用：全库扫"疑似重复"资产对。
+    主判据 CLIP 外观向量(标签是 mock/粗标签时也不误报);无向量时退回标签重合。
+    百级资产 O(n²) 无压力。"""
     rows = db.all_assets_raw(status="ready")
-    parsed = [(r["asset_id"], json.loads(r["labels_json"] or "{}")) for r in rows]
+    parsed = []
+    for r in rows:
+        emb = unpack_embedding(r["embedding"]) if r["embedding"] else None
+        parsed.append((r["asset_id"], json.loads(r["labels_json"] or "{}"), emb))
     pairs = []
     for i in range(len(parsed)):
         for j in range(i + 1, len(parsed)):
-            ida, la = parsed[i]
-            idb, lb = parsed[j]
+            ida, la, ea = parsed[i]
+            idb, lb, eb = parsed[j]
             if la.get("category") != lb.get("category"):
                 continue
+            if ea is not None and eb is not None:
+                sim = _cos(ea, eb)
+                if sim >= _EMBED_DUP_THRESHOLD:
+                    pairs.append({"a": ida, "b": idb, "score": round(sim, 3),
+                                  "reason": f"外观相似 {sim:.0%}"})
+                continue  # 有向量就以向量为准,不再看标签
             score, hits = _overlap(la, lb)
             if score >= _SUGGEST_THRESHOLD:
                 pairs.append({"a": ida, "b": idb, "score": round(score, 3),
-                              "reason": "、".join(hits[:5])})
+                              "reason": "标签重合:" + "、".join(hits[:5])})
     pairs.sort(key=lambda x: -x["score"])
     return pairs

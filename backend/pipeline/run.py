@@ -116,22 +116,38 @@ def interpolate(points: list[dict], step: float = INDEX_STEP) -> list[dict]:
     return out
 
 
+MIN_CUT_PX = 140         # 抠图短边下限(px),太小的生成必是废品
+MIN_CUT_BRIGHTNESS = 35  # 平均亮度下限(0-255),太暗的跳过
+
+
 def cutout(frame_path: str, bbox: list, out_path: str) -> str:
     from PIL import Image
     img = Image.open(frame_path).convert("RGB")
     W, H = img.size
     x, y, w, h = bbox
-    pad = 0.03  # 稍微外扩,别切掉边缘
+    pad = 0.08  # 外扩,防止家具边缘被 bbox 切掉(补全/rembg 需要完整轮廓)
     box = (max(0, int((x - pad) * W)), max(0, int((y - pad) * H)),
            min(W, int((x + w + pad) * W)), min(H, int((y + h + pad) * H)))
     img.crop(box).save(out_path)
     return out_path
 
 
-async def gen3d(image_path: str) -> tuple[str, str]:
-    """同步等待一次 3D 生成,返回 (glb_url, status)。批量场景串行即可(fal 侧本身排队)。"""
+def cut_quality_ok(cut_path: str) -> tuple[bool, str]:
+    """质量闸:太小/太暗的抠图直接跳过,不浪费 GPU 也不污染资产库。"""
+    from PIL import Image, ImageStat
+    img = Image.open(cut_path)
+    if min(img.size) < MIN_CUT_PX:
+        return False, f"太小({img.size[0]}x{img.size[1]})"
+    brightness = ImageStat.Stat(img.convert("L")).mean[0]
+    if brightness < MIN_CUT_BRIGHTNESS:
+        return False, f"太暗(亮度{brightness:.0f})"
+    return True, ""
+
+
+async def gen3d(image_path: str, extra_image_paths: list[str] | None = None) -> tuple[str, str]:
+    """同步等待一次 3D 生成,返回 (glb_url, status)。批量场景串行即可(GPU 侧本身排队)。"""
     provider = get_provider()
-    pjid = await provider.submit(image_path)
+    pjid = await provider.submit(image_path, extra_image_paths=extra_image_paths)
     for _ in range(150):
         await asyncio.sleep(2)
         res = await provider.poll(pjid)
@@ -140,6 +156,73 @@ async def gen3d(image_path: str) -> tuple[str, str]:
         if res.status == "failed":
             return "", "rejected"
     return "", "rejected"
+
+
+async def embed_image(image_path: str) -> list[float] | None:
+    """抠图 → CLIP 向量(GPU /embed)。不可用时返回 None,聚类自动退化为品类判重。"""
+    if not settings.REMOTE_GPU_URL:
+        return None
+    import base64
+    import httpx
+    with open(image_path, "rb") as f:
+        uri = "data:image/jpeg;base64," + base64.b64encode(f.read()).decode()
+    for attempt in range(3):
+        try:
+            async with httpx.AsyncClient(timeout=60, trust_env=False) as client:
+                r = await client.post(f"{settings.REMOTE_GPU_URL}/embed",
+                                      json={"image_data_uri": uri})
+                r.raise_for_status()
+                return r.json()["embedding"]
+        except Exception:  # noqa: BLE001
+            if attempt == 2:
+                return None
+            await asyncio.sleep(1.5)
+    return None
+
+
+def _cos(a: list[float], b: list[float]) -> float:
+    num = sum(x * y for x, y in zip(a, b))
+    return num  # 向量已归一化
+
+
+def _time_overlap_ratio(a: dict, b: dict) -> float:
+    """两条 track 时间区间的重叠占比(相对较短者)。同一物体的碎片几乎不重叠;
+    重叠大且是两个框 → 是两个不同的同款物体,不能合并。"""
+    lo = max(a["points"][0]["t"], b["points"][0]["t"])
+    hi = min(a["points"][-1]["t"], b["points"][-1]["t"])
+    inter = max(0.0, hi - lo)
+    dur = min(a["points"][-1]["t"] - a["points"][0]["t"],
+              b["points"][-1]["t"] - b["points"][0]["t"])
+    return inter / max(dur, 0.5)
+
+
+EMBED_MERGE_SIM = 0.82   # 同品类 + 外观相似度 ≥ 此值 → 认为是同一物体
+# 多视角生成每簇用几张图。实测跨时刻抠图角度/光照差异大会互相打架(v3 质量回退),
+# 默认 1(单图);等补全模块把图洗干净后再调回 2-3 试
+MAX_VIEWS = int(os.environ.get("PIPELINE_MAX_VIEWS", "1"))
+
+
+def cluster_tracks(tracks: list[dict], embeds: list) -> list[list[int]]:
+    """贪心聚类:质量分高的 track 当簇代表,后续 track 满足
+    (同品类 + 外观相似 + 时间重叠低)并入。返回按代表质量排序的成员下标簇。"""
+    clusters: list[list[int]] = []
+    for i, tr in enumerate(tracks):
+        placed = False
+        for cl in clusters:
+            rep = tracks[cl[0]]
+            if rep["category"] != tr["category"]:
+                continue
+            if embeds[i] is not None and embeds[cl[0]] is not None:
+                if _cos(embeds[i], embeds[cl[0]]) < EMBED_MERGE_SIM:
+                    continue
+            if _time_overlap_ratio(rep, tr) > 0.3:
+                continue  # 同时出现在两个位置 → 两个不同物体
+            cl.append(i)
+            placed = True
+            break
+        if not placed:
+            clusters.append([i])
+    return clusters
 
 
 async def process(video_path: str, title: str, source_url: str) -> str:
@@ -192,51 +275,96 @@ async def process(video_path: str, title: str, source_url: str) -> str:
     # 真实视频轨迹碎片多,按"存在时长×平均面积"排序,可用 PIPELINE_MAX_ASSETS 截断控量
     tracks.sort(key=lambda tr: -(len(tr["points"]) *
                                  sum(p["bbox"][2] * p["bbox"][3] for p in tr["points"]) / len(tr["points"])))
-    max_assets = int(os.environ.get("PIPELINE_MAX_ASSETS", "0"))
-    dropped: list[dict] = []
-    if max_assets and len(tracks) > max_assets:
-        dropped = [tr for tr in tracks[max_assets:] if len(tr["points"]) >= 4]
-        print(f"      ⚠️ 截断: 质量分前 {max_assets} 条生成3D;"
-              f"{len(dropped)} 条较稳轨迹只入索引(可圈选后补生成),"
-              f"丢弃 {len(tracks) - max_assets - len(dropped)} 条碎轨迹")
-        tracks = tracks[:max_assets]
-
     sharp = {f["path"]: f["sharpness"] for f in frames}
+
+    def quality(p: dict) -> float:
+        return sharp.get(p["frame"], 0) * p["bbox"][2] * p["bbox"][3]
+
+    # [4/6] 每条 track 取最佳帧抠图 → CLIP 向量 → 聚类去重(同一物体的碎片合成一簇)
+    print("[4/6] 最佳帧抠图 + 外观聚类去重")
+    cuts: list[str] = []
     for i, tr in enumerate(tracks):
-        # [4/6] 最佳帧:清晰度 × 面积
-        best = max(tr["points"], key=lambda p: sharp.get(p["frame"], 0) * p["bbox"][2] * p["bbox"][3])
+        best = max(tr["points"], key=quality)
+        tr["best"] = best
         cut_path = os.path.join(work, f"cut_{i}.jpg")
         cutout(best["frame"], best["bbox"], cut_path)
+        cuts.append(cut_path)
+    embeds = [await embed_image(p) for p in cuts]
+    clusters = cluster_tracks(tracks, embeds)
+    n_embed = sum(1 for e in embeds if e is not None)
+    print(f"      {len(tracks)} 条轨迹 → {len(clusters)} 个物体"
+          f"(embedding 覆盖 {n_embed}/{len(tracks)})")
 
-        # [5/6] 3D 生成 + 打标签并行
-        print(f"[5/6] track#{i} {tr['category']} @ {best['t']}s → 3D + 标签")
+    max_assets = int(os.environ.get("PIPELINE_MAX_ASSETS", "0"))
+    gen_clusters = clusters[:max_assets] if max_assets else clusters
+    if len(gen_clusters) < len(clusters):
+        print(f"      ⚠️ 截断: 只生成前 {max_assets} 簇,其余 {len(clusters)-len(gen_clusters)} 簇只入索引")
+
+    from app.services.enhance import enhance_cutout
+
+    for ci, cl in enumerate(gen_clusters):
+        rep = tracks[cl[0]]
+        best = rep["best"]
+        ok, why = cut_quality_ok(cuts[cl[0]])
+        if not ok:
+            print(f"[5/6] 物体#{ci} {rep['category']} 跳过({why}),轨迹仍入索引")
+            for j in cl:
+                tr = tracks[j]
+                db.insert_track(video_id, tr["category"], interpolate(tr["points"]),
+                                t_start=tr["points"][0]["t"], t_end=tr["points"][-1]["t"],
+                                best_frame_t=tr["best"]["t"])
+            continue
+        # 补全卡槽(队友模块):残帧抠图 → 完整产品图;未接入时直通
+        main_view = await enhance_cutout(cuts[cl[0]],
+                                         os.path.join(work, f"enh_{ci}.jpg"))
+        # 多视角选图:代表帧 + 时间上离得最远的成员帧;默认 MAX_VIEWS=1 即单图
+        views = [main_view]
+        others = sorted(cl[1:], key=lambda j: -abs(tracks[j]["best"]["t"] - best["t"]))
+        views += [cuts[j] for j in others[:MAX_VIEWS - 1]]
+
+        print(f"[5/6] 物体#{ci} {rep['category']} @ {best['t']}s"
+              f"({len(cl)} 段轨迹,{len(views)} 视角)→ 3D + 标签")
         (glb_url, status), labels = await asyncio.gather(
-            gen3d(cut_path), extract_labels(cut_path, category_hint=tr["category"]))
+            gen3d(views[0], extra_image_paths=views[1:]),
+            extract_labels(views[0], category_hint=rep["category"]))
 
-        thumb_name = f"thumbs/{video_id}_{i}.jpg"
+        thumb_name = f"thumbs/{video_id}_{ci}.jpg"
         os.makedirs(os.path.join(storage, "thumbs"), exist_ok=True)
-        shutil.copy(cut_path, os.path.join(storage, thumb_name))
+        shutil.copy(views[0], os.path.join(storage, thumb_name))
 
-        track_id = db.insert_track(video_id, tr["category"], interpolate(tr["points"]),
-                                   t_start=tr["points"][0]["t"], t_end=tr["points"][-1]["t"],
-                                   best_frame_t=best["t"])
+        from app.matching import pack_embedding
+        rep_track_id = ""
         asset_id = db.insert_asset(
-            name=labels.get("sub") or tr["category"], labels=labels,
+            name=labels.get("sub") or rep["category"], labels=labels,
             glb_url=glb_url, thumb_url=f"{settings.PUBLIC_BASE_URL}/storage/{thumb_name}",
-            source={"video_id": video_id, "track_id": track_id, "t_best": best["t"]},
+            source={"video_id": video_id, "track_id": "", "t_best": best["t"]},
             status=status, created_by="pipeline",
+            embedding=pack_embedding(embeds[cl[0]]) if embeds[cl[0]] else None,
         )
-        db.bind_track_asset(track_id, asset_id)
+        # 簇内所有轨迹段都挂同一资产:暂停在任何片段,框都指向同一个 3D
+        for j in cl:
+            tr = tracks[j]
+            tid = db.insert_track(video_id, tr["category"], interpolate(tr["points"]),
+                                  t_start=tr["points"][0]["t"], t_end=tr["points"][-1]["t"],
+                                  best_frame_t=tr["best"]["t"])
+            db.bind_track_asset(tid, asset_id)
+            if j == cl[0]:
+                rep_track_id = tid
+        db.update_asset(asset_id, source={"video_id": video_id,
+                                          "track_id": rep_track_id, "t_best": best["t"]})
         print(f"      asset={asset_id} status={status}")
 
-    # 未生成 3D 的稳定轨迹也入索引:暂停时框是全的,圈选可触发后补生成
-    for tr in dropped:
-        db.insert_track(video_id, tr["category"], interpolate(tr["points"]),
-                        t_start=tr["points"][0]["t"], t_end=tr["points"][-1]["t"],
-                        best_frame_t=tr["points"][len(tr["points"]) // 2]["t"])
+    # 截断掉的簇只入索引(可圈选后补生成)
+    for cl in clusters[len(gen_clusters):]:
+        for j in cl:
+            tr = tracks[j]
+            db.insert_track(video_id, tr["category"], interpolate(tr["points"]),
+                            t_start=tr["points"][0]["t"], t_end=tr["points"][-1]["t"],
+                            best_frame_t=tr["best"]["t"])
 
     db.set_video_status(video_id, "indexed", index_source="offline")
-    print(f"[6/6] 完成: video={video_id}, {len(tracks)} 资产入库(待审核页人工筛选)")
+    print(f"[6/6] 完成: video={video_id}, {len(gen_clusters)} 件资产"
+          f"(合并自 {len(tracks)} 条轨迹)入库,待审核")
     return video_id
 
 

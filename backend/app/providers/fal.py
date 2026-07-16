@@ -50,7 +50,8 @@ class FalTrellisProvider(Gen3DProvider):
             "Content-Type": "application/json",
         }
 
-    async def submit(self, image_path: str, *, texture: bool = True, prompt: str = "") -> str:
+    async def submit(self, image_path: str, *, texture: bool = True, prompt: str = "",
+                     extra_image_paths: list[str] | None = None) -> str:
         payload = {"image_url": _to_data_uri(image_path)}
         if prompt:
             payload["prompt"] = prompt

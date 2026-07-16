@@ -19,7 +19,9 @@ class Gen3DProvider(ABC):
     name: str = "base"
 
     @abstractmethod
-    async def submit(self, image_path: str, *, texture: bool = True, prompt: str = "") -> str:
+    async def submit(self, image_path: str, *, texture: bool = True, prompt: str = "",
+                     extra_image_paths: list[str] | None = None) -> str:
+        # extra_image_paths: 同一物体的其他角度图(可选);只有 selfhost(TRELLIS多视角)支持,其余忽略
         """提交一张本地图片，返回 provider 侧任务 id。"""
         raise NotImplementedError
 
