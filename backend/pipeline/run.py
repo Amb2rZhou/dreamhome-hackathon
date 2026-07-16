@@ -163,19 +163,43 @@ async def process(video_path: str, title: str, source_url: str) -> str:
                     status="processing")
 
     print(f"[2/6] 检测 (provider={settings.effective_detect_provider})")
-    detections = []
-    for f in frames:
+    detections, skipped = [], 0
+    for idx, f in enumerate(frames):
         import base64
         with open(f["path"], "rb") as fh:
             uri = "data:image/jpeg;base64," + base64.b64encode(fh.read()).decode()
-        for box in await detect_frame(video_id, f["t"], uri):
+        boxes = None
+        for attempt in range(3):  # 单帧网络抖动重试,连败跳帧不炸整个视频
+            try:
+                boxes = await detect_frame(video_id, f["t"], uri)
+                break
+            except Exception as e:  # noqa: BLE001
+                if attempt == 2:
+                    skipped += 1
+                    print(f"      ⚠️ t={f['t']} 检测失败已跳过: {type(e).__name__}: {e}")
+                else:
+                    await asyncio.sleep(1.5 * (attempt + 1))
+        for box in boxes or []:
             detections.append({"t": f["t"], "bbox": box["bbox"],
                                "category": box["category"], "frame": f["path"]})
-    print(f"      {len(detections)} 个检测框")
+        if idx % 40 == 39:
+            print(f"      检测进度 {idx+1}/{len(frames)}")
+    print(f"      {len(detections)} 个检测框" + (f"(跳过 {skipped} 帧)" if skipped else ""))
 
     print("[3/6] 跨帧关联成 track")
     tracks = link_tracks(detections)
     print(f"      {len(tracks)} 条 track (≥{MIN_TRACK_LEN} 帧)")
+    # 真实视频轨迹碎片多,按"存在时长×平均面积"排序,可用 PIPELINE_MAX_ASSETS 截断控量
+    tracks.sort(key=lambda tr: -(len(tr["points"]) *
+                                 sum(p["bbox"][2] * p["bbox"][3] for p in tr["points"]) / len(tr["points"])))
+    max_assets = int(os.environ.get("PIPELINE_MAX_ASSETS", "0"))
+    dropped: list[dict] = []
+    if max_assets and len(tracks) > max_assets:
+        dropped = [tr for tr in tracks[max_assets:] if len(tr["points"]) >= 4]
+        print(f"      ⚠️ 截断: 质量分前 {max_assets} 条生成3D;"
+              f"{len(dropped)} 条较稳轨迹只入索引(可圈选后补生成),"
+              f"丢弃 {len(tracks) - max_assets - len(dropped)} 条碎轨迹")
+        tracks = tracks[:max_assets]
 
     sharp = {f["path"]: f["sharpness"] for f in frames}
     for i, tr in enumerate(tracks):
@@ -204,6 +228,12 @@ async def process(video_path: str, title: str, source_url: str) -> str:
         )
         db.bind_track_asset(track_id, asset_id)
         print(f"      asset={asset_id} status={status}")
+
+    # 未生成 3D 的稳定轨迹也入索引:暂停时框是全的,圈选可触发后补生成
+    for tr in dropped:
+        db.insert_track(video_id, tr["category"], interpolate(tr["points"]),
+                        t_start=tr["points"][0]["t"], t_end=tr["points"][-1]["t"],
+                        best_frame_t=tr["points"][len(tr["points"]) // 2]["t"])
 
     db.set_video_status(video_id, "indexed", index_source="offline")
     print(f"[6/6] 完成: video={video_id}, {len(tracks)} 资产入库(待审核页人工筛选)")
