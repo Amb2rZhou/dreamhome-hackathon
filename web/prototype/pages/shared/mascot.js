@@ -32,11 +32,10 @@ export function createMascot(host, options = {}) {
   function setState(state, { then } = {}) {
     if (!STATE_NAMES.includes(state)) { console.warn(`[mascot] unknown state: ${state}`); return; }
     clearTimeout(happyTimer);
+    widget.dataset.state = '';
+    void face.offsetWidth; /* 强制 reflow,同状态重复设置(如连续投喂的 happy)也能重启动画 */
     widget.dataset.state = state;
     face.src = stateUrl(state);
-    face.classList.remove('mascot-pop');
-    void face.offsetWidth; /* 强制 reflow,重启弹跳动画 */
-    face.classList.add('mascot-pop');
     if (state === 'happy' && then) {
       if (STATE_NAMES.includes(then)) happyTimer = setTimeout(() => setState(then), HAPPY_MS);
       else console.warn(`[mascot] unknown state: ${then}`);
@@ -84,7 +83,7 @@ export function createMascot(host, options = {}) {
     queue,
     notify,
     dock(position) {
-      if (position !== 'right' && position !== 'bottom-right') { console.warn(`[mascot] unknown dock: ${position}`); return; }
+      if (position !== 'right' && position !== 'bottom-right' && position !== 'inline') { console.warn(`[mascot] unknown dock: ${position}`); return; }
       widget.dataset.dock = position;
     },
     show() { widget.hidden = false; },

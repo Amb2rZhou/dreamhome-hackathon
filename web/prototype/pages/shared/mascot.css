@@ -1,36 +1,41 @@
-/* 包公球悬浮 widget:六态、呼吸浮动、抡锤、Zzz、队列徽标、通知胶囊 */
-.mascot-widget { position: absolute; z-index: 31; width: 64px; pointer-events: none; } /* 高于 tabbar(z=30)/与页面 toast 错层 */
+/* 包公球 widget:透明立绘直接融入页面(不再用白色圆底贴纸样式),六态各有专属循环动画 */
+.mascot-widget { position: absolute; z-index: 31; /* 高于 tabbar(z=30) */ width: 72px; pointer-events: none; }
 .mascot-widget[hidden] { display: none; }
-.mascot-widget[data-dock="right"] { right: 8px; top: 38%; }
-.mascot-widget[data-dock="bottom-right"] { right: 10px; bottom: calc(var(--dh-tabbar-safe-space, 100px) + 6px); }
-.mascot-face { display: block; width: 64px; height: 64px; object-fit: contain; border-radius: 50%;
-  background: radial-gradient(circle at 50% 42%, rgba(255,255,255,.92), rgba(238,245,237,.78));
-  box-shadow: 0 8px 20px rgba(44,59,45,.22), 0 0 0 3px rgba(255,255,255,.6);
-  animation: mascot-float 3s ease-in-out infinite; }
-.mascot-face.mascot-pop { animation: mascot-float 3s ease-in-out infinite, mascot-pop .45s cubic-bezier(.34,1.56,.64,1); }
-.mascot-widget[data-state="working"] .mascot-face { animation: mascot-float 3s ease-in-out infinite, mascot-shake 1s ease-in-out infinite; }
-.mascot-hammer { display: none; position: absolute; right: -6px; top: -10px; font-size: 20px; transform-origin: 20% 90%; animation: mascot-knock 1s ease-in-out infinite; }
+.mascot-widget[data-dock="right"] { right: 6px; top: 36%; }
+.mascot-widget[data-dock="bottom-right"] { right: 10px; bottom: calc(var(--dh-tabbar-safe-space, 100px) + 4px); }
+.mascot-widget[data-dock="inline"] { position: relative; width: 100%; z-index: 1; } /* 融入版式:位置与大小由页面上的挂载容器决定 */
+.mascot-face { display: block; width: 100%; height: auto; transform-origin: 50% 88%;
+  filter: drop-shadow(0 6px 12px rgba(44,59,45,.26)); }
+/* 状态 → 专属动画 */
+.mascot-widget[data-state="initial"] .mascot-face,
+.mascot-widget[data-state="idle"] .mascot-face { animation: mascot-idle 2.8s ease-in-out infinite; }
+.mascot-widget[data-state="thinking"] .mascot-face { animation: mascot-think 2.2s ease-in-out infinite; }
+.mascot-widget[data-state="working"] .mascot-face { animation: mascot-work .9s ease-in-out infinite; }
+.mascot-widget[data-state="happy"] .mascot-face { animation: mascot-happy .9s cubic-bezier(.34,1.56,.64,1); }
+.mascot-widget[data-state="sleeping"] .mascot-face { animation: mascot-sleep 3.6s ease-in-out infinite; }
+.mascot-hammer { display: none; position: absolute; right: -4px; top: -12px; font-size: 21px; transform-origin: 20% 90%; animation: mascot-knock .9s ease-in-out infinite; }
 .mascot-widget[data-state="working"] .mascot-hammer { display: block; }
-.mascot-zzz { display: none; position: absolute; right: -2px; top: -14px; color: #8fa48a; font-size: 13px; font-weight: 800; animation: mascot-zzz 2.4s ease-in-out infinite; }
+.mascot-zzz { display: none; position: absolute; right: 2px; top: -14px; color: #8fa48a; font-size: 13px; font-weight: 800; animation: mascot-zzz 2.4s ease-in-out infinite; }
 .mascot-widget[data-state="sleeping"] .mascot-zzz { display: block; }
-.mascot-badge { position: absolute; top: -4px; right: -2px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px;
+.mascot-badge { position: absolute; top: -6px; right: 2px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px;
   background: #be6959; color: #fff; font-size: 11px; font-weight: 800; display: grid; place-items: center;
   box-shadow: 0 3px 8px rgba(44,59,45,.3); }
 .mascot-badge[hidden] { display: none; }
-.mascot-notice { position: absolute; z-index: 41; top: 56px; left: 50%; transform: translateX(-50%) translateY(-12px); opacity: 0; /* 高于 tabbar(z=30)/与页面 toast 错层 */
+.mascot-notice { position: absolute; z-index: 41; /* 与页面 toast(常见 z=40)错层 */ top: 56px; left: 50%; transform: translateX(-50%) translateY(-12px); opacity: 0;
   display: flex; gap: 9px; align-items: center; width: max-content; max-width: 82%; padding: 8px 14px 8px 8px;
   border: 0; border-radius: 999px; background: rgba(255,255,255,.96); box-shadow: 0 10px 26px rgba(44,59,45,.24);
-  font: inherit; font-size: 12px; font-weight: 700; color: #2c3b2d; cursor: pointer; transition: .3s ease; pointer-events: none; } /* transition .3s 须与 mascot.js NOTICE_FADE_MS 一致 */
+  font: inherit; font-size: 12px; font-weight: 700; color: #2c3b2d; cursor: pointer; transition: .3s ease; /* .3s 须与 mascot.js NOTICE_FADE_MS 一致 */ pointer-events: none; }
 .mascot-notice.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 .mascot-notice[hidden] { display: none; }
 .mascot-notice img { width: 30px; height: 30px; object-fit: contain; }
-@keyframes mascot-float { 0%,100% { translate: 0 0; } 50% { translate: 0 -6px; } }
-@keyframes mascot-pop { 0% { scale: .72; } 60% { scale: 1.12; } 100% { scale: 1; } }
-@keyframes mascot-shake { 0%,100% { rotate: 0deg; } 25% { rotate: -4deg; } 75% { rotate: 4deg; } }
-@keyframes mascot-knock { 0%,100% { rotate: 0deg; } 50% { rotate: -42deg; } }
+@keyframes mascot-idle { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-7px) rotate(2deg); } }
+@keyframes mascot-think { 0%, 100% { transform: rotate(-7deg); } 55% { transform: rotate(5deg) translateY(-3px); } }
+@keyframes mascot-work { 0%, 100% { transform: translateY(0) rotate(-2deg); } 30% { transform: translateY(-5px) rotate(3deg) scale(1.03, .97); } 60% { transform: translateY(-1px) rotate(-1deg); } }
+@keyframes mascot-happy { 0% { transform: scale(.78) rotate(-10deg); } 35% { transform: scale(1.18) rotate(8deg) translateY(-12px); } 65% { transform: scale(.94) rotate(-4deg) translateY(-2px); } 100% { transform: scale(1) rotate(0); } }
+@keyframes mascot-sleep { 0%, 100% { transform: translateY(2px); } 50% { transform: translateY(4px) scale(1.05, .95); } }
+@keyframes mascot-knock { 0%, 100% { rotate: 0deg; } 50% { rotate: -42deg; } }
 @keyframes mascot-zzz { 0% { opacity: 0; translate: 0 2px; } 40% { opacity: 1; } 100% { opacity: 0; translate: 6px -8px; } }
 @media (prefers-reduced-motion: reduce) {
-  .mascot-face, .mascot-face.mascot-pop, .mascot-widget[data-state="working"] .mascot-face,
-  .mascot-hammer, .mascot-zzz { animation: none !important; }
+  .mascot-face, .mascot-hammer, .mascot-zzz { animation: none !important; }
   .mascot-notice { transition: none; }
 }
