@@ -237,28 +237,33 @@ MAX_VIEWS = int(os.environ.get("PIPELINE_MAX_VIEWS", "1"))
 
 
 def cluster_tracks(tracks: list[dict], embeds: list) -> list[list[int]]:
-    """贪心聚类:质量分高的 track 当簇代表,后续 track 满足
-    (同品类 + 外观相似 + 时间重叠低)并入。返回按代表质量排序的成员下标簇。"""
+    """聚类:质量分高的 track 当簇代表,后续 track 满足
+    (同品类 + 外观相似 + 时间重叠低)时加入**相似度最高**的簇。
+    (不能先到先得:两件相似同品类家具都过门槛时,碎片会挂错对象 → 光点名字标反。)"""
     clusters: list[list[int]] = []
     for i, tr in enumerate(tracks):
-        placed = False
+        best_cl, best_sim = None, -1.0
         for cl in clusters:
             rep = tracks[cl[0]]
             if rep["category"] != tr["category"]:
                 continue
             gap = max(tr["points"][0]["t"] - rep["points"][-1]["t"],
                       rep["points"][0]["t"] - tr["points"][-1]["t"], 0.0)
+            if _time_overlap_ratio(rep, tr) > 0.3:
+                continue  # 同时出现在两个位置 → 两个不同物体
             if embeds[i] is not None and embeds[cl[0]] is not None:
-                if _cos(embeds[i], embeds[cl[0]]) < _merge_threshold(tr["category"], gap):
+                sim = _cos(embeds[i], embeds[cl[0]])
+                if sim < _merge_threshold(tr["category"], gap):
                     continue
             elif tr["category"] in SMALL_CATEGORIES:
                 continue  # 小物件没有向量时不盲合
-            if _time_overlap_ratio(rep, tr) > 0.3:
-                continue  # 同时出现在两个位置 → 两个不同物体
-            cl.append(i)
-            placed = True
-            break
-        if not placed:
+            else:
+                sim = 0.0  # 无向量的大件:仅品类+时间约束,相当于最低优先级候选
+            if sim > best_sim:
+                best_cl, best_sim = cl, sim
+        if best_cl is not None:
+            best_cl.append(i)
+        else:
             clusters.append([i])
     return clusters
 

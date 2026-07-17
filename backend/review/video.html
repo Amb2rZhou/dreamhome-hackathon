@@ -97,10 +97,16 @@ function showBoxes() {
   overlay.style.width = W + 'px'; overlay.style.height = H + 'px';
   const t = v.currentTime;
   let n = 0;
-  for (const tr of tracks) {
+  const placed = [];
+  // 轨迹长的优先占位;两个光点几乎重合时只留一个(残余的重复检出防撞)
+  const byLen = [...tracks].sort((x, y) => (y.t_end - y.t_start) - (x.t_end - x.t_start));
+  for (const tr of byLen) {
     if (!tr.asset_id || !assets[tr.asset_id] || assets[tr.asset_id].status !== 'ready') continue;  // 只标已审核通过的资产
     const bb = bboxAt(tr, t);
     if (!bb) continue;
+    const cx = bb[0] + bb[2] / 2, cy = bb[1] + bb[3] / 2;
+    if (placed.some(p => Math.hypot(p[0] - cx, p[1] - cy) < 0.06)) continue;
+    placed.push([cx, cy]);
     n++;
     const el = document.createElement('div');
     el.className = 'marker';
