@@ -220,10 +220,11 @@ def _time_overlap_ratio(a: dict, b: dict) -> float:
 SKIP_GEN_CATEGORIES = set(os.environ.get("PIPELINE_SKIP_GEN", "窗帘").split(","))
 
 EMBED_MERGE_SIM = 0.82   # 同品类 + 外观相似度 ≥ 此值 → 认为是同一物体(大件)
-# 小物件抠图小、CLIP 区分度差(不同吊灯都是"天花板黑块"),阈值必须更高。
+# 易混品类阈值更高:小物件抠图小 CLIP 区分度差(不同吊灯都是"天花板黑块");
+# 桌子/柜子同房间同光照下不同件也容易过 0.82(实测两起错绑都是它们)。
 # 拆错了审核页能一键合并,合错了救不回来 → 宁拆勿合。
 EMBED_MERGE_SIM_SMALL = 0.90
-SMALL_CATEGORIES = {"灯具", "装饰", "绿植"}
+SMALL_CATEGORIES = {"灯具", "装饰", "绿植", "桌子", "柜子"}
 # 一镜到底视频:两段轨迹时间隔得越久(多半已走到别的房间),要求越像才可合并
 TIME_GAP_PENALTY = 0.03  # 每隔 60s 提高阈值 0.03,上限 +0.06
 
