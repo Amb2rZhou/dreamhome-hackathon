@@ -215,6 +215,10 @@ def _time_overlap_ratio(a: dict, b: dict) -> float:
     return inter / max(dur, 0.5)
 
 
+# 只进索引、不生成 3D 的品类:窗帘等平面/软性物在 3D 里是丑柱子(走 backlog 的平面化方案),
+# 定位和圈选不受影响。可用 PIPELINE_SKIP_GEN 覆盖(逗号分隔)。
+SKIP_GEN_CATEGORIES = set(os.environ.get("PIPELINE_SKIP_GEN", "窗帘").split(","))
+
 EMBED_MERGE_SIM = 0.82   # 同品类 + 外观相似度 ≥ 此值 → 认为是同一物体(大件)
 # 小物件抠图小、CLIP 区分度差(不同吊灯都是"天花板黑块"),阈值必须更高。
 # 拆错了审核页能一键合并,合错了救不回来 → 宁拆勿合。
@@ -350,6 +354,8 @@ async def process(video_path: str, title: str, source_url: str) -> str:
         rep = tracks[cl[0]]
         best = rep["best"]
         ok, why = cut_quality_ok(cuts[cl[0]])
+        if rep["category"] in SKIP_GEN_CATEGORIES:
+            ok, why = False, "品类不生成3D(平面化方案)"
         if not ok:
             print(f"[5/6] 物体#{ci} {rep['category']} 跳过({why}),轨迹仍入索引")
             for j in cl:

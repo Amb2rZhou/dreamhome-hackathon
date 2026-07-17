@@ -67,14 +67,23 @@ async function init() {
   }, { once: true });
 }
 
+function iou(a, b) {
+  const ix = Math.max(0, Math.min(a[0]+a[2], b[0]+b[2]) - Math.max(a[0], b[0]));
+  const iy = Math.max(0, Math.min(a[1]+a[3], b[1]+b[3]) - Math.max(a[1], b[1]));
+  const inter = ix * iy;
+  return inter / (a[2]*a[3] + b[2]*b[3] - inter || 1);
+}
 function bboxAt(tr, t) {
   const fs = tr.frames;
-  if (!fs.length || t < tr.t_start - 0.35 || t > tr.t_end + 0.35) return null;
+  if (!fs.length || t < tr.t_start - 0.2 || t > tr.t_end + 0.2) return null;
   let lo = 0, hi = fs.length - 1;
   while (lo < hi) { const m = (lo + hi) >> 1; fs[m].t < t ? lo = m + 1 : hi = m; }
   const b = fs[lo], a = fs[Math.max(0, lo - 1)];
-  if (Math.abs(b.t - t) > 0.35 && Math.abs(a.t - t) > 0.35) return null;
+  if (Math.abs(b.t - t) > 0.2 && Math.abs(a.t - t) > 0.2) return null;
   if (a === b || b.t === a.t) return b.bbox;
+  // 镜头快移时相邻帧框跳变大,插值会把光点"平均"到空中 → 跳变大就吸附最近真实帧
+  if (iou(a.bbox, b.bbox) < 0.3)
+    return (Math.abs(a.t - t) <= Math.abs(b.t - t)) ? a.bbox : b.bbox;
   const p = Math.min(1, Math.max(0, (t - a.t) / (b.t - a.t)));
   return a.bbox.map((x, i) => x + (b.bbox[i] - x) * p);
 }
@@ -89,7 +98,7 @@ function showBoxes() {
   const t = v.currentTime;
   let n = 0;
   for (const tr of tracks) {
-    if (!tr.asset_id || !assets[tr.asset_id]) continue;  // 只标已生成资产,其余留给用户圈选
+    if (!tr.asset_id || !assets[tr.asset_id] || assets[tr.asset_id].status !== 'ready') continue;  // 只标已审核通过的资产
     const bb = bboxAt(tr, t);
     if (!bb) continue;
     n++;

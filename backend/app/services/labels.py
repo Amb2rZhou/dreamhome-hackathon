@@ -15,7 +15,7 @@ import httpx
 from ..config import settings
 
 _PROMPT = """你是家具识别标注器。观察图中的主体家具，输出 JSON(仅 JSON，无其他文字)：
-{"category": "沙发|单椅|床|柜子|桌子|灯具|地毯|绿植|窗帘|装饰|其他 之一",
+{"category": "沙发|单椅|床|柜子|桌子|灯具|地毯|绿植|窗帘|装饰|卫浴|家电|其他 之一",
  "sub": "更细的子品类，如 三人沙发/吊灯/边柜",
  "colors": ["主要颜色，最多3个"],
  "materials": ["材质，如 布艺/皮革/实木/金属/藤编/玻璃"],
@@ -46,7 +46,8 @@ async def extract_labels(image_path: Optional[str] = None, *,
     return _mock(image_path, category_hint)
 
 
-CATEGORIES = {"沙发", "单椅", "床", "柜子", "桌子", "灯具", "地毯", "绿植", "窗帘", "装饰", "其他"}
+CATEGORIES = {"沙发", "单椅", "床", "柜子", "桌子", "灯具", "地毯", "绿植", "窗帘", "装饰",
+              "卫浴", "家电", "其他"}
 
 
 def _parse_json(text: str, category_hint: str = "") -> dict:

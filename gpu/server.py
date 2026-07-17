@@ -37,6 +37,9 @@ VOCAB = {
     "bed": "床", "cabinet": "柜子", "shelf": "柜子", "table": "桌子",
     "desk": "桌子", "lamp": "灯具", "rug": "地毯", "potted plant": "绿植",
     "curtain": "窗帘", "mirror": "装饰", "painting": "装饰",
+    # 卫浴/家电(2026-07-17 补:马桶这类大件此前根本不在词表)
+    "toilet": "卫浴", "bathtub": "卫浴", "sink": "卫浴",
+    "television": "家电", "refrigerator": "家电", "washing machine": "家电",
 }
 _KEYS = list(VOCAB)
 VOCAB_CHUNKS = [_KEYS[i:i + 5] for i in range(0, len(_KEYS), 5)]
