@@ -88,6 +88,13 @@ def _worker():
             job["status"] = "failed"
             job["error"] = f"{type(e).__name__}: {e}"
             torch.cuda.empty_cache()
+            # CUDA 状态脏(CUBLAS/illegal memory)后进程会持续抽风:
+            # 自杀让 docker restart 策略拉起干净进程(约40s),比带病硬扛强
+            if "CUDA" in str(e) or "CUBLAS" in str(e):
+                import os as _os
+                import sys as _sys
+                print("CUDA state corrupted, exiting for clean restart", file=_sys.stderr)
+                _os._exit(1)
 
 
 def _ensure_worker():

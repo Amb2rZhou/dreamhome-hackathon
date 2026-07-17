@@ -157,16 +157,32 @@ async def gen3d(image_path: str, extra_image_paths: list[str] | None = None) -> 
         if os.path.exists(os.path.join(os.path.abspath(settings.STORAGE_DIR), rel)):
             return hit["glb_url"], "ready"
     provider = get_provider()
-    pjid = await provider.submit(image_path, extra_image_paths=extra_image_paths)
-    for _ in range(150):
-        await asyncio.sleep(2)
-        res = await provider.poll(pjid)
-        if res.status == "succeeded":
-            url = res.model_url or ""
-            cache.put("gen3d", key, {"glb_url": url, "status": "ready"})
-            return url, "ready"
-        if res.status == "failed":
-            return "", "rejected"
+    for attempt in range(2):  # 失败重试一次(worker CUDA 脏状态自杀重启后大概率成功)
+        try:
+            pjid = await provider.submit(image_path, extra_image_paths=extra_image_paths)
+        except Exception as e:  # noqa: BLE001 worker 重启窗口期 submit 会连不上
+            print(f"      gen3d submit 失败({type(e).__name__}),75s 后重试")
+            await asyncio.sleep(75)
+            continue
+        failed = False
+        for _ in range(150):
+            await asyncio.sleep(2)
+            try:
+                res = await provider.poll(pjid)
+            except Exception:  # noqa: BLE001 worker 重启中
+                failed = True
+                break
+            if res.status == "succeeded":
+                url = res.model_url or ""
+                cache.put("gen3d", key, {"glb_url": url, "status": "ready"})
+                return url, "ready"
+            if res.status == "failed":
+                if res.error:
+                    print(f"      gen3d 失败: {res.error[:120]}")
+                failed = True
+                break
+        if failed and attempt == 0:
+            await asyncio.sleep(75)  # 等 worker 自杀重启+模型加载
     return "", "rejected"
 
 
@@ -329,10 +345,51 @@ async def process(video_path: str, title: str, source_url: str) -> str:
     # 真实视频轨迹碎片多,按"存在时长×平均面积"排序,可用 PIPELINE_MAX_ASSETS 截断控量
     tracks.sort(key=lambda tr: -(len(tr["points"]) *
                                  sum(p["bbox"][2] * p["bbox"][3] for p in tr["points"]) / len(tr["points"])))
+    # ---- T1C1: SAM2 追踪升级(TRACKER=sam2,默认启用) ----
+    # IoU 碎轨迹只当"种子",SAM2 全帧传播出精确轨迹 + 几何合并碎片 + mask抠图多帧向量。
+    # SAM2 不可用时自动回退原 IoU 轨迹(embeds 由后续本地计算)。
+    sam2_embeds: dict[int, list] = {}
+    if os.environ.get("TRACKER", "sam2") == "sam2" and tracks:
+        _sharp0 = {f["path"]: f["sharpness"] for f in frames}
+        seeds = []
+        for i, tr in enumerate(tracks):
+            b = max(tr["points"], key=lambda p: _sharp0.get(p["frame"], 0) * p["bbox"][2] * p["bbox"][3])
+            seeds.append({"obj_id": i, "t": b["t"], "bbox": b["bbox"]})
+        from app.services.track import sam2_track
+        res = await sam2_track(video_path, seeds)
+        if res and res.get("objects"):
+            t2frame = {round(f["t"], 1): f["path"] for f in frames}
+
+            def _nearest_frame(t: float) -> str:
+                return t2frame.get(round(t, 1)) or min(
+                    ((abs(k - t), v) for k, v in t2frame.items()))[1]
+
+            new_tracks = []
+            for oi, obj in enumerate(res["objects"]):
+                if len(obj["frames"]) < 2:
+                    continue
+                cats = [tracks[m]["category"] for m in obj["merged_from"] if m < len(tracks)]
+                cat = max(set(cats), key=cats.count) if cats else "其他"
+                pts = [{"t": f["t"], "bbox": f["bbox"],
+                        "frame": _nearest_frame(f["t"])} for f in obj["frames"]]
+                new_tracks.append({"category": cat, "points": pts})
+                if obj.get("embedding"):
+                    sam2_embeds[len(new_tracks) - 1] = obj["embedding"]
+            if new_tracks:
+                print(f"      SAM2: {len(tracks)} 种子 → {len(new_tracks)} 条完整轨迹"
+                      f"(几何合并 {len(tracks) - len(new_tracks)} 个碎片)")
+                tracks = new_tracks
+
     sharp = {f["path"]: f["sharpness"] for f in frames}
 
+    def _edge_cut(b: list) -> int:
+        """bbox 触到几条画面边 = 物体被切掉几边(部分视角,补全会脑补形态)。"""
+        return sum([b[0] < 0.01, b[1] < 0.01, b[0] + b[2] > 0.99, b[1] + b[3] > 0.99])
+
     def quality(p: dict) -> float:
-        return sharp.get(p["frame"], 0) * p["bbox"][2] * p["bbox"][3]
+        # 切边惩罚:宁选完整的小图,不选被裁的大图
+        return (sharp.get(p["frame"], 0) * p["bbox"][2] * p["bbox"][3]
+                * (0.3 ** _edge_cut(p["bbox"])))
 
     # [4/6] 每条 track 取最佳帧抠图 → CLIP 向量 → 聚类去重(同一物体的碎片合成一簇)
     print("[4/6] 最佳帧抠图 + 外观聚类去重")
@@ -343,11 +400,48 @@ async def process(video_path: str, title: str, source_url: str) -> str:
         cut_path = os.path.join(work, f"cut_{i}.jpg")
         cutout(best["frame"], best["bbox"], cut_path)
         cuts.append(cut_path)
-    embeds = [await embed_image(p) for p in cuts]
+    # SAM2 已带回 mask抠图多帧平均向量(背景剔除,聚类更准);缺的才本地补算
+    embeds = [sam2_embeds.get(i) or await embed_image(p) for i, p in enumerate(cuts)]
     clusters = cluster_tracks(tracks, embeds)
     n_embed = sum(1 for e in embeds if e is not None)
     print(f"      {len(tracks)} 条轨迹 → {len(clusters)} 个物体"
           f"(embedding 覆盖 {n_embed}/{len(tracks)})")
+
+    # 人工聚类修正(CLUSTER_FIX=corrections.json,索引=预审页簇编号):
+    # merge 合并同物体的簇 / redistribute 按相似度拆混簇 / drop 剔除垃圾簇(只入索引)
+    dropped_by_fix: set[int] = set()
+    fix_path = os.environ.get("CLUSTER_FIX", "")
+    if fix_path and os.path.exists(fix_path):
+        import json as _json
+        fix = _json.load(open(fix_path))
+        cmap = {i: cl for i, cl in enumerate(clusters)}
+        for a, b in fix.get("redistribute", []):
+            if a in cmap and b in cmap:
+                rep_a, rep_b = cmap[a][0], cmap[b][0]
+                keep = [cmap[a][0]]
+                for j in cmap[a][1:]:
+                    if embeds[j] and embeds[rep_a] and embeds[rep_b] and \
+                       _cos(embeds[j], embeds[rep_b]) > _cos(embeds[j], embeds[rep_a]):
+                        cmap[b].append(j)
+                    else:
+                        keep.append(j)
+                cmap[a] = keep
+        for group in fix.get("merge", []):
+            group = [g for g in group if g in cmap]
+            if len(group) < 2:
+                continue
+            base = group[0]
+            for g in group[1:]:
+                cmap[base].extend(cmap.pop(g))
+        dropped_by_fix = {i for i in fix.get("drop", []) if i in cmap}
+        clusters = [cl for i, cl in sorted(cmap.items()) if i not in dropped_by_fix]
+        for i in sorted(dropped_by_fix):
+            for j in cmap[i]:
+                tr = tracks[j]
+                db.insert_track(video_id, tr["category"], interpolate(tr["points"]),
+                                t_start=tr["points"][0]["t"], t_end=tr["points"][-1]["t"],
+                                best_frame_t=tr["best"]["t"] if "best" in tr else tr["points"][0]["t"])
+        print(f"      修正后: {len(clusters)} 个物体(剔除 {len(dropped_by_fix)} 簇)")
 
     max_assets = int(os.environ.get("PIPELINE_MAX_ASSETS", "0"))
     gen_clusters = clusters[:max_assets] if max_assets else clusters
@@ -356,46 +450,57 @@ async def process(video_path: str, title: str, source_url: str) -> str:
 
     from app.services.enhance import enhance_cutout
 
+    from app.services.labels import CATEGORIES
+
+    def _index_only(cl):
+        for j in cl:
+            tr = tracks[j]
+            db.insert_track(video_id, tr["category"], interpolate(tr["points"]),
+                            t_start=tr["points"][0]["t"], t_end=tr["points"][-1]["t"],
+                            best_frame_t=tr["best"]["t"])
+
     for ci, cl in enumerate(gen_clusters):
         rep = tracks[cl[0]]
         best = rep["best"]
         ok, why = cut_quality_ok(cuts[cl[0]])
-        if rep["category"] in SKIP_GEN_CATEGORIES:
+        if ok and _edge_cut(rep["best"]["bbox"]) >= 2:
+            ok, why = False, "所有帧都被画面切边(部分视角,生成会脑补形态)"
+        labels = None
+        cat = rep["category"]
+        if ok:
+            # 标签前置:qwen 看原始抠图定品类,比检测词表准(电视机被检成"装饰"这类在此纠正);
+            # "其他" = 词表误触发(门锁当家电),在花钱补全/生成之前就打回
+            labels = await extract_labels(cuts[cl[0]], category_hint=rep["category"])
+            if labels.get("category") == "其他":
+                ok, why = False, f"标签判'其他'({labels.get('sub', '')})"
+            elif labels.get("category") in CATEGORIES:
+                cat = labels["category"]
+        if ok and cat in SKIP_GEN_CATEGORIES:
             ok, why = False, "品类不生成3D(平面化方案)"
         if not ok:
             print(f"[5/6] 物体#{ci} {rep['category']} 跳过({why}),轨迹仍入索引")
-            for j in cl:
-                tr = tracks[j]
-                db.insert_track(video_id, tr["category"], interpolate(tr["points"]),
-                                t_start=tr["points"][0]["t"], t_end=tr["points"][-1]["t"],
-                                best_frame_t=tr["best"]["t"])
+            _index_only(cl)
             continue
         # 补全卡槽(队友模块):残帧抠图 → 完整产品图;未接入时直通。品类约束防跑偏(床→椅)
         main_view = await enhance_cutout(cuts[cl[0]],
                                          os.path.join(work, f"enh_{ci}.jpg"),
-                                         category=rep["category"])
+                                         category=cat)
         # 幻觉闸:补全图必须还是原图那件家具(碎片框会被脑补成不存在的家具)
         if main_view != cuts[cl[0]]:
             from app.services.consistency import check_consistency
             same, why2 = await check_consistency(cuts[cl[0]], main_view)
             if not same:
-                print(f"[5/6] 物体#{ci} {rep['category']} 幻觉打回({why2}),轨迹仍入索引")
-                for j in cl:
-                    tr = tracks[j]
-                    db.insert_track(video_id, tr["category"], interpolate(tr["points"]),
-                                    t_start=tr["points"][0]["t"], t_end=tr["points"][-1]["t"],
-                                    best_frame_t=tr["best"]["t"])
+                print(f"[5/6] 物体#{ci} {cat} 幻觉打回({why2}),轨迹仍入索引")
+                _index_only(cl)
                 continue
         # 多视角选图:代表帧 + 时间上离得最远的成员帧;默认 MAX_VIEWS=1 即单图
         views = [main_view]
         others = sorted(cl[1:], key=lambda j: -abs(tracks[j]["best"]["t"] - best["t"]))
         views += [cuts[j] for j in others[:MAX_VIEWS - 1]]
 
-        print(f"[5/6] 物体#{ci} {rep['category']} @ {best['t']}s"
-              f"({len(cl)} 段轨迹,{len(views)} 视角)→ 3D + 标签")
-        (glb_url, status), labels = await asyncio.gather(
-            gen3d(views[0], extra_image_paths=views[1:]),
-            extract_labels(views[0], category_hint=rep["category"]))
+        print(f"[5/6] 物体#{ci} {cat} @ {best['t']}s"
+              f"({len(cl)} 段轨迹,{len(views)} 视角)→ 3D")
+        glb_url, status = await gen3d(views[0], extra_image_paths=views[1:])
 
         thumb_name = f"thumbs/{video_id}_{ci}.jpg"
         os.makedirs(os.path.join(storage, "thumbs"), exist_ok=True)

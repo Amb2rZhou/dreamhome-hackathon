@@ -89,6 +89,7 @@ def _iou(a: list, b: list) -> float:
 class DetectRequest(BaseModel):
     t: float
     frame_data_uri: Optional[str] = None
+    dry: bool = False   # true=只识别不写索引(演示页暂停校正用,防碎轨迹污染)
 
 
 @router.post("/{video_id}/detect", response_model=DetectResponse)
@@ -110,6 +111,8 @@ async def detect(video_id: str, req: DetectRequest):
         if hit_track:
             out.append(DetectBox(**rb, track_id=hit_track["track_id"],
                                  asset_id=hit_track["asset_id"]))
+        elif req.dry:
+            out.append(DetectBox(**rb, track_id="", asset_id=None))
         else:
             tid = db.insert_track(video_id, rb["category"], [{"t": req.t, "bbox": rb["bbox"]}],
                                   t_start=req.t, t_end=req.t, best_frame_t=req.t)

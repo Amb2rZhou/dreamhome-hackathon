@@ -22,7 +22,7 @@ import io
 import os
 
 import torch
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
 from pydantic import BaseModel
@@ -36,10 +36,11 @@ VOCAB = {
     "sofa": "沙发", "armchair": "单椅", "chair": "单椅", "stool": "单椅",
     "bed": "床", "cabinet": "柜子", "shelf": "柜子", "table": "桌子",
     "desk": "桌子", "lamp": "灯具", "rug": "地毯", "potted plant": "绿植",
-    "curtain": "窗帘", "mirror": "装饰", "painting": "装饰",
-    # 卫浴/家电(2026-07-17 补:马桶这类大件此前根本不在词表)
+    "mirror": "装饰", "vase": "装饰",
+    # curtain/painting 已删:窗帘走平面化方案,painting 会把照片墙炸成几十个装饰(07-18)
     "toilet": "卫浴", "bathtub": "卫浴", "sink": "卫浴",
     "television": "家电", "refrigerator": "家电", "washing machine": "家电",
+    "speaker": "家电", "nightstand": "柜子", "tv stand": "柜子", "wardrobe": "柜子",
 }
 _KEYS = list(VOCAB)
 VOCAB_CHUNKS = [_KEYS[i:i + 5] for i in range(0, len(_KEYS), 5)]
@@ -198,6 +199,35 @@ def gen3d_status(job_id: str):
         return r.json()
     except httpx.HTTPError as e:
         raise HTTPException(503, f"gen3d worker unreachable: {e}")
+
+
+# ---- SAM2 视频追踪(T1C1):种子框 → 全帧 mask 轨迹 + mask抠图多帧平均向量 ----
+
+TRACK_UPLOAD_DIR = os.path.abspath(os.environ.get("TRACK_UPLOAD_DIR", "/data/track-uploads"))
+os.makedirs(TRACK_UPLOAD_DIR, exist_ok=True)
+
+
+@app.post("/track")
+async def track_submit(file: UploadFile = File(...), seeds: str = Form(...)):
+    import json as _json
+    import server_track
+    vid_path = os.path.join(TRACK_UPLOAD_DIR, f"{os.urandom(6).hex()}.mp4")
+    with open(vid_path, "wb") as f:
+        f.write(await file.read())
+    job_id = server_track.submit_track(vid_path, _json.loads(seeds), get_clip)
+    return {"job_id": job_id}
+
+
+@app.get("/track/{job_id}")
+def track_status(job_id: str):
+    import server_track
+    job = server_track.track_status(job_id)
+    if not job:
+        raise HTTPException(404, "job not found")
+    out = {"status": job["status"], "error": job["error"], "progress": job.get("progress", "")}
+    if job["status"] == "succeeded":
+        out["result"] = job["result"]
+    return out
 
 
 if __name__ == "__main__":

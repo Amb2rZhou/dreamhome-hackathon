@@ -43,13 +43,15 @@
 const qs = new URLSearchParams(location.search);
 const v = document.getElementById('v'), overlay = document.getElementById('overlay');
 const hint = document.getElementById('hint'), panel = document.getElementById('panel');
-let tracks = [], assets = {};
+let tracks = [], assets = {}, videoId = '', liveBoxes = null, liveSeq = 0;
 
 async function init() {
   const vids = await (await fetch('/api/videos')).json();
   const vid = qs.get('video_id') || (vids.find(x => x.status === 'indexed' && x.play_url.includes('/storage/')) || vids[0]).video_id;
+  videoId = vid;
   const meta = vids.find(x => x.video_id === vid);
   v.src = meta.play_url;
+  v.crossOrigin = 'anonymous';
   const idx = await (await fetch(`/api/videos/${vid}/index`)).json();
   tracks = idx.tracks;
   for (const a of await (await fetch('/api/assets?include_all_status=true')).json()) assets[a.asset_id] = a;
@@ -98,24 +100,33 @@ function showBoxes() {
   const t = v.currentTime;
   let n = 0;
   const placed = [];
+  // 实时校正结果优先:live 框已带 asset_id,位置像素级精确
+  const liveByAsset = {};
+  if (liveBoxes) for (const b of liveBoxes) if (b.asset_id) liveByAsset[b.asset_id] = b.bbox;
   // 轨迹长的优先占位;两个光点几乎重合时只留一个(残余的重复检出防撞)
   const byLen = [...tracks].sort((x, y) => (y.t_end - y.t_start) - (x.t_end - x.t_start));
+  const showAll = qs.get('all') === '1';   // 预审模式:未生成的也显示(空心点+品类)
   for (const tr of byLen) {
-    if (!tr.asset_id || !assets[tr.asset_id] || assets[tr.asset_id].status !== 'ready') continue;  // 只标已审核通过的资产
-    const bb = bboxAt(tr, t);
+    const ready = tr.asset_id && assets[tr.asset_id] && assets[tr.asset_id].status === 'ready';
+    if (!ready && !showAll) continue;      // 正常模式只标已审核通过的资产
+    const bb = (ready && liveByAsset[tr.asset_id]) || bboxAt(tr, t);
     if (!bb) continue;
     const cx = bb[0] + bb[2] / 2, cy = bb[1] + bb[3] / 2;
     if (placed.some(p => Math.hypot(p[0] - cx, p[1] - cy) < 0.06)) continue;
     placed.push([cx, cy]);
-    n++;
+    if (ready) n++;
     const el = document.createElement('div');
     el.className = 'marker';
-    el.style.cssText = `left:${ox + (bb[0]+bb[2]/2)*dw}px; top:${oy + (bb[1]+bb[3]/2)*dh}px;`;
-    el.innerHTML = `<span class="dot"></span><span class="pill">${assets[tr.asset_id].name}</span>`;
+    el.style.cssText = `left:${ox + cx*dw}px; top:${oy + cy*dh}px;` +
+                       (ready && liveByAsset[tr.asset_id] ? '' : 'opacity:.75;');
+    const label = ready ? assets[tr.asset_id].name : tr.category + '·未生成';
+    const dotStyle = ready ? '' : 'background:transparent;border:2.5px solid #fff;animation:none;';
+    el.innerHTML = `<span class="dot" style="${dotStyle}"></span><span class="pill">${label}</span>`;
     el.onclick = () => showPanel(tr);
     overlay.appendChild(el);
   }
-  hint.textContent = n ? `⏸ ${n} 件同款可看 3D · 也可以圈选其他物品` : `⏸ 圈选任意家具,生成它的 3D 同款`;
+  const tag = liveBoxes ? '(已校准)' : '';
+  hint.textContent = n ? `⏸ ${n} 件同款可看 3D ${tag} · 也可以圈选其他物品` : `⏸ 圈选任意家具,生成它的 3D 同款`;
 }
 
 function showPanel(tr) {
@@ -134,9 +145,30 @@ function showPanel(tr) {
   panel.style.display = 'flex';
 }
 
-v.addEventListener('pause', showBoxes);
-v.addEventListener('seeked', () => { if (v.paused) showBoxes(); });
-v.addEventListener('play', () => { overlay.innerHTML = ''; panel.style.display = 'none'; hint.textContent = '▶️ 播放中 · 任意时刻暂停试试'; });
+async function refineLive() {
+  // 暂停帧截图 → 实时检测(dry,不写索引) → 光点吸附到精确位置
+  const seq = ++liveSeq, t = v.currentTime;
+  try {
+    const c = document.createElement('canvas');
+    const scale = Math.min(1, 720 / v.videoWidth);
+    c.width = v.videoWidth * scale; c.height = v.videoHeight * scale;
+    c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+    const uri = c.toDataURL('image/jpeg', 0.8);
+    const r = await fetch(`/api/videos/${videoId}/detect`, {
+      method: 'POST', headers: {'content-type': 'application/json'},
+      body: JSON.stringify({t, frame_data_uri: uri, dry: true})});
+    if (!r.ok) return;
+    const data = await r.json();
+    if (seq !== liveSeq || !v.paused || Math.abs(v.currentTime - t) > 0.05) return;  // 已经跳走了
+    liveBoxes = data.boxes;
+    showBoxes();
+  } catch (e) { /* 校正失败就用索引位置,不打扰 */ }
+}
+
+function onPause() { liveBoxes = null; showBoxes(); refineLive(); }
+v.addEventListener('pause', onPause);
+v.addEventListener('seeked', () => { if (v.paused) onPause(); });
+v.addEventListener('play', () => { liveBoxes = null; liveSeq++; overlay.innerHTML = ''; panel.style.display = 'none'; hint.textContent = '▶️ 播放中 · 任意时刻暂停试试'; });
 window.addEventListener('resize', () => { if (v.paused) showBoxes(); });
 init();
 </script>
