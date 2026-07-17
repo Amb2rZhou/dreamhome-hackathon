@@ -265,7 +265,9 @@ INPAINT_PROMPT_NO_PATH = (
     "5. 最终输出统一为中性漫射光(flat lighting):不要保留任何方向性阴影、环境光反射或高光。"
     "   但颜色、材质、纹理必须和原图可见部分完全一致——这是最重要的约束,因为后续用于3D贴图。"
     "6. 只输出这件家具本身,不输出任何背景、阴影、其他物体、虚线或标记。"
-    "7. 最终输出透明背景。"
+    "   家具台面/表面上的摆件(台灯、餐具、书本、花瓶、装饰品等)不属于家具本身,必须全部去除。"
+    "7. 如果画面里根本没有一件完整可辨认的家具主体,不要凭空编造一件——尽量忠实还原可见部分。"
+    "8. 最终输出透明背景。"
 )
 
 
@@ -275,6 +277,7 @@ async def inpaint(
     bbox: Optional[str] = Form(None, description="圈选外接框 x,y,w,h"),
     path: Optional[str] = Form(None, description="用户轨迹 x1,y1;x2,y2;...（bbox 相对坐标）"),
     category: Optional[str] = Form(None, description="家具品类提示(融合补丁,来自检测,如'床')"),
+    model: Optional[str] = Form(None, description="模型覆盖(融合补丁): wan2.7-image-pro(默认)|wan2.7-image"),
 ):
     """2D 实体家具提取：单输入，从视频帧直接提取完整家具，去背景+去遮挡+补全缺失。"""
     data = await file.read()
@@ -320,7 +323,7 @@ async def inpaint(
     bbox_list = [[]]
 
     payload = {
-        "model": "wan2.7-image-pro",
+        "model": model or "wan2.7-image-pro",
         "input": {
             "messages": [
                 {
@@ -329,14 +332,14 @@ async def inpaint(
                 }
             ]
         },
-        "parameters": {
-            "size": "2K",
-            "n": 1,
-            "watermark": False,
-            "bbox_list": bbox_list,
-        },
+        "parameters": (
+            {"size": "1K", "n": 1, "watermark": False, "bbox_list": bbox_list}
+            if (model or "wan2.7-image-pro").startswith("wan")
+            else {"n": 1, "watermark": False}
+        ),
     }
 
+    _direct = urllib.request.build_opener(urllib.request.ProxyHandler({}))
     req = urllib.request.Request(
         DASHSCOPE_INPAINT_URL,
         data=json.dumps(payload).encode("utf-8"),
@@ -351,17 +354,19 @@ async def inpaint(
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE
-        with urllib.request.urlopen(req, timeout=120, context=ctx) as resp:
+        _opener = urllib.request.build_opener(
+            urllib.request.ProxyHandler({}), urllib.request.HTTPSHandler(context=ctx))
+        with _opener.open(req, timeout=120) as resp:
             result = json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         err_body = e.read().decode("utf-8", errors="replace")
-        log_usage("wan2.7-image-pro", False, time.time() - t0, f"HTTP {e.code}: {err_body[:200]}")
+        log_usage(model or "wan2.7-image-pro", False, time.time() - t0, f"HTTP {e.code}: {err_body[:200]}")
         return JSONResponse(
             status_code=e.code,
             content={"error": f"dashscope HTTP {e.code}", "detail": err_body[:800]},
         )
     except Exception as e:
-        log_usage("wan2.7-image-pro", False, time.time() - t0, str(e)[:200])
+        log_usage(model or "wan2.7-image-pro", False, time.time() - t0, str(e)[:200])
         return JSONResponse(status_code=502, content={"error": str(e)})
 
     # 解析返回：output.choices[0].message.content[0].image 可能是 url 或 base64
@@ -373,23 +378,25 @@ async def inpaint(
                 img_ref = item["image"]
                 break
         if not img_ref:
-            log_usage("wan2.7-image-pro", False, time.time() - t0, "no image in response")
+            log_usage(model or "wan2.7-image-pro", False, time.time() - t0, "no image in response")
             return JSONResponse(status_code=502, content={"error": "no image in response", "raw": result})
 
         if img_ref.startswith("http"):
             # 下载结果图
-            with urllib.request.urlopen(img_ref, timeout=60, context=ctx) as r:
+            with urllib.request.build_opener(
+                    urllib.request.ProxyHandler({}), urllib.request.HTTPSHandler(context=ctx)
+                    ).open(img_ref, timeout=60) as r:
                 out_bytes = r.read()
         elif img_ref.startswith("data:"):
             out_bytes = base64.b64decode(img_ref.split(",", 1)[1])
         else:
-            log_usage("wan2.7-image-pro", False, time.time() - t0, "unknown image ref")
+            log_usage(model or "wan2.7-image-pro", False, time.time() - t0, "unknown image ref")
             return JSONResponse(status_code=502, content={"error": "unknown image ref", "ref": img_ref[:200]})
 
-        log_usage("wan2.7-image-pro", True, time.time() - t0)
+        log_usage(model or "wan2.7-image-pro", True, time.time() - t0)
         return StreamingResponse(io.BytesIO(out_bytes), media_type="image/png")
     except Exception as e:
-        log_usage("wan2.7-image-pro", False, time.time() - t0, f"parse failed: {e}")
+        log_usage(model or "wan2.7-image-pro", False, time.time() - t0, f"parse failed: {e}")
         return JSONResponse(status_code=502, content={"error": f"parse failed: {e}", "raw": result})
 
 

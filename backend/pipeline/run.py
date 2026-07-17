@@ -373,6 +373,18 @@ async def process(video_path: str, title: str, source_url: str) -> str:
         main_view = await enhance_cutout(cuts[cl[0]],
                                          os.path.join(work, f"enh_{ci}.jpg"),
                                          category=rep["category"])
+        # 幻觉闸:补全图必须还是原图那件家具(碎片框会被脑补成不存在的家具)
+        if main_view != cuts[cl[0]]:
+            from app.services.consistency import check_consistency
+            same, why2 = await check_consistency(cuts[cl[0]], main_view)
+            if not same:
+                print(f"[5/6] 物体#{ci} {rep['category']} 幻觉打回({why2}),轨迹仍入索引")
+                for j in cl:
+                    tr = tracks[j]
+                    db.insert_track(video_id, tr["category"], interpolate(tr["points"]),
+                                    t_start=tr["points"][0]["t"], t_end=tr["points"][-1]["t"],
+                                    best_frame_t=tr["best"]["t"])
+                continue
         # 多视角选图:代表帧 + 时间上离得最远的成员帧;默认 MAX_VIEWS=1 即单图
         views = [main_view]
         others = sorted(cl[1:], key=lambda j: -abs(tracks[j]["best"]["t"] - best["t"]))
