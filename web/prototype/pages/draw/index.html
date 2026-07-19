@@ -1,7 +1,640 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>DreamHome · 画一笔</title><link rel="stylesheet" href="./dreamhome-d-system.css"/><link rel="stylesheet" href="../shared/five-tabbar.css"/><style>
-.feature-content{height:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px var(--dh-tabbar-safe-space);text-align:center}.feature-icon{width:72px;height:72px;padding:18px;border-radius:26px;background:var(--dh-color-sage-100);color:var(--dh-color-sage-700)}.feature-icon img{width:100%;height:100%;display:block}h1{margin:18px 0 8px;font-size:22px;letter-spacing:0}p{max-width:220px;margin:0;color:var(--dh-fg-secondary);font-size:13px;line-height:1.7}.feature-action{margin-top:22px;min-width:132px;height:42px;border:0;border-radius:15px;background:var(--dh-color-sage-600);color:white;font:inherit;font-size:13px;font-weight:var(--dh-font-weight-bold)}
-body { margin:0; min-width:320px; background:var(--dh-bg-canvas); }
-.preview-stage { min-height:100vh; display:grid; place-items:center; padding:28px 18px; box-sizing:border-box; }
-@media (max-width:420px) { .preview-stage { min-height:100svh; padding:18px 10px; } }
-</style></head><body><main class="preview-stage"><section class="dh-phone-shell"><div class="dh-screen"><div class="dh-statusbar"><span>9:41</span><span class="dh-dynamic-island"></span><span class="dh-status-icons">▮◔</span></div><div class="feature-content"><span class="feature-icon"><img src="../../assets/icons/navigation/draw.svg" alt=""/></span><h1>画一笔</h1><p>手绘家居，生成可复用的 3D 组件</p><button class="feature-action" type="button">准备画布</button></div><nav class="dh-tabbar dh-tabbar--five" aria-label="主功能导航"><a class="dh-tab dh-tab--active" href="./index.html" aria-label="画一笔" aria-current="page"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/draw.svg" alt="" /></span></a><a class="dh-tab" href="../capture/index.html" aria-label="拍一张"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/capture.svg" alt="" /></span></a><a class="dh-tab dh-tab--core" href="../inspiration-library/index.html" aria-label="灵感库"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/inspiration.svg" alt="" /></span></a><a class="dh-tab" href="../discover/index.html" aria-label="刷一刷"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/discover.svg" alt="" /></span></a><a class="dh-tab" href="../my-home/index.html" aria-label="我的家"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/my-home.svg" alt="" /></span></a></nav><div class="dh-home-indicator" aria-hidden="true"></div></div></section></main></body></html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f5fbf6" />
+  <title>DreamHome · 画一笔</title>
+  <link rel="stylesheet" href="./dreamhome-d-system.css" />
+  <link rel="stylesheet" href="../shared/five-tabbar.css" />
+  <link rel="stylesheet" href="../shared/status-bar.css" />
+  <style>
+    body { margin:0; min-height:100vh; background:linear-gradient(90deg,#e7eee5,#f6faf4 48%,#e3ece1); color:var(--dh-fg-primary); font-family:var(--dh-font-sans); }
+    .preview-stage { min-height:100vh; display:grid; place-items:center; padding:28px 18px; box-sizing:border-box; }
+    .draw-app { height:calc(100% - 50px); padding:0 16px; display:flex; flex-direction:column; box-sizing:border-box; overflow:hidden; }
+    .draw-header { display:grid; place-items:center; min-height:42px; padding-top:3px; }
+    .draw-title { margin:0; font-size:16px; letter-spacing:0; font-weight:var(--dh-font-weight-heavy); }
+    .draw-sub { margin:1px 0 0; font-size:10px; font-weight:var(--dh-font-weight-semibold); color:var(--dh-fg-muted); }
+    .draw-content { flex:1; min-height:0; display:flex; flex-direction:column; padding:10px 0 var(--dh-tabbar-safe-space); overflow:hidden; }
+    .phase { display:none; flex:1; min-height:0; flex-direction:column; }
+    .phase.is-active { display:flex; }
+
+    /* ---- 阶段 A · 画布 ---- */
+    .canvas-wrap { position:relative; flex:1; min-height:0; border:1px solid rgba(117,139,113,.2); border-radius:18px; background:linear-gradient(150deg,#ffffff,#f3f8f1); box-shadow:var(--dh-shadow-soft); overflow:hidden; }
+    .draw-canvas { position:absolute; inset:0; width:100%; height:100%; touch-action:none; cursor:crosshair; display:block; }
+    .canvas-grid { position:absolute; inset:0; pointer-events:none; background-image:linear-gradient(rgba(112,136,111,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(112,136,111,.08) 1px,transparent 1px); background-size:26px 26px; }
+    .canvas-empty { position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; color:var(--dh-fg-muted); font-size:12px; font-weight:var(--dh-font-weight-semibold); text-align:center; padding:0 30px; line-height:1.7; transition:opacity .2s ease; }
+    .canvas-empty.is-hidden { opacity:0; }
+
+    /* 色卡：可横向滑动 */
+    .palette-row { margin-top:10px; }
+    .swatches { display:flex; align-items:center; gap:9px; overflow-x:auto; margin:0 -2px; padding:3px 3px 5px; scrollbar-width:none; touch-action:pan-x; }
+    .swatches::-webkit-scrollbar { display:none; }
+    .swatch { flex:0 0 auto; width:27px; height:27px; padding:0; border:2px solid rgba(255,255,255,.95); border-radius:50%; background:var(--c); box-shadow:0 1px 4px rgba(44,59,45,.2); cursor:pointer; }
+    .swatch[aria-pressed="true"] { box-shadow:0 0 0 2px var(--dh-color-sage-700),0 1px 4px rgba(44,59,45,.2); }
+    /* 自定义颜色入口：彩虹环 + 中心＋ */
+    .swatch--custom { position:relative; border:0; padding:2px; background:conic-gradient(from 90deg,#ff6b6b,#ffd93d,#6bcb77,#4d96ff,#9b5de5,#ff6b6b); box-shadow:0 1px 5px rgba(44,59,45,.28); }
+    .swatch--custom[aria-pressed="true"] { box-shadow:0 0 0 2px var(--dh-color-sage-700),0 1px 5px rgba(44,59,45,.28); }
+    .swatch-custom-center { display:grid; place-items:center; width:100%; height:100%; border-radius:50%; background:#fff; color:var(--dh-fg-secondary); font-size:15px; font-weight:var(--dh-font-weight-heavy); line-height:1; }
+
+    /* 笔触 + 撤销/清除 */
+    .action-row { display:flex; align-items:center; gap:8px; margin-top:9px; }
+    .size-box { display:flex; align-items:center; gap:7px; flex:1; min-width:0; }
+    .size-box span { flex:none; font-size:10px; font-weight:var(--dh-font-weight-bold); color:var(--dh-fg-muted); }
+    .size-slider { flex:1; min-width:0; accent-color:var(--dh-color-sage-600); }
+    .tool-btn { flex:none; min-width:48px; height:32px; padding:0 13px; border:1px solid rgba(110,132,107,.32); border-radius:11px; background:var(--dh-color-white,#fff); color:var(--dh-fg-primary); font:inherit; font-size:12px; font-weight:var(--dh-font-weight-bold); white-space:nowrap; cursor:pointer; box-shadow:0 1px 3px rgba(44,59,45,.1); }
+    .tool-btn:active:not(:disabled) { transform:scale(.96); }
+    .tool-btn:disabled { opacity:.4; cursor:not-allowed; box-shadow:none; }
+
+    /* 取色浮层（app 端底部弹层） */
+    .cp-overlay { position:absolute; inset:0; z-index:60; display:flex; align-items:flex-end; }
+    .cp-overlay[hidden] { display:none; }
+    .cp-backdrop { position:absolute; inset:0; background:rgba(20,26,21,.42); opacity:0; transition:opacity .22s ease; }
+    .cp-overlay.is-open .cp-backdrop { opacity:1; }
+    .cp-sheet { position:relative; width:100%; box-sizing:border-box; padding:8px 16px 18px; border-radius:24px 24px 0 0; background:#fff; box-shadow:0 -12px 30px rgba(44,59,45,.2); transform:translateY(100%); transition:transform .24s cubic-bezier(.32,.72,0,1); }
+    .cp-overlay.is-open .cp-sheet { transform:translateY(0); }
+    .cp-handle { width:40px; height:4px; margin:2px auto 12px; border-radius:999px; background:rgba(112,136,111,.35); }
+    .cp-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .cp-head b { font-size:14px; font-weight:var(--dh-font-weight-heavy); }
+    .cp-close { width:28px; height:28px; border:0; border-radius:50%; background:rgba(230,239,228,.9); color:var(--dh-fg-secondary); font-size:13px; cursor:pointer; }
+    .cp-sv { position:relative; width:100%; height:148px; border-radius:16px; overflow:hidden; touch-action:none; cursor:crosshair; box-shadow:inset 0 0 0 1px rgba(29,36,31,.08); }
+    .cp-sv-thumb { position:absolute; width:20px; height:20px; transform:translate(-50%,-50%); border:3px solid #fff; border-radius:50%; box-shadow:0 1px 4px rgba(0,0,0,.4); pointer-events:none; }
+    .cp-hue { margin:16px 0 0; }
+    .cp-hue input { -webkit-appearance:none; appearance:none; width:100%; height:14px; margin:0; border-radius:999px; background:linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00); outline:none; cursor:pointer; }
+    .cp-hue input::-webkit-slider-thumb { -webkit-appearance:none; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 1px 5px rgba(0,0,0,.35); cursor:pointer; }
+    .cp-hue input::-moz-range-thumb { width:22px; height:22px; border:0; border-radius:50%; background:#fff; box-shadow:0 1px 5px rgba(0,0,0,.35); cursor:pointer; }
+    .cp-foot { display:flex; align-items:center; gap:9px; margin-top:16px; }
+    .cp-preview { width:34px; height:34px; flex:none; border-radius:10px; border:1px solid rgba(29,36,31,.1); }
+    .cp-hex { flex:none; font-size:12px; font-weight:var(--dh-font-weight-bold); color:var(--dh-fg-secondary); letter-spacing:.02em; }
+    .cp-eyedropper { margin-left:auto; display:inline-flex; align-items:center; gap:5px; height:34px; padding:0 12px; border:1px solid rgba(110,132,107,.32); border-radius:999px; background:rgba(255,255,255,.85); color:var(--dh-fg-secondary); font:inherit; font-size:12px; font-weight:var(--dh-font-weight-bold); cursor:pointer; }
+    .cp-eyedropper svg { width:15px; height:15px; }
+    .cp-apply { flex:none; height:34px; padding:0 16px; border:0; border-radius:999px; background:var(--dh-color-sage-600); color:#fff; font:inherit; font-size:12px; font-weight:var(--dh-font-weight-bold); cursor:pointer; }
+
+    /* 取色模式（移动端自实现：点击画面取色）*/
+    .dh-screen.is-picking { cursor:crosshair; }
+    .pick-bar { position:absolute; z-index:70; left:50%; top:64px; transform:translateX(-50%); display:flex; align-items:center; gap:10px; max-width:calc(100% - 28px); padding:8px 10px 8px 14px; border-radius:999px; background:rgba(29,36,31,.9); color:#fff; box-shadow:var(--dh-shadow-float); }
+    .pick-bar[hidden] { display:none; }
+    .pick-bar span { font-size:11px; font-weight:var(--dh-font-weight-semibold); white-space:nowrap; }
+    .pick-cancel { flex:none; height:26px; padding:0 11px; border:0; border-radius:999px; background:rgba(255,255,255,.2); color:#fff; font:inherit; font-size:11px; font-weight:var(--dh-font-weight-bold); cursor:pointer; }
+
+    .category-row { margin-top:11px; }
+    .category-label { display:block; margin:0 0 6px 2px; font-size:10px; font-weight:var(--dh-font-weight-bold); color:var(--dh-fg-muted); }
+    .category-tabs { display:flex; gap:6px; overflow-x:auto; margin:0 -2px; padding:1px 3px 4px; scrollbar-width:none; }
+    .category-tabs::-webkit-scrollbar { display:none; }
+    .category-tab { flex:0 0 auto; border:1px solid rgba(110,132,107,.2); border-radius:999px; padding:5px 10px; background:rgba(255,255,255,.62); color:var(--dh-fg-secondary); font:inherit; font-size:10px; font-weight:var(--dh-font-weight-bold); cursor:pointer; }
+    .category-tab[aria-selected="true"] { border-color:var(--dh-color-sage-600); background:var(--dh-color-sage-600); color:white; }
+
+    .primary-button { margin-top:12px; width:100%; height:44px; border:0; border-radius:15px; background:var(--dh-color-sage-600); color:white; font:inherit; font-size:14px; font-weight:var(--dh-font-weight-bold); cursor:pointer; box-shadow:0 10px 22px rgba(112,136,111,.24); }
+    .primary-button:disabled { opacity:.45; box-shadow:none; cursor:not-allowed; }
+    .primary-button:active:not(:disabled) { transform:scale(.985); }
+
+    /* ---- 阶段 B · 生成中 ---- */
+    .gen-phase { align-items:center; justify-content:center; text-align:center; gap:0; }
+    .gen-orbit { width:126px; height:126px; position:relative; display:grid; place-items:center; border-radius:50%; background:radial-gradient(circle at 34% 30%,#fff 0 7%,#dbead7 8% 40%,#c4d8bf 41% 100%); box-shadow:var(--dh-shadow-float); }
+    .gen-orbit::before { content:""; position:absolute; width:145px; height:42px; border:1px solid rgba(93,115,91,.45); border-radius:50%; transform:rotate(-28deg); }
+    .gen-mascot { position:relative; z-index:1; width:104px; height:104px; object-fit:contain; transform-origin:50% 80%; }
+    .gen-orbit[data-status="queued"] .gen-mascot { animation:mascot-pending 1.7s ease-in-out infinite; }
+    .gen-orbit[data-status="processing"] .gen-mascot { animation:mascot-work 1.1s ease-in-out infinite; }
+    .gen-spark { position:absolute; z-index:3; right:16px; top:32px; color:var(--dh-color-orange-500); font-size:17px; font-style:normal; opacity:0; }
+    .gen-orbit[data-status="processing"] .gen-spark { animation:gen-spark 1.15s ease-out infinite; }
+    @keyframes mascot-pending { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+    @keyframes mascot-work { 0%,100%{transform:rotate(-4deg) translateY(0)} 50%{transform:rotate(4deg) translateY(-3px)} }
+    @keyframes gen-spark { 0%{opacity:0;transform:scale(.4) translateY(4px)} 40%{opacity:1} 100%{opacity:0;transform:scale(1.3) translateY(-12px)} }
+    .gen-title { margin:18px 0 6px; font-size:17px; font-weight:var(--dh-font-weight-heavy); }
+    .gen-copy { margin:0; max-width:210px; color:var(--dh-fg-secondary); font-size:12px; line-height:1.6; }
+    .progress-track { width:184px; height:7px; margin:16px 0 0; border-radius:999px; background:rgba(112,136,111,.18); overflow:hidden; }
+    .progress-bar { height:100%; width:0; border-radius:999px; background:linear-gradient(90deg,var(--dh-color-sage-500),var(--dh-color-sage-700)); transition:width .4s ease; }
+    .gen-actions { display:flex; gap:8px; margin-top:20px; }
+    .secondary-button { min-height:38px; padding:0 16px; border:1px solid rgba(110,132,107,.28); border-radius:13px; background:rgba(255,255,255,.7); color:var(--dh-fg-secondary); font:inherit; font-size:12px; font-weight:var(--dh-font-weight-bold); cursor:pointer; }
+
+    /* ---- 阶段 C · 结果 ---- */
+    .result-phase { align-items:center; justify-content:flex-start; padding-top:6px; }
+    .result-badge { margin:2px 0 10px; padding:5px 11px; border-radius:999px; background:var(--dh-color-sage-100,#e4efdf); color:var(--dh-color-sage-800,#3f5540); font-size:11px; font-weight:var(--dh-font-weight-heavy); }
+    .result-card { width:100%; max-width:230px; padding:16px; border:1px solid rgba(117,139,113,.2); border-radius:20px; background:rgba(255,255,255,.92); box-shadow:var(--dh-shadow-card); text-align:center; box-sizing:border-box; }
+    .result-visual { position:relative; height:118px; margin:0 auto 12px; border:1px solid var(--dh-border-soft); border-radius:14px; background:linear-gradient(145deg,#edf2e9,#fffaf2); overflow:hidden; }
+    .result-visual .object { position:absolute; left:50%; bottom:16px; transform:translateX(-50%) scale(1.55); transform-origin:bottom center; background:var(--object); box-shadow:inset 0 8px rgba(255,255,255,.18); }
+    .object--sofa{width:47px;height:22px;border-radius:12px 12px 5px 5px}.object--sofa::before{content:"";position:absolute;left:9px;top:-12px;width:29px;height:16px;border-radius:9px 9px 3px 3px;background:var(--accent)}
+    .object--chair{width:25px;height:23px;border-radius:7px 7px 4px 4px}.object--chair::before{content:"";position:absolute;left:4px;top:-14px;width:17px;height:18px;border-radius:7px 7px 2px 2px;background:var(--accent)}
+    .object--table{width:42px;height:15px;border-radius:50%;bottom:24px}.object--table::before{content:"";position:absolute;left:19px;top:12px;width:4px;height:20px;background:var(--accent)}
+    .object--lamp{width:4px;height:36px;border-radius:2px}.object--lamp::before{content:"";position:absolute;left:-10px;top:-10px;width:24px;height:13px;border-radius:50% 50% 3px 3px;background:var(--accent)}
+    .object--bed{width:46px;height:25px;border-radius:5px}.object--bed::before{content:"";position:absolute;left:5px;top:4px;width:35px;height:10px;border-radius:4px;background:var(--accent)}
+    .object--cabinet{width:39px;height:29px;border-radius:3px}
+    .object--plant{width:22px;height:23px;border-radius:45% 55% 38% 62%;background:var(--accent)}.object--plant::before{content:"";position:absolute;left:-7px;top:-8px;width:15px;height:22px;border-radius:50% 0 50% 0;background:var(--object)}
+    .result-name { width:100%; margin:0; padding:7px 10px; border:1px solid rgba(110,132,107,.24); border-radius:11px; background:rgba(246,250,244,.9); color:var(--dh-fg-primary); font:inherit; font-size:14px; font-weight:var(--dh-font-weight-bold); text-align:center; box-sizing:border-box; }
+    .result-meta { margin:8px 0 0; font-size:10px; font-weight:var(--dh-font-weight-semibold); color:var(--dh-fg-muted); }
+    .result-actions { display:flex; flex-direction:column; gap:9px; width:100%; max-width:230px; margin-top:14px; }
+    .result-actions .primary-button { margin-top:0; }
+    .link-row { display:flex; gap:9px; }
+    .link-row .secondary-button { flex:1; text-align:center; text-decoration:none; display:grid; place-items:center; }
+
+    .toast { position:absolute; z-index:40; left:50%; bottom:78px; transform:translateX(-50%) translateY(8px); opacity:0; padding:9px 12px; border-radius:999px; background:rgba(29,36,31,.9); color:white; font-size:11px; font-weight:var(--dh-font-weight-semibold); pointer-events:none; transition:.2s ease; text-align:center; }
+    .toast.show { opacity:1; transform:translateX(-50%); }
+
+    @media (max-width:420px) { .preview-stage { min-height:100svh; padding:18px 10px; } .draw-app { padding:0 14px; } }
+  </style>
+</head>
+<body>
+  <main class="preview-stage">
+    <section class="dh-phone-shell" aria-label="DreamHome 画一笔">
+      <div class="dh-screen dh-root">
+        <div class="dh-island" aria-hidden="true"></div>
+        <div class="dh-statusbar"><span class="status-time">9:41</span><div class="status-icons" aria-hidden="true"><div class="bars"><i></i><i></i><i></i></div><span>5G</span><div class="bat"></div></div></div>
+        <div class="draw-app">
+          <header class="draw-header">
+            <h1 class="draw-title">画一笔</h1>
+          </header>
+          <div class="draw-content">
+
+            <!-- 阶段 A · 画布 -->
+            <section class="phase is-active" id="drawPhase" aria-label="手绘画布">
+              <p class="draw-sub" style="text-align:center;margin:0 0 8px;">手绘家居轮廓，生成3D组件进入灵感库</p>
+              <div class="canvas-wrap">
+                <div class="canvas-grid" aria-hidden="true"></div>
+                <canvas class="draw-canvas" id="canvas"></canvas>
+                <div class="canvas-empty" id="canvasEmpty">在这里画出你的灵感创意家具<br />比如一把椅子、一盏灯...</div>
+              </div>
+              <div class="palette-row">
+                <div class="swatches" id="swatches" role="group" aria-label="画笔颜色"></div>
+              </div>
+              <div class="action-row">
+                <div class="size-box">
+                  <span>笔触</span>
+                  <input class="size-slider" id="sizeSlider" type="range" min="2" max="14" value="5" aria-label="笔刷粗细" />
+                </div>
+                <button class="tool-btn" id="undoBtn" type="button" disabled>撤销</button>
+                <button class="tool-btn" id="clearBtn" type="button" disabled>清除</button>
+              </div>
+              <div class="category-row">
+                <span class="category-label">这是什么家具？</span>
+                <div class="category-tabs" id="categoryTabs" role="tablist" aria-label="家具品类"></div>
+              </div>
+              <button class="primary-button" id="generateBtn" type="button" disabled>生成</button>
+            </section>
+
+            <!-- 阶段 B · 生成中 -->
+            <section class="phase gen-phase" id="genPhase" aria-live="polite">
+              <div class="gen-orbit" id="genOrbit" data-status="queued">
+                <img class="gen-mascot" src="../../assets/mascot/states/mascot-working.png" alt="包公球正在生成组件" />
+                <i class="gen-spark" aria-hidden="true">✦</i>
+              </div>
+              <h2 class="gen-title" id="genTitle">正在识别草图</h2>
+              <p class="gen-copy" id="genCopy">包公球正在把你的手绘变成 3D 组件</p>
+              <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+              <div class="gen-actions">
+                <button class="secondary-button" id="genBack" type="button">返回画布</button>
+                <button class="secondary-button" id="genRetry" type="button" hidden>重新生成</button>
+              </div>
+            </section>
+
+            <!-- 阶段 C · 结果 -->
+            <section class="phase result-phase" id="resultPhase" aria-live="polite">
+              <span class="result-badge">组件已生成</span>
+              <div class="result-card">
+                <div class="result-visual" id="resultVisual"></div>
+                <input class="result-name" id="resultName" maxlength="16" aria-label="组件名称" />
+                <p class="result-meta" id="resultMeta"></p>
+              </div>
+              <div class="result-actions">
+                <a class="primary-button" id="toMyHome" href="../my-home/index.html" style="display:grid;place-items:center;text-decoration:none;">去我的家摆放</a>
+                <div class="link-row">
+                  <a class="secondary-button" href="../inspiration-library/index.html">查看灵感库</a>
+                  <button class="secondary-button" id="drawAgain" type="button">再画一个</button>
+                </div>
+              </div>
+            </section>
+
+          </div>
+        </div>
+        <nav class="dh-tabbar dh-tabbar--five" aria-label="主功能导航">
+          <a class="dh-tab dh-tab--active" href="./index.html" aria-label="画一笔" aria-current="page"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/draw.svg" alt="" /></span></a>
+          <a class="dh-tab" href="../capture/index.html" aria-label="拍一张"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/capture.svg" alt="" /></span></a>
+          <a class="dh-tab dh-tab--core" href="../inspiration-library/index.html" aria-label="灵感库"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/inspiration.svg" alt="" /></span></a>
+          <a class="dh-tab" href="../discover/index.html" aria-label="刷一刷"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/discover.svg" alt="" /></span></a>
+          <a class="dh-tab" href="../my-home/index.html" aria-label="我的家"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/my-home.svg" alt="" /></span></a>
+        </nav>
+        <div class="pick-bar" id="pickBar" hidden><span>点击画面任意位置吸取颜色</span><button class="pick-cancel" id="pickCancel" type="button">取消</button></div>
+        <div class="cp-overlay" id="cpOverlay" hidden>
+          <div class="cp-backdrop" id="cpBackdrop"></div>
+          <div class="cp-sheet" role="dialog" aria-modal="true" aria-label="自定义颜色">
+            <div class="cp-handle" aria-hidden="true"></div>
+            <div class="cp-head"><b>自定义颜色</b><button class="cp-close" id="cpClose" type="button" aria-label="关闭">✕</button></div>
+            <div class="cp-sv" id="cpSV"><span class="cp-sv-thumb" id="cpSVThumb"></span></div>
+            <div class="cp-hue"><input type="range" id="cpHue" min="0" max="360" value="0" aria-label="色相" /></div>
+            <div class="cp-foot">
+              <span class="cp-preview" id="cpPreview"></span>
+              <span class="cp-hex" id="cpHex">#000000</span>
+              <button class="cp-eyedropper" id="cpEyedropper" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/></svg>吸色</button>
+              <button class="cp-apply" id="cpApply" type="button">使用</button>
+            </div>
+          </div>
+        </div>
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        <div class="dh-home-indicator" aria-hidden="true"></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { FURNITURE_CATEGORIES, addUserAsset, toggleFavorite } from '../shared/asset-library-data.js';
+
+    // 品类 → 3D primitive 映射（与 my-home createAssetGroup / 灵感库 .object--* 对齐）
+    const PRIMITIVE_BY_CATEGORY = {
+      table:'table', seating:'chair', sofa:'sofa', lighting:'lamp', decor:'plant',
+      bed:'bed', bedding:'bed', cabinet:'cabinet', kitchen:'cabinet', bathroom:'cabinet', storage:'cabinet',
+    };
+    const DIMENSIONS_BY_PRIMITIVE = {
+      table:[1.1,.45,1.1], chair:[.55,.9,.55], sofa:[1.9,.82,.9], lamp:[.4,1.5,.4],
+      plant:[.5,.8,.5], bed:[1.8,.5,2], cabinet:[1.4,1.2,.45],
+    };
+    const SWATCHES = ['#7f5b44','#70886f','#d59c8f','#c89261','#556257','#1d241f'];
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const canvasEmpty = document.getElementById('canvasEmpty');
+    const swatchesEl = document.getElementById('swatches');
+    const categoryTabs = document.getElementById('categoryTabs');
+    const undoBtn = document.getElementById('undoBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const sizeSlider = document.getElementById('sizeSlider');
+    const generateBtn = document.getElementById('generateBtn');
+    const toast = document.getElementById('toast');
+
+    const phases = { draw:document.getElementById('drawPhase'), gen:document.getElementById('genPhase'), result:document.getElementById('resultPhase') };
+    const genOrbit = document.getElementById('genOrbit');
+    const genTitle = document.getElementById('genTitle');
+    const genCopy = document.getElementById('genCopy');
+    const progressBar = document.getElementById('progressBar');
+    const genBack = document.getElementById('genBack');
+    const genRetry = document.getElementById('genRetry');
+    const resultVisual = document.getElementById('resultVisual');
+    const resultName = document.getElementById('resultName');
+    const resultMeta = document.getElementById('resultMeta');
+    const drawAgain = document.getElementById('drawAgain');
+
+    const state = { color:SWATCHES[0], size:5, category:'decor', strokes:[], drawing:false, current:null, pollTimer:null, job:null, generatedAsset:null };
+    let toastTimer = null;
+    const showToast = (message) => { toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1600); };
+
+    // ---- 画布尺寸 / 高 DPI ----
+    let dpr = 1;
+    function fitCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      redraw();
+    }
+    function redraw() {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      for (const stroke of state.strokes) drawStroke(stroke);
+    }
+    function drawStroke(stroke) {
+      if (stroke.points.length < 1) return;
+      ctx.strokeStyle = stroke.color;
+      ctx.lineWidth = stroke.size;
+      ctx.beginPath();
+      const [first, ...rest] = stroke.points;
+      ctx.moveTo(first.x, first.y);
+      if (!rest.length) { ctx.lineTo(first.x + 0.01, first.y + 0.01); }
+      for (const point of rest) ctx.lineTo(point.x, point.y);
+      ctx.stroke();
+    }
+
+    function pointFrom(event) {
+      const rect = canvas.getBoundingClientRect();
+      return { x:event.clientX - rect.left, y:event.clientY - rect.top };
+    }
+    function startDraw(event) {
+      state.drawing = true;
+      state.current = { color:state.color, size:state.size, points:[pointFrom(event)] };
+      state.strokes.push(state.current);
+      canvasEmpty.classList.add('is-hidden');
+      canvas.setPointerCapture?.(event.pointerId);
+      redraw();
+      syncToolState();
+    }
+    function moveDraw(event) {
+      if (!state.drawing || !state.current) return;
+      state.current.points.push(pointFrom(event));
+      drawStroke(state.current);
+    }
+    function endDraw() { state.drawing = false; state.current = null; }
+
+    canvas.addEventListener('pointerdown', (event) => { event.preventDefault(); startDraw(event); });
+    canvas.addEventListener('pointermove', (event) => { event.preventDefault(); moveDraw(event); });
+    ['pointerup','pointercancel','pointerleave'].forEach((type) => canvas.addEventListener(type, endDraw));
+
+    function syncToolState() {
+      const hasInk = state.strokes.length > 0;
+      undoBtn.disabled = !hasInk;
+      clearBtn.disabled = !hasInk;
+      generateBtn.disabled = !hasInk;
+      canvasEmpty.classList.toggle('is-hidden', hasInk);
+    }
+    undoBtn.addEventListener('click', () => { state.strokes.pop(); redraw(); syncToolState(); });
+    clearBtn.addEventListener('click', () => { state.strokes = []; redraw(); syncToolState(); });
+    sizeSlider.addEventListener('input', () => { state.size = Number(sizeSlider.value); });
+
+    // ---- 颜色 & 品类控件 ----
+    const customSwatchHTML = `<button class="swatch swatch--custom" data-custom type="button" aria-label="自定义颜色" aria-pressed="false"><span class="swatch-custom-center" id="customCenter">＋</span></button>`;
+    swatchesEl.innerHTML = customSwatchHTML + SWATCHES.map((color, index) => `<button class="swatch" style="--c:${color}" data-color="${color}" type="button" aria-label="颜色 ${index + 1}" aria-pressed="${index === 0}"></button>`).join('');
+    const customSwatch = swatchesEl.querySelector('[data-custom]');
+    const customCenter = document.getElementById('customCenter');
+    const pressOnly = (button) => swatchesEl.querySelectorAll('.swatch').forEach((el) => el.setAttribute('aria-pressed', String(el === button)));
+    const resetCustomEntry = () => { customCenter.textContent = '＋'; customCenter.style.background = '#fff'; };
+    swatchesEl.addEventListener('click', (event) => {
+      if (event.target.closest('[data-custom]')) { openPicker(); return; }
+      const button = event.target.closest('[data-color]');
+      if (!button) return;
+      state.color = button.dataset.color;
+      pressOnly(button);
+      resetCustomEntry();
+    });
+    function applyCustomColor(hex) {
+      state.color = hex;
+      pressOnly(customSwatch);
+      customCenter.textContent = '';
+      customCenter.style.background = hex;
+    }
+
+    // ---- 取色浮层：HSV 面板 + 色相条 + 吸色器 ----
+    const cpOverlay = document.getElementById('cpOverlay');
+    const cpBackdrop = document.getElementById('cpBackdrop');
+    const cpClose = document.getElementById('cpClose');
+    const cpSV = document.getElementById('cpSV');
+    const cpSVThumb = document.getElementById('cpSVThumb');
+    const cpHue = document.getElementById('cpHue');
+    const cpPreview = document.getElementById('cpPreview');
+    const cpHex = document.getElementById('cpHex');
+    const cpEyedropper = document.getElementById('cpEyedropper');
+    const cpApply = document.getElementById('cpApply');
+    const cp = { h:0, s:1, v:1, hex:'#ff0000' };
+
+    const clamp01 = (n) => Math.min(1, Math.max(0, n));
+    function hsvToRgb(h, s, v) {
+      const c = v * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = v - c;
+      let r = 0, g = 0, b = 0;
+      if (h < 60) [r, g, b] = [c, x, 0]; else if (h < 120) [r, g, b] = [x, c, 0];
+      else if (h < 180) [r, g, b] = [0, c, x]; else if (h < 240) [r, g, b] = [0, x, c];
+      else if (h < 300) [r, g, b] = [x, 0, c]; else [r, g, b] = [c, 0, x];
+      return [Math.round((r + m) * 255), Math.round((g + m) * 255), Math.round((b + m) * 255)];
+    }
+    function rgbToHsv(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+      let h = 0;
+      if (d) { if (max === r) h = ((g - b) / d) % 6; else if (max === g) h = (b - r) / d + 2; else h = (r - g) / d + 4; h *= 60; if (h < 0) h += 360; }
+      return [h, max === 0 ? 0 : d / max, max];
+    }
+    function hexToRgb(hex) {
+      if (/^#[0-9a-f]{3}$/i.test(hex)) hex = '#' + [...hex.slice(1)].map((c) => c + c).join('');
+      if (!/^#[0-9a-f]{6}$/i.test(hex)) return null;
+      const n = parseInt(hex.slice(1), 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    }
+    const rgbToHex = (r, g, b) => '#' + [r, g, b].map((c) => Math.max(0, Math.min(255, c)).toString(16).padStart(2, '0')).join('');
+
+    function renderPicker() {
+      const [r, g, b] = hsvToRgb(cp.h, cp.s, cp.v);
+      cp.hex = rgbToHex(r, g, b);
+      cpSV.style.background = `linear-gradient(to top,#000,transparent),linear-gradient(to right,#fff,transparent),hsl(${cp.h} 100% 50%)`;
+      cpSVThumb.style.left = `${cp.s * 100}%`;
+      cpSVThumb.style.top = `${(1 - cp.v) * 100}%`;
+      cpSVThumb.style.background = cp.hex;
+      cpPreview.style.background = cp.hex;
+      cpHex.textContent = cp.hex.toUpperCase();
+    }
+    function openPicker() {
+      const rgb = hexToRgb(state.color) || [255, 0, 0];
+      const [h, s, v] = rgbToHsv(...rgb);
+      cp.h = h; cp.s = s; cp.v = v;
+      cpHue.value = Math.round(h);
+      renderPicker();
+      cpOverlay.hidden = false;
+      requestAnimationFrame(() => cpOverlay.classList.add('is-open'));
+    }
+    function closePicker() {
+      cpOverlay.classList.remove('is-open');
+      setTimeout(() => { cpOverlay.hidden = true; }, 230);
+    }
+    function svFromEvent(event) {
+      const rect = cpSV.getBoundingClientRect();
+      cp.s = clamp01((event.clientX - rect.left) / rect.width);
+      cp.v = 1 - clamp01((event.clientY - rect.top) / rect.height);
+      renderPicker();
+    }
+    let svDragging = false;
+    cpSV.addEventListener('pointerdown', (event) => { event.preventDefault(); svDragging = true; cpSV.setPointerCapture?.(event.pointerId); svFromEvent(event); });
+    cpSV.addEventListener('pointermove', (event) => { if (svDragging) { event.preventDefault(); svFromEvent(event); } });
+    ['pointerup', 'pointercancel'].forEach((type) => cpSV.addEventListener(type, () => { svDragging = false; }));
+    cpHue.addEventListener('input', () => { cp.h = Number(cpHue.value); renderPicker(); });
+    cpApply.addEventListener('click', () => { applyCustomColor(cp.hex); closePicker(); });
+    cpClose.addEventListener('click', closePicker);
+    cpBackdrop.addEventListener('click', closePicker);
+    // 应用吸到的颜色（同步更新自定义入口与浮层内部状态）
+    function applyPickedColor(hex) {
+      applyCustomColor(hex);
+      const [h, s, v] = rgbToHsv(...(hexToRgb(hex) || [0, 0, 0]));
+      cp.h = h; cp.s = s; cp.v = v; cp.hex = hex;
+    }
+    // 解析 rgb()/rgba() 计算值 → {r,g,b,a}
+    function parseCssColor(value) {
+      const m = /rgba?\(([^)]+)\)/i.exec(value || '');
+      if (!m) return null;
+      const parts = m[1].split(',').map((n) => parseFloat(n));
+      return { r:parts[0], g:parts[1], b:parts[2], a:parts.length > 3 ? parts[3] : 1 };
+    }
+    // 移动端自实现吸色：画布像素优先，否则回溯元素背景色
+    function samplePageColor(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+        const px = Math.floor((clientX - rect.left) * dpr);
+        const py = Math.floor((clientY - rect.top) * dpr);
+        try {
+          const data = ctx.getImageData(px, py, 1, 1).data;
+          if (data[3] > 10) return rgbToHex(data[0], data[1], data[2]);
+        } catch { /* 跨域污染时忽略，走回溯 */ }
+      }
+      let node = document.elementFromPoint(clientX, clientY);
+      while (node) {
+        const color = parseCssColor(getComputedStyle(node).backgroundColor);
+        if (color && color.a > 0) return rgbToHex(color.r, color.g, color.b);
+        node = node.parentElement;
+      }
+      return null;
+    }
+
+    const dhScreen = document.querySelector('.dh-screen');
+    const pickBar = document.getElementById('pickBar');
+    const pickCancel = document.getElementById('pickCancel');
+    let pickMode = false;
+    function enterPickMode() { pickMode = true; pickBar.hidden = false; dhScreen.classList.add('is-picking'); }
+    function exitPickMode() { pickMode = false; pickBar.hidden = true; dhScreen.classList.remove('is-picking'); }
+    // 捕获阶段拦截，抢在画布落笔之前完成取色
+    dhScreen.addEventListener('pointerdown', (event) => {
+      if (!pickMode || event.target.closest('#pickBar')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const hex = samplePageColor(event.clientX, event.clientY);
+      exitPickMode();
+      if (hex) { applyPickedColor(hex); showToast(`已吸取 ${hex.toUpperCase()}`); }
+      else showToast('这里没吸到颜色，换个位置试试');
+    }, true);
+    pickCancel.addEventListener('click', exitPickMode);
+    document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && pickMode) exitPickMode(); });
+
+    cpEyedropper.addEventListener('click', async () => {
+      closePicker();
+      if (window.EyeDropper) { // 桌面：优先原生吸色器
+        try { const { sRGBHex } = await new EyeDropper().open(); applyPickedColor(sRGBHex); showToast(`已吸取 ${sRGBHex.toUpperCase()}`); }
+        catch { /* 用户取消 */ }
+        return;
+      }
+      enterPickMode(); // 移动端：点击画面取色
+    });
+    categoryTabs.innerHTML = FURNITURE_CATEGORIES.map((category) => `<button class="category-tab" data-category="${category.id}" role="tab" aria-selected="${category.id === state.category}">${category.label}</button>`).join('');
+    categoryTabs.addEventListener('click', (event) => {
+      const tab = event.target.closest('[data-category]');
+      if (!tab) return;
+      state.category = tab.dataset.category;
+      categoryTabs.querySelectorAll('.category-tab').forEach((el) => el.setAttribute('aria-selected', String(el === tab)));
+    });
+
+    // ---- 阶段切换 ----
+    function setPhase(name) {
+      Object.entries(phases).forEach(([key, el]) => el.classList.toggle('is-active', key === name));
+    }
+
+    // ---- 画布主色采样（生成资产配色）----
+    function dominantColor() {
+      const counts = new Map();
+      for (const stroke of state.strokes) counts.set(stroke.color, (counts.get(stroke.color) || 0) + stroke.points.length);
+      let best = state.color, top = -1;
+      for (const [color, count] of counts) if (count > top) { top = count; best = color; }
+      return best;
+    }
+    function lighten(hex, amount = .32) {
+      const n = parseInt(hex.slice(1), 16);
+      const mix = (channel) => Math.round(channel + (255 - channel) * amount);
+      return `#${[(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => mix(c).toString(16).padStart(2, '0')).join('')}`;
+    }
+
+    // ---- Mock 生成任务服务（参照 my-home homeSceneService 降级策略）----
+    const MOCK_FAILURE = false;
+    const generationService = {
+      submit() { return { id:`draw-${Math.random().toString(36).slice(2, 8)}`, startedAt:performance.now() }; },
+      poll(job) {
+        const elapsed = performance.now() - job.startedAt;
+        if (MOCK_FAILURE && elapsed > 1100) return { status:'failed', progress:60, error:'草图识别中断，换一笔再试' };
+        if (elapsed < 700) return { status:'queued', progress:16 };
+        if (elapsed < 1500) return { status:'processing', progress:52 };
+        if (elapsed < 2300) return { status:'processing', progress:82 };
+        return { status:'ready', progress:100 };
+      },
+    };
+
+    const GEN_COPY = {
+      queued:['正在识别草图','包公球正在读取你的手绘线条'],
+      processing:['正在生成 3D 组件','把轮廓拉成立体家具，请稍候'],
+      ready:['组件已就绪','正在整理你的新组件'],
+      failed:['生成没有完成',''],
+    };
+    function updateGen(status, progress, error = '') {
+      const copy = GEN_COPY[status] || GEN_COPY.queued;
+      genOrbit.dataset.status = status === 'ready' ? 'processing' : status;
+      genTitle.textContent = copy[0];
+      genCopy.textContent = status === 'failed' ? (error || '请检查草图或重新尝试') : copy[1];
+      progressBar.style.width = `${progress}%`;
+      genRetry.hidden = status !== 'failed';
+    }
+
+    function buildAsset() {
+      const primitive = PRIMITIVE_BY_CATEGORY[state.category] || 'cabinet';
+      const category = FURNITURE_CATEGORIES.find((item) => item.id === state.category);
+      const color = dominantColor();
+      const accent = lighten(color, .34);
+      const seq = String(Date.now()).slice(-3);
+      return {
+        id:`draw-${state.category}-${seq}-${Math.random().toString(36).slice(2, 6)}`,
+        kind:'furniture',
+        name:`手绘·${category.label} ${seq}`,
+        category:state.category,
+        primitive,
+        color,
+        accent,
+        dimensions:DIMENSIONS_BY_PRIMITIVE[primitive] || [1, .8, .6],
+        source:'user',
+        sourceType:'draw',
+        createdAt:new Date().toISOString(),
+      };
+    }
+
+    function pollJob() {
+      clearTimeout(state.pollTimer);
+      const result = generationService.poll(state.job);
+      const status = result.status;
+      updateGen(status, result.progress, result.error);
+      if (status === 'ready') { finishGeneration(); return; }
+      if (status === 'failed') return;
+      state.pollTimer = setTimeout(pollJob, 620);
+    }
+
+    function startGeneration() {
+      setPhase('gen');
+      updateGen('queued', 6);
+      genRetry.hidden = true;
+      state.job = generationService.submit();
+      state.pollTimer = setTimeout(pollJob, 420);
+    }
+
+    function finishGeneration() {
+      const asset = buildAsset();
+      addUserAsset(asset);
+      toggleFavorite(asset.id); // 自动收藏 → 我的家抽屉可调用（闭环）
+      state.generatedAsset = asset;
+      renderResult(asset);
+      setPhase('result');
+      showToast('已生成并加入灵感库收藏');
+    }
+
+    function renderResult(asset) {
+      resultVisual.style.setProperty('--object', asset.color);
+      resultVisual.style.setProperty('--accent', asset.accent);
+      resultVisual.innerHTML = `<span class="object object--${asset.primitive}"></span>`;
+      resultName.value = asset.name;
+      const category = FURNITURE_CATEGORIES.find((item) => item.id === asset.category);
+      resultMeta.textContent = `家具类 · ${category.label} · 已收藏`;
+    }
+
+    // 名称编辑：写回用户资产（保持收藏 id 不变）
+    resultName.addEventListener('change', () => {
+      const asset = state.generatedAsset;
+      if (!asset) return;
+      const name = resultName.value.trim() || asset.name;
+      asset.name = name;
+      resultName.value = name;
+      addUserAsset(asset); // 同 id 覆盖
+      showToast('组件名称已更新');
+    });
+
+    genBack.addEventListener('click', () => { clearTimeout(state.pollTimer); setPhase('draw'); requestAnimationFrame(fitCanvas); });
+    genRetry.addEventListener('click', startGeneration);
+    generateBtn.addEventListener('click', startGeneration);
+    drawAgain.addEventListener('click', () => {
+      state.strokes = [];
+      redraw();
+      syncToolState();
+      setPhase('draw');
+      requestAnimationFrame(fitCanvas);
+    });
+
+    window.addEventListener('resize', fitCanvas);
+    requestAnimationFrame(fitCanvas);
+    syncToolState();
+  </script>
+</body>
+</html>

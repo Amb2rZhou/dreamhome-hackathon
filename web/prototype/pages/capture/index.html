@@ -1,7 +1,392 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>DreamHome · 拍一张</title><link rel="stylesheet" href="./dreamhome-d-system.css"/><link rel="stylesheet" href="../shared/five-tabbar.css"/><style>
-.feature-content{height:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px var(--dh-tabbar-safe-space);text-align:center}.feature-icon{width:72px;height:72px;padding:18px;border-radius:26px;background:var(--dh-color-sage-100);color:var(--dh-color-sage-700)}.feature-icon img{width:100%;height:100%;display:block}h1{margin:18px 0 8px;font-size:22px;letter-spacing:0}p{max-width:220px;margin:0;color:var(--dh-fg-secondary);font-size:13px;line-height:1.7}.feature-action{margin-top:22px;min-width:132px;height:42px;border:0;border-radius:15px;background:var(--dh-color-sage-600);color:white;font:inherit;font-size:13px;font-weight:var(--dh-font-weight-bold)}
-body { margin:0; min-width:320px; background:var(--dh-bg-canvas); }
-.preview-stage { min-height:100vh; display:grid; place-items:center; padding:28px 18px; box-sizing:border-box; }
-@media (max-width:420px) { .preview-stage { min-height:100svh; padding:18px 10px; } }
-</style></head><body><main class="preview-stage"><section class="dh-phone-shell"><div class="dh-screen"><div class="dh-statusbar"><span>9:41</span><span class="dh-dynamic-island"></span><span class="dh-status-icons">▮◔</span></div><div class="feature-content"><span class="feature-icon"><img src="../../assets/icons/navigation/capture.svg" alt=""/></span><h1>拍一张</h1><p>拍摄或上传家居图片，生成可复用的 3D 组件</p><button class="feature-action" type="button">选择图片</button></div><nav class="dh-tabbar dh-tabbar--five" aria-label="主功能导航"><a class="dh-tab" href="../draw/index.html" aria-label="画一笔"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/draw.svg" alt="" /></span></a><a class="dh-tab dh-tab--active" href="./index.html" aria-label="拍一张" aria-current="page"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/capture.svg" alt="" /></span></a><a class="dh-tab dh-tab--core" href="../inspiration-library/index.html" aria-label="灵感库"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/inspiration.svg" alt="" /></span></a><a class="dh-tab" href="../discover/index.html" aria-label="刷一刷"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/discover.svg" alt="" /></span></a><a class="dh-tab" href="../my-home/index.html" aria-label="我的家"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/my-home.svg" alt="" /></span></a></nav><div class="dh-home-indicator" aria-hidden="true"></div></div></section></main></body></html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f5fbf6" />
+  <title>DreamHome · 拍一张</title>
+  <link rel="stylesheet" href="./dreamhome-d-system.css" />
+  <link rel="stylesheet" href="../shared/five-tabbar.css" />
+  <link rel="stylesheet" href="../shared/status-bar.css" />
+  <style>
+    body { margin:0; min-height:100vh; background:linear-gradient(90deg,#e7eee5,#f6faf4 48%,#e3ece1); color:var(--dh-fg-primary); font-family:var(--dh-font-sans); }
+    .preview-stage { min-height:100vh; display:grid; place-items:center; padding:28px 18px; box-sizing:border-box; }
+    .draw-app { height:calc(100% - 50px); padding:0 16px; display:flex; flex-direction:column; box-sizing:border-box; overflow:hidden; }
+    .draw-header { display:grid; place-items:center; min-height:42px; padding-top:3px; }
+    .draw-title { margin:0; font-size:16px; letter-spacing:0; font-weight:var(--dh-font-weight-heavy); }
+    .draw-sub { margin:1px 0 0; font-size:10px; font-weight:var(--dh-font-weight-semibold); color:var(--dh-fg-muted); }
+    .draw-content { flex:1; min-height:0; display:flex; flex-direction:column; padding:10px 0 var(--dh-tabbar-safe-space); overflow:hidden; }
+    .phase { display:none; flex:1; min-height:0; flex-direction:column; }
+    .phase.is-active { display:flex; }
+
+    /* ---- 阶段 A · 拍照/选图 ---- */
+    .photo-wrap { position:relative; flex:1; min-height:0; border:1px solid rgba(117,139,113,.2); border-radius:18px; background:linear-gradient(150deg,#ffffff,#f3f8f1); box-shadow:var(--dh-shadow-soft); overflow:hidden; }
+    .photo-empty { position:absolute; inset:0; display:grid; place-items:center; }
+    .photo-empty.is-hidden { display:none; }
+    /* 包公球占位：待生成「包公球拍照」图后替换 src 即可 */
+    .photo-mascot { width:96px; height:96px; object-fit:contain; transform-origin:50% 88%; animation:mascot-sway 2.6s ease-in-out infinite; }
+    @keyframes mascot-sway { 0%,100%{transform:rotate(-2.2deg)} 50%{transform:rotate(2.2deg)} }
+    .photo-preview { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+    .photo-preview[hidden] { display:none; }
+    .photo-reset { position:absolute; right:10px; top:10px; z-index:3; display:inline-flex; align-items:center; gap:4px; height:30px; padding:0 12px; border:0; border-radius:999px; background:rgba(29,36,31,.72); color:#fff; font:inherit; font-size:11px; font-weight:var(--dh-font-weight-bold); cursor:pointer; }
+    .photo-reset[hidden] { display:none; }
+
+    .capture-actions { display:flex; gap:9px; margin-top:11px; }
+    .capture-btn { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; min-height:44px; border:1px solid rgba(110,132,107,.3); border-radius:15px; background:var(--dh-color-white,#fff); color:var(--dh-fg-primary); font:inherit; font-size:13px; font-weight:var(--dh-font-weight-bold); cursor:pointer; box-shadow:0 1px 3px rgba(44,59,45,.1); }
+    .capture-btn--primary { border:0; background:var(--dh-color-sage-600); color:#fff; box-shadow:0 8px 18px rgba(112,136,111,.22); }
+    .capture-btn:active { transform:scale(.985); }
+    .capture-btn svg { width:17px; height:17px; }
+    .capture-btn input { display:none; }
+
+    .category-row { margin-top:12px; }
+    .category-label { display:block; margin:0 0 6px 2px; font-size:10px; font-weight:var(--dh-font-weight-bold); color:var(--dh-fg-muted); }
+    .category-tabs { display:flex; gap:6px; overflow-x:auto; margin:0 -2px; padding:1px 3px 4px; scrollbar-width:none; }
+    .category-tabs::-webkit-scrollbar { display:none; }
+    .category-tab { flex:0 0 auto; border:1px solid rgba(110,132,107,.2); border-radius:999px; padding:5px 10px; background:rgba(255,255,255,.62); color:var(--dh-fg-secondary); font:inherit; font-size:10px; font-weight:var(--dh-font-weight-bold); cursor:pointer; }
+    .category-tab[aria-pressed="true"] { border-color:var(--dh-color-sage-600); background:var(--dh-color-sage-600); color:white; }
+
+    .primary-button { margin-top:12px; width:100%; height:44px; border:0; border-radius:15px; background:var(--dh-color-sage-600); color:white; font:inherit; font-size:14px; font-weight:var(--dh-font-weight-bold); cursor:pointer; box-shadow:0 10px 22px rgba(112,136,111,.24); }
+    .primary-button:disabled { opacity:.45; box-shadow:none; cursor:not-allowed; }
+    .primary-button:active:not(:disabled) { transform:scale(.985); }
+
+    /* ---- 阶段 B · 生成中 ---- */
+    .gen-phase { align-items:center; justify-content:center; text-align:center; gap:0; }
+    .gen-orbit { width:126px; height:126px; position:relative; display:grid; place-items:center; border-radius:50%; background:radial-gradient(circle at 34% 30%,#fff 0 7%,#dbead7 8% 40%,#c4d8bf 41% 100%); box-shadow:var(--dh-shadow-float); }
+    .gen-orbit::before { content:""; position:absolute; width:145px; height:42px; border:1px solid rgba(93,115,91,.45); border-radius:50%; transform:rotate(-28deg); }
+    .gen-mascot { position:relative; z-index:1; width:104px; height:104px; object-fit:contain; transform-origin:50% 80%; }
+    .gen-orbit[data-status="queued"] .gen-mascot { animation:mascot-pending 1.7s ease-in-out infinite; }
+    .gen-orbit[data-status="processing"] .gen-mascot { animation:mascot-work 1.1s ease-in-out infinite; }
+    .gen-spark { position:absolute; z-index:3; right:16px; top:32px; color:var(--dh-color-orange-500); font-size:17px; font-style:normal; opacity:0; }
+    .gen-orbit[data-status="processing"] .gen-spark { animation:gen-spark 1.15s ease-out infinite; }
+    @keyframes mascot-pending { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+    @keyframes mascot-work { 0%,100%{transform:rotate(-4deg) translateY(0)} 50%{transform:rotate(4deg) translateY(-3px)} }
+    @keyframes gen-spark { 0%{opacity:0;transform:scale(.4) translateY(4px)} 40%{opacity:1} 100%{opacity:0;transform:scale(1.3) translateY(-12px)} }
+    .gen-title { margin:18px 0 6px; font-size:17px; font-weight:var(--dh-font-weight-heavy); }
+    .gen-copy { margin:0; max-width:210px; color:var(--dh-fg-secondary); font-size:12px; line-height:1.6; }
+    .progress-track { width:184px; height:7px; margin:16px 0 0; border-radius:999px; background:rgba(112,136,111,.18); overflow:hidden; }
+    .progress-bar { height:100%; width:0; border-radius:999px; background:linear-gradient(90deg,var(--dh-color-sage-500),var(--dh-color-sage-700)); transition:width .4s ease; }
+    .gen-actions { display:flex; gap:8px; margin-top:20px; }
+    .secondary-button { min-height:38px; padding:0 16px; border:1px solid rgba(110,132,107,.28); border-radius:13px; background:rgba(255,255,255,.7); color:var(--dh-fg-secondary); font:inherit; font-size:12px; font-weight:var(--dh-font-weight-bold); cursor:pointer; }
+
+    /* ---- 阶段 C · 结果 ---- */
+    .result-phase { align-items:center; justify-content:flex-start; padding-top:6px; }
+    .result-badge { margin:2px 0 10px; padding:5px 11px; border-radius:999px; background:var(--dh-color-sage-100,#e4efdf); color:var(--dh-color-sage-800,#3f5540); font-size:11px; font-weight:var(--dh-font-weight-heavy); }
+    .result-list { width:100%; max-width:264px; display:flex; flex-direction:column; gap:9px; max-height:326px; overflow-y:auto; padding:2px; scrollbar-width:none; }
+    .result-list::-webkit-scrollbar { display:none; }
+    .result-item { display:flex; align-items:center; gap:11px; padding:9px; border:1px solid rgba(117,139,113,.2); border-radius:16px; background:rgba(255,255,255,.92); box-shadow:var(--dh-shadow-soft); }
+    .result-visual { position:relative; width:66px; height:66px; flex:none; border:1px solid var(--dh-border-soft); border-radius:12px; background:linear-gradient(145deg,#edf2e9,#fffaf2); overflow:hidden; }
+    .result-visual .object { position:absolute; left:50%; bottom:11px; transform:translateX(-50%) scale(.92); transform-origin:bottom center; background:var(--object); box-shadow:inset 0 8px rgba(255,255,255,.18); }
+    .object--sofa{width:47px;height:22px;border-radius:12px 12px 5px 5px}.object--sofa::before{content:"";position:absolute;left:9px;top:-12px;width:29px;height:16px;border-radius:9px 9px 3px 3px;background:var(--accent)}
+    .object--chair{width:25px;height:23px;border-radius:7px 7px 4px 4px}.object--chair::before{content:"";position:absolute;left:4px;top:-14px;width:17px;height:18px;border-radius:7px 7px 2px 2px;background:var(--accent)}
+    .object--table{width:42px;height:15px;border-radius:50%;bottom:24px}.object--table::before{content:"";position:absolute;left:19px;top:12px;width:4px;height:20px;background:var(--accent)}
+    .object--lamp{width:4px;height:36px;border-radius:2px}.object--lamp::before{content:"";position:absolute;left:-10px;top:-10px;width:24px;height:13px;border-radius:50% 50% 3px 3px;background:var(--accent)}
+    .object--bed{width:46px;height:25px;border-radius:5px}.object--bed::before{content:"";position:absolute;left:5px;top:4px;width:35px;height:10px;border-radius:4px;background:var(--accent)}
+    .object--cabinet{width:39px;height:29px;border-radius:3px}
+    .object--plant{width:22px;height:23px;border-radius:45% 55% 38% 62%;background:var(--accent)}.object--plant::before{content:"";position:absolute;left:-7px;top:-8px;width:15px;height:22px;border-radius:50% 0 50% 0;background:var(--object)}
+    .result-body { flex:1; min-width:0; text-align:left; }
+    .result-name { width:100%; margin:0; padding:6px 9px; border:1px solid rgba(110,132,107,.24); border-radius:10px; background:rgba(246,250,244,.9); color:var(--dh-fg-primary); font:inherit; font-size:13px; font-weight:var(--dh-font-weight-bold); box-sizing:border-box; }
+    .result-meta { margin:6px 0 0 2px; font-size:10px; font-weight:var(--dh-font-weight-semibold); color:var(--dh-fg-muted); }
+    .result-actions { display:flex; flex-direction:column; gap:9px; width:100%; max-width:264px; margin-top:14px; }
+    .result-actions .primary-button { margin-top:0; }
+    .link-row { display:flex; gap:9px; }
+    .link-row .secondary-button { flex:1; text-align:center; text-decoration:none; display:grid; place-items:center; }
+
+    .toast { position:absolute; z-index:40; left:50%; bottom:78px; transform:translateX(-50%) translateY(8px); opacity:0; padding:9px 12px; border-radius:999px; background:rgba(29,36,31,.9); color:white; font-size:11px; font-weight:var(--dh-font-weight-semibold); pointer-events:none; transition:.2s ease; text-align:center; }
+    .toast.show { opacity:1; transform:translateX(-50%); }
+
+    @media (max-width:420px) { .preview-stage { min-height:100svh; padding:18px 10px; } .draw-app { padding:0 14px; } }
+  </style>
+</head>
+<body>
+  <main class="preview-stage">
+    <section class="dh-phone-shell" aria-label="DreamHome 拍一张">
+      <div class="dh-screen dh-root">
+        <div class="dh-island" aria-hidden="true"></div>
+        <div class="dh-statusbar"><span class="status-time">9:41</span><div class="status-icons" aria-hidden="true"><div class="bars"><i></i><i></i><i></i></div><span>5G</span><div class="bat"></div></div></div>
+        <div class="draw-app">
+          <header class="draw-header">
+            <h1 class="draw-title">拍一张</h1>
+          </header>
+          <div class="draw-content">
+
+            <!-- 阶段 A · 拍照/选图 -->
+            <section class="phase is-active" id="capturePhase" aria-label="拍照或选图">
+              <p class="draw-sub" style="text-align:center;margin:0 0 8px;">拍一张喜欢的家具，生成3D组件进入灵感库</p>
+              <div class="photo-wrap">
+                <div class="photo-empty" id="photoEmpty">
+                  <img class="photo-mascot" src="../../assets/mascot/states/mascot-thinking.png" alt="包公球在等你拍照" />
+                </div>
+                <img class="photo-preview" id="photoPreview" alt="已选照片" hidden />
+                <button class="photo-reset" id="photoReset" type="button" hidden>重新选择</button>
+              </div>
+              <div class="capture-actions">
+                <label class="capture-btn capture-btn--primary">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                  <span>拍照</span>
+                  <input id="cameraInput" type="file" accept="image/*" capture="environment" />
+                </label>
+                <label class="capture-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5-4 4-2-2L3 19"/></svg>
+                  <span>从相册选择</span>
+                  <input id="galleryInput" type="file" accept="image/*" />
+                </label>
+              </div>
+              <div class="category-row">
+                <span class="category-label">这些是什么家具？<i style="font-style:normal;color:var(--dh-fg-muted);">（最多选 3 个）</i></span>
+                <div class="category-tabs" id="categoryTabs" role="group" aria-label="家具品类（可多选）"></div>
+              </div>
+              <button class="primary-button" id="generateBtn" type="button" disabled>生成</button>
+            </section>
+
+            <!-- 阶段 B · 生成中 -->
+            <section class="phase gen-phase" id="genPhase" aria-live="polite">
+              <div class="gen-orbit" id="genOrbit" data-status="queued">
+                <img class="gen-mascot" src="../../assets/mascot/states/mascot-working.png" alt="包公球正在生成组件" />
+                <i class="gen-spark" aria-hidden="true">✦</i>
+              </div>
+              <h2 class="gen-title" id="genTitle">正在识别照片</h2>
+              <p class="gen-copy" id="genCopy">包公球正在看你拍的家居照片</p>
+              <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+              <div class="gen-actions">
+                <button class="secondary-button" id="genBack" type="button">返回</button>
+                <button class="secondary-button" id="genRetry" type="button" hidden>重新生成</button>
+              </div>
+            </section>
+
+            <!-- 阶段 C · 结果 -->
+            <section class="phase result-phase" id="resultPhase" aria-live="polite">
+              <span class="result-badge" id="resultBadge">组件已生成</span>
+              <div class="result-list" id="resultList"></div>
+              <div class="result-actions">
+                <a class="primary-button" id="toMyHome" href="../my-home/index.html" style="display:grid;place-items:center;text-decoration:none;">去我的家摆放</a>
+                <div class="link-row">
+                  <a class="secondary-button" href="../inspiration-library/index.html">查看灵感库</a>
+                  <button class="secondary-button" id="captureAgain" type="button">再拍一张</button>
+                </div>
+              </div>
+            </section>
+
+          </div>
+        </div>
+        <nav class="dh-tabbar dh-tabbar--five" aria-label="主功能导航">
+          <a class="dh-tab" href="../draw/index.html" aria-label="画一笔"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/draw.svg" alt="" /></span></a>
+          <a class="dh-tab dh-tab--active" href="./index.html" aria-label="拍一张" aria-current="page"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/capture.svg" alt="" /></span></a>
+          <a class="dh-tab dh-tab--core" href="../inspiration-library/index.html" aria-label="灵感库"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/inspiration.svg" alt="" /></span></a>
+          <a class="dh-tab" href="../discover/index.html" aria-label="刷一刷"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/discover.svg" alt="" /></span></a>
+          <a class="dh-tab" href="../my-home/index.html" aria-label="我的家"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/my-home.svg" alt="" /></span></a>
+        </nav>
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        <div class="dh-home-indicator" aria-hidden="true"></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { FURNITURE_CATEGORIES, addUserAsset, toggleFavorite } from '../shared/asset-library-data.js';
+
+    // 品类 → 3D primitive 映射（与 my-home createAssetGroup / 灵感库 .object--* 对齐）
+    const PRIMITIVE_BY_CATEGORY = {
+      table:'table', seating:'chair', sofa:'sofa', lighting:'lamp', decor:'plant',
+      bed:'bed', bedding:'bed', cabinet:'cabinet', kitchen:'cabinet', bathroom:'cabinet', storage:'cabinet',
+    };
+    const DIMENSIONS_BY_PRIMITIVE = {
+      table:[1.1,.45,1.1], chair:[.55,.9,.55], sofa:[1.9,.82,.9], lamp:[.4,1.5,.4],
+      plant:[.5,.8,.5], bed:[1.8,.5,2], cabinet:[1.4,1.2,.45],
+    };
+
+    const photoEmpty = document.getElementById('photoEmpty');
+    const photoPreview = document.getElementById('photoPreview');
+    const photoReset = document.getElementById('photoReset');
+    const cameraInput = document.getElementById('cameraInput');
+    const galleryInput = document.getElementById('galleryInput');
+    const categoryTabs = document.getElementById('categoryTabs');
+    const generateBtn = document.getElementById('generateBtn');
+    const toast = document.getElementById('toast');
+
+    const phases = { capture:document.getElementById('capturePhase'), gen:document.getElementById('genPhase'), result:document.getElementById('resultPhase') };
+    const genOrbit = document.getElementById('genOrbit');
+    const genTitle = document.getElementById('genTitle');
+    const genCopy = document.getElementById('genCopy');
+    const progressBar = document.getElementById('progressBar');
+    const genBack = document.getElementById('genBack');
+    const genRetry = document.getElementById('genRetry');
+    const resultBadge = document.getElementById('resultBadge');
+    const resultList = document.getElementById('resultList');
+    const captureAgain = document.getElementById('captureAgain');
+
+    const state = { categories:['sofa'], photoUrl:null, hasPhoto:false, photoColor:'#9a8163', pollTimer:null, job:null, generatedAssets:[] };
+    const MAX_CATEGORIES = 3;
+    let toastTimer = null;
+    const showToast = (message) => { toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1600); };
+    const rgbToHex = (r, g, b) => '#' + [r, g, b].map((c) => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0')).join('');
+    const lighten = (hex, amount = .34) => { const n = parseInt(hex.slice(1), 16); const mix = (c) => Math.round(c + (255 - c) * amount); return '#' + [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => mix(c).toString(16).padStart(2, '0')).join(''); };
+
+    // 从照片提取主色（缩到小图求均值，作生成组件配色）· 小程序侧等价 tt.canvasGetImageData
+    function extractPhotoColor(img) {
+      try {
+        const size = 24;
+        const off = document.createElement('canvas');
+        off.width = size; off.height = size;
+        const octx = off.getContext('2d');
+        octx.drawImage(img, 0, 0, size, size);
+        const data = octx.getImageData(0, 0, size, size).data;
+        let r = 0, g = 0, b = 0, count = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          if (data[i + 3] < 125) continue;
+          r += data[i]; g += data[i + 1]; b += data[i + 2]; count += 1;
+        }
+        if (!count) return '#9a8163';
+        return rgbToHex(r / count, g / count, b / count);
+      } catch { return '#9a8163'; }
+    }
+
+    function onPhotoChosen(file) {
+      if (!file) return;
+      if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
+      state.photoUrl = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => { state.photoColor = extractPhotoColor(img); };
+      img.src = state.photoUrl;
+      photoPreview.src = state.photoUrl;
+      photoPreview.hidden = false;
+      photoEmpty.classList.add('is-hidden');
+      photoReset.hidden = false;
+      state.hasPhoto = true;
+      generateBtn.disabled = false;
+    }
+    function resetPhoto() {
+      if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
+      state.photoUrl = null; state.hasPhoto = false;
+      photoPreview.hidden = true; photoPreview.removeAttribute('src');
+      photoEmpty.classList.remove('is-hidden');
+      photoReset.hidden = true;
+      generateBtn.disabled = true;
+      cameraInput.value = ''; galleryInput.value = '';
+    }
+    cameraInput.addEventListener('change', (event) => onPhotoChosen(event.target.files[0]));
+    galleryInput.addEventListener('change', (event) => onPhotoChosen(event.target.files[0]));
+    photoReset.addEventListener('click', resetPhoto);
+
+    // 品类控件（多选，最多 3 个）
+    categoryTabs.innerHTML = FURNITURE_CATEGORIES.map((category) => `<button class="category-tab" data-category="${category.id}" type="button" aria-pressed="${state.categories.includes(category.id)}">${category.label}</button>`).join('');
+    function syncCategoryTabs() {
+      categoryTabs.querySelectorAll('[data-category]').forEach((el) => el.setAttribute('aria-pressed', String(state.categories.includes(el.dataset.category))));
+    }
+    categoryTabs.addEventListener('click', (event) => {
+      const tab = event.target.closest('[data-category]');
+      if (!tab) return;
+      const id = tab.dataset.category;
+      if (state.categories.includes(id)) {
+        if (state.categories.length === 1) { showToast('至少保留一个品类'); return; }
+        state.categories = state.categories.filter((item) => item !== id);
+      } else {
+        if (state.categories.length >= MAX_CATEGORIES) { showToast('当前已达上限'); return; }
+        state.categories.push(id);
+      }
+      syncCategoryTabs();
+    });
+
+    function setPhase(name) { Object.entries(phases).forEach(([key, el]) => el.classList.toggle('is-active', key === name)); }
+
+    // ---- Mock 生成任务服务（与画一笔一致的降级策略）----
+    const MOCK_FAILURE = false;
+    const generationService = {
+      submit() { return { id:`capture-${Math.random().toString(36).slice(2, 8)}`, startedAt:performance.now() }; },
+      poll(job) {
+        const elapsed = performance.now() - job.startedAt;
+        if (MOCK_FAILURE && elapsed > 1100) return { status:'failed', progress:60, error:'没能认出家具，换张更清晰的照片' };
+        if (elapsed < 700) return { status:'queued', progress:16 };
+        if (elapsed < 1500) return { status:'processing', progress:52 };
+        if (elapsed < 2300) return { status:'processing', progress:82 };
+        return { status:'ready', progress:100 };
+      },
+    };
+    const GEN_COPY = {
+      queued:['正在识别照片','包公球正在看你拍的家居照片'],
+      processing:['正在提取家具','从照片里认出家具并生成 3D 组件'],
+      ready:['组件已就绪','正在整理你的新组件'],
+      failed:['生成没有完成',''],
+    };
+    function updateGen(status, progress, error = '') {
+      const copy = GEN_COPY[status] || GEN_COPY.queued;
+      genOrbit.dataset.status = status === 'ready' ? 'processing' : status;
+      genTitle.textContent = copy[0];
+      genCopy.textContent = status === 'failed' ? (error || '请检查照片或重新尝试') : copy[1];
+      progressBar.style.width = `${progress}%`;
+      genRetry.hidden = status !== 'failed';
+    }
+
+    // 按所选品类各生成一个组件（多选，最多 3）
+    function buildAssets() {
+      const seqBase = String(Date.now()).slice(-3);
+      return state.categories.map((catId, index) => {
+        const primitive = PRIMITIVE_BY_CATEGORY[catId] || 'cabinet';
+        const category = FURNITURE_CATEGORIES.find((item) => item.id === catId);
+        const color = state.photoColor;
+        const accent = lighten(color, .28 + index * .07);
+        return {
+          id:`capture-${catId}-${seqBase}${index + 1}-${Math.random().toString(36).slice(2, 6)}`,
+          kind:'furniture',
+          name:`拍摄·${category.label} ${seqBase}`,
+          category:catId,
+          primitive,
+          color,
+          accent,
+          dimensions:DIMENSIONS_BY_PRIMITIVE[primitive] || [1, .8, .6],
+          source:'user',
+          sourceType:'capture',
+          createdAt:new Date().toISOString(),
+        };
+      });
+    }
+
+    function pollJob() {
+      clearTimeout(state.pollTimer);
+      const result = generationService.poll(state.job);
+      updateGen(result.status, result.progress, result.error);
+      if (result.status === 'ready') { finishGeneration(); return; }
+      if (result.status === 'failed') return;
+      state.pollTimer = setTimeout(pollJob, 620);
+    }
+    function startGeneration() {
+      setPhase('gen');
+      updateGen('queued', 6);
+      genRetry.hidden = true;
+      state.job = generationService.submit();
+      state.pollTimer = setTimeout(pollJob, 420);
+    }
+    function finishGeneration() {
+      const assets = buildAssets();
+      assets.forEach((asset) => { addUserAsset(asset); toggleFavorite(asset.id); }); // 自动收藏 → 我的家可调用（闭环）
+      state.generatedAssets = assets;
+      renderResult(assets);
+      setPhase('result');
+      showToast(assets.length > 1 ? `已生成 ${assets.length} 个组件并加入收藏` : '已生成并加入灵感库收藏');
+    }
+    function renderResult(assets) {
+      resultBadge.textContent = assets.length > 1 ? `已生成 ${assets.length} 个组件` : '组件已生成';
+      resultList.innerHTML = assets.map((asset) => {
+        const category = FURNITURE_CATEGORIES.find((item) => item.id === asset.category);
+        return `<div class="result-item"><div class="result-visual" style="--object:${asset.color};--accent:${asset.accent}"><span class="object object--${asset.primitive}"></span></div><div class="result-body"><input class="result-name" maxlength="16" value="${asset.name}" data-name="${asset.id}" aria-label="组件名称" /><p class="result-meta">家具类 · ${category.label} · 已收藏</p></div></div>`;
+      }).join('');
+    }
+
+    // 名称编辑：写回对应用户资产（同 id 覆盖，保持收藏不变）
+    resultList.addEventListener('change', (event) => {
+      const input = event.target.closest('[data-name]');
+      if (!input) return;
+      const asset = state.generatedAssets.find((item) => item.id === input.dataset.name);
+      if (!asset) return;
+      const name = input.value.trim() || asset.name;
+      asset.name = name; input.value = name;
+      addUserAsset(asset);
+      showToast('组件名称已更新');
+    });
+
+    generateBtn.addEventListener('click', () => { if (state.hasPhoto) startGeneration(); });
+    genBack.addEventListener('click', () => { clearTimeout(state.pollTimer); setPhase('capture'); });
+    genRetry.addEventListener('click', startGeneration);
+    captureAgain.addEventListener('click', () => { resetPhoto(); setPhase('capture'); });
+  </script>
+</body>
+</html>

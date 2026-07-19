@@ -1,4 +1,5 @@
 const FAVORITES_KEY = 'dreamhome.asset-library.v1';
+const USER_ASSETS_KEY = 'dreamhome.user-assets.v1';
 
 export const COMPONENT_FAMILIES = [
   { id: 'floorplan', label: '户型类' },
@@ -82,26 +83,63 @@ export const COMPONENT_ASSETS = [
 
 export const ASSET_BY_ID = new Map(COMPONENT_ASSETS.map((item) => [item.id, item]));
 
+// User-generated assets（画一笔 / 拍一张 产出），独立存储、与预置资产合并查询。
+export function getUserAssets() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(USER_ASSETS_KEY) || '{}');
+    const assets = Array.isArray(stored.assets) ? stored.assets : [];
+    return assets.filter((item) => item && typeof item.id === 'string');
+  } catch {
+    return [];
+  }
+}
+
+function setUserAssets(assets) {
+  const seen = new Set();
+  const known = assets.filter((item) => item && typeof item.id === 'string' && !seen.has(item.id) && seen.add(item.id));
+  localStorage.setItem(USER_ASSETS_KEY, JSON.stringify({ version: 1, assets: known }));
+  return known;
+}
+
+export function addUserAsset(nextAsset) {
+  const record = { source: 'user', kind: 'furniture', ...nextAsset };
+  const assets = getUserAssets().filter((item) => item.id !== record.id);
+  assets.push(record);
+  setUserAssets(assets);
+  return record;
+}
+
+export function removeUserAsset(id) {
+  setUserAssets(getUserAssets().filter((item) => item.id !== id));
+}
+
+function userAssetById(id) {
+  return getUserAssets().find((item) => item.id === id) || null;
+}
+
 export function getAssets(kind, category) {
-  return COMPONENT_ASSETS.filter((item) => item.kind === kind && (!category || item.category === category));
+  const combined = COMPONENT_ASSETS.concat(getUserAssets());
+  return combined.filter((item) => item.kind === kind && (!category || item.category === category));
 }
 
 export function getAsset(id) {
-  return ASSET_BY_ID.get(id) || null;
+  return ASSET_BY_ID.get(id) || userAssetById(id);
 }
 
 export function getFavorites() {
   try {
     const stored = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '{}');
     const ids = Array.isArray(stored.ids) ? stored.ids : [];
-    return new Set(ids.filter((id) => ASSET_BY_ID.has(id)));
+    const userIds = new Set(getUserAssets().map((item) => item.id));
+    return new Set(ids.filter((id) => ASSET_BY_ID.has(id) || userIds.has(id)));
   } catch {
     return new Set();
   }
 }
 
 export function setFavorites(ids) {
-  const known = [...new Set(ids)].filter((id) => ASSET_BY_ID.has(id));
+  const userIds = new Set(getUserAssets().map((item) => item.id));
+  const known = [...new Set(ids)].filter((id) => ASSET_BY_ID.has(id) || userIds.has(id));
   localStorage.setItem(FAVORITES_KEY, JSON.stringify({ version: 1, ids: known }));
   return new Set(known);
 }
