@@ -1,0 +1,17 @@
+/* DreamHome 状态栏（灵动岛 + 时间 + 信号/网络/电量）
+   与「灵感库」严格一致的样式，供各页面复用，避免重复定义。
+   依赖 dreamhome-d-system.css 的 .dh-statusbar / .dh-island 基础样式。
+   用法：
+     <div class="dh-island" aria-hidden="true"></div>
+     <div class="dh-statusbar"><span class="status-time">9:41</span><div class="status-icons" aria-hidden="true"><div class="bars"><i></i><i></i><i></i></div><span>5G</span><div class="bat"></div></div></div>
+*/
+.status-icons { display:flex; align-items:center; gap:5px; height:17px; transform:translateY(-6px); }
+.status-time { font-size:15px; font-weight:var(--dh-font-weight-bold); transform:translateY(-3px); }
+.bars { display:flex; gap:2px; align-items:end; height:13px; }
+.bars i { width:3px; border-radius:2px; background:currentColor; }
+.bars i:nth-child(1) { height:6px; }
+.bars i:nth-child(2) { height:9px; }
+.bars i:nth-child(3) { height:12px; }
+.bat { width:23px; height:12px; border:1.5px solid currentColor; border-radius:3px; position:relative; }
+.bat::before { content:""; position:absolute; inset:2px; width:13px; background:currentColor; border-radius:1px; }
+.bat::after { content:""; position:absolute; right:-4px; top:3px; width:2px; height:4px; background:currentColor; border-radius:2px; }

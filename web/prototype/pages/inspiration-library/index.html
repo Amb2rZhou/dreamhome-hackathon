@@ -88,7 +88,7 @@
       if (favoriteOnly) assets = assets.filter((asset) => getFavorites().has(asset.id));
       const title = favoriteOnly ? '已收藏' : `${labelByKind[kind]}${category ? ` · ${FURNITURE_CATEGORIES.find((item) => item.id === category)?.label || ''}` : ''}`;
       home.hidden = true; catalog.hidden = false;
-      catalog.innerHTML = `<div class="catalog-toolbar"><button class="catalog-back" id="catalogBack">‹ 返回</button><h2>${title}</h2></div>${assets.length ? `<div class="catalog-grid">${assets.map(card).join('')}</div>` : '<p class="empty-state">还没有收藏组件。长按卡片或点击心形即可收藏。</p>'}`;
+      catalog.innerHTML = `<div class="catalog-toolbar"><button class="catalog-back" id="catalogBack" aria-label="返回">‹</button><h2>${title}</h2></div>${assets.length ? `<div class="catalog-grid">${assets.map((asset) => card(asset)).join('')}</div>` : '<p class="empty-state">还没有收藏组件。长按卡片或点击心形即可收藏。</p>'}`;
     };
     const route = () => {
       const matched = location.hash.match(/^#catalog=([^:]+)(?::(.+))?$/);
