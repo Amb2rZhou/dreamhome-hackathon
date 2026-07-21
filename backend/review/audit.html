@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>Pipeline 逐环节审核</title>
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+<style>
+  body { margin:0; font-family:-apple-system,"PingFang SC",sans-serif; background:#111; color:#eee; }
+  header { padding:12px 20px; background:#1a1a1a; position:sticky; top:0; z-index:5;
+           display:flex; gap:16px; align-items:center; }
+  select { background:#222; color:#eee; border:1px solid #444; padding:6px 10px; border-radius:6px; }
+  .hint { color:#999; font-size:13px; }
+  .card { display:flex; gap:14px; padding:16px 20px; border-bottom:1px solid #2a2a2a; align-items:flex-start; }
+  .card.bad { background:#2a1515; }
+  .stage { text-align:center; flex-shrink:0; }
+  .stage .cap { font-size:12px; color:#aaa; margin-top:4px; }
+  .stage img { height:180px; border-radius:8px; background:#000; object-fit:contain; max-width:240px; }
+  model-viewer { width:240px; height:180px; background:#1d1d1d; border-radius:8px; }
+  .meta { min-width:210px; }
+  .meta h3 { margin:0 0 6px; font-size:16px; }
+  .chips span { display:inline-block; background:#2c2c2c; border-radius:4px; padding:2px 7px;
+                font-size:12px; margin:0 4px 4px 0; color:#ccc; }
+  .segs { font-size:12px; color:#8fb; line-height:1.7; }
+  .segs .unbound { color:#f88; }
+  .arrow { align-self:center; color:#555; font-size:22px; }
+  .missing { height:180px; width:160px; display:flex; align-items:center; justify-content:center;
+             background:#1c1c1c; color:#555; border-radius:8px; font-size:13px; }
+</style>
+</head>
+<body>
+<header>
+  <b>逐环节审核</b>
+  <select id="vidSel"></select>
+  <span class="hint">链路: 识别上下文(qwen定品类看的图) → 3D输入图(实际喂给TRELLIS的) → 3D成品 → 轨迹绑定。哪一环开始不对,问题就在那一环。</span>
+</header>
+<div id="list"></div>
+<script>
+const qs = new URLSearchParams(location.search);
+async function main() {
+  const vids = await (await fetch('/api/videos')).json();
+  const sel = document.getElementById('vidSel');
+  for (const v of vids) {
+    const o = document.createElement('option');
+    o.value = v.video_id; o.textContent = `${v.video_id} (${Math.round(v.duration||0)}s)`;
+    sel.appendChild(o);
+  }
+  sel.value = qs.get('v') || 'vid_605df2fff231';
+  sel.onchange = () => { location.search = '?v=' + sel.value; };
+  render(sel.value);
+}
+async function render(vid) {
+  const idx = await (await fetch(`/api/videos/${vid}/index`)).json();
+  const assets = (await (await fetch('/api/assets?include_all_status=true')).json())
+    .filter(a => (a.source||{}).video_id === vid);
+  // 每资产的轨迹段(含已被外观校验解绑的原生轨迹无法溯源,只列当前绑定)
+  const segsByAsset = {};
+  for (const t of idx.tracks || []) {
+    if (!t.asset_id) continue;
+    (segsByAsset[t.asset_id] ||= []).push(`${t.t_start.toFixed(0)}-${t.t_end.toFixed(0)}s`);
+  }
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+  assets.sort((a,b) => ((a.source||{}).t_best||0) - ((b.source||{}).t_best||0));
+  for (const a of assets) {
+    const ci = (a.thumb_url||'').match(/_(\d+)r?\.(?:jpg|png)$/)?.[1];
+    const base = `/storage/pipeline/${vid}`;
+    const segs = segsByAsset[a.asset_id];
+    const labels = a.labels || {};
+    const card = document.createElement('div');
+    card.className = 'card' + (segs ? '' : ' bad');
+    card.innerHTML = `
+      <div class="meta">
+        <h3>${a.name} <small style="color:#777">#${ci??'?'}</small></h3>
+        <div class="chips">${(labels.tags||[]).concat(labels.sub?[labels.sub]:[])
+          .map(t=>`<span>${t}</span>`).join('')}</div>
+        <div class="hint">来源 @ ${(a.source||{}).t_best}s · ${a.status}</div>
+        <div class="segs">${segs
+          ? '绑定段: ' + segs.join(', ')
+          : '<span class="unbound">⚠ 无任何绑定段(外观校验全解绑或未绑)</span>'}</div>
+      </div>
+      <div class="stage">
+        <img src="${base}/ctx_${ci}.jpg" onerror="this.outerHTML='<div class=missing>无ctx图</div>'">
+        <div class="cap">① 识别上下文(红框)</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="stage">
+        <img src="${a.thumb_url}" onerror="this.outerHTML='<div class=missing>无输入图</div>'">
+        <div class="cap" id="cap-${a.asset_id}">② 3D输入图</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="stage">
+        <model-viewer src="${a.glb_url||''}" camera-controls auto-rotate></model-viewer>
+        <div class="cap">③ 3D成品(可拖转)</div>
+      </div>`;
+    list.appendChild(card);
+    // 标注②是补全图还是原始抠图直通
+    if (ci != null) fetch(`${base}/enh_${ci}.jpg`, {method:'HEAD'}).then(r => {
+      const cap = document.getElementById(`cap-${a.asset_id}`);
+      if (cap) cap.textContent = r.ok ? '② 3D输入图(补全后)' : '② 3D输入图(原抠图直通,未补全)';
+    });
+  }
+  if (!assets.length) list.innerHTML = '<div style="padding:40px" class="hint">该视频没有资产</div>';
+}
+main();
+</script>
+</body>
+</html>

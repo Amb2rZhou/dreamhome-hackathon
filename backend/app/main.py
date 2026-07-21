@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .config import settings
-from .routers import video, photo, sketch, voice, jobs, assets, videos, library
+from .routers import video, photo, sketch, voice, jobs, assets, videos, library, tracks_fix
 
 app = FastAPI(
     title="DreamHome API",
@@ -35,6 +35,8 @@ app.include_router(jobs.router)
 app.include_router(assets.router)
 app.include_router(videos.router)
 app.include_router(library.router)
+# 轨迹手动矫正(配套 /review/fix.html 工作台)
+app.include_router(tracks_fix.router)
 
 
 @app.get("/api/health", tags=["health"])

@@ -19,7 +19,7 @@ import numpy as np
 import torch
 
 SAMPLE_FPS = 5           # 传播帧率(0.2s 网格,和索引一致)
-SEED_BATCH = 8           # 每次传播的种子数(显存)
+SEED_BATCH = int(os.environ.get("SAM2_SEED_BATCH", "6"))  # 每次传播的种子数(显存)
 GEO_MERGE_IOU = 0.6      # 同帧 mask IoU ≥ 此值 → 同一物体
 TOP_FRAMES_EMBED = 5     # 每物体取几帧算平均向量
 
@@ -96,10 +96,10 @@ def _clip_embed_masked(img_bgr, mask, clip_model, clip_proc):
 
 
 def run_track_job(job_id: str, video_path: str, seeds: list, clip_getter):
-    import cv2
     job = _jobs[job_id]
     work = os.path.join(os.path.dirname(video_path), f"frames_{job_id}")
     try:
+        import cv2  # try 内:缺依赖时任务标 failed 而不是炸死 worker 线程
         job["status"] = "running"
         ts = _extract_frames(video_path, work)
         n_frames = len(ts)
@@ -112,7 +112,8 @@ def run_track_job(job_id: str, video_path: str, seeds: list, clip_getter):
         for bstart in range(0, len(seeds), SEED_BATCH):
             batch = seeds[bstart:bstart + SEED_BATCH]
             with torch.inference_mode(), torch.autocast("cuda", dtype=torch.bfloat16):
-                state = predictor.init_state(video_path=work)
+                # 帧张量放 CPU 内存:498帧全上显存(~6GB)会和 TRELLIS 常驻打架 OOM
+                state = predictor.init_state(video_path=work, offload_video_to_cpu=True)
                 for s in batch:
                     fi = t2idx(s["t"])
                     x, y, w, h = s["bbox"]
@@ -207,7 +208,11 @@ def run_track_job(job_id: str, video_path: str, seeds: list, clip_getter):
 def _worker(clip_getter):
     while True:
         job_id, video_path, seeds, _ = _q.get()
-        run_track_job(job_id, video_path, seeds, clip_getter)
+        try:
+            run_track_job(job_id, video_path, seeds, clip_getter)
+        except Exception as e:  # noqa: BLE001 任何逃逸异常都不许杀 worker 线程
+            _jobs[job_id]["status"] = "failed"
+            _jobs[job_id]["error"] = f"worker: {type(e).__name__}: {e}"
 
 
 def submit_track(video_path: str, seeds: list, clip_getter) -> str:

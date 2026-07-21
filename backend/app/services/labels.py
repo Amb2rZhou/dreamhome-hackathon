@@ -14,6 +14,17 @@ import httpx
 
 from ..config import settings
 
+_PROMPT_FRAMED = """你是家具识别标注器。图中**红框**标出了一个物体(周围是它所在的环境,仅供参考)。
+只针对红框内的物体，输出 JSON(仅 JSON，无其他文字)：
+{"category": "沙发|单椅|床|柜子|桌子|灯具|地毯|绿植|窗帘|装饰|卫浴|家电|其他 之一",
+ "sub": "更细的子品类，如 三人沙发/吊灯/边柜",
+ "colors": ["主要颜色，最多3个"],
+ "materials": ["材质，如 布艺/皮革/实木/金属/藤编/玻璃"],
+ "styles": ["风格，如 现代/北欧/复古/奶油风/工业风"],
+ "features": ["形态特征，如 圆弧扶手/细腿/簇绒/带抽屉，最多5个"],
+ "size_class": "小|中|大 之一，按该品类常规体量判断",
+ "complete": "true|false，红框内物体主体是否完整可见：无被遮挡、未被画面截断"}"""
+
 _PROMPT = """你是家具识别标注器。观察图中的主体家具，输出 JSON(仅 JSON，无其他文字)：
 {"category": "沙发|单椅|床|柜子|桌子|灯具|地毯|绿植|窗帘|装饰|卫浴|家电|其他 之一",
  "sub": "更细的子品类，如 三人沙发/吊灯/边柜",
@@ -21,24 +32,26 @@ _PROMPT = """你是家具识别标注器。观察图中的主体家具，输出 
  "materials": ["材质，如 布艺/皮革/实木/金属/藤编/玻璃"],
  "styles": ["风格，如 现代/北欧/复古/奶油风/工业风"],
  "features": ["形态特征，如 圆弧扶手/细腿/簇绒/带抽屉，最多5个"],
- "size_class": "小|中|大 之一，按该品类常规体量判断"}"""
+ "size_class": "小|中|大 之一，按该品类常规体量判断",
+ "complete": "true|false，该家具主体是否完整可见：无被墙/其他物体明显遮挡、未被画面边缘截断、无大面积缺失"}"""
 
 _EMPTY = {"category": "", "sub": "", "colors": [], "materials": [],
-          "styles": [], "features": [], "size_class": ""}
+          "styles": [], "features": [], "size_class": "", "complete": False}
 
 
 async def extract_labels(image_path: Optional[str] = None, *,
-                         category_hint: str = "") -> dict:
+                         category_hint: str = "", framed: bool = False) -> dict:
+    """framed=True: 图里有红框标出目标(带环境上下文),判定只针对红框内物体。"""
     provider = settings.effective_labels_provider
     try:
         if provider in ("anthropic", "dashscope") and image_path:
             from . import cache
-            key = cache.content_key(image_path, extra=f"labels|{provider}|{category_hint}")
+            key = cache.content_key(image_path, extra=f"labels|{provider}|{category_hint}|{framed}")
             hit = cache.get("labels", key)
             if hit:
                 return hit["labels"]
             fn = _anthropic if provider == "anthropic" else _dashscope
-            labels = await fn(image_path, category_hint)
+            labels = await fn(image_path, category_hint, framed)
             cache.put("labels", key, {"labels": labels})
             return labels
     except Exception:
@@ -60,6 +73,8 @@ def _parse_json(text: str, category_hint: str = "") -> dict:
     # 模型偶尔把整个枚举串回填 category("沙发|单椅|...")——校验兜底到检测品类
     if out["category"] not in CATEGORIES:
         out["category"] = category_hint if category_hint in CATEGORIES else "其他"
+    # complete 可能回成字符串 "true"/"false";不确定按不完整处理(宁可多补全)
+    out["complete"] = str(out.get("complete", "")).lower() == "true"
     return out
 
 
@@ -69,14 +84,14 @@ def _image_block_b64(image_path: str) -> tuple[str, str]:
         return mime, base64.b64encode(f.read()).decode()
 
 
-async def _anthropic(image_path: str, category_hint: str = "") -> dict:
+async def _anthropic(image_path: str, category_hint: str = "", framed: bool = False) -> dict:
     mime, b64 = _image_block_b64(image_path)
     payload = {
         "model": settings.ANTHROPIC_MODEL,
         "max_tokens": 512,
         "messages": [{"role": "user", "content": [
             {"type": "image", "source": {"type": "base64", "media_type": mime, "data": b64}},
-            {"type": "text", "text": _PROMPT},
+            {"type": "text", "text": _PROMPT_FRAMED if framed else _PROMPT},
         ]}],
     }
     async with httpx.AsyncClient(timeout=60) as client:
@@ -92,13 +107,13 @@ async def _anthropic(image_path: str, category_hint: str = "") -> dict:
     return _parse_json("".join(b.get("text", "") for b in data.get("content", [])), category_hint)
 
 
-async def _dashscope(image_path: str, category_hint: str = "") -> dict:
+async def _dashscope(image_path: str, category_hint: str = "", framed: bool = False) -> dict:
     mime, b64 = _image_block_b64(image_path)
     payload = {
         "model": settings.DASHSCOPE_VL_MODEL,
         "messages": [{"role": "user", "content": [
             {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}},
-            {"type": "text", "text": _PROMPT},
+            {"type": "text", "text": _PROMPT_FRAMED if framed else _PROMPT},
         ]}],
     }
     async with httpx.AsyncClient(timeout=60) as client:

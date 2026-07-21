@@ -17,8 +17,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app.config import settings  # noqa: E402
 from app.services import cache  # noqa: E402
 from app.services.detect import detect_frame  # noqa: E402
-from pipeline.run import (SKIP_GEN_CATEGORIES, cluster_tracks, cut_quality_ok,  # noqa: E402
-                          cutout, embed_image, extract_keyframes, link_tracks)
+from app.services.labels import CATEGORIES, extract_labels  # noqa: E402
+from pipeline.run import (SKIP_GEN_CATEGORIES, cluster_tracks, context_crop,  # noqa: E402
+                          cut_quality_ok, cutout, embed_image, extract_keyframes,
+                          link_tracks, sam2_upgrade_tracks)
 
 
 async def main():
@@ -71,6 +73,8 @@ async def main():
 
     tracks.sort(key=lambda tr: -(len(tr["points"]) *
                                  sum(p["bbox"][2] * p["bbox"][3] for p in tr["points"]) / len(tr["points"])))
+    # 与 pipeline 同源的 SAM2 升级(结果有内容缓存:pipeline 跑过即秒回,预审页=真实聚类)
+    tracks, sam2_embeds = await sam2_upgrade_tracks(vpath, tracks, frames)
     cuts = []
     for i, tr in enumerate(tracks):
         best = max(tr["points"], key=quality)
@@ -79,15 +83,25 @@ async def main():
         cutout(best["frame"], best["bbox"], cp)
         cuts.append(cp)
     print(f"[2/3] {len(tracks)} 条轨迹,算向量(走缓存)")
-    embeds = [await embed_image(p) for p in cuts]
+    embeds = [sam2_embeds.get(i) or await embed_image(p) for i, p in enumerate(cuts)]
     clusters = cluster_tracks(tracks, embeds)
 
     rows = []
     for ci, cl in enumerate(clusters):
         rep = tracks[cl[0]]
         ok, why = cut_quality_ok(cuts[cl[0]])
+        cat = rep["category"]
+        if ok:  # 品类过 qwen 红框上下文纠正(与 pipeline 同源同缓存),预审所见=入库所得
+            ctx = context_crop(rep["best"]["frame"], rep["best"]["bbox"],
+                               os.path.join(out_dir, f"ctx_{ci}.jpg"))
+            lb = await extract_labels(ctx, category_hint=cat, framed=True)
+            if lb.get("category") in CATEGORIES:
+                cat = lb["category"]
+        rep = dict(rep, category=cat)
         if rep["category"] in SKIP_GEN_CATEGORIES:
             ok, why = False, "品类不生成(平面化)"
+        elif rep["category"] == "其他":
+            ok, why = False, "标签判'其他'"
         elif ok and edge_cut(rep["best"]["bbox"]) >= 2:
             ok, why = False, "切边严重(防形态脑补)"
         spans = "、".join(f"{tracks[j]['points'][0]['t']:.0f}-{tracks[j]['points'][-1]['t']:.0f}s" for j in cl)

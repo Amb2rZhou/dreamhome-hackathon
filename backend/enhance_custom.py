@@ -9,12 +9,15 @@ import os
 import httpx
 
 SEGMENT_API = os.environ.get("SEGMENT_API_URL", "http://localhost:8002")
+# 2026-07-19 A/B 实测:wan2.7-image(¥0.2)结构保持与 pro(¥0.5)接近,qwen-edit 会丢部件
+ENHANCE_MODEL = os.environ.get("ENHANCE_MODEL", "wan2.7-image")
 
 
 def enhance(in_path: str, out_path: str, category: str = "") -> None:
     with open(in_path, "rb") as f:
         files = {"file": (os.path.basename(in_path), f, "image/jpeg")}
         data = {"category": category} if category else {}
+        data["model"] = ENHANCE_MODEL
         r = httpx.post(f"{SEGMENT_API}/api/inpaint", files=files, data=data,
                        timeout=150, trust_env=False)
     r.raise_for_status()

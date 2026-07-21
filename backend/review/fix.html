@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>轨迹矫正工作台</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { font-family: -apple-system, "PingFang SC", sans-serif; margin: 0; background: #111; color: #eee;
+         display: flex; flex-direction: column; height: 100vh; }
+  header { padding: 10px 16px; background: #1a1a1a; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  header b { font-size: 15px; }
+  select, input[type=number] { background: #222; color: #eee; border: 1px solid #444; padding: 6px 10px; border-radius: 6px; }
+  .sop { font-size: 12px; color: #999; line-height: 1.5; max-width: 720px; }
+  #main { flex: 1; display: flex; min-height: 0; }
+  #stage { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; background: #000; }
+  video { max-width: 100%; max-height: 100%; }
+  #overlay { position: absolute; pointer-events: none; }
+  .marker { position: absolute; transform: translate(-50%, -50%); pointer-events: auto; cursor: pointer;
+            display: flex; align-items: center; gap: 7px; z-index: 2; }
+  .marker .dot { width: 13px; height: 13px; border-radius: 50%; background: #fff; flex: none;
+                 box-shadow: 0 0 0 4px rgba(255,255,255,.3); }
+  .marker.unbound .dot { background: transparent; border: 2.5px solid #f6a; box-shadow: 0 0 0 4px rgba(255,102,170,.2); }
+  .marker.selected .dot { background: #4cf; box-shadow: 0 0 0 5px rgba(68,204,255,.4); }
+  .marker .pill { background: rgba(0,0,0,.72); color: #fff; font-size: 12px;
+                  padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+  #hint { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.55);
+          padding: 5px 13px; border-radius: 999px; font-size: 13px; z-index: 3; }
+  #panel { width: 360px; background: #1b1b1f; padding: 14px 16px; overflow-y: auto; flex: none; }
+  #panel h3 { margin: 6px 0; font-size: 15px; }
+  #panel .kv { font-size: 13px; color: #aaa; line-height: 1.9; }
+  #panel .kv code { color: #8fb; font-size: 12px; }
+  .assetrow { display: flex; gap: 10px; align-items: center; background: #26262c; border-radius: 10px; padding: 8px; margin: 8px 0; }
+  .assetrow img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; background: #000; }
+  .assetrow .nm { font-size: 13px; }
+  .assetrow .nm small { color: #888; display: block; }
+  .opblock { border-top: 1px solid #2c2c33; margin-top: 12px; padding-top: 12px; }
+  .opblock .cap { font-size: 12px; color: #888; margin-bottom: 6px; }
+  button.op { background: #2c3a4e; color: #cde; border: 0; border-radius: 8px; padding: 8px 12px;
+              cursor: pointer; font-size: 13px; margin: 3px 4px 3px 0; }
+  button.op:hover { background: #38516f; }
+  button.op.danger { background: #4e2c2c; color: #edc; }
+  button.op.danger:hover { background: #6f3838; }
+  .choose { max-height: 260px; overflow-y: auto; margin-top: 6px; }
+  .choose .assetrow { cursor: pointer; border: 1px solid transparent; }
+  .choose .assetrow:hover { border-color: #4cf; }
+  #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgba(30,60,40,.95);
+           color: #cfc; padding: 10px 18px; border-radius: 10px; font-size: 13px; display: none; z-index: 9; }
+  #toast.err { background: rgba(80,30,30,.95); color: #fcc; }
+  .empty { color: #999; font-size: 13px; line-height: 1.7; }
+  label.ck { font-size: 12px; color: #999; display: flex; align-items: center; gap: 4px; }
+</style>
+</head>
+<body>
+<header>
+  <b>轨迹矫正工作台</b>
+  <select id="vidSel"></select>
+  <label class="ck"><input type="checkbox" id="dedup" checked>同屏去重</label>
+  <label class="ck"><input type="checkbox" id="showBig">显示巨框(&gt;40%屏)</label>
+  <span class="sop">SOP：播放到出错处暂停 → 点游标选中轨迹 → 侧栏操作。
+    游标指错物体→<b>换绑</b>；某时段光点飘走→<b>解绑当前时段</b>；整条都错→<b>整条解绑</b>；
+    一条轨迹先后跨了两个物体→<b>切断</b>后对后段单独换绑。实心点=已绑定，粉色空心=未绑定。
+    改完到 <a href="/review/video.html" target="_blank" style="color:#8cf">video.html</a> 复验。</span>
+</header>
+<div id="main">
+  <div id="stage">
+    <video id="v" controls playsinline></video>
+    <div id="overlay"></div>
+    <div id="hint">▶️ 播放中 · 在出错时刻暂停</div>
+  </div>
+  <div id="panel"><div class="empty">暂停后点击一个游标，这里显示该轨迹的矫正操作。</div></div>
+</div>
+<div id="toast"></div>
+<script>
+const qs = new URLSearchParams(location.search);
+const v = document.getElementById('v'), overlay = document.getElementById('overlay');
+const hint = document.getElementById('hint'), panel = document.getElementById('panel');
+const vidSel = document.getElementById('vidSel');
+let tracks = [], assets = {}, videoId = '', selectedTid = null;
+
+// ---------- 初始化：视频列表 + 资产表 ----------
+async function init() {
+  const vids = await (await fetch('/api/videos')).json();
+  for (const x of vids) {
+    const o = document.createElement('option');
+    o.value = x.video_id;
+    o.textContent = `${x.video_id} · ${x.title || ''} (${Math.round(x.duration || 0)}s)`;
+    vidSel.appendChild(o);
+  }
+  for (const a of await (await fetch('/api/assets?include_all_status=true')).json()) assets[a.asset_id] = a;
+  const first = qs.get('video_id') || (vids.find(x => x.status === 'indexed' && x.play_url.includes('/storage/')) || vids[0]).video_id;
+  vidSel.value = first;
+  vidSel.onchange = () => loadVideo(vidSel.value);
+  await loadVideo(first);
+}
+
+async function loadVideo(vid) {
+  videoId = vid;
+  selectedTid = null;
+  panel.innerHTML = '<div class="empty">暂停后点击一个游标，这里显示该轨迹的矫正操作。</div>';
+  const meta = await (await fetch(`/api/videos/${vid}`)).json();
+  v.src = meta.play_url;
+  await refreshIndex();
+  document.title = `轨迹矫正 · ${meta.title || vid}`;
+}
+
+// 每次矫正操作后重拉索引重画游标
+async function refreshIndex() {
+  const idx = await (await fetch(`/api/videos/${videoId}/index`)).json();
+  tracks = idx.tracks;
+  if (v.paused) showBoxes();
+}
+
+// ---------- 游标渲染（bboxAt / 去重逻辑复用自 video.html） ----------
+function iou(a, b) {
+  const ix = Math.max(0, Math.min(a[0]+a[2], b[0]+b[2]) - Math.max(a[0], b[0]));
+  const iy = Math.max(0, Math.min(a[1]+a[3], b[1]+b[3]) - Math.max(a[1], b[1]));
+  const inter = ix * iy;
+  return inter / (a[2]*a[3] + b[2]*b[3] - inter || 1);
+}
+function containment(a, b) {  // 小框被大框覆盖比例:包含关系时 IoU 天然偏低,用它补
+  const ix = Math.max(0, Math.min(a[0]+a[2], b[0]+b[2]) - Math.max(a[0], b[0]));
+  const iy = Math.max(0, Math.min(a[1]+a[3], b[1]+b[3]) - Math.max(a[1], b[1]));
+  return ix * iy / (Math.min(a[2]*a[3], b[2]*b[3]) || 1);
+}
+function bboxAt(tr, t) {
+  const fs = tr.frames;
+  if (!fs.length || t < tr.t_start - 0.2 || t > tr.t_end + 0.2) return null;
+  let lo = 0, hi = fs.length - 1;
+  while (lo < hi) { const m = (lo + hi) >> 1; fs[m].t < t ? lo = m + 1 : hi = m; }
+  const b = fs[lo], a = fs[Math.max(0, lo - 1)];
+  if (Math.abs(b.t - t) > 0.2 && Math.abs(a.t - t) > 0.2) return null;
+  if (a === b || b.t === a.t) return b.bbox;
+  // 镜头快移时相邻帧框跳变大 → 吸附最近真实帧，避免插值把光点"平均"到空中
+  if (iou(a.bbox, b.bbox) < 0.3)
+    return (Math.abs(a.t - t) <= Math.abs(b.t - t)) ? a.bbox : b.bbox;
+  const p = Math.min(1, Math.max(0, (t - a.t) / (b.t - a.t)));
+  return a.bbox.map((x, i) => x + (b.bbox[i] - x) * p);
+}
+
+function showBoxes() {
+  overlay.innerHTML = '';
+  const W = v.clientWidth, H = v.clientHeight;
+  const vr = v.videoWidth / v.videoHeight, er = W / H;
+  const dw = vr > er ? W : H * vr, dh = vr > er ? W / vr : H;
+  const ox = (W - dw) / 2, oy = (H - dh) / 2;
+  overlay.style.width = W + 'px'; overlay.style.height = H + 'px';
+  const t = v.currentTime;
+  const placed = [];
+  const dedup = document.getElementById('dedup').checked;
+  const showBig = document.getElementById('showBig').checked;
+  // 矫正台显示全部轨迹（含未绑定），轨迹长的优先占位
+  const byLen = [...tracks].sort((x, y) => (y.t_end - y.t_start) - (x.t_end - x.t_start));
+  let n = 0;
+  for (const tr of byLen) {
+    const bb = bboxAt(tr, t);
+    if (!bb) continue;
+    if (!showBig && bb[2] * bb[3] > 0.4) continue;  // 巨框默认藏，勾选后可矫正
+    // 同屏去重:IoU>0.35 视为同一物体;同品类再加"包含>0.45"补包含关系（可关掉看重叠轨迹）
+    if (dedup && tr.track_id !== selectedTid &&
+        placed.some(p => iou(p.bb, bb) > 0.35 ||
+                         (p.cat === tr.category && containment(p.bb, bb) > 0.45))) continue;
+    placed.push({ bb, cat: tr.category });
+    n++;
+    const a = tr.asset_id && assets[tr.asset_id];
+    const cx = bb[0] + bb[2] / 2, cy = bb[1] + bb[3] / 2;
+    const el = document.createElement('div');
+    el.className = 'marker' + (a ? '' : ' unbound') + (tr.track_id === selectedTid ? ' selected' : '');
+    el.style.cssText = `left:${ox + cx*dw}px; top:${oy + cy*dh}px;`;
+    el.innerHTML = `<span class="dot"></span><span class="pill">${a ? a.name : tr.category + '·未绑定'}</span>`;
+    el.onclick = () => { selectedTid = tr.track_id; showBoxes(); showPanel(tr); };
+    overlay.appendChild(el);
+  }
+  hint.textContent = `⏸ t=${t.toFixed(1)}s · ${n} 条轨迹在此刻 · 点游标开始矫正`;
+}
+
+// ---------- 侧栏：轨迹信息 + 四种操作 ----------
+function showPanel(tr) {
+  const a = tr.asset_id && assets[tr.asset_id];
+  const cur = v.currentTime;
+  panel.innerHTML = `
+    <h3>轨迹 <code style="color:#8fb">${tr.track_id}</code></h3>
+    <div class="kv">品类：${tr.category || '(无)'}<br>
+      时间段：${tr.t_start.toFixed(1)}s ~ ${tr.t_end.toFixed(1)}s（${tr.frames.length} 帧）<br>
+      best_frame_t：${tr.best_frame_t.toFixed(1)}s</div>
+    ${a ? `<div class="assetrow">
+        <img src="${a.thumb_url || ''}" onerror="this.style.visibility='hidden'">
+        <div class="nm">${a.name}<small>${a.asset_id} · ${a.status}</small></div>
+      </div>` : '<div class="kv" style="color:#f6a">当前未绑定资产</div>'}
+
+    <div class="opblock">
+      <div class="cap">a. 某时段光点飘走 → 把当前时刻前后一小段从这条轨迹里剥离（剥出的段变成未绑定新轨迹）</div>
+      当前 ${cur.toFixed(1)}s 前后各
+      <input type="number" id="halfwin" value="2" min="0.2" step="0.5" style="width:60px"> 秒
+      <button class="op" onclick="opUnbindRange('${tr.track_id}')">解绑当前时段</button>
+    </div>
+    <div class="opblock">
+      <div class="cap">b. 整条轨迹都是错的 → 解除与资产的绑定（轨迹保留，光点变空心）</div>
+      <button class="op danger" onclick="opUnbindAll('${tr.track_id}')">整条解绑</button>
+    </div>
+    <div class="opblock">
+      <div class="cap">c. 游标指错了物体 → 改绑到本视频的正确资产（点下面列表选择）</div>
+      <button class="op" onclick="toggleChoose()">换绑…</button>
+      <div class="choose" id="choose" style="display:none"></div>
+    </div>
+    <div class="opblock">
+      <div class="cap">d. 一条轨迹先后跨了两个物体 → 在当前时刻 ${cur.toFixed(1)}s 切断：前段保留绑定，后段变未绑定新轨迹，再对后段单独换绑</div>
+      <button class="op" onclick="opCut('${tr.track_id}')">在 ${cur.toFixed(1)}s 切断</button>
+    </div>`;
+  renderChoose(tr);
+}
+
+// 本视频全部资产（source.video_id 匹配 + 本视频轨迹当前绑到的），供换绑选择
+function renderChoose(tr) {
+  const box = document.getElementById('choose');
+  const ids = new Set();
+  for (const [id, a] of Object.entries(assets)) if ((a.source || {}).video_id === videoId) ids.add(id);
+  for (const t of tracks) if (t.asset_id) ids.add(t.asset_id);
+  box.innerHTML = '';
+  if (!ids.size) { box.innerHTML = '<div class="empty">本视频没有可换绑的资产。</div>'; return; }
+  for (const id of ids) {
+    const a = assets[id];
+    if (!a) continue;
+    const row = document.createElement('div');
+    row.className = 'assetrow';
+    row.innerHTML = `<img src="${a.thumb_url || ''}" onerror="this.style.visibility='hidden'">
+      <div class="nm">${a.name}${id === tr.asset_id ? ' ✓当前' : ''}<small>${id} · ${a.status}</small></div>`;
+    row.onclick = () => opRebind(tr.track_id, id);
+    box.appendChild(row);
+  }
+}
+function toggleChoose() {
+  const box = document.getElementById('choose');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+// ---------- 操作调用：POST → toast → 重拉索引重画 ----------
+async function callApi(path, body) {
+  try {
+    const r = await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' },
+                                  body: JSON.stringify(body) });
+    const data = await r.json();
+    if (!r.ok) { toast(`失败：${data.detail || r.status}`, true); return null; }
+    return data;
+  } catch (e) { toast('请求异常：' + e, true); return null; }
+}
+
+async function afterOp(data, msg) {
+  if (!data) return;
+  toast(msg + (data.new_track_id ? ` · 新轨迹 ${data.new_track_id}` : ''));
+  await refreshIndex();
+  // 操作后刷新侧栏（轨迹可能已变化）
+  const tr = tracks.find(x => x.track_id === selectedTid);
+  if (tr) showPanel(tr); else panel.innerHTML = '<div class="empty">轨迹已变化，请重新点选游标。</div>';
+}
+
+async function opUnbindRange(tid) {
+  const half = parseFloat(document.getElementById('halfwin').value) || 2;
+  const cur = v.currentTime;
+  const data = await callApi(`/api/tracks/${tid}/unbind`,
+    { t_start: Math.max(0, cur - half), t_end: cur + half });
+  await afterOp(data, data && data.action === 'unbind_all' ? '剩余帧不足，已整条解绑' : '已解绑该时段');
+}
+async function opUnbindAll(tid) {
+  const data = await callApi(`/api/tracks/${tid}/unbind`, { t_start: null, t_end: null });
+  await afterOp(data, '已整条解绑');
+}
+async function opRebind(tid, aid) {
+  const data = await callApi(`/api/tracks/${tid}/rebind`, { asset_id: aid });
+  await afterOp(data, `已换绑到 ${assets[aid] ? assets[aid].name : aid}`);
+}
+async function opCut(tid) {
+  const data = await callApi(`/api/tracks/${tid}/cut`, { t: v.currentTime });
+  await afterOp(data, '已切断');
+}
+
+let toastTimer = null;
+function toast(msg, err = false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = err ? 'err' : '';
+  el.style.display = 'block';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.style.display = 'none'; }, 3200);
+}
+
+// ---------- 播放器事件 ----------
+v.addEventListener('pause', showBoxes);
+v.addEventListener('seeked', () => { if (v.paused) showBoxes(); });
+v.addEventListener('play', () => { overlay.innerHTML = ''; hint.textContent = '▶️ 播放中 · 在出错时刻暂停'; });
+window.addEventListener('resize', () => { if (v.paused) showBoxes(); });
+document.getElementById('dedup').onchange = () => { if (v.paused) showBoxes(); };
+document.getElementById('showBig').onchange = () => { if (v.paused) showBoxes(); };
+init();
+</script>
+</body>
+</html>

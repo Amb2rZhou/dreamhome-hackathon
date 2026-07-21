@@ -9,6 +9,7 @@ import json
 import os
 import re
 import ssl
+import subprocess
 import sys
 import urllib.request
 
@@ -26,17 +27,39 @@ def _opener():
         urllib.request.ProxyHandler({}), urllib.request.HTTPSHandler(context=_SSL))
 
 
+# 有的网络下代理客户端开 fake-ip DNS(198.18.x.x),直连必死,只能走代理端口
+_PROXY = os.environ.get("DOUYIN_PROXY", "http://127.0.0.1:7897")
+
+
+def _curl(url: str, timeout: int, *extra) -> subprocess.CompletedProcess:
+    base = ["curl", "-sL", "-m", str(timeout), "-A", UA,
+            "-H", "Referer: https://www.douyin.com/", *extra, url]
+    for proxy_args in (["--noproxy", "*"], ["-x", _PROXY]):
+        p = subprocess.run(base[:1] + proxy_args + base[1:], capture_output=True)
+        if p.returncode == 0:
+            return p
+    p.check_returncode()
+
+
 def _get(url: str, timeout: int = 30) -> bytes:
-    req = urllib.request.Request(url, headers={"User-Agent": UA, "Referer": "https://www.douyin.com/"})
-    with _opener().open(req, timeout=timeout) as r:
-        return r.read()
+    # 本机 python SSL 对部分抖音节点握手超时(CLAUDE.md 已知坑),失败走 curl 兜底
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": UA, "Referer": "https://www.douyin.com/"})
+        with _opener().open(req, timeout=timeout) as r:
+            return r.read()
+    except Exception:
+        return _curl(url, timeout + 60).stdout
 
 
 def resolve_video_id(share_url: str) -> str:
     """短链 302 → /video/{id} 或 /share/video/{id}。"""
-    req = urllib.request.Request(share_url, headers={"User-Agent": UA}, method="HEAD")
-    with _opener().open(req, timeout=30) as r:
-        final = r.geturl()
+    try:
+        req = urllib.request.Request(share_url, headers={"User-Agent": UA}, method="HEAD")
+        with _opener().open(req, timeout=30) as r:
+            final = r.geturl()
+    except Exception:
+        final = _curl(share_url, 30, "-o", os.devnull, "-w", "%{url_effective}"
+                      ).stdout.decode().strip()
     m = re.search(r"/(?:share/)?video/(\d+)", final)
     if not m:
         raise RuntimeError(f"无法从跳转地址解析视频ID: {final}")

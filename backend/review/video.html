@@ -75,6 +75,11 @@ function iou(a, b) {
   const inter = ix * iy;
   return inter / (a[2]*a[3] + b[2]*b[3] - inter || 1);
 }
+function containment(a, b) {  // 小框被大框覆盖比例:包含关系时 IoU 天然偏低,用它补
+  const ix = Math.max(0, Math.min(a[0]+a[2], b[0]+b[2]) - Math.max(a[0], b[0]));
+  const iy = Math.max(0, Math.min(a[1]+a[3], b[1]+b[3]) - Math.max(a[1], b[1]));
+  return ix * iy / (Math.min(a[2]*a[3], b[2]*b[3]) || 1);
+}
 function bboxAt(tr, t) {
   const fs = tr.frames;
   if (!fs.length || t < tr.t_start - 0.2 || t > tr.t_end + 0.2) return null;
@@ -111,9 +116,12 @@ function showBoxes() {
     if (!ready && !showAll) continue;      // 正常模式只标已审核通过的资产
     const bb = (ready && liveByAsset[tr.asset_id]) || bboxAt(tr, t);
     if (!bb) continue;
+    if (bb[2] * bb[3] > 0.4) continue;   // 半屏级巨框(如整面柜墙误报)不放光标
     const cx = bb[0] + bb[2] / 2, cy = bb[1] + bb[3] / 2;
-    if (placed.some(p => Math.hypot(p[0] - cx, p[1] - cy) < 0.06)) continue;
-    placed.push([cx, cy]);
+    // 同屏去重:IoU>0.35 视为同一物体;同品类再加"包含>0.5"(同一张桌被打两个偏框时 IoU 偏低)
+    if (placed.some(p => iou(p.bb, bb) > 0.35 ||
+                         (p.cat === tr.category && containment(p.bb, bb) > 0.45))) continue;
+    placed.push({ bb, cat: tr.category });
     if (ready) n++;
     const el = document.createElement('div');
     el.className = 'marker';
