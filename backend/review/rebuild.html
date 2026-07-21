@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>户型重建 · 卧室试产</title>
+<style>
+  body { margin:0; font-family:-apple-system,"PingFang SC",sans-serif; background:#111; color:#eee; overflow:hidden; }
+  header { position:fixed; top:0; left:0; right:0; height:48px; z-index:5; padding:0 16px;
+           background:#1a1a1a; display:flex; gap:12px; align-items:center; box-sizing:border-box; }
+  header b { font-size:15px; }
+  .hint { color:#999; font-size:12px; }
+  button { background:#222; color:#eee; border:1px solid #444; padding:6px 12px; border-radius:6px;
+           cursor:pointer; font-size:13px; }
+  button:hover { background:#2e2e2e; }
+  button.on { background:#2c4a33; border-color:#4a7a58; }
+  button.warn.on { background:#5a2c2c; border-color:#8a4a4a; }
+  select, input[type=number] { background:#181818; color:#eee; border:1px solid #444; border-radius:5px;
+           padding:4px 6px; font-size:12px; }
+  main { position:fixed; top:48px; bottom:0; left:0; right:0; display:flex; }
+  #left { flex:1; position:relative; min-width:0; }
+  #right { width:min(40vw, 520px); background:#161616; border-left:1px solid #2a2a2a;
+           display:flex; flex-direction:column; }
+  #annBar { padding:10px 12px; display:flex; gap:8px; align-items:center; border-bottom:1px solid #2a2a2a;
+            flex-shrink:0; }
+  #videoWrap { position:relative; background:#000; flex-shrink:0; }
+  #videoWrap video { width:100%; max-height:52vh; display:block; object-fit:contain; }
+  #annCanvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  #annCanvas.arming { pointer-events:auto; cursor:crosshair; }
+  #annList { padding:8px 12px; font-size:13px; overflow-y:auto; flex:1; min-height:80px; }
+  /* 反馈→Claude 工作流面板:紧贴视频下方 */
+  #agentPanel { display:flex; flex-direction:column; flex:1.3; min-height:140px;
+                border-bottom:1px solid #2a2a2a; }
+  #agentHead { display:flex; gap:8px; align-items:center; padding:7px 12px;
+               border-bottom:1px solid #242424; flex-shrink:0; }
+  #agentHead b { font-size:13px; }
+  #agentState { font-size:11px; padding:2px 8px; border-radius:10px; background:#2a2a2a; color:#999; }
+  #agentState.busy { background:#4a3d1e; color:#ffd166; }
+  #agentReset { margin-left:auto; font-size:11px; padding:3px 8px; }
+  #agentFeed { flex:1; overflow-y:auto; padding:8px 12px; font-size:12.5px; line-height:1.55;
+               font-family:ui-monospace,"SF Mono",Menlo,monospace; }
+  #agentFeed .ev { margin-bottom:6px; white-space:pre-wrap; word-break:break-word; }
+  #agentFeed .evPrompt { color:#ffd166; background:#26221a; border-radius:6px; padding:5px 8px; }
+  #agentFeed .evText { color:#ccc; }
+  #agentFeed .evTool { color:#7dd88f; }
+  #agentFeed .evTool .tb { color:#8a9; }
+  #agentFeed .evDone { color:#7dc4ff; }
+  #agentFeed .evErr { color:#f88; }
+  #agentInputRow { display:flex; gap:8px; padding:8px 12px; border-top:1px solid #242424; flex-shrink:0; }
+  #agentInput { flex:1; background:#181818; color:#eee; border:1px solid #444; border-radius:6px;
+                padding:7px 10px; font-size:13px; min-width:0; }
+  .annRow { display:flex; gap:8px; align-items:center; padding:6px 8px; border-radius:6px 6px 0 0; margin-top:6px;
+            background:#1e1e1e; }
+  .annRow .t { color:#8fb; cursor:pointer; white-space:nowrap; }
+  .annRow .note { flex:1; color:#ddd; }
+  .annRow .del { color:#f88; cursor:pointer; font-size:12px; }
+  .annRow .st { font-size:11px; padding:2px 7px; border-radius:4px; white-space:nowrap; }
+  .st.pending  { background:#333;    color:#aaa; }
+  .st.prepped  { background:#4a3d1e; color:#ffd166; }
+  .st.approved { background:#1e3a26; color:#7dd88f; }
+  .st.rejected { background:#3a1e1e; color:#f88; }
+  .st.generated{ background:#1e2f3a; color:#7dc4ff; }
+  .st.prep_failed { background:#3a1e1e; color:#f88; }
+  .annReview { background:#191919; border-radius:0 0 6px 6px; padding:8px; }
+  .annReview .imgs { display:flex; gap:6px; }
+  .annReview .imgs > div { flex:1; min-width:0; text-align:center; }
+  .annReview img { width:100%; border-radius:6px; background:#000; object-fit:contain; max-height:220px; }
+  .annReview .cap { font-size:11px; color:#888; margin-top:2px; }
+  .annReview .btns { display:flex; gap:8px; margin-top:8px; justify-content:center; }
+  .annReview .btns .ok { border-color:#4a7a58; color:#7dd88f; }
+  .annReview .btns .no { border-color:#8a4a4a; color:#f88; }
+  #libPanel { position:absolute; left:12px; bottom:12px; z-index:4; width:252px;
+              background:rgba(26,26,26,.94); border:1px solid #333; border-radius:10px; padding:10px 12px;
+              font-size:12px; }
+  #libPanel h4 { margin:0 0 6px; font-size:13px; color:#ddd; }
+  #libPanel .row { display:flex; gap:6px; align-items:center; margin-bottom:6px; }
+  #libPanel .row label { width:56px; color:#999; flex-shrink:0; }
+  #libPanel .row select, #libPanel .row input { flex:1; min-width:0; }
+  #libPanel .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:4px 6px; margin-bottom:6px; }
+  #libPanel .grid2 .cell { display:flex; gap:4px; align-items:center; }
+  #libPanel .grid2 .cell span { color:#999; font-size:11px; white-space:nowrap; }
+  #libPanel .grid2 input { width:100%; min-width:0; }
+  #libPanel hr { border:none; border-top:1px solid #333; margin:8px 0; }
+  #libPanel .btns { display:flex; gap:6px; }
+  #libPanel .btns button { flex:1; padding:4px 0; font-size:12px; }
+  #panel { position:absolute; right:12px; top:10px; z-index:4; width:220px; background:rgba(26,26,26,.92);
+           border:1px solid #333; border-radius:10px; padding:12px 14px; display:none; }
+  #panel h3 { margin:0 0 6px; font-size:15px; }
+  #panel .chips span { display:inline-block; background:#2c2c2c; border-radius:4px; padding:2px 7px;
+                       font-size:12px; margin:0 4px 4px 0; color:#ccc; }
+  #panel .src { font-size:12px; color:#8fb; margin-top:6px; line-height:1.6; }
+  #panel .keys { font-size:12px; color:#888; margin-top:8px; border-top:1px solid #333; padding-top:8px; line-height:1.7; }
+  .dimIn { width:44px; background:#181818; border:1px solid #444; color:#eee; border-radius:4px;
+           padding:2px 4px; font-size:11px; }
+  #toast { position:fixed; bottom:16px; left:30%; transform:translateX(-50%); z-index:7;
+           background:rgba(26,26,26,.95); border:1px solid #444; border-radius:8px; padding:8px 16px;
+           font-size:13px; display:none; }
+  #loading { position:absolute; inset:0; z-index:8; display:flex; align-items:center; justify-content:center;
+             background:#111; color:#999; font-size:14px; gap:10px; }
+  #editBar { position:absolute; left:50%; bottom:12px; transform:translateX(-50%); z-index:5;
+             background:rgba(26,26,26,.95); border:1px solid #333; border-radius:12px;
+             padding:10px 14px; display:none; align-items:center; gap:10px; max-width:92%; }
+  #editBar b { font-size:13px; white-space:nowrap; }
+  #editBar label { font-size:12px; color:#999; white-space:nowrap; }
+  #editBar input[type=range] { width:120px; accent-color:#7dd88f; height:22px; }
+  #editBar .pct { font-size:11px; color:#8fb; width:36px; }
+  /* 手机:上下堆叠,3D 在上,视频/审核在下 */
+  @media (max-width: 820px) {
+    header { height:auto; flex-wrap:wrap; padding:6px 10px; gap:6px; }
+    header .hint { display:none; }
+    main { top:44px; flex-direction:column; }
+    #left { flex:none; height:46vh; }
+    #right { width:100%; flex:1; border-left:none; border-top:1px solid #2a2a2a; }
+    #videoWrap video { max-height:32vh; }
+    #libPanel { width:200px; padding:8px 10px; }
+    #panel { display:none !important; }
+    #editBar input[type=range] { width:90px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <b>户型重建</b>
+  <span class="hint" id="pageInfo"></span>
+  <button id="btnView">俯视</button>
+  <button id="btnReset">重置初摆</button>
+  <button id="btnSaveScene" style="border-color:#4a7a58">保存场景资产</button>
+  <button id="btnExport">导出 layout.json</button>
+  <span class="hint">左:3D 场景(点住家具直接拖,选中后下方滑杆调旋转/大小) · 左下:场景库 · 右:原视频对照+圈选审核</span>
+</header>
+<main>
+  <div id="left">
+    <div id="panel">
+      <h3 id="pName"></h3>
+      <div class="chips" id="pChips"></div>
+      <div class="src" id="pSrc"></div>
+      <div class="keys">拖黄环旋转 · 捏合/滚轮等比缩放<br>
+        非等比缩放(编辑模式,%):<br>
+        长<input id="dimX" class="dimIn" type="number" step="5" min="20" max="300">
+        高<input id="dimY" class="dimIn" type="number" step="5" min="20" max="300">
+        宽<input id="dimZ" class="dimIn" type="number" step="5" min="20" max="300"></div>
+    </div>
+    <div id="libPanel">
+      <h4>场景库</h4>
+      <div class="row"><label>光线</label>
+        <select id="selLight">
+          <option value="dusk">黄昏(视频原样)</option>
+          <option value="day">白天</option>
+          <option value="night">夜晚</option>
+          <option value="overcast">阴天</option>
+        </select></div>
+      <div class="row"><label>窗外景色</label><select id="selView"></select></div>
+      <hr>
+      <div class="row"><label>窗户</label>
+        <select id="selWin"></select>
+        <button id="btnAddWin" title="新增窗户" style="padding:4px 8px">＋</button></div>
+      <div class="grid2">
+        <div class="cell"><span>墙面</span><select id="wWall" style="flex:1">
+          <option value="left">左墙</option><option value="right">右墙</option><option value="back">后墙</option>
+          <option value="balcony">阳台尽头</option>
+        </select></div>
+        <div class="cell"><span>类型</span><select id="wType" style="flex:1">
+          <option value="window">普通窗</option><option value="bay">飘窗</option><option value="floor">落地窗</option>
+        </select></div>
+        <div class="cell"><span>样式</span><select id="wStyle" style="flex:1">
+          <option value="grid">黑框格栅</option><option value="plain">细框简约</option>
+        </select></div>
+        <div class="cell"><span>中心</span><input id="wCenter" type="number" step="0.1"></div>
+        <div class="cell"><span>宽</span><input id="wWidth" type="number" step="0.1" min="0.4"></div>
+        <div class="cell"><span>高</span><input id="wHeight" type="number" step="0.1" min="0.4"></div>
+        <div class="cell"><span>离地</span><input id="wSill" type="number" step="0.05" min="0"></div>
+      </div>
+      <div class="btns"><button id="btnWinApply">应用</button><button id="btnWinDel">删除</button></div>
+    </div>
+    <div id="editBar">
+      <b id="ebName"></b>
+      <span class="hint">拖黄环旋转 · 捏合/滚轮缩放 · 点住拖移</span>
+      <span class="pct" id="ebPct"></span>
+      <button id="ebOk" style="border-color:#4a7a58;color:#7dd88f">✓ 确认</button>
+      <button id="ebCancel" style="border-color:#8a4a4a;color:#f88">✕ 取消</button>
+    </div>
+    <div id="loading">加载 3D 资产中…<span id="loadProg"></span></div>
+  </div>
+  <div id="right">
+    <div id="annBar">
+      <button id="btnCircle" class="warn">圈选缺失物品</button>
+      <span class="hint">圈出没生成的物品并命名 → 我跑补全 → 你在下方审核通过 → 才进 3D,不浪费 GPU。</span>
+    </div>
+    <div id="videoWrap">
+      <video id="vid" controls playsinline></video>
+      <canvas id="annCanvas"></canvas>
+      <div id="noteBox" style="position:absolute;z-index:6;background:#222;border:1px solid #555;border-radius:8px;padding:8px;display:none;gap:6px">
+        <input id="noteInput" placeholder="缺了什么?如:衣柜" style="background:#181818;color:#eee;border:1px solid #444;border-radius:5px;padding:5px 8px;font-size:13px;width:150px">
+        <button id="noteSave">保存</button>
+        <button id="noteCancel">取消</button>
+      </div>
+    </div>
+    <div id="agentPanel">
+      <div id="agentHead">
+        <b>反馈 → Claude 工作流</b>
+        <span id="agentState">连接中…</span>
+        <button id="agentReset" title="换新会话并清空面板(不动已改的代码)">新会话</button>
+      </div>
+      <div id="agentFeed"><span class="hint">对着视频/3D 提意见,后台 Claude 会话直接改 demo,过程实时显示在这里。</span></div>
+      <div id="agentInputRow">
+        <input id="agentInput" placeholder="如:床太大了,占了半个房间;窗帘颜色和视频不一致">
+        <button id="agentSend">发送</button>
+      </div>
+    </div>
+    <div id="annList"></div>
+  </div>
+</main>
+<div id="toast"></div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ========== 场景资产驱动:?v=<video_id> 加载 /api/scenes/<vid>.json ==========
+// 坐标系:x 左右, z 前后(-d/2 尽头 / +d/2 入口开口), y 高度
+const VIDEO_ID = new URLSearchParams(location.search).get('v') || 'vid_40734d7f2e6c';
+let SCENE;
+try {
+  SCENE = await (await fetch(`/api/scenes/${VIDEO_ID}`)).json();
+  if (!SCENE.room) throw 0;
+} catch {
+  document.body.innerHTML = `<p style="padding:40px;color:#f88">没有 ${VIDEO_ID} 的场景配置
+    (storage/scenes/${VIDEO_ID}.json)。先让 Claude 生成场景资产。</p>`;
+  throw new Error('no scene');
+}
+const ROOM = SCENE.room;
+const BALC = SCENE.balcony || null;
+const ITEMS = SCENE.items.map(it => ({ ...it, rotY: (it.rotYDeg || 0) * Math.PI / 180 }));
+const LS_KEY = `rebuild_layout_${VIDEO_ID}_v6`;    // 初摆/锚定变了就升版本
+const CFG_KEY = `rebuild_scene_cfg_${VIDEO_ID}_v2`;   // 墙体结构变了就升版本
+
+const left = document.getElementById('left');
+const vid = document.getElementById('vid');
+vid.src = `/storage/videos/${VIDEO_ID}.mp4`;
+document.getElementById('pageInfo').textContent =
+  `${VIDEO_ID} · ${SCENE.title || ''} · ${ITEMS.length} 件资产`;
+
+// ---------- 场景 ----------
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.shadowMap.enabled = true;
+left.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 100);
+function fitRenderer() {
+  const w = left.clientWidth, h = left.clientHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(fitRenderer).observe(left);
+
+const orbit = new OrbitControls(camera, renderer.domElement);
+orbit.maxPolarAngle = Math.PI * 0.52;
+const VIEWS = {
+  roam: { pos:[ROOM.w * 0.57, 2.0, ROOM.d + 0.2], target:[0, 0.9, -ROOM.d * 0.12] },
+  top:  { pos:[0, Math.max(ROOM.w, ROOM.d) * 1.75, 0.01], target:[0, 0, 0] },
+};
+function applyView(v) { camera.position.set(...v.pos); orbit.target.set(...v.target); orbit.update(); }
+fitRenderer();
+applyView(VIEWS.roam);
+
+// ---------- 光线库:预设可切换 ----------
+const amb = new THREE.AmbientLight(); scene.add(amb);
+const sun = new THREE.DirectionalLight(); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); scene.add(sun);
+const fill = new THREE.DirectionalLight(); scene.add(fill);
+const roomLight = new THREE.PointLight(); roomLight.position.set(0, 2.5, 0.5); scene.add(roomLight);
+const LIGHTS = {
+  //            背景色     环境光               太阳(方向光)                      补光                 室内点光       窗景亮度
+  dusk:     { bg:0x16181c, amb:[0xfff2e2,0.5],  sun:[0xffd9a8,1.3,[1.5,3.5,-6]], fill:[0xdfe8ff,0.5], pt:[0xffe8c0,8],  view:1.0 },
+  day:      { bg:0x1a1d22, amb:[0xffffff,0.8],  sun:[0xfff8ee,2.2,[3,6,-4]],     fill:[0xcfe0ff,0.6], pt:[0xffffff,3],  view:1.15 },
+  night:    { bg:0x0c0d11, amb:[0xffe0b0,0.22], sun:[0x28324a,0.2,[2,5,-5]],     fill:[0x333a4a,0.2], pt:[0xffd39a,20], view:0.35 },
+  overcast: { bg:0x191b1e, amb:[0xe8ecf2,0.85], sun:[0xdfe5ec,0.9,[2,6,-3]],     fill:[0xdfe5ec,0.5], pt:[0xffffff,2],  view:0.8 },
+};
+function applyLight(name) {
+  const L = LIGHTS[name] || LIGHTS.dusk;
+  scene.background = new THREE.Color(L.bg);
+  amb.color.setHex(L.amb[0]); amb.intensity = L.amb[1];
+  sun.color.setHex(L.sun[0]); sun.intensity = L.sun[1]; sun.position.set(...L.sun[2]);
+  fill.color.setHex(L.fill[0]); fill.intensity = L.fill[1]; fill.position.set(-3, 4, 4);
+  roomLight.color.setHex(L.pt[0]); roomLight.intensity = L.pt[1];
+  viewMat.color.setScalar(L.view);   // 窗景贴图跟随光线变暗/变亮
+}
+
+// ---------- 材质 ----------
+const wallMat = new THREE.MeshStandardMaterial({ color:0xf3ecdc, roughness:0.95 });
+// 地板:程序化木纹,颜色贴图 + 凹凸贴图双层(接缝/木纹有立体凹陷)
+function makeWoodTextures() {
+  const size = 1024, planks = 7, pw = size / planks;
+  const cv = document.createElement('canvas'); cv.width = cv.height = size;
+  const bv = document.createElement('canvas'); bv.width = bv.height = size;
+  const g = cv.getContext('2d'), b = bv.getContext('2d');
+  b.fillStyle = '#808080'; b.fillRect(0, 0, size, size);
+  for (let i = 0; i < planks; i++) {
+    const x0 = i * pw;
+    // 板面:暖灰橡木底色 + 竖向明暗渐变(每板色相微差)
+    const t = 0.9 + (i * 37 % 12) / 55;
+    const grad = g.createLinearGradient(x0, 0, x0 + pw, 0);
+    grad.addColorStop(0,   `rgb(${146*t|0},${115*t|0},${86*t|0})`);
+    grad.addColorStop(0.5, `rgb(${157*t|0},${126*t|0},${96*t|0})`);
+    grad.addColorStop(1,   `rgb(${142*t|0},${111*t|0},${83*t|0})`);
+    g.fillStyle = grad; g.fillRect(x0, 0, pw, size);
+    // 木纹丝:长弧线,颜色/凹凸同步画
+    for (let k = 0; k < 10; k++) {
+      const x = x0 + 8 + (k * 41 + i * 61) % (pw - 16);
+      const bend = ((k * 17 + i * 7) % 9) - 4;
+      g.strokeStyle = `rgba(84,60,38,${0.10 + (k % 3) * 0.05})`; g.lineWidth = 1 + (k % 2);
+      g.beginPath(); g.moveTo(x, 0);
+      g.bezierCurveTo(x + bend, size/3, x - bend, size*2/3, x + bend/2, size); g.stroke();
+      b.strokeStyle = 'rgba(96,96,96,0.5)'; b.lineWidth = 1;
+      b.beginPath(); b.moveTo(x, 0);
+      b.bezierCurveTo(x + bend, size/3, x - bend, size*2/3, x + bend/2, size); b.stroke();
+    }
+    // 结疤:少量椭圆深斑
+    if (i % 3 === 1) {
+      const ky = (i * 331) % (size - 80) + 40, kx = x0 + pw/2 + ((i*13)%20 - 10);
+      g.fillStyle = 'rgba(70,48,30,0.35)';
+      g.beginPath(); g.ellipse(kx, ky, 7, 16, 0.3, 0, Math.PI*2); g.fill();
+      b.fillStyle = 'rgba(58,58,58,0.8)';
+      b.beginPath(); b.ellipse(kx, ky, 7, 16, 0.3, 0, Math.PI*2); b.fill();
+    }
+    // 板间接缝(深色 + 凹槽)与错缝横缝
+    g.fillStyle = 'rgba(52,36,22,0.85)'; g.fillRect(x0, 0, 3, size);
+    b.fillStyle = '#1a1a1a'; b.fillRect(x0 - 1, 0, 5, size);
+    const sy = (i * 389) % size;
+    g.fillStyle = 'rgba(52,36,22,0.8)'; g.fillRect(x0, sy, pw, 3);
+    b.fillStyle = '#1a1a1a'; b.fillRect(x0, sy - 1, pw, 5);
+  }
+  const mk = c => { const t2 = new THREE.CanvasTexture(c);
+    t2.wrapS = t2.wrapT = THREE.RepeatWrapping; t2.repeat.set(1.6, 2); return t2; };
+  const map = mk(cv); map.colorSpace = THREE.SRGBColorSpace;
+  return { map, bump: mk(bv) };
+}
+const woodTex = makeWoodTextures();
+const woodMat = new THREE.MeshStandardMaterial({ map:woodTex.map, bumpMap:woodTex.bump,
+                                                 bumpScale:0.035, roughness:0.72 });
+// 真实地板:视频帧裁切→补全的正视角贴图(storage/textures/floor/wood.png),加载成功即替换程序化纹理
+new THREE.TextureLoader().load('/storage/textures/floor/wood.png', tex => {
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.center.set(0.5, 0.5); tex.rotation = Math.PI / 2;   // 板缝转到走廊方向(沿 z)
+  tex.repeat.set(1.7, 2.1);
+  woodMat.map = tex;
+  woodMat.bumpMap = tex; woodMat.bumpScale = 0.02;        // 同图做凹凸:板缝深色=凹槽
+  woodMat.needsUpdate = true;
+});
+// 窗帘:蓝白格纹贴图
+function makeGinghamTexture() {
+  const cv = document.createElement('canvas'); cv.width = cv.height = 256;
+  const g = cv.getContext('2d'), n = 12, s = 256 / n;
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    g.fillStyle = (i + j) % 2 ? '#e9f1f8' : ((i % 2) ? '#bfd4e8' : '#d3e2f0');
+    g.fillRect(i * s, j * s, s, s);
+  }
+  const tex = new THREE.CanvasTexture(cv);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(2, 4);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+const curtainMat = new THREE.MeshStandardMaterial({ map: makeGinghamTexture(), roughness:1,
+                                                    side:THREE.DoubleSide });
+// 窗帘面片:褶皱 + 每帧风吹动画(底摆鼓动,顶部挂杆固定)
+const curtains = [];
+function makeCurtain(wd, ht, mat) {
+  const geo = new THREE.PlaneGeometry(wd, ht, 32, 10);
+  const m = new THREE.Mesh(geo, mat);
+  m.castShadow = false;
+  m.userData.cw = { wd, ht, phase: curtains.length * 1.7 };
+  curtains.push(m);
+  return m;
+}
+function animateCurtains(t) {
+  for (const m of curtains) {
+    if (!m.parent) continue;
+    const { wd, ht, phase } = m.userData.cw;
+    const p = m.geometry.attributes.position;
+    for (let i = 0; i < p.count; i++) {
+      const u = p.getX(i) / wd + 0.5;
+      const hang = 0.5 - p.getY(i) / ht;          // 0=顶(固定) → 1=底(摆动最大)
+      const folds = Math.sin(u * Math.PI * 8 + phase + Math.sin(t * 0.9 + phase) * 0.6)
+                    * 0.05 * (0.45 + 0.55 * hang);
+      const billow = hang * hang * (0.10 + 0.08 * Math.sin(t * 1.3 + phase + u * 3.1)
+                     + 0.03 * Math.sin(t * 2.8 + phase * 2 + u * 7.3));
+      p.setZ(i, folds + billow);
+    }
+    p.needsUpdate = true;
+    m.geometry.computeVertexNormals();
+  }
+}
+const frameDark = new THREE.MeshStandardMaterial({ color:0x3a3f45, roughness:0.5 });
+const framePlain = new THREE.MeshStandardMaterial({ color:0xd8d5cc, roughness:0.6 });
+const glassMat = new THREE.MeshStandardMaterial({ color:0xbfd8e8, roughness:0.1, metalness:0.1,
+                                                  transparent:true, opacity:0.3 });
+const cushionMat = new THREE.MeshStandardMaterial({ color:0xf5f2ea, roughness:0.9 });
+const sheerMat = new THREE.MeshStandardMaterial({ color:0xffffff, roughness:1, transparent:true,
+                                                  opacity:0.5, side:THREE.DoubleSide });
+const viewMat = new THREE.MeshBasicMaterial({ color:0xffffff });   // 窗外景色贴图(自发光感)
+
+// ---------- 静态壳体:地板/网格/空调/衣柜近似体 ----------
+function mkBox(mat, dims, pos, group) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(...dims), mat);
+  m.position.set(...pos); m.receiveShadow = true; m.castShadow = true;
+  group.add(m); return m;
+}
+const staticShell = new THREE.Group();
+const floorMesh = mkBox(woodMat, [ROOM.w, 0.1, ROOM.d], [0, -0.05, 0], staticShell);
+floorMesh.castShadow = false;
+// 场景附属壳体(空调等,场景 JSON extras 定义)
+for (const ex of (SCENE.extras || []))
+  mkBox(new THREE.MeshStandardMaterial({ color: parseInt(ex.color || 'f7f7f5', 16), roughness:0.7 }),
+        ex.dims, ex.pos, staticShell);
+// 天花板:法线朝下的面片,从室内可见、俯视穿透不挡视线
+const ceilMat = new THREE.MeshStandardMaterial({ color:0xf2ede2, roughness:0.95 });
+const ceilD = ROOM.d + (BALC ? BALC.depth + 0.15 : 0);
+const ceil = new THREE.Mesh(new THREE.PlaneGeometry(ROOM.w, ceilD), ceilMat);
+ceil.rotation.x = Math.PI / 2;
+ceil.position.set(0, ROOM.h, -(ceilD - ROOM.d) / 2);   // 有阳台就连着盖
+ceil.receiveShadow = true;
+staticShell.add(ceil);
+// 吊顶:周边两级阶梯线脚(参照视频里的石膏线吊顶)
+const moldMat = new THREE.MeshStandardMaterial({ color:0xf7f3ea, roughness:0.9 });
+function moldRing(depth, h, group) {
+  const y = ROOM.h - h / 2;
+  mkBox(moldMat, [ROOM.w, h, depth], [0, y, -ROOM.d/2 + depth/2], group);           // 后
+  mkBox(moldMat, [ROOM.w, h, depth], [0, y,  ROOM.d/2 - depth/2], group);           // 前(入口垭口上方)
+  mkBox(moldMat, [depth, h, ROOM.d - depth*2], [-ROOM.w/2 + depth/2, y, 0], group); // 左
+  mkBox(moldMat, [depth, h, ROOM.d - depth*2], [ ROOM.w/2 - depth/2, y, 0], group); // 右
+}
+moldRing(0.32, 0.15, staticShell);   // 外圈吊顶下沿
+moldRing(0.40, 0.07, staticShell);   // 内圈线脚,进深多一步、更薄 → 阶梯感
+scene.add(staticShell);
+const grid = new THREE.GridHelper(14, 28, 0x333333, 0x222222);
+grid.position.y = -0.11; scene.add(grid);
+
+// ---------- 窗户资产库:参数化,可贴任意墙/调大小/换样式 ----------
+// 窗规格:{id, wall:left|right|back|balcony, type:window|bay|floor, style:grid|plain, center, width, height, sill}
+// 户型墙面定义:阳台(balcony)可选——场景 JSON 有 balcony 字段才有阳台凹间和尽头墙
+const WALL_DEF = {
+  left:   { uMin:-ROOM.d/2, uMax:ROOM.d/2, axis:'z', fixed:-ROOM.w/2 - 0.06, out:-1 },
+  right:  { uMin:-ROOM.d/2, uMax:ROOM.d/2, axis:'z', fixed: ROOM.w/2 + 0.06, out: 1 },
+  back:   { uMin:-ROOM.w/2, uMax: BALC ? BALC.x0 : ROOM.w/2, axis:'x', fixed:-ROOM.d/2 - 0.06, out:-1 },
+  ...(BALC ? { balcony:{ uMin:BALC.x0, uMax:BALC.x1, axis:'x',
+                         fixed:-ROOM.d/2 - BALC.depth - 0.06, out:-1 } } : {}),
+};
+const DEFAULT_CFG = structuredClone(SCENE.cfg);
+let cfg = JSON.parse(localStorage.getItem(CFG_KEY) || 'null') || structuredClone(DEFAULT_CFG);
+function saveCfg() { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }
+
+let shellDyn = null;
+function buildShell() {
+  if (shellDyn) { scene.remove(shellDyn); }
+  curtains.length = 0;   // 旧帘子随 shellDyn 移除,动画列表清空
+  shellDyn = new THREE.Group();
+  const dims = (axis, uLen, h, t) => axis === 'z' ? [t, h, uLen] : [uLen, h, t];
+  const pos = (def, u, y, offN = 0) => def.axis === 'z'
+    ? [def.fixed + offN * def.out, y, u] : [u, y, def.fixed + offN * def.out];
+
+  for (const wallName of Object.keys(WALL_DEF)) {
+    const def = WALL_DEF[wallName];
+    const wins = cfg.windows.filter(w => w.wall === wallName)
+      .sort((a, b) => a.center - b.center);
+    let cursor = def.uMin;
+    for (const w of wins) {
+      const u0 = w.center - w.width / 2, u1 = w.center + w.width / 2;
+      if (u0 < cursor - 0.01 || u1 > def.uMax + 0.01) {   // 超出墙范围/互相重叠的窗:跳过,不产生错位墙块
+        console.warn('窗户超出墙范围,跳过', w);
+        continue;
+      }
+      if (u0 > cursor + 0.02)   // 窗前实墙段
+        mkBox(wallMat, dims(def.axis, u0 - cursor, ROOM.h, 0.12),
+              pos(def, (cursor + u0) / 2, ROOM.h / 2), shellDyn);
+      const topY = Math.min(w.sill + w.height, ROOM.h);
+      if (w.sill > 0.02)        // 窗下裙墙
+        mkBox(wallMat, dims(def.axis, w.width, w.sill, 0.12), pos(def, w.center, w.sill / 2), shellDyn);
+      if (topY < ROOM.h - 0.02) // 窗上梁
+        mkBox(wallMat, dims(def.axis, w.width, ROOM.h - topY, 0.12),
+              pos(def, w.center, (ROOM.h + topY) / 2), shellDyn);
+      buildWindowUnit(w, def, dims, pos);
+      cursor = u1;
+    }
+    if (cursor < def.uMax - 0.02)
+      mkBox(wallMat, dims(def.axis, def.uMax - cursor, ROOM.h, 0.12),
+            pos(def, (cursor + def.uMax) / 2, ROOM.h / 2), shellDyn);
+  }
+  // 阳台凹间固定结构(可选):地板延伸 + 两侧短墙 + 开口顶梁(垭口)
+  if (BALC) {
+    const bz0 = -ROOM.d/2, bz1 = -ROOM.d/2 - BALC.depth;
+    mkBox(woodMat, [BALC.x1 - BALC.x0, 0.1, BALC.depth],
+          [(BALC.x0 + BALC.x1) / 2, -0.05, (bz0 + bz1) / 2], shellDyn).castShadow = false;
+    mkBox(wallMat, [0.12, ROOM.h, BALC.depth], [BALC.x0 - 0.06, ROOM.h/2, (bz0 + bz1) / 2], shellDyn);
+    mkBox(wallMat, [0.12, ROOM.h, BALC.depth], [BALC.x1 + 0.06, ROOM.h/2, (bz0 + bz1) / 2], shellDyn);
+    mkBox(wallMat, [BALC.x1 - BALC.x0, 0.4, 0.12],
+          [(BALC.x0 + BALC.x1) / 2, ROOM.h - 0.2, bz0], shellDyn);   // 垭口顶梁
+  }
+  scene.add(shellDyn);
+}
+
+function buildWindowUnit(w, def, dims, pos) {
+  const fm = w.style === 'plain' ? framePlain : frameDark;
+  const yMid = w.sill + w.height / 2, yTop = w.sill + w.height;
+  const frameOff = w.type === 'bay' ? 0.6 : 0;      // 飘窗窗体外推
+  // 框:上下横 + 两侧竖
+  mkBox(fm, dims(def.axis, w.width + 0.06, 0.08, 0.1), pos(def, w.center, yTop, frameOff), shellDyn);
+  mkBox(fm, dims(def.axis, w.width + 0.06, 0.08, 0.1), pos(def, w.center, Math.max(w.sill, 0.04), frameOff), shellDyn);
+  for (const s of [-1, 1])
+    mkBox(fm, dims(def.axis, 0.08, w.height, 0.1), pos(def, w.center + s * w.width / 2, yMid, frameOff), shellDyn);
+  // 梃:格栅 2竖1横;简约 1竖
+  if (w.style === 'grid') {
+    for (const fu of [-w.width / 6, w.width / 6])
+      mkBox(fm, dims(def.axis, 0.07, w.height, 0.09), pos(def, w.center + fu, yMid, frameOff), shellDyn);
+    mkBox(fm, dims(def.axis, w.width, 0.07, 0.09), pos(def, w.center, w.sill + w.height * 0.25, frameOff), shellDyn);
+  } else {
+    mkBox(fm, dims(def.axis, 0.06, w.height, 0.09), pos(def, w.center, yMid, frameOff), shellDyn);
+  }
+  // 玻璃
+  mkBox(glassMat, dims(def.axis, w.width - 0.05, w.height - 0.05, 0.02),
+        pos(def, w.center, yMid, frameOff), shellDyn);
+  // 窗外景色贴图:紧贴玻璃外侧、与窗洞同大——旋转视角也不会看出悬浮的贴图板
+  const vp = mkBox(viewMat, dims(def.axis, w.width + 0.02, w.height + 0.02, 0.02),
+                   pos(def, w.center, yMid, frameOff + 0.09), shellDyn);
+  vp.castShadow = false; vp.receiveShadow = false;
+  // 飘窗:凹龛裙板 + 白坐垫 + 两侧蓝白格窗帘(视频原样)
+  if (w.type === 'bay') {
+    for (const s of [-1, 1])
+      mkBox(wallMat, dims(def.axis, 0.1, w.sill, 0.6), pos(def, w.center + s * (w.width / 2 - 0.05), w.sill / 2, 0.3), shellDyn);
+    mkBox(cushionMat, dims(def.axis, w.width - 0.08, 0.14, 0.64), pos(def, w.center, w.sill + 0.07, 0.32), shellDyn);
+    const ch = w.height + w.sill * 0.9;                        // 从窗顶垂到坐垫下沿
+    for (const s of [-1, 1]) {
+      const c = makeCurtain(0.42, ch, curtainMat);
+      c.position.set(...pos(def, w.center + s * (w.width / 2 - 0.14), yTop - ch / 2, -0.16));
+      c.rotation.y = def.axis === 'x' ? 0 : Math.PI / 2;
+      shellDyn.add(c);
+    }
+  }
+  // 落地窗:两侧白纱帘(内侧,波浪垂坠)
+  if (w.type === 'floor') {
+    for (const s of [-1, 1]) {
+      const c = makeCurtain(0.55, w.height - 0.08, sheerMat);
+      c.position.set(...pos(def, w.center + s * (w.width / 2 - 0.35), yMid, -0.15));
+      c.rotation.y = def.axis === 'x' ? 0 : Math.PI / 2;
+      shellDyn.add(c);
+    }
+  }
+}
+
+// ---------- 窗外景色库 ----------
+let viewList = [];
+async function loadViews() {
+  try {
+    viewList = (await (await fetch('/storage/textures/views/manifest.json')).json()).views || [];
+  } catch { viewList = []; }
+  const sel = document.getElementById('selView');
+  sel.innerHTML = viewList.map(v => `<option value="${v.name}">${v.label}</option>`).join('') ||
+                  '<option value="">(无贴图,纯色)</option>';
+  if (viewList.find(v => v.name === cfg.view)) sel.value = cfg.view;
+  applyViewTexture(sel.value);
+}
+const texLoader = new THREE.TextureLoader();
+function applyViewTexture(name) {
+  const v = viewList.find(x => x.name === name);
+  if (!v) { viewMat.map = null; viewMat.color.setHex(0xffcf9e); viewMat.needsUpdate = true; return; }
+  texLoader.load(v.url, tex => {
+    tex.colorSpace = THREE.SRGBColorSpace;
+    viewMat.map = tex; viewMat.needsUpdate = true;
+    applyLight(cfg.light);   // 重设亮度系数
+  });
+}
+
+// ---------- 场景库 UI ----------
+const selLight = document.getElementById('selLight');
+selLight.value = cfg.light;
+selLight.onchange = () => { cfg.light = selLight.value; applyLight(cfg.light); saveCfg(); };
+document.getElementById('selView').onchange = e => { cfg.view = e.target.value; applyViewTexture(cfg.view); saveCfg(); };
+
+const selWin = document.getElementById('selWin');
+const wf = id => document.getElementById(id);
+function refreshWinList(keep) {
+  selWin.innerHTML = cfg.windows.map((w, i) =>
+    `<option value="${i}">${w.id}(${{left:'左',right:'右',back:'后'}[w.wall]}墙·${{window:'窗',bay:'飘窗',floor:'落地'}[w.type]})</option>`).join('');
+  if (keep != null) selWin.value = keep;
+  fillWinForm();
+}
+function fillWinForm() {
+  const w = cfg.windows[+selWin.value];
+  if (!w) return;
+  wf('wWall').value = w.wall; wf('wType').value = w.type; wf('wStyle').value = w.style;
+  wf('wCenter').value = w.center; wf('wWidth').value = w.width;
+  wf('wHeight').value = w.height; wf('wSill').value = w.sill;
+}
+selWin.onchange = fillWinForm;
+document.getElementById('btnWinApply').onclick = () => {
+  const w = cfg.windows[+selWin.value];
+  if (!w) return;
+  Object.assign(w, {
+    wall: wf('wWall').value, type: wf('wType').value, style: wf('wStyle').value,
+    center: +wf('wCenter').value || 0, width: Math.max(0.4, +wf('wWidth').value || 1),
+    height: Math.max(0.4, +wf('wHeight').value || 1), sill: Math.max(0, +wf('wSill').value || 0),
+  });
+  if (w.type === 'floor') { w.sill = 0; wf('wSill').value = 0; }
+  buildShell(); refreshWinList(selWin.value); saveCfg(); toast(`窗户 ${w.id} 已更新`);
+};
+document.getElementById('btnWinDel').onclick = () => {
+  if (cfg.windows.length <= 0) return;
+  const w = cfg.windows.splice(+selWin.value, 1)[0];
+  buildShell(); refreshWinList(0); saveCfg(); toast(`已删除 ${w?.id || '窗户'}`);
+};
+document.getElementById('btnAddWin').onclick = () => {
+  const n = cfg.windows.length + 1;
+  cfg.windows.push({ id:`win${n}`, wall:'right', type:'window', style:'grid',
+                     center:1.2, width:1.2, height:1.4, sill:0.9 });
+  buildShell(); refreshWinList(cfg.windows.length - 1); saveCfg(); toast('已新增窗户,调参数后点应用');
+};
+
+buildShell();
+applyLight(cfg.light);
+refreshWinList(0);
+loadViews();
+
+// ---------- 加载 GLB,按 targetW 归一化,底部贴地 ----------
+const loader = new GLTFLoader();
+const furniture = [];
+// 兼容改版前的旧存档键(场景驱动改造把 _bedroom_v6 改成了 _v6),Boss 调好的布局别丢
+const saved = JSON.parse(localStorage.getItem(LS_KEY) || 'null')
+  || JSON.parse(localStorage.getItem(`rebuild_layout_${VIDEO_ID}_bedroom_v6`) || 'null')
+  || JSON.parse(localStorage.getItem(`rebuild_layout_${VIDEO_ID}_bedroom_v5`) || 'null');
+// 资产库级尺寸(size_prior,Boss 调过的长宽比):任何场景加载这件资产都用这个比例
+let sizePriors = {};
+try {
+  const all = await (await fetch('/api/assets?include_all_status=true')).json();
+  for (const a of all) if (a.size_prior) sizePriors[a.asset_id] = a.size_prior;
+} catch { /* 资产接口不可用时退回 targetW 归一化 */ }
+let loaded = 0;
+for (const item of ITEMS) {
+  loader.load(item.glb, (gltf) => {
+    const obj = gltf.scene;
+    obj.traverse(n => { if (n.isMesh) { n.castShadow = true; n.receiveShadow = true; } });
+    // 挂墙件自动立正:生成模型常是"平躺"姿态(最薄轴朝上),立起来让薄轴对准墙面法线
+    if (item.mount === 'wall') {
+      const pre = new THREE.Box3().setFromObject(obj);
+      const ps = pre.getSize(new THREE.Vector3());
+      if (ps.y <= ps.x && ps.y <= ps.z) obj.rotation.x = Math.PI / 2;        // 平躺 → 立起
+      else if (ps.x <= ps.y && ps.x <= ps.z) obj.rotation.y = Math.PI / 2;   // 薄轴在X → 转到Z
+      obj.updateMatrixWorld(true);
+    }
+    const box3 = new THREE.Box3().setFromObject(obj);
+    const size = box3.getSize(new THREE.Vector3());
+    const s = item.targetW / Math.max(size.x, size.z);
+    const wrap = new THREE.Group();
+    const prior = sizePriors[item.id];
+    if (prior && prior.w) {
+      // 资产库里有 Boss 定过的真实尺寸(含长宽比) → 三轴各自缩放到位
+      wrap.scale.set(prior.w / size.x, prior.h / size.y, prior.d / size.z);
+    } else {
+      wrap.scale.setScalar(s);
+    }
+    const c = box3.getCenter(new THREE.Vector3());
+    // 锚定点按挂载类型:吊顶类顶部对齐(自然竖直垂下),其余底部贴地
+    obj.position.set(-c.x, item.mount === 'ceiling' ? -box3.max.y : -box3.min.y, -c.z);
+    wrap.add(obj);
+    wrap.position.set(...item.pos);
+    if (item.mount === 'ceiling') wrap.position.y = ROOM.h - 0.03;   // 吊在天花板下沿
+    wrap.rotation.y = item.rotY;
+    const sv = saved?.[item.id];
+    if (sv) {
+      wrap.position.fromArray(sv.pos); wrap.rotation.fromArray(sv.rot);
+      Array.isArray(sv.scale) ? wrap.scale.fromArray(sv.scale) : wrap.scale.setScalar(sv.scale);
+    } else if (Array.isArray(item.scale)) {
+      wrap.scale.fromArray(item.scale);   // 场景资产里保存过的精调尺寸
+    }
+    wrap.userData.item = item;
+    wrap.userData.baseScale = s;   // 归一化基准,等比缩放按百分比
+    wrap.userData.size0 = size.clone().multiplyScalar(s);   // 100% 时的世界尺寸(挂墙贴面用)
+    scene.add(wrap);
+    furniture.push({ item, obj: wrap });
+    done();
+  }, undefined, (err) => { console.error('加载失败', item.name, err); done(); });
+}
+function done() {
+  loaded++;
+  document.getElementById('loadProg').textContent = `${loaded} / ${ITEMS.length}`;
+  if (loaded >= ITEMS.length) document.getElementById('loading').style.display = 'none';
+}
+
+// ---------- 选中 + 编辑:拖移(按挂载面) + 圆环绕轴旋转 + 捏合/滚轮等比缩放 + 确认保存 ----------
+const raycaster = new THREE.Raycaster();
+let selected = null;
+let snapshot = null;      // 选中瞬间的状态,取消时恢复(确认才保存)
+const panel = document.getElementById('panel');
+const editBar = document.getElementById('editBar');
+const ebPct = document.getElementById('ebPct');
+const dimX = document.getElementById('dimX'), dimY = document.getElementById('dimY'),
+      dimZ = document.getElementById('dimZ');
+
+// 旋转轴环:选中后物品脚下出现黄环,拖环绕竖直轴旋转
+const ring = new THREE.Mesh(
+  new THREE.TorusGeometry(1, 0.03, 8, 64),
+  new THREE.MeshBasicMaterial({ color:0xffd166, transparent:true, opacity:0.9, depthTest:false }));
+ring.rotation.x = Math.PI / 2; ring.visible = false; ring.renderOrder = 9;
+scene.add(ring);
+function updateRing() {
+  if (!selected) { ring.visible = false; return; }
+  const b = new THREE.Box3().setFromObject(selected);
+  const r = Math.max(b.max.x - b.min.x, b.max.z - b.min.z) / 2 + 0.18;
+  ring.scale.setScalar(r);
+  ring.position.set(selected.position.x, b.min.y + 0.03, selected.position.z);
+  ring.visible = true;
+}
+function pctNow() { return Math.round(selected.scale.x / selected.userData.baseScale * 100); }
+function refreshEditUI() {
+  if (!selected) return;
+  const base = selected.userData.baseScale;
+  ebPct.textContent = pctNow() + '%';
+  dimX.value = Math.round(selected.scale.x / base * 100);
+  dimY.value = Math.round(selected.scale.y / base * 100);
+  dimZ.value = Math.round(selected.scale.z / base * 100);
+}
+
+function select(wrap) {
+  if (selected) setHighlight(selected, false);
+  selected = wrap;
+  if (!wrap) { snapshot = null; ring.visible = false; panel.style.display = 'none';
+               editBar.style.display = 'none'; orbit.enabled = true; return; }
+  snapshot = { pos: wrap.position.clone(), rotY: wrap.rotation.y, scale: wrap.scale.clone() };
+  orbit.enabled = false;   // 编辑期间锁定视角,双指留给缩放
+  setHighlight(wrap, true);
+  const it = wrap.userData.item;
+  document.getElementById('pName').textContent = it.name;
+  document.getElementById('pChips').innerHTML = it.tags.map(t => `<span>${t}</span>`).join('');
+  document.getElementById('pSrc').innerHTML = `来源视频 @ ${it.t_best}s<br>${it.track}<br>${it.id}`;
+  panel.style.display = 'block';
+  document.getElementById('ebName').textContent = it.name;
+  editBar.style.display = 'flex';
+  updateRing(); refreshEditUI();
+  vid.currentTime = Math.min(it.t_best, (vid.duration || it.t_best));
+  vid.pause();
+}
+// 确认=保存;取消/空点/Esc=恢复到选中前
+function finishEdit(commit) {
+  if (!selected) return;
+  if (!commit && snapshot) {
+    selected.position.copy(snapshot.pos);
+    selected.rotation.y = snapshot.rotY;
+    selected.scale.copy(snapshot.scale);
+  }
+  if (commit) { saveLayout(); toast('已保存'); }
+  select(null);
+}
+document.getElementById('ebOk').onclick = () => finishEdit(true);
+document.getElementById('ebCancel').onclick = () => finishEdit(false);
+function setHighlight(wrap, on) {
+  wrap.traverse(n => {
+    if (n.isMesh && n.material?.emissive) {
+      n.material.emissive.setHex(on ? 0x224466 : 0x000000);
+      n.material.emissiveIntensity = on ? 0.8 : 0;
+    }
+  });
+}
+// 非等比缩放(编辑模式,信息卡里的三个输入框):长x/高y/宽z 独立百分比
+[[dimX,'x'],[dimY,'y'],[dimZ,'z']].forEach(([el, ax]) => {
+  el.oninput = () => {
+    if (!selected) return;
+    const v = Math.min(300, Math.max(20, +el.value || 100)) / 100 * selected.userData.baseScale;
+    selected.scale[ax] = v;
+    updateRing(); ebPct.textContent = pctNow() + '%';
+  };
+});
+
+function pickFurniture(e) {
+  const r = renderer.domElement.getBoundingClientRect();
+  raycaster.setFromCamera(new THREE.Vector2(
+    ((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1), camera);
+  const hits = raycaster.intersectObjects(furniture.map(f => f.obj), true);
+  if (!hits.length) return null;
+  let o = hits[0].object;
+  while (o && !o.userData.item) o = o.parent;
+  return o;
+}
+// 拖拽锚定面按挂载类型(item.mount):
+//   floor/ceiling → 自身高度的水平面(地面家具贴地移动,吊饰贴天花板移动)
+//   wall → 锚定最近的墙,沿墙面垂直平移(挂画/挂钟上下左右,不脱墙)
+//   surface → 摆件:吸附到指针下方其他家具的顶面(或地板),自动落在平面上
+let dragState = null;   // { obj, plane, offset, mode }
+let downXY = null;
+const dragPt = new THREE.Vector3();
+function dragPlaneFor(wrap) {
+  const p = wrap.position;
+  const m = wrap.userData.item.mount || 'floor';
+  if (m === 'surface') return { plane: null, mode:'surface' };
+  if (m === 'wall') return { plane: null, mode:'wallFree' };   // 任意墙:射线打到哪面墙就吸到哪面
+  return { plane: new THREE.Plane(new THREE.Vector3(0, 1, 0), -p.y), mode:'horiz' };
+}
+// 手势状态:单指拖移/拖环旋转,双指捏合等比缩放,滚轮缩放
+let ringDrag = null;                 // { a0, r0 }
+const pointers = new Map();          // pointerId → [x,y]
+let pinch = null;                    // { d0, s0 }
+function setRay(e) {
+  const r = renderer.domElement.getBoundingClientRect();
+  raycaster.setFromCamera(new THREE.Vector2(
+    ((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1), camera);
+}
+function ringAngle(e) {   // 指针在环平面上相对物品中心的角度与距离
+  setRay(e);
+  const pl = new THREE.Plane(new THREE.Vector3(0, 1, 0), -ring.position.y);
+  if (!raycaster.ray.intersectPlane(pl, dragPt)) return null;
+  return { ang: Math.atan2(dragPt.x - selected.position.x, dragPt.z - selected.position.z),
+           dist: Math.hypot(dragPt.x - selected.position.x, dragPt.z - selected.position.z) };
+}
+function startDrag(wrap, e) {
+  const { plane, mode } = dragPlaneFor(wrap);
+  if (!plane || raycaster.ray.intersectPlane(plane, dragPt)) {
+    dragState = { obj: wrap, plane, mode,
+                  offset: mode === 'surface' ? new THREE.Vector3() : dragPt.clone().sub(wrap.position) };
+    renderer.domElement.setPointerCapture(e.pointerId);
+  }
+}
+renderer.domElement.addEventListener('pointerdown', e => {
+  pointers.set(e.pointerId, [e.clientX, e.clientY]);
+  if (selected && pointers.size === 2) {          // 第二根手指落下 → 进入捏合缩放
+    const [a, b] = [...pointers.values()];
+    pinch = { d0: Math.hypot(a[0]-b[0], a[1]-b[1]) || 1, s0: selected.scale.clone() };
+    dragState = null; ringDrag = null;
+    return;
+  }
+  downXY = [e.clientX, e.clientY];
+  if (selected) {
+    const ra = ringAngle(e);
+    if (ra && Math.abs(ra.dist - ring.scale.x) < Math.max(0.2, ring.scale.x * 0.28)) {
+      ringDrag = { a0: ra.ang, r0: selected.rotation.y };   // 抓到旋转环
+      renderer.domElement.setPointerCapture(e.pointerId);
+      return;
+    }
+    const wrap = pickFurniture(e);
+    if (wrap === selected) { startDrag(wrap, e); return; }
+    if (wrap) { finishEdit(true); select(wrap); startDrag(wrap, e); return; }  // 换选:旧的先保存
+    finishEdit(false);                             // 空点=取消本次调整
+    return;
+  }
+  const wrap = pickFurniture(e);
+  if (wrap) { select(wrap); startDrag(wrap, e); }
+});
+renderer.domElement.addEventListener('pointermove', e => {
+  if (pointers.has(e.pointerId)) pointers.set(e.pointerId, [e.clientX, e.clientY]);
+  const cl = THREE.MathUtils.clamp;
+  if (pinch && selected && pointers.size >= 2) {  // 双指等比缩放(整体,不改比例)
+    const [a, b] = [...pointers.values()];
+    const base = selected.userData.baseScale;
+    let k = Math.hypot(a[0]-b[0], a[1]-b[1]) / pinch.d0;
+    k = cl(k, 0.2 * base / pinch.s0.x, 3 * base / pinch.s0.x);
+    selected.scale.copy(pinch.s0).multiplyScalar(k);
+    updateRing(); refreshEditUI();
+    return;
+  }
+  if (ringDrag && selected) {                     // 拖环:绕竖直轴旋转
+    const ra = ringAngle(e);
+    if (ra) selected.rotation.y = ringDrag.r0 + (ra.ang - ringDrag.a0);
+    return;
+  }
+  if (!dragState) return;
+  setRay(e);
+  const o = dragState.obj, s = dragState;
+  if (s.mode === 'wallFree') {       // 挂墙件:吸附到指针指向的任意墙面,自动面朝房间
+    const walls = shellDyn.children.filter(ch => ch.material === wallMat);
+    const n = new THREE.Vector3();
+    for (const hit of raycaster.intersectObjects(walls, false)) {
+      if (!hit.face) continue;
+      n.copy(hit.face.normal).transformDirection(hit.object.matrixWorld);
+      if (Math.abs(n.y) > 0.3) continue;                       // 只认竖直墙面
+      if (n.dot(raycaster.ray.direction) > 0) continue;        // 背面(墙外侧)不算
+      const base = o.userData.baseScale, s0 = o.userData.size0;
+      const depth = (s0 ? s0.z : 0.05) * (o.scale.z / base);
+      const hgt = (s0 ? s0.y : 0.4) * (o.scale.y / base);
+      o.position.copy(hit.point).addScaledVector(n, depth / 2 + 0.01);
+      o.position.y = cl(hit.point.y - hgt / 2, 0.15, ROOM.h - hgt - 0.05);
+      o.rotation.y = Math.atan2(n.x, n.z);                     // 正面(+Z)转向墙内法线
+      break;
+    }
+    updateRing();
+    return;
+  }
+  if (s.mode === 'surface') {        // 摆件:落在指针下方家具顶面或地板
+    const targets = furniture.filter(f => f.obj !== o).map(f => f.obj);
+    targets.push(floorMesh);
+    const n = new THREE.Vector3();
+    for (const hit of raycaster.intersectObjects(targets, true)) {
+      hit.face && n.copy(hit.face.normal).transformDirection(hit.object.matrixWorld);
+      if (!hit.face || n.y > 0.6) {  // 只认朝上的面,不吸到侧面
+        o.position.x = cl(hit.point.x, -ROOM.w/2 + 0.1, ROOM.w/2 - 0.1);
+        o.position.z = cl(hit.point.z, -ROOM.d/2 + 0.1, ROOM.d/2 + 0.4);
+        o.position.y = Math.max(0, hit.point.y);
+        break;
+      }
+    }
+    return;
+  }
+  if (!raycaster.ray.intersectPlane(dragState.plane, dragPt)) return;
+  if (s.mode === 'horiz') {          // 地面/天花板:水平移动,高度不变
+    o.position.x = cl(dragPt.x - s.offset.x, -ROOM.w/2 + 0.1, ROOM.w/2 - 0.1);
+    o.position.z = cl(dragPt.z - s.offset.z, -ROOM.d/2 + 0.1, ROOM.d/2 + 0.4);
+  } else if (s.mode === 'wallX') {   // 左/右墙面:沿墙上下前后,x 锁定
+    o.position.z = cl(dragPt.z - s.offset.z, -ROOM.d/2 + 0.15, ROOM.d/2 - 0.15);
+    o.position.y = cl(dragPt.y - s.offset.y, 0.2, ROOM.h - 0.15);
+  } else {                           // 后墙面:沿墙左右上下,z 锁定
+    o.position.x = cl(dragPt.x - s.offset.x, -ROOM.w/2 + 0.15, ROOM.w/2 - 0.15);
+    o.position.y = cl(dragPt.y - s.offset.y, 0.2, ROOM.h - 0.15);
+  }
+  updateRing();
+});
+function endPointer(e) {
+  pointers.delete(e.pointerId);
+  if (pinch && pointers.size < 2) pinch = null;
+  if (ringDrag) { ringDrag = null; return; }
+  if (dragState) { dragState = null; }          // 改动停留在场景里,点「确认」才落盘
+}
+renderer.domElement.addEventListener('pointerup', endPointer);
+renderer.domElement.addEventListener('pointercancel', endPointer);
+// 桌面:滚轮等比缩放
+renderer.domElement.addEventListener('wheel', e => {
+  if (!selected) return;
+  e.preventDefault();
+  const base = selected.userData.baseScale;
+  const cur = selected.scale.x / base;
+  const target = THREE.MathUtils.clamp(cur * Math.exp(-e.deltaY * 0.0012), 0.2, 3);
+  selected.scale.multiplyScalar(target / cur);
+  updateRing(); refreshEditUI();
+}, { passive:false });
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'Escape') finishEdit(false);
+  if (e.key === 'Enter' && selected) finishEdit(true);
+});
+
+// ---------- 布局保存 / 导出 / 重置 ----------
+function layoutObj() {
+  const out = {};
+  for (const f of furniture) out[f.item.id] = {
+    name: f.item.name,
+    pos: f.obj.position.toArray(),
+    rot: f.obj.rotation.toArray().slice(0, 3),
+    scale: f.obj.scale.toArray(),   // 三轴独立,支持非等比
+  };
+  return out;
+}
+function saveLayout() { localStorage.setItem(LS_KEY, JSON.stringify(layoutObj())); }
+// 保存场景资产:当前布局(含精调位置/角度/尺寸)+光线窗户配置写回服务器,沉淀为可复用场景
+document.getElementById('btnSaveScene').onclick = async () => {
+  const items = ITEMS.map(it => {
+    const o = furniture.find(x => x.item.id === it.id)?.obj;
+    const out = { ...it };
+    delete out.rotY;
+    if (o) {
+      out.pos = o.position.toArray().map(v => Math.round(v * 1000) / 1000);
+      out.rotYDeg = Math.round(THREE.MathUtils.radToDeg(o.rotation.y));
+      out.scale = o.scale.toArray().map(v => Math.round(v * 10000) / 10000);
+    }
+    return out;
+  });
+  const doc = { video_id: VIDEO_ID, title: SCENE.title || '', room: ROOM,
+                balcony: BALC, extras: SCENE.extras || [], cfg, items };
+  const r = await fetch(`/api/scenes/${VIDEO_ID}`, { method:'PUT',
+    headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(doc) });
+  // 同时把每件资产的当前真实尺寸(含调过的长宽比)写回资产库 size_prior——资产级生效,跨场景一致
+  let dimOk = 0;
+  for (const f of furniture) {
+    const o = f.obj, base = o.userData.baseScale, s0 = o.userData.size0;
+    if (!s0) continue;
+    const dims = { w: +(s0.x / base * o.scale.x).toFixed(3),
+                   h: +(s0.y / base * o.scale.y).toFixed(3),
+                   d: +(s0.z / base * o.scale.z).toFixed(3) };
+    const rr = await fetch(`/api/assets/${f.item.id}`, { method:'PATCH',
+      headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ size_prior: dims }) });
+    if (rr.ok) dimOk++;
+  }
+  toast(r.ok ? `场景已保存,${dimOk} 件资产尺寸已写回资产库` : '保存失败: ' + r.status);
+};
+document.getElementById('btnExport').onclick = () => {
+  const blob = new Blob([JSON.stringify({ video_id: VIDEO_ID, room:'卧室',
+    scene: cfg, layout: layoutObj() }, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'layout.json'; a.click();
+  toast('已导出 layout.json(含场景配置)');
+};
+document.getElementById('btnReset').onclick = () => {
+  localStorage.removeItem(LS_KEY); localStorage.removeItem(CFG_KEY);
+  location.reload();
+};
+let topView = false;
+document.getElementById('btnView').onclick = function () {
+  topView = !topView;
+  this.textContent = topView ? '漫游' : '俯视';
+  this.classList.toggle('on', topView);
+  applyView(topView ? VIEWS.top : VIEWS.roam);
+};
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 2200);
+}
+
+// ========== 视频圈选标注 + 审核 ==========
+const annCanvas = document.getElementById('annCanvas');
+const ctx = annCanvas.getContext('2d');
+const btnCircle = document.getElementById('btnCircle');
+const noteBox = document.getElementById('noteBox');
+const noteInput = document.getElementById('noteInput');
+let annotations = [];
+let circling = false;
+let drag = null;
+let pendingBox = null;
+function contentRect() {
+  const r = annCanvas.getBoundingClientRect();
+  const vw = vid.videoWidth || 16, vh = vid.videoHeight || 9;
+  const scale = Math.min(r.width / vw, r.height / vh);
+  const cw = vw * scale, ch = vh * scale;
+  return { x:(r.width - cw) / 2, y:(r.height - ch) / 2, w:cw, h:ch, elW:r.width, elH:r.height };
+}
+function fitAnnCanvas() {
+  annCanvas.width = annCanvas.clientWidth * devicePixelRatio;
+  annCanvas.height = annCanvas.clientHeight * devicePixelRatio;
+  drawAnn();
+}
+new ResizeObserver(fitAnnCanvas).observe(annCanvas);
+vid.addEventListener('loadedmetadata', fitAnnCanvas);
+async function loadAnn() {
+  try {
+    const doc = await (await fetch(`/api/annotations/${VIDEO_ID}`)).json();
+    annotations = doc.items || [];
+  } catch { annotations = []; }
+  renderAnnList(); drawAnn();
+}
+async function saveAnn() {
+  await fetch(`/api/annotations/${VIDEO_ID}`, {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ video_id: VIDEO_ID, items: annotations }),
+  });
+}
+btnCircle.onclick = () => {
+  circling = !circling;
+  btnCircle.classList.toggle('on', circling);
+  btnCircle.textContent = circling ? '退出圈选' : '圈选缺失物品';
+  annCanvas.classList.toggle('arming', circling);
+  if (circling) vid.pause();
+  hideNoteBox(); drawAnn();
+};
+annCanvas.addEventListener('pointerdown', e => {
+  if (!circling || noteBox.style.display === 'flex') return;
+  const r = annCanvas.getBoundingClientRect();
+  drag = { x0:e.clientX - r.left, y0:e.clientY - r.top, x1:e.clientX - r.left, y1:e.clientY - r.top };
+  annCanvas.setPointerCapture(e.pointerId);
+});
+annCanvas.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const r = annCanvas.getBoundingClientRect();
+  drag.x1 = e.clientX - r.left; drag.y1 = e.clientY - r.top;
+  drawAnn();
+});
+annCanvas.addEventListener('pointerup', () => {
+  if (!drag) return;
+  const c = contentRect();
+  const clamp01 = v => Math.max(0, Math.min(1, v));
+  const x = clamp01((Math.min(drag.x0, drag.x1) - c.x) / c.w);
+  const y = clamp01((Math.min(drag.y0, drag.y1) - c.y) / c.h);
+  const x2 = clamp01((Math.max(drag.x0, drag.x1) - c.x) / c.w);
+  const y2 = clamp01((Math.max(drag.y0, drag.y1) - c.y) / c.h);
+  drag = null;
+  const w = x2 - x, h = y2 - y;
+  if (w < 0.02 || h < 0.02) { drawAnn(); return; }
+  pendingBox = [x, y, w, h];
+  noteBox.style.display = 'flex';
+  noteBox.style.left = Math.min(c.x + x * c.w, c.elW - 250) + 'px';
+  noteBox.style.top = Math.min(c.y + (y + h) * c.h + 6, c.elH - 44) + 'px';
+  noteInput.value = ''; noteInput.focus();
+  drawAnn();
+});
+function hideNoteBox() { noteBox.style.display = 'none'; pendingBox = null; }
+document.getElementById('noteCancel').onclick = () => { hideNoteBox(); drawAnn(); };
+document.getElementById('noteSave').onclick = commitAnn;
+noteInput.addEventListener('keydown', e => { if (e.key === 'Enter') commitAnn(); });
+async function commitAnn() {
+  if (!pendingBox) return;
+  const t = Math.round(vid.currentTime * 10) / 10;
+  const box = pendingBox;
+  const note = noteInput.value.trim() || '未命名';
+  hideNoteBox();
+  // 保存前先比对已生成资产:命中 → 存成 generated 只读关联,绝不进补全/生成流程
+  const matched = await matchAnnotation(t, box);
+  if (matched) {
+    const name = matched.name || matched.asset_id || '未命名资产';
+    annotations.push({ t, bbox: box, note: note === '未命名' ? name : note,
+                       status:'generated', asset_id: matched.asset_id });
+    renderAnnList(); drawAnn();
+    await saveAnn();
+    toast(`画面里这件已生成:${name}`);
+    return;
+  }
+  annotations.push({ t, bbox: box, note, status:'pending' });
+  renderAnnList(); drawAnn();
+  await saveAnn();
+  toast('已保存标注,等我跑补全后回来审核');
+}
+function drawAnn() {
+  const dpr = devicePixelRatio;
+  ctx.clearRect(0, 0, annCanvas.width, annCanvas.height);
+  const c = contentRect();
+  const px = v => v * dpr;
+  ctx.lineWidth = 2 * dpr;
+  ctx.font = `${12 * dpr}px -apple-system`;
+  // 已生成资产叠加(绿):来自 assets_at 半秒桶缓存,画在红色标注之下
+  const gen = assetsAtCache.get(bucketOf(vid.currentTime));
+  if (gen) for (const g of gen) {
+    if (!Array.isArray(g.bbox)) continue;
+    const [x, y, w, h] = g.bbox;
+    ctx.strokeStyle = '#7dd88f';
+    ctx.strokeRect(px(c.x + x * c.w), px(c.y + y * c.h), px(w * c.w), px(h * c.h));
+    ctx.fillStyle = '#7dd88f';
+    ctx.fillText(g.name || g.asset_id || '', px(c.x + x * c.w) + 3 * dpr, px(c.y + y * c.h) + 13 * dpr);
+  }
+  for (const a of annotations) {
+    if (Math.abs(a.t - vid.currentTime) > 0.75) continue;
+    const [x, y, w, h] = a.bbox;
+    const col = a.status === 'generated' ? '#7dd88f' : '#ff6b6b';   // 命中已生成的标注同用绿色
+    ctx.strokeStyle = col;
+    ctx.strokeRect(px(c.x + x * c.w), px(c.y + y * c.h), px(w * c.w), px(h * c.h));
+    ctx.fillStyle = col;
+    ctx.fillText(a.note, px(c.x + x * c.w) + 3 * dpr, px(c.y + y * c.h) - 4 * dpr);
+  }
+  if (drag) {
+    ctx.strokeStyle = '#ffd166';
+    ctx.strokeRect(px(Math.min(drag.x0, drag.x1)), px(Math.min(drag.y0, drag.y1)),
+                   px(Math.abs(drag.x1 - drag.x0)), px(Math.abs(drag.y1 - drag.y0)));
+  }
+  if (pendingBox) {
+    const [x, y, w, h] = pendingBox;
+    ctx.strokeStyle = '#ffd166';
+    ctx.strokeRect(px(c.x + x * c.w), px(c.y + y * c.h), px(w * c.w), px(h * c.h));
+  }
+}
+// ---------- T3 已生成资产叠加:半秒桶节流缓存 + 圈选比对(A1 接口未就绪时 ?mockassets=1 自测) ----------
+const MOCK_ASSETS = new URLSearchParams(location.search).has('mockassets');
+const assetsAtCache = new Map();      // 半秒桶 → items[](失败也写空数组,不重复轰炸)
+const assetsAtInflight = new Set();   // 请求中的桶:同桶只发一次
+const bucketOf = t => Math.round((t || 0) * 2) / 2;
+function mockAssetsAt(t) {
+  // 两个假资产:一个固定、一个随桶横移,肉眼即可验证节流/缓存/绿框绘制
+  const drift = ((bucketOf(t) * 2) % 6) / 40;
+  return [
+    { asset_id:'mock_bed',  name:'双人床(mock)', bbox:[0.18, 0.55, 0.34, 0.30], status:'generated' },
+    { asset_id:'mock_lamp', name:'落地灯(mock)', bbox:[0.60 + drift, 0.28, 0.12, 0.42], status:'generated' },
+  ];
+}
+function requestAssetsAt(t) {
+  const b = bucketOf(t);
+  if (assetsAtCache.has(b) || assetsAtInflight.has(b)) return;
+  assetsAtInflight.add(b);
+  if (MOCK_ASSETS) {
+    assetsAtCache.set(b, mockAssetsAt(t)); assetsAtInflight.delete(b); drawAnn();
+    return;
+  }
+  fetch(`/api/videos/${VIDEO_ID}/assets_at?t=${b}`)
+    .then(r => r.ok ? r.json() : null)
+    .then(doc => {
+      assetsAtCache.set(b, (doc && doc.items) || []);
+      if (bucketOf(vid.currentTime) === b) drawAnn();
+    })
+    .catch(() => assetsAtCache.set(b, []))   // 静默失败:叠加层是可选功能,不影响主流程
+    .finally(() => assetsAtInflight.delete(b));
+}
+function iou(a, b) {
+  const x = Math.max(a[0], b[0]), y = Math.max(a[1], b[1]);
+  const x2 = Math.min(a[0] + a[2], b[0] + b[2]), y2 = Math.min(a[1] + a[3], b[1] + b[3]);
+  const inter = Math.max(0, x2 - x) * Math.max(0, y2 - y);
+  const uni = a[2] * a[3] + b[2] * b[3] - inter;
+  return uni > 0 ? inter / uni : 0;
+}
+// 圈选保存前比对:命中已生成资产 → 返回该资产;未命中/接口异常 → null(照常走 pending)
+async function matchAnnotation(t, bbox) {
+  if (MOCK_ASSETS) {
+    let best = null, bi = 0;
+    for (const it of mockAssetsAt(t)) { const v = iou(bbox, it.bbox); if (v > bi) { bi = v; best = it; } }
+    return bi > 0.35 ? best : null;
+  }
+  try {
+    const r = await fetch(`/api/videos/${VIDEO_ID}/match_annotation`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ t, bbox }),
+    });
+    if (!r.ok) return null;
+    const doc = await r.json();
+    return doc && doc.matched ? doc.matched : null;
+  } catch { return null; }
+}
+function onVideoTick() { requestAssetsAt(vid.currentTime); drawAnn(); }
+vid.addEventListener('timeupdate', onVideoTick);
+vid.addEventListener('seeked', onVideoTick);
+const ST_LABEL = { pending:'待补全', prepped:'待审核', approved:'已通过·待生成', rejected:'已打回',
+                   generated:'已生成', prep_failed:'补全失败' };
+function renderAnnList() {
+  const el = document.getElementById('annList');
+  el.innerHTML = annotations.length ? '' : '<span class="hint">暂无标注。圈出视频里没生成的物品,我照单补生成。</span>';
+  annotations.forEach((a, i) => {
+    const st = a.status || 'pending';
+    const row = document.createElement('div');
+    row.className = 'annRow';
+    row.innerHTML = `<span class="t">@${a.t}s</span><span class="note">${a.note}</span>` +
+      `<span class="st ${st}">${ST_LABEL[st] || st}</span><span class="del">删除</span>`;
+    row.querySelector('.t').onclick = () => { vid.currentTime = a.t; vid.pause(); };
+    row.querySelector('.del').onclick = async () => { annotations.splice(i, 1); renderAnnList(); drawAnn(); await saveAnn(); };
+    el.appendChild(row);
+    if (a.enh_url) {
+      const rev = document.createElement('div');
+      rev.className = 'annReview';
+      rev.innerHTML =
+        `<div class="imgs">
+           <div><img src="${a.ctx_url}" loading="lazy"><div class="cap">视频画面(红框为目标)</div></div>
+           <div><img src="${a.enh_url}" loading="lazy"><div class="cap">补全图(3D 生成输入)</div></div>
+         </div>` +
+        (a.reject_reason && st === 'rejected'
+          ? `<div class="cap" style="color:#f88;margin-top:6px">打回原因: ${a.reject_reason}(重做时会带上这条指令)</div>` : '') +
+        (st === 'prepped' || st === 'approved' || st === 'rejected'
+          ? `<div class="btns"><button class="ok">✓ 通过,可进 3D</button><button class="no">✗ 打回重做</button></div>
+             <div class="btns rejForm" style="display:none">
+               <input class="rejWhy" placeholder="打回原因,如:面料质感丢了/多了脚"
+                      style="flex:1;background:#181818;color:#eee;border:1px solid #444;border-radius:5px;padding:5px 8px;font-size:13px">
+               <button class="rejGo">确认打回</button>
+             </div>`
+          : '');
+      const okBtn = rev.querySelector('.ok'), noBtn = rev.querySelector('.no');
+      if (okBtn) okBtn.onclick = async () => { a.status = 'approved'; renderAnnList(); await saveAnn(); toast(`「${a.note}」已通过`); };
+      if (noBtn) noBtn.onclick = () => {   // 打回必须写原因:原因会作为重做指令喂给补全,不写就是盲试
+        const f = rev.querySelector('.rejForm');
+        f.style.display = 'flex';
+        f.querySelector('.rejWhy').value = a.reject_reason || '';
+        f.querySelector('.rejWhy').focus();
+      };
+      const rejGo = rev.querySelector('.rejGo');
+      if (rejGo) rejGo.onclick = async () => {
+        const why = rev.querySelector('.rejWhy').value.trim();
+        if (!why) { toast('写一下打回原因,重做才有方向'); return; }
+        a.status = 'rejected'; a.reject_reason = why;
+        renderAnnList(); await saveAnn(); toast(`「${a.note}」已打回,原因已记录`);
+      };
+      el.appendChild(rev);
+    }
+  });
+}
+loadAnn();
+
+// ========== 反馈 → 后台 Claude Code 会话工作流 ==========
+const agentFeed = document.getElementById('agentFeed');
+const agentInput = document.getElementById('agentInput');
+const agentState = document.getElementById('agentState');
+function setAgentState(busy) {
+  agentState.textContent = busy ? '工作中…' : '空闲';
+  agentState.classList.toggle('busy', busy);
+}
+function feedRow(cls, html) {
+  if (agentFeed.querySelector('.hint')) agentFeed.innerHTML = '';
+  const d = document.createElement('div');
+  d.className = 'ev ' + cls;
+  d.innerHTML = html;
+  agentFeed.appendChild(d);
+  agentFeed.scrollTop = agentFeed.scrollHeight;
+}
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function renderAgentEvent(ev) {
+  switch (ev.kind) {
+    case 'prompt': feedRow('evPrompt', '▶ ' + esc(ev.text)); setAgentState(true); break;
+    case 'text':   feedRow('evText', esc(ev.text)); break;
+    case 'tool':   feedRow('evTool', '● <b>' + esc(ev.tool) + '</b>' +
+                     (ev.brief ? ' <span class="tb">' + esc(ev.brief) + '</span>' : '')); break;
+    case 'done':
+      feedRow('evDone', (ev.ok ? '✓ 完成' : '✗ 未完成') + (ev.secs ? ' · ' + ev.secs + 's' : ''));
+      setAgentState(false);
+      if (ev.ok) feedRow('evDone', '↻ 刷新页面查看改动效果');
+      break;
+    case 'error':  feedRow('evErr', '✗ ' + esc(ev.text)); setAgentState(false); break;
+    case 'live':
+      fetch('/api/agent/status').then(r => r.json()).then(s => setAgentState(s.busy));
+      break;
+  }
+}
+function connectAgent() {
+  const es = new EventSource('/api/agent/stream');
+  es.onmessage = e => { try { renderAgentEvent(JSON.parse(e.data)); } catch {} };
+  es.onerror = () => { es.close(); agentState.textContent = '重连中…'; setTimeout(connectAgent, 3000); };
+}
+connectAgent();
+async function sendFeedback() {
+  const text = agentInput.value.trim();
+  if (!text) return;
+  const r = await fetch('/api/agent/feedback', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text }),
+  });
+  if (r.status === 409) { toast('上一条反馈还在处理中,等它跑完'); return; }
+  if (!r.ok) { toast('发送失败: ' + r.status); return; }
+  agentInput.value = '';
+}
+document.getElementById('agentSend').onclick = sendFeedback;
+agentInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendFeedback(); });
+document.getElementById('agentReset').onclick = async () => {
+  const r = await fetch('/api/agent/reset', { method:'POST' });
+  if (r.status === 409) { toast('处理中,不能重置'); return; }
+  agentFeed.innerHTML = '<span class="hint">已开新会话,历史已清空。</span>';
+  toast('已重置为新会话');
+};
+
+addEventListener('resize', fitRenderer);
+renderer.setAnimationLoop(() => {
+  animateCurtains(performance.now() / 1000);
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

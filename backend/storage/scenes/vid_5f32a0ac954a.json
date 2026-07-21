@@ -1,0 +1,42 @@
+{
+  "video_id": "vid_5f32a0ac954a",
+  "title": "客厅(奶油风)",
+  "room": { "w": 3.6, "d": 5.4, "h": 2.8 },
+  "balcony": null,
+  "extras": [],
+  "cfg": {
+    "light": "day", "view": "blue_lake",
+    "windows": [
+      { "id": "main1", "wall": "back", "type": "floor", "style": "grid", "center": 0, "width": 3.3, "height": 2.5, "sill": 0 }
+    ]
+  },
+  "items": [
+    { "id": "ast_8b053762e304", "name": "三人沙发", "glb": "/storage/models/510e421b81d84c57aa599e517c64c7b7.glb",
+      "tags": ["沙发", "奶油色", "布艺"], "t_best": 5.5, "track": "trk_b8d3f564564f",
+      "targetW": 2.2, "pos": [-1.15, 0, -0.5], "rotYDeg": 90 },
+    { "id": "ast_87dc36b29526", "name": "空调", "glb": "/storage/models/f13554299f7643eb872e1a36fa4e462d.glb",
+      "tags": ["家电", "挂机"], "t_best": 5.0, "track": "trk_ec91648826f0",
+      "targetW": 0.9, "pos": [-1.72, 2.15, 0.9], "rotYDeg": 90, "mount": "wall" },
+    { "id": "ast_339dc6e870de", "name": "吊扇", "glb": "/storage/models/e91ce9b7d8744192b417d119b280c536.glb",
+      "tags": ["家电", "吊顶"], "t_best": 6.0, "track": "trk_8ea596ed91bc",
+      "targetW": 1.3, "pos": [0.3, 0, -1.6], "rotYDeg": 0, "mount": "ceiling" },
+    { "id": "ast_c0274a819f34", "name": "圆桌", "glb": "/storage/models/8ee9151906624333a88a62ab954a4560.glb",
+      "tags": ["桌子", "玻璃", "圆形"], "t_best": 7.5, "track": "trk_70d8f305632d",
+      "targetW": 0.7, "pos": [0.45, 0, -2.0], "rotYDeg": 0 },
+    { "id": "ast_4fb74f9d26fa", "name": "吧台椅", "glb": "/storage/models/2bb5c471dffc498e8fffbd2862ff0593.glb",
+      "tags": ["单椅", "高脚"], "t_best": 8.5, "track": "trk_57ece943d1c7",
+      "targetW": 0.45, "pos": [1.0, 0, -1.9], "rotYDeg": 180 },
+    { "id": "ast_f090666d70fe", "name": "蘑菇坐垫", "glb": "/storage/models/0c32c7d383ea4cf6bdadfd35a7fb76d4.glb",
+      "tags": ["坐垫", "可爱风"], "t_best": 9.0, "track": "trk_eb3cf86e4027",
+      "targetW": 0.55, "pos": [0.9, 0, -0.3], "rotYDeg": 0 },
+    { "id": "ast_5229f072c636", "name": "卡通图案地毯", "glb": "/storage/models/c74b552a2bfd41e9b28e96127beda68f.glb",
+      "tags": ["地毯", "卡通"], "t_best": 10.5, "track": "trk_c64303662479",
+      "targetW": 1.6, "pos": [0.1, 0, 0.6], "rotYDeg": 0 },
+    { "id": "ast_f7189ad0a9a2", "name": "电视柜", "glb": "/storage/models/d9dd02fc30de42a2b4ee55865e45279d.glb",
+      "tags": ["柜子", "组合柜", "带电视"], "t_best": 6.5, "track": "trk_0844381a425d",
+      "targetW": 2.2, "pos": [1.45, 0, 0.55], "rotYDeg": -90 },
+    { "id": "ast_0c40e643ff23", "name": "边柜", "glb": "/storage/models/e5b6fc0b8dec471c943e42e79015b35c.glb",
+      "tags": ["柜子", "白色"], "t_best": 10.5, "track": "trk_6641d5a0c6d5",
+      "targetW": 0.9, "pos": [1.55, 0, 2.1], "rotYDeg": -90 }
+  ]
+}

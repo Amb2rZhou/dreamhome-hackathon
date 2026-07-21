@@ -1,0 +1,48 @@
+{
+  "video_id": "vid_40734d7f2e6c",
+  "title": "卧室(单间公寓)",
+  "room": { "w": 4.2, "d": 5.2, "h": 2.8 },
+  "balcony": { "x0": -0.1, "x1": 2.1, "depth": 0.95 },
+  "extras": [
+    { "dims": [0.28, 0.3, 0.9], "pos": [-1.9, 2.25, 0.1], "color": "f7f7f5", "note": "空调挂机" }
+  ],
+  "cfg": {
+    "light": "dusk", "view": "dusk_city",
+    "windows": [
+      { "id": "bay1",  "wall": "back",    "type": "bay",   "style": "grid", "center": -1.15, "width": 1.7, "height": 1.95, "sill": 0.45 },
+      { "id": "balc1", "wall": "balcony", "type": "floor", "style": "grid", "center": 1.0,   "width": 2.0, "height": 2.5,  "sill": 0 }
+    ]
+  },
+  "items": [
+    { "id": "ast_ccc6f7405f39", "name": "双人床", "glb": "/storage/models/98624450211047879fef8c7818517e07.glb",
+      "tags": ["床", "白色", "布艺"], "t_best": 11.0, "track": "trk_376b958980a6",
+      "targetW": 2.1, "pos": [-1.0, 0, -0.55], "rotYDeg": 90 },
+    { "id": "ast_8926f9413f29", "name": "床头桌", "glb": "/storage/models/6d9e622e680c4920bc496befd4bd5a2b.glb",
+      "tags": ["桌子", "浅木色", "北欧"], "t_best": 4.0, "track": "trk_8ebbaced5dc3",
+      "targetW": 0.5, "pos": [-1.4, 0, 0.5], "rotYDeg": 0 },
+    { "id": "ast_b80193251739", "name": "书桌", "glb": "/storage/models/a2b5bba9fe3e4ed3b134401869e1e22c.glb",
+      "tags": ["桌子", "白色", "带抽屉"], "t_best": 0.0, "track": "trk_21288e923fb1",
+      "targetW": 1.2, "pos": [1.6, 0, 1.55], "rotYDeg": -90 },
+    { "id": "ast_00e00df1bfeb", "name": "办公椅", "glb": "/storage/models/df535979c57d4ba3927a8f43306ed7f9.glb",
+      "tags": ["单椅", "白色", "带轮子"], "t_best": 0.0, "track": "trk_cce9267236a7",
+      "targetW": 0.65, "pos": [1.0, 0, 1.5], "rotYDeg": 90 },
+    { "id": "ast_09f5ed9678b1", "name": "挂钟", "glb": "/storage/models/665ee069fac141dd9c8e6524000f702c.glb",
+      "tags": ["装饰", "时钟", "挂墙"], "t_best": 0.0, "track": "trk_29e5fd525389",
+      "targetW": 0.4, "pos": [-2.0, 1.7, 0.75], "rotYDeg": 90, "mount": "wall" },
+    { "id": "ast_45226bd63340", "name": "音乐盒", "glb": "/storage/models/e80e1c2864fd469c8768db6e3ccc4f8d.glb",
+      "tags": ["装饰", "可爱风", "摆件"], "t_best": 7.0, "track": "trk_845ecda2369a",
+      "targetW": 0.3, "pos": [1.6, 0.78, 1.3], "rotYDeg": 0, "mount": "surface" },
+    { "id": "ast_b80f4e4a387b", "name": "门垫", "glb": "/storage/models/49652ef067994e0d8481c17e0954cf31.glb",
+      "tags": ["地毯", "矩形"], "t_best": 9.5, "track": "trk_a5f976a41420",
+      "targetW": 0.6, "pos": [0.5, 0, 0.7], "rotYDeg": 0 },
+    { "id": "ast_665e55cee687", "name": "原木色衣柜", "glb": "/storage/models/c09fb8cb849e46b99085b51d5a1baa87.glb",
+      "tags": ["柜子", "原木色", "圈选补生成"], "t_best": 0.0, "track": "(手动圈选)",
+      "targetW": 0.8, "pos": [1.65, 0, -0.35], "rotYDeg": -90 },
+    { "id": "ast_cf21f0f0a02c", "name": "飘窗沙发", "glb": "/storage/models/0ce5dfb3406241c8b790a2426fcbacc7.glb",
+      "tags": ["沙发", "无脚", "圈选补生成"], "t_best": 2.6, "track": "(手动圈选)",
+      "targetW": 1.3, "pos": [-1.15, 0.59, -2.85], "rotYDeg": 0 },
+    { "id": "ast_6410374831cb", "name": "小收纳柜", "glb": "/storage/models/cb8f0bfd04684544a011c1bd521184ae.glb",
+      "tags": ["柜子", "白色", "圈选补生成"], "t_best": 6.7, "track": "(手动圈选)",
+      "targetW": 0.5, "pos": [1.75, 0, 0.85], "rotYDeg": -90 }
+  ]
+}

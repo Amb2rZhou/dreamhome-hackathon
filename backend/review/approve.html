@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>资产人工审核</title>
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+<style>
+  body { margin:0; font-family:-apple-system,"PingFang SC",sans-serif; background:#111; color:#eee; }
+  header { padding:10px 20px; background:#1a1a1a; position:sticky; top:0; z-index:9;
+           display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+  select { background:#222; color:#eee; border:1px solid #444; padding:6px 10px; border-radius:6px; }
+  .hint { color:#999; font-size:12px; }
+  .stats { font-size:13px; color:#8fb; }
+  .wrap { display:flex; align-items:flex-start; }
+  .left { flex:1; min-width:0; }
+  .right { width:360px; flex-shrink:0; position:sticky; top:54px; padding:12px;
+           display:flex; flex-direction:column; gap:8px; max-height:calc(100vh - 66px); overflow-y:auto; }
+  .vbox { position:relative; }
+  .vbox video { width:100%; border-radius:10px; background:#000; display:block; }
+  #lasso { position:absolute; inset:0; cursor:crosshair; display:none; z-index:5; }
+  .vt { font-size:12px; color:#999; }
+  .vbtns { display:flex; gap:8px; }
+  .vbtns button { flex:1; padding:8px 0; border:none; border-radius:8px; cursor:pointer;
+                  font-size:13px; background:#2c2c2c; color:#ccc; }
+  .vbtns button.armed { background:#f9a825; color:#111; font-weight:600; }
+  .annform { background:#1c1c1c; border:1px solid #444; border-radius:8px; padding:8px;
+             display:none; flex-direction:column; gap:6px; }
+  .annform input { background:#242424; color:#eee; border:1px solid #444; border-radius:6px;
+                   padding:6px; font-size:13px; }
+  .annform .row { display:flex; gap:6px; }
+  .annform .row button { flex:1; padding:6px 0; border:none; border-radius:6px; cursor:pointer; }
+  .annform .ok { background:#2e7d32; color:#fff; } .annform .no { background:#2c2c2c; color:#ccc; }
+  .annlist { font-size:12px; color:#bbb; display:flex; flex-direction:column; gap:4px; }
+  .annlist .it { display:flex; gap:6px; align-items:center; background:#1c1c1c; border-radius:6px; padding:4px 8px; }
+  .annlist .it .del { color:#f88; cursor:pointer; margin-left:auto; }
+  .annlist .it .go { color:#8fb; cursor:pointer; }
+
+  .card { display:flex; gap:12px; padding:14px 16px; border-bottom:1px solid #2a2a2a;
+          align-items:flex-start; }
+  .card.pass { background:#12240f; }
+  .card.fail { background:#2a1515; }
+  .stage { text-align:center; flex-shrink:0; }
+  .stage .cap { font-size:11px; color:#aaa; margin-top:3px; }
+  .stage img { height:150px; border-radius:8px; background:#000; object-fit:contain; max-width:200px; cursor:zoom-in; }
+  model-viewer { width:200px; height:150px; background:#1d1d1d; border-radius:8px; }
+  .meta { min-width:170px; max-width:200px; }
+  .meta h3 { margin:0 0 4px; font-size:15px; }
+  .meta .sub { font-size:12px; color:#999; }
+  .segs { font-size:12px; color:#8fb; margin-top:4px; }
+  .segs .none { color:#f88; }
+  .jump { cursor:pointer; text-decoration:underline; }
+
+  .judge { margin-left:auto; width:230px; flex-shrink:0; display:flex; flex-direction:column; gap:6px; }
+  .btns { display:flex; gap:8px; }
+  .btns button { flex:1; padding:8px 0; border:none; border-radius:8px; cursor:pointer;
+                 font-size:14px; background:#2c2c2c; color:#ccc; }
+  .btns button.on-pass { background:#2e7d32; color:#fff; }
+  .btns button.on-fail { background:#c62828; color:#fff; }
+  textarea { width:100%; box-sizing:border-box; min-height:60px; background:#1c1c1c; color:#eee;
+             border:1px solid #444; border-radius:8px; padding:6px; font-size:13px; resize:vertical; }
+  .saved { font-size:11px; color:#6a6; height:14px; }
+  .noredo { font-size:11px; color:#f9a825; }
+  .quick { display:flex; flex-wrap:wrap; gap:4px; }
+  .quick span { font-size:11px; background:#2c2c2c; border-radius:4px; padding:2px 6px; cursor:pointer; color:#bbb; }
+  .quick span:hover { background:#3a3a3a; }
+</style>
+</head>
+<body>
+<header>
+  <b>资产人工审核</b>
+  <select id="vidSel"></select>
+  <span class="stats" id="stats"></span>
+  <span class="hint">点卡片图/名字→视频跳到来源时刻。<b style="color:#f9a825">✗不写原因 = 重复/多余/识别错,不重做</b>;写了原因才进重做清单。漏掉的组件:右侧暂停到该时刻→"圈选补充"→拖框。</span>
+</header>
+<div class="wrap">
+  <div class="left" id="list"></div>
+  <div class="right">
+    <div class="vbox">
+      <video id="player" controls muted playsinline></video>
+      <canvas id="lasso"></canvas>
+    </div>
+    <div class="vt" id="vt"></div>
+    <div class="vbtns"><button id="circleBtn">◯ 圈选补充漏掉的组件</button></div>
+    <div class="annform" id="annform">
+      <div class="vt" id="annPos"></div>
+      <input id="annNote" placeholder="这是什么?(如:衣柜没生成 / 墙上挂画)">
+      <div class="row"><button class="ok" id="annOk">保存到待生成队列</button><button class="no" id="annNo">取消</button></div>
+    </div>
+    <div class="annlist" id="annlist"></div>
+  </div>
+</div>
+<script>
+const qs = new URLSearchParams(location.search);
+const QUICK = ['3D破碎/缺件','补全图缺一块','抠错物体','形变/比例不对','纹理糊','背景残留','轨迹段不对'];
+let reviews = {}, VID = '';
+
+async function main() {
+  const vids = await (await fetch('/api/videos')).json();
+  const sel = document.getElementById('vidSel');
+  for (const v of vids) {
+    const o = document.createElement('option');
+    o.value = v.video_id; o.textContent = `${v.video_id} (${Math.round(v.duration||0)}s)`;
+    o.dataset.play = v.play_url;
+    sel.appendChild(o);
+  }
+  sel.value = qs.get('v') || vids[0].video_id;
+  sel.onchange = () => { location.search = '?v=' + sel.value; };
+  VID = sel.value;
+  reviews = await (await fetch('/api/review')).json();
+  render(VID, sel.selectedOptions[0].dataset.play);
+  loadAnns();
+}
+
+function seek(t) {
+  const p = document.getElementById('player');
+  p.currentTime = Math.max(0, t - 0.3); p.play();
+  setTimeout(() => p.pause(), 1200);
+  document.getElementById('vt').textContent = `已跳到 ${t}s(自动暂停,可手动播放)`;
+}
+
+async function save(assetId, verdict, reason, card, savedEl) {
+  await fetch('/api/review/' + assetId, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({verdict, reason})
+  });
+  if (verdict === 'clear') { delete reviews[assetId]; }
+  else { reviews[assetId] = {verdict, reason}; }
+  card.classList.toggle('pass', verdict==='pass');
+  card.classList.toggle('fail', verdict==='fail');
+  savedEl.textContent = verdict==='clear' ? '已清除' : '已保存 ✓';
+  setTimeout(()=>savedEl.textContent='', 1500);
+  const nr = card.querySelector('.noredo');
+  nr.textContent = (verdict==='fail' && !(reason||'').trim())
+    ? '⤫ 空原因 = 判定重复/多余,不重做' : '';
+  stats();
+}
+
+function stats() {
+  const cards = [...document.querySelectorAll('.card')];
+  const p = cards.filter(c=>c.classList.contains('pass')).length;
+  const f = cards.filter(c=>c.classList.contains('fail')).length;
+  document.getElementById('stats').textContent =
+    `${cards.length} 件:✓${p} ✗${f} 未审 ${cards.length-p-f}`;
+}
+
+async function render(vid, playUrl) {
+  document.getElementById('player').src = playUrl;
+  const idx = await (await fetch(`/api/videos/${vid}/index`)).json();
+  const assets = (await (await fetch('/api/assets?include_all_status=true')).json())
+    .filter(a => (a.source||{}).video_id === vid && a.status === 'ready');
+  const segsByAsset = {};
+  for (const t of idx.tracks || []) {
+    if (!t.asset_id) continue;
+    (segsByAsset[t.asset_id] ||= []).push(`${t.t_start.toFixed(0)}-${t.t_end.toFixed(0)}s`);
+  }
+  assets.sort((a,b) => ((a.source||{}).t_best||0) - ((b.source||{}).t_best||0));
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+  for (const a of assets) {
+    const ci = (a.thumb_url||'').match(/_(m?\d+)r?2?\.(?:jpg|png)$/)?.[1];
+    const tb = (a.source||{}).t_best || 0;
+    const segs = segsByAsset[a.asset_id];
+    const rv = reviews[a.asset_id];
+    const card = document.createElement('div');
+    card.className = 'card' + (rv ? (rv.verdict==='pass'?' pass':' fail') : '');
+    card.innerHTML = `
+      <div class="meta">
+        <h3 class="jump">${a.name}</h3>
+        <div class="sub">#${ci??'?'} · 来源@${tb}s</div>
+        <div class="segs">${segs ? '绑定段: '+segs.join(', ')
+                                 : '<span class="none">⚠ 无绑定段</span>'}</div>
+      </div>
+      <div class="stage">
+        <img class="jump" src="/storage/pipeline/${vid}/ctx_${ci}.jpg"
+             onerror="this.style.display='none'">
+        <div class="cap">① 识别上下文</div>
+      </div>
+      <div class="stage">
+        <img class="jump" src="${a.thumb_url}" onerror="this.outerHTML='<div class=cap>无输入图</div>'">
+        <div class="cap">② 3D输入图</div>
+      </div>
+      <div class="stage">
+        <model-viewer src="${a.glb_url||''}" camera-controls auto-rotate></model-viewer>
+        <div class="cap">③ 3D成品(可拖转)</div>
+      </div>
+      <div class="judge">
+        <div class="btns">
+          <button class="bp ${rv&&rv.verdict==='pass'?'on-pass':''}">✓ 通过</button>
+          <button class="bf ${rv&&rv.verdict==='fail'?'on-fail':''}">✗ 不通过</button>
+        </div>
+        <div class="quick">${QUICK.map(q=>`<span>${q}</span>`).join('')}</div>
+        <textarea placeholder="重做原因(留空=重复/多余,不重做)"
+          style="display:${rv&&rv.verdict==='fail'?'block':'none'}">${rv?.reason||''}</textarea>
+        <div class="noredo">${rv&&rv.verdict==='fail'&&!(rv.reason||'').trim()
+          ? '⤫ 空原因 = 判定重复/多余,不重做' : ''}</div>
+        <div class="saved"></div>
+      </div>`;
+    card.querySelectorAll('.jump').forEach(el => el.onclick = () => seek(tb));
+    const bp = card.querySelector('.bp'), bf = card.querySelector('.bf');
+    const ta = card.querySelector('textarea'), sv = card.querySelector('.saved');
+    bp.onclick = async () => {
+      const already = bp.classList.contains('on-pass');
+      bp.classList.toggle('on-pass', !already); bf.classList.remove('on-fail');
+      ta.style.display = 'none';
+      await save(a.asset_id, already?'clear':'pass', '', card, sv);
+      if (already) card.classList.remove('pass','fail');
+    };
+    bf.onclick = async () => {
+      const already = bf.classList.contains('on-fail');
+      bf.classList.toggle('on-fail', !already); bp.classList.remove('on-pass');
+      ta.style.display = already ? 'none' : 'block';
+      await save(a.asset_id, already?'clear':'fail', ta.value, card, sv);
+      if (already) card.classList.remove('pass','fail'); else ta.focus();
+    };
+    let tmr;
+    ta.oninput = () => { clearTimeout(tmr);
+      tmr = setTimeout(() => save(a.asset_id, 'fail', ta.value, card, sv), 600); };
+    card.querySelectorAll('.quick span').forEach(el => el.onclick = async () => {
+      ta.value = ta.value ? ta.value + ';' + el.textContent : el.textContent;
+      bf.classList.add('on-fail'); bp.classList.remove('on-pass'); ta.style.display='block';
+      await save(a.asset_id, 'fail', ta.value, card, sv);
+    });
+    list.appendChild(card);
+  }
+  stats();
+}
+
+/* ---------- 圈选补充漏掉的组件 ---------- */
+const player = document.getElementById('player');
+const lasso = document.getElementById('lasso');
+const circleBtn = document.getElementById('circleBtn');
+let drawing = false, sx=0, sy=0, curBox = null;   // curBox = 归一化 [x,y,w,h]
+
+function contentRect() {
+  // video 默认 contain:算出画面实际显示区域(去黑边),坐标才能归一到画面本身
+  const r = player.getBoundingClientRect();
+  const vw = player.videoWidth || 16, vh = player.videoHeight || 9;
+  const scale = Math.min(r.width / vw, r.height / vh);
+  const w = vw * scale, h = vh * scale;
+  return { x:(r.width-w)/2, y:(r.height-h)/2, w, h };
+}
+
+circleBtn.onclick = () => {
+  const armed = lasso.style.display !== 'block';
+  if (armed) {
+    player.pause();
+    lasso.width = player.clientWidth; lasso.height = player.clientHeight;
+    lasso.style.display = 'block';
+    circleBtn.classList.add('armed');
+    circleBtn.textContent = '◯ 在视频画面上拖一个框(再点取消)';
+  } else { cancelLasso(); }
+};
+function cancelLasso() {
+  lasso.style.display='none'; circleBtn.classList.remove('armed');
+  circleBtn.textContent='◯ 圈选补充漏掉的组件';
+  document.getElementById('annform').style.display='none';
+  curBox=null;
+}
+lasso.onmousedown = e => { drawing=true; const r=lasso.getBoundingClientRect(); sx=e.clientX-r.left; sy=e.clientY-r.top; };
+lasso.onmousemove = e => {
+  if (!drawing) return;
+  const r=lasso.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
+  const ctx=lasso.getContext('2d');
+  ctx.clearRect(0,0,lasso.width,lasso.height);
+  ctx.strokeStyle='#ff4444'; ctx.lineWidth=3;
+  ctx.strokeRect(Math.min(sx,x),Math.min(sy,y),Math.abs(x-sx),Math.abs(y-sy));
+};
+lasso.onmouseup = e => {
+  drawing=false;
+  const r=lasso.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
+  const c = contentRect();
+  const bx=(Math.min(sx,x)-c.x)/c.w, by=(Math.min(sy,y)-c.y)/c.h;
+  const bw=Math.abs(x-sx)/c.w, bh=Math.abs(y-sy)/c.h;
+  if (bw<0.01 || bh<0.01) return;
+  curBox=[+bx.toFixed(4),+by.toFixed(4),+bw.toFixed(4),+bh.toFixed(4)];
+  const f=document.getElementById('annform');
+  f.style.display='flex';
+  document.getElementById('annPos').textContent=
+    `@${player.currentTime.toFixed(1)}s  bbox[${curBox.join(', ')}]`;
+  document.getElementById('annNote').focus();
+};
+document.getElementById('annNo').onclick = cancelLasso;
+document.getElementById('annOk').onclick = async () => {
+  if (!curBox) return;
+  const note = document.getElementById('annNote').value.trim();
+  // 读-改-写:避免覆盖别的会话(rebuild 页)刚写的圈选
+  const doc = await (await fetch('/api/annotations/'+VID)).json();
+  doc.items.push({ t:+player.currentTime.toFixed(2), bbox:curBox, note, status:'pending' });
+  await fetch('/api/annotations/'+VID, { method:'PUT',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({video_id:VID, items:doc.items}) });
+  document.getElementById('annNote').value='';
+  cancelLasso(); loadAnns();
+};
+
+async function loadAnns() {
+  const doc = await (await fetch('/api/annotations/'+VID)).json();
+  const el = document.getElementById('annlist');
+  el.innerHTML = doc.items.length ? '<b>已圈选待生成:</b>' : '';
+  doc.items.forEach((it, i) => {
+    const d = document.createElement('div'); d.className='it';
+    d.innerHTML = `<span class="go">@${it.t}s</span> ${it.note||'(未命名)'}
+      <span style="color:#777">${it.status}</span><span class="del">删除</span>`;
+    d.querySelector('.go').onclick = () => seek(it.t);
+    d.querySelector('.del').onclick = async () => {
+      const fresh = await (await fetch('/api/annotations/'+VID)).json();
+      fresh.items.splice(i,1);
+      await fetch('/api/annotations/'+VID, { method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({video_id:VID, items:fresh.items}) });
+      loadAnns();
+    };
+    el.appendChild(d);
+  });
+}
+main();
+</script>
+</body>
+</html>

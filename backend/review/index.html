@@ -49,7 +49,7 @@ async function load() {
       <div class="name">${a.name} <span class="status ${a.status}">${a.status}</span></div>
       <div class="tags">${a.labels.category} · ${tags(a.labels)}</div>
       <div class="muted" style="font-size:11px">${a.source.video_id
-        ? `<a href="/review/video.html?video_id=${a.source.video_id}&t=${a.source.t_best}&asset_id=${a.asset_id}" target="_blank" style="color:#0a84ff;text-decoration:none">▶ 查看原视频出现位置 @ ${a.source.t_best}s</a>`
+        ? `<a href="/review/video.html?v=${a.source.video_id}&t=${a.source.t_best}&asset_id=${a.asset_id}" target="_blank" style="color:#0a84ff;text-decoration:none">▶ 来源 @ ${a.source.t_best}s</a>`
         : '预置'}</div>
       <button class="ok" onclick="patch('${a.asset_id}','ready')">通过</button>
       <button class="no" onclick="patch('${a.asset_id}','rejected')">拒绝</button>

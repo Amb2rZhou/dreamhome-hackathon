@@ -2,4 +2,6 @@
 __pycache__/
 *.pyc
 .env
-storage/
+storage/*
+!storage/libraries/
+!storage/scenes/

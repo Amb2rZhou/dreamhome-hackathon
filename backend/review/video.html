@@ -47,7 +47,7 @@ let tracks = [], assets = {}, videoId = '', liveBoxes = null, liveSeq = 0;
 
 async function init() {
   const vids = await (await fetch('/api/videos')).json();
-  const vid = qs.get('video_id') || (vids.find(x => x.status === 'indexed' && x.play_url.includes('/storage/')) || vids[0]).video_id;
+  const vid = qs.get('v') || qs.get('video_id') || (vids.find(x => x.status === 'indexed' && x.play_url.includes('/storage/')) || vids[0]).video_id;
   videoId = vid;
   const meta = vids.find(x => x.video_id === vid);
   v.src = meta.play_url;
