@@ -101,12 +101,28 @@ function setUserAssets(assets) {
   return known;
 }
 
+// 灵感库是平台与用户共建的资产库：用户自生成的组件对本人「自动收藏」，
+// 对其他用户则以 visibility:'public' 进入公共库，可见、可收藏（小程序侧由后端可见性字段承载）。
 export function addUserAsset(nextAsset) {
-  const record = { source: 'user', kind: 'furniture', ...nextAsset };
+  const record = { source: 'user', kind: 'furniture', visibility: 'public', ...nextAsset };
   const assets = getUserAssets().filter((item) => item.id !== record.id);
   assets.push(record);
   setUserAssets(assets);
+  // 创作者视角：新组件默认已收藏（首次入库时加入，后续更新不重复补收藏）
+  autoCollectOwn(record.id);
   return record;
+}
+
+// 首次生成的用户组件自动收藏；已在收藏或曾被本人取消过则不强行加入。
+function autoCollectOwn(id) {
+  const seededKey = USER_ASSETS_KEY + '.autocollected';
+  let seeded;
+  try { seeded = new Set(JSON.parse(localStorage.getItem(seededKey) || '[]')); } catch { seeded = new Set(); }
+  if (seeded.has(id)) return;
+  seeded.add(id);
+  localStorage.setItem(seededKey, JSON.stringify([...seeded]));
+  const favorites = getFavorites();
+  if (!favorites.has(id)) { favorites.add(id); setFavorites(favorites); }
 }
 
 export function removeUserAsset(id) {

@@ -71,7 +71,7 @@
     /* ---- 阶段 C · 结果 ---- */
     .result-phase { align-items:center; justify-content:flex-start; padding-top:6px; }
     .result-badge { margin:2px 0 10px; padding:5px 11px; border-radius:999px; background:var(--dh-color-sage-100,#e4efdf); color:var(--dh-color-sage-800,#3f5540); font-size:11px; font-weight:var(--dh-font-weight-heavy); }
-    .result-list { width:100%; max-width:264px; display:flex; flex-direction:column; gap:9px; max-height:326px; overflow-y:auto; padding:2px; scrollbar-width:none; }
+    .result-list { width:100%; max-width:264px; box-sizing:border-box; display:flex; flex-direction:column; gap:9px; max-height:340px; overflow-y:auto; padding:2px; scrollbar-width:none; }
     .result-list::-webkit-scrollbar { display:none; }
     .result-item { display:flex; align-items:center; gap:11px; padding:9px; border:1px solid rgba(117,139,113,.2); border-radius:16px; background:rgba(255,255,255,.92); box-shadow:var(--dh-shadow-soft); }
     .result-visual { position:relative; width:66px; height:66px; flex:none; border:1px solid var(--dh-border-soft); border-radius:12px; background:linear-gradient(145deg,#edf2e9,#fffaf2); overflow:hidden; }
@@ -155,12 +155,12 @@
 
             <!-- 阶段 C · 结果 -->
             <section class="phase result-phase" id="resultPhase" aria-live="polite">
-              <span class="result-badge" id="resultBadge">组件已生成</span>
+              <span class="result-badge" id="resultBadge">本次共生成这些家具</span>
               <div class="result-list" id="resultList"></div>
               <div class="result-actions">
                 <a class="primary-button" id="toMyHome" href="../my-home/index.html" style="display:grid;place-items:center;text-decoration:none;">去我的家摆放</a>
                 <div class="link-row">
-                  <a class="secondary-button" href="../inspiration-library/index.html">查看灵感库</a>
+                  <a class="secondary-button" id="toLibrary" href="../inspiration-library/index.html">查看灵感库</a>
                   <button class="secondary-button" id="captureAgain" type="button">再拍一张</button>
                 </div>
               </div>
@@ -210,9 +210,9 @@
     const progressBar = document.getElementById('progressBar');
     const genBack = document.getElementById('genBack');
     const genRetry = document.getElementById('genRetry');
-    const resultBadge = document.getElementById('resultBadge');
     const resultList = document.getElementById('resultList');
     const captureAgain = document.getElementById('captureAgain');
+    const toLibrary = document.getElementById('toLibrary');
 
     const state = { categories:['sofa'], photoUrl:null, hasPhoto:false, photoColor:'#9a8163', pollTimer:null, job:null, generatedAssets:[] };
     const MAX_CATEGORIES = 3;
@@ -357,35 +357,37 @@
     }
     function finishGeneration() {
       const assets = buildAssets();
-      assets.forEach((asset) => { addUserAsset(asset); toggleFavorite(asset.id); }); // 自动收藏 → 我的家可调用（闭环）
       state.generatedAssets = assets;
+      assets.forEach((asset) => { addUserAsset(asset); toggleFavorite(asset.id); }); // 生成即入库 + 自动收藏（闭环）
       renderResult(assets);
       setPhase('result');
       showToast(assets.length > 1 ? `已生成 ${assets.length} 个组件并加入收藏` : '已生成并加入灵感库收藏');
     }
     function renderResult(assets) {
-      resultBadge.textContent = assets.length > 1 ? `已生成 ${assets.length} 个组件` : '组件已生成';
       resultList.innerHTML = assets.map((asset) => {
         const category = FURNITURE_CATEGORIES.find((item) => item.id === asset.category);
         return `<div class="result-item"><div class="result-visual" style="--object:${asset.color};--accent:${asset.accent}"><span class="object object--${asset.primitive}"></span></div><div class="result-body"><input class="result-name" maxlength="16" value="${asset.name}" data-name="${asset.id}" aria-label="组件名称" /><p class="result-meta">家具类 · ${category.label} · 已收藏</p></div></div>`;
       }).join('');
     }
 
-    // 名称编辑：写回对应用户资产（同 id 覆盖，保持收藏不变）
+    // 名称编辑：写回已入库的用户资产（同 id 覆盖）
     resultList.addEventListener('change', (event) => {
       const input = event.target.closest('[data-name]');
       if (!input) return;
       const asset = state.generatedAssets.find((item) => item.id === input.dataset.name);
       if (!asset) return;
-      const name = input.value.trim() || asset.name;
-      asset.name = name; input.value = name;
+      asset.name = input.value.trim() || asset.name; input.value = asset.name;
       addUserAsset(asset);
-      showToast('组件名称已更新');
     });
 
+    // 前进按钮只负责跳转（已入库）；查看灵感库直达首个组件所属细分标签全部页
     generateBtn.addEventListener('click', () => { if (state.hasPhoto) startGeneration(); });
     genBack.addEventListener('click', () => { clearTimeout(state.pollTimer); setPhase('capture'); });
     genRetry.addEventListener('click', startGeneration);
+    toLibrary.addEventListener('click', (event) => {
+      event.preventDefault();
+      location.href = `../inspiration-library/index.html#catalog=furniture:${state.generatedAssets[0].category}`;
+    });
     captureAgain.addEventListener('click', () => { resetPhoto(); setPhase('capture'); });
   </script>
 </body>
