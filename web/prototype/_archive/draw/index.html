@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="../shared/five-tabbar.css" />
   <link rel="stylesheet" href="../shared/status-bar.css" />
   <style>
-    body { margin:0; min-height:100vh; background:linear-gradient(90deg,#e7eee5,#f6faf4 48%,#e3ece1); color:var(--dh-fg-primary); font-family:var(--dh-font-sans); }
+    body { margin:0; min-height:100vh; background:linear-gradient(90deg,#faf4e6,#fefdf8 48%,#f8f2e3); color:var(--dh-fg-primary); font-family:var(--dh-font-sans); }
     .preview-stage { min-height:100vh; display:grid; place-items:center; padding:28px 18px; box-sizing:border-box; }
     .draw-app { height:calc(100% - 50px); padding:0 16px; display:flex; flex-direction:column; box-sizing:border-box; overflow:hidden; }
     .draw-header { display:grid; place-items:center; min-height:42px; padding-top:3px; }
@@ -20,11 +20,35 @@
     .phase.is-active { display:flex; }
 
     /* ---- 阶段 A · 画布 ---- */
-    .canvas-wrap { position:relative; flex:1; min-height:0; border:1px solid rgba(117,139,113,.2); border-radius:18px; background:linear-gradient(150deg,#ffffff,#f3f8f1); box-shadow:var(--dh-shadow-soft); overflow:hidden; }
+    /* 画布填满可用空间、生成按钮贴底；与「拍一张」共用同一布局 → 两页生成按钮水平对齐 */
+    .canvas-wrap { position:relative; flex:1; min-height:0; border:1px solid rgba(117,139,113,.2); border-radius:18px; background:linear-gradient(150deg,#ffffff,#fefaf2); box-shadow:var(--dh-shadow-soft); overflow:hidden; }
     .draw-canvas { position:absolute; inset:0; width:100%; height:100%; touch-action:none; cursor:crosshair; display:block; }
     .canvas-grid { position:absolute; inset:0; pointer-events:none; background-image:linear-gradient(rgba(112,136,111,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(112,136,111,.08) 1px,transparent 1px); background-size:26px 26px; }
-    .canvas-empty { position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; color:var(--dh-fg-muted); font-size:12px; font-weight:var(--dh-font-weight-semibold); text-align:center; padding:0 30px; line-height:1.7; transition:opacity .2s ease; }
+    .canvas-empty { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; color:var(--dh-fg-muted); font-size:12px; font-weight:var(--dh-font-weight-semibold); text-align:center; padding:0 30px; line-height:1.7; transition:opacity .2s ease; }
     .canvas-empty.is-hidden { opacity:0; }
+    .canvas-empty.is-hidden .voice-hint { pointer-events:none; } /* 隐藏后不拦截画布中央的绘制手势 */
+    .canvas-empty-main { display:block; }
+    /* 语音入口 A · 空画布中央：纯文字，字号/字重/行距/颜色与主文案严格一致，无胶囊包裹 */
+    .voice-hint { pointer-events:auto; margin:0; padding:0; border:0; background:none; color:inherit; font:inherit; cursor:pointer; }
+    .mic-svg { display:block; }
+
+    /* 画布下方操作按钮行：语音 / 撤销 / 清除，统一图标胶囊，随笔迹出现，靠右对齐 */
+    .canvas-tools { display:flex; justify-content:flex-end; gap:8px; margin-top:10px; }
+    .canvas-tools[hidden] { display:none; }
+    .tool-btn--icon { min-width:44px; padding:0; display:grid; place-items:center; color:var(--dh-fg-secondary); }
+    .tool-btn--icon svg { display:block; width:17px; height:17px; }
+    .tool-btn--mic { color:var(--dh-color-sage-700); }
+    .tool-btn--mic.is-listening { background:var(--dh-color-sage-600); border-color:var(--dh-color-sage-600); color:#fff; box-shadow:0 2px 8px rgba(112,136,111,.3); }
+
+    /* 语音「聆听 / 实时转写」浮层 */
+    .voice-listening { position:absolute; inset:0; z-index:6; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:13px; background:rgba(255,255,255,.74); backdrop-filter:blur(2px); text-align:center; padding:0 24px; }
+    .voice-listening[hidden] { display:none; }
+    .voice-wave { display:flex; align-items:center; gap:4px; height:32px; }
+    .voice-wave i { width:4px; height:10px; border-radius:999px; background:var(--dh-color-sage-600); animation:voice-wave 1s ease-in-out infinite; }
+    .voice-wave i:nth-child(2){animation-delay:.12s}.voice-wave i:nth-child(3){animation-delay:.24s}.voice-wave i:nth-child(4){animation-delay:.36s}.voice-wave i:nth-child(5){animation-delay:.48s}
+    @keyframes voice-wave { 0%,100%{transform:scaleY(.5)} 50%{transform:scaleY(2.1)} }
+    .voice-listening-text { margin:0; min-height:1.3em; font-size:13px; font-weight:var(--dh-font-weight-bold); color:var(--dh-fg-primary); line-height:1.4; }
+    .voice-listening-text.is-placeholder { font-weight:var(--dh-font-weight-semibold); color:var(--dh-fg-muted); }
 
     /* 色卡：可横向滑动 */
     .palette-row { margin-top:10px; }
@@ -75,7 +99,7 @@
     .category-tab { flex:0 0 auto; border:1px solid rgba(110,132,107,.2); border-radius:999px; padding:5px 10px; background:rgba(255,255,255,.62); color:var(--dh-fg-secondary); font:inherit; font-size:10px; font-weight:var(--dh-font-weight-bold); cursor:pointer; }
     .category-tab[aria-selected="true"] { border-color:var(--dh-color-sage-600); background:var(--dh-color-sage-600); color:white; }
 
-    .primary-button { margin-top:12px; width:100%; height:44px; border:0; border-radius:15px; background:var(--dh-color-sage-600); color:white; font:inherit; font-size:14px; font-weight:var(--dh-font-weight-bold); cursor:pointer; box-shadow:0 10px 22px rgba(112,136,111,.24); }
+    .primary-button { margin-top:12px; width:100%; height:44px; border:0; border-radius:15px; background:var(--dh-color-sage-600); color:#6b5330; font:inherit; font-size:14px; font-weight:var(--dh-font-weight-bold); cursor:pointer; box-shadow:0 10px 22px rgba(112,136,111,.24); }
     .primary-button:disabled { opacity:.45; box-shadow:none; cursor:not-allowed; }
     .primary-button:active:not(:disabled) { transform:scale(.985); }
 
@@ -91,6 +115,7 @@
     @keyframes mascot-pending { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
     @keyframes mascot-work { 0%,100%{transform:rotate(-4deg) translateY(0)} 50%{transform:rotate(4deg) translateY(-3px)} }
     @keyframes gen-spark { 0%{opacity:0;transform:scale(.4) translateY(4px)} 40%{opacity:1} 100%{opacity:0;transform:scale(1.3) translateY(-12px)} }
+    .gen-video { width:180px; height:auto; display:block; object-fit:contain; }
     .gen-title { margin:18px 0 6px; font-size:17px; font-weight:var(--dh-font-weight-heavy); }
     .gen-copy { margin:0; max-width:210px; color:var(--dh-fg-secondary); font-size:12px; line-height:1.6; }
     .progress-track { width:184px; height:7px; margin:16px 0 0; border-radius:999px; background:rgba(112,136,111,.18); overflow:hidden; }
@@ -103,7 +128,7 @@
     .result-badge { margin:2px 0 10px; padding:5px 11px; border-radius:999px; background:var(--dh-color-sage-100,#e4efdf); color:var(--dh-color-sage-800,#3f5540); font-size:11px; font-weight:var(--dh-font-weight-heavy); }
     .result-card { position:relative; width:100%; max-width:230px; padding:16px; border:1px solid rgba(117,139,113,.2); border-radius:20px; background:rgba(255,255,255,.92); box-shadow:var(--dh-shadow-card); text-align:center; box-sizing:border-box; }
     .result-edit { position:absolute; z-index:2; right:10px; top:10px; display:inline-flex; align-items:center; gap:3px; height:26px; padding:0 11px; border:1px solid rgba(110,132,107,.3); border-radius:999px; background:rgba(255,255,255,.9); color:var(--dh-color-sage-700); font:inherit; font-size:11px; font-weight:var(--dh-font-weight-bold); cursor:pointer; }
-    .result-visual { position:relative; height:118px; margin:0 auto 12px; border:1px solid var(--dh-border-soft); border-radius:14px; background:linear-gradient(145deg,#edf2e9,#fffaf2); overflow:hidden; }
+    .result-visual { position:relative; height:118px; margin:0 auto 12px; border:1px solid var(--dh-border-soft); border-radius:14px; background:linear-gradient(145deg,#f7edda,#fffdf6); overflow:hidden; }
     .result-visual .object { position:absolute; left:50%; bottom:16px; transform:translateX(-50%) scale(1.55); transform-origin:bottom center; background:var(--object); box-shadow:inset 0 8px rgba(255,255,255,.18); }
     .object--sofa{width:47px;height:22px;border-radius:12px 12px 5px 5px}.object--sofa::before{content:"";position:absolute;left:9px;top:-12px;width:29px;height:16px;border-radius:9px 9px 3px 3px;background:var(--accent)}
     .object--chair{width:25px;height:23px;border-radius:7px 7px 4px 4px}.object--chair::before{content:"";position:absolute;left:4px;top:-14px;width:17px;height:18px;border-radius:7px 7px 2px 2px;background:var(--accent)}
@@ -142,7 +167,21 @@
               <div class="canvas-wrap">
                 <div class="canvas-grid" aria-hidden="true"></div>
                 <canvas class="draw-canvas" id="canvas"></canvas>
-                <div class="canvas-empty" id="canvasEmpty">在这里画出你的灵感创意家具<br />比如一把椅子、一盏灯...</div>
+                <div class="canvas-empty" id="canvasEmpty">
+                  <span class="canvas-empty-main">在这里画出你的灵感创意家具<br />比如一把椅子、一盏灯...</span>
+                  <button class="voice-hint" id="voiceHintBtn" type="button" aria-label="通过语音输入生成草图">
+                    <span>也可以通过语音输入</span>
+                  </button>
+                </div>
+                <div class="voice-listening" id="voiceListening" hidden>
+                  <div class="voice-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+                  <p class="voice-listening-text" id="voiceListeningText">聆听中…</p>
+                </div>
+              </div>
+              <div class="canvas-tools" id="canvasTools">
+                <button class="tool-btn tool-btn--icon tool-btn--mic" id="voiceToolBtn" type="button" aria-label="语音输入生成草图"><svg class="mic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0"/><line x1="12" y1="17" x2="12" y2="21"/><line x1="9" y1="21" x2="15" y2="21"/></svg></button>
+                <button class="tool-btn tool-btn--icon" id="undoBtn" type="button" aria-label="撤销" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="8 6 4 10 8 14"/><path d="M4 10h10a4 4 0 0 1 0 8H9"/></svg></button>
+                <button class="tool-btn tool-btn--icon" id="clearBtn" type="button" aria-label="清除" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 7 20 7"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
               </div>
               <div class="palette-row">
                 <div class="swatches" id="swatches" role="group" aria-label="画笔颜色"></div>
@@ -152,8 +191,6 @@
                   <span>笔触</span>
                   <input class="size-slider" id="sizeSlider" type="range" min="2" max="14" value="5" aria-label="笔刷粗细" />
                 </div>
-                <button class="tool-btn" id="undoBtn" type="button" disabled>撤销</button>
-                <button class="tool-btn" id="clearBtn" type="button" disabled>清除</button>
               </div>
               <div class="category-row">
                 <span class="category-label">这是什么家具？</span>
@@ -164,10 +201,7 @@
 
             <!-- 阶段 B · 生成中 -->
             <section class="phase gen-phase" id="genPhase" aria-live="polite">
-              <div class="gen-orbit" id="genOrbit" data-status="queued">
-                <img class="gen-mascot" src="../../assets/mascot/states/mascot-working.png" alt="包公球正在生成组件" />
-                <i class="gen-spark" aria-hidden="true">✦</i>
-              </div>
+              <video class="gen-video" id="genOrbit" src="../../assets/mascot/motion/working-drawing.webm" autoplay muted loop playsinline aria-label="包公球正在生成组件"></video>
               <h2 class="gen-title" id="genTitle">正在识别草图</h2>
               <p class="gen-copy" id="genCopy">包公球正在把你的手绘变成 3D 组件</p>
               <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
@@ -246,6 +280,10 @@
     const sizeSlider = document.getElementById('sizeSlider');
     const generateBtn = document.getElementById('generateBtn');
     const toast = document.getElementById('toast');
+    const voiceHintBtn = document.getElementById('voiceHintBtn');
+    const voiceToolBtn = document.getElementById('voiceToolBtn');
+    const voiceListening = document.getElementById('voiceListening');
+    const voiceListeningText = document.getElementById('voiceListeningText');
 
     const phases = { draw:document.getElementById('drawPhase'), gen:document.getElementById('genPhase'), result:document.getElementById('resultPhase') };
     const genOrbit = document.getElementById('genOrbit');
@@ -425,12 +463,85 @@
     cpClose.addEventListener('click', closePicker);
     cpBackdrop.addEventListener('click', closePicker);
     categoryTabs.innerHTML = FURNITURE_CATEGORIES.map((category) => `<button class="category-tab" data-category="${category.id}" role="tab" aria-selected="${category.id === state.category}">${category.label}</button>`).join('');
+    function selectCategory(id) {
+      state.category = id;
+      categoryTabs.querySelectorAll('.category-tab').forEach((el) => el.setAttribute('aria-selected', String(el.dataset.category === id)));
+    }
     categoryTabs.addEventListener('click', (event) => {
       const tab = event.target.closest('[data-category]');
       if (!tab) return;
-      state.category = tab.dataset.category;
-      categoryTabs.querySelectorAll('.category-tab').forEach((el) => el.setAttribute('aria-selected', String(el === tab)));
+      selectCategory(tab.dataset.category);
     });
+
+    // ---- 语音输入生成草图 ----
+    // 浏览器预览：用 Web Speech API（webkitSpeechRecognition）真实录音 + 中文实时转写，静音或手动结束。
+    // 抖音小程序：改用 tt.getRecorderManager() 录音 → 后端流式 ASR 转写 → 后端据文字回传预览草图/结构化笔迹。
+    // 识别到的文字按关键词匹配到最接近的一件家具，画出前端预置示意线稿（真机线稿由后端生成）。
+    function ellipse(cx, cy, rx, ry, steps = 28) {
+      const pts = [];
+      for (let i = 0; i <= steps; i++) { const a = (i / steps) * Math.PI * 2; pts.push([cx + rx * Math.cos(a), cy + ry * Math.sin(a)]); }
+      return pts;
+    }
+    // 归一化折线（[nx,ny]∈[0,1]），绘制时按画布 CSS 尺寸缩放，与手绘坐标系一致。
+    // text 为用户说的话（实时转写内容），据此在画布画出对应家具示意线稿。
+    const VOICE_PRESETS = [
+      { text:'帮我画一把北欧扶手椅', category:'seating', strokes:[[[.44,.32],[.44,.55],[.62,.55]],[[.60,.55],[.60,.72]],[[.455,.55],[.455,.72]],[[.44,.40],[.60,.40]]] },
+      { text:'画一盏落地灯', category:'lighting', strokes:[[[.44,.34],[.60,.34],[.56,.45],[.48,.45],[.44,.34]],[[.52,.45],[.52,.70]],[[.46,.70],[.58,.70]]] },
+      { text:'来一张圆餐桌', category:'table', strokes:[ellipse(.52,.46,.12,.035),[[.43,.48],[.43,.68]],[[.61,.48],[.61,.68]]] },
+      { text:'画一个双人沙发', category:'sofa', strokes:[[[.37,.45],[.37,.58],[.67,.58],[.67,.45]],[[.37,.51],[.67,.51]],[[.37,.51],[.41,.51],[.41,.58]],[[.67,.51],[.63,.51],[.63,.58]]] },
+      { text:'放一盆桌面绿植', category:'decor', strokes:[[[.47,.58],[.50,.70],[.58,.70],[.61,.58]],[[.54,.58],[.50,.47],[.46,.40]],[[.54,.58],[.54,.44]],[[.54,.58],[.58,.47],[.62,.40]]] },
+    ];
+    function drawRecognizedSketch(preset) {
+      const rect = canvas.getBoundingClientRect();
+      const size = Math.max(3, state.size);
+      for (const poly of preset.strokes) {
+        const points = poly.map(([nx, ny]) => ({ x: nx * rect.width, y: ny * rect.height }));
+        state.strokes.push({ color: state.color, size, points });
+      }
+      redraw();
+    }
+
+    let voiceListeningActive = false;
+    let voicePreset = null;
+    let voiceTimers = [];
+    const clearVoiceTimers = () => { voiceTimers.forEach(clearTimeout); voiceTimers = []; };
+
+    function startVoice() {
+      if (voiceListeningActive) { stopVoice(); return; } // 再次点击 = 手动中断聆听
+      voiceListeningActive = true;
+      voicePreset = VOICE_PRESETS[Math.floor(Math.random() * VOICE_PRESETS.length)];
+      voiceToolBtn.classList.add('is-listening');
+      voiceListeningText.textContent = '聆听中…';
+      voiceListeningText.classList.add('is-placeholder');
+      voiceListening.hidden = false;
+      // 实时转写：逐字浮现用户说的话
+      const full = voicePreset.text;
+      let i = 0;
+      const typeStep = () => {
+        if (!voiceListeningActive) return;
+        if (i === 0) voiceListeningText.classList.remove('is-placeholder');
+        i += 1;
+        voiceListeningText.textContent = full.slice(0, i);
+        if (i < full.length) { voiceTimers.push(setTimeout(typeStep, 135)); }
+        else { voiceTimers.push(setTimeout(stopVoice, 5000)); } // 说完后静音 5s 自动中断
+      };
+      voiceTimers.push(setTimeout(typeStep, 650)); // 先“聆听中…”片刻再出字
+    }
+
+    function stopVoice() {
+      if (!voiceListeningActive) return;
+      voiceListeningActive = false;
+      clearVoiceTimers();
+      const preset = voicePreset;
+      voicePreset = null;
+      voiceListening.hidden = true;
+      voiceListeningText.classList.remove('is-placeholder');
+      voiceToolBtn.classList.remove('is-listening');
+      if (preset) { selectCategory(preset.category); drawRecognizedSketch(preset); syncToolState(); }
+    }
+
+    voiceHintBtn.addEventListener('click', startVoice);
+    voiceToolBtn.addEventListener('click', startVoice);
 
     // ---- 阶段切换 ----
     function setPhase(name) {

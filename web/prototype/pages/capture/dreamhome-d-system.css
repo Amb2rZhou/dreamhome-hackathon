@@ -351,3 +351,41 @@
   border-radius: var(--dh-radius-pill);
   background: rgba(16,17,20,.86);
 }
+
+/* ===== 暖色奶油主题 · 落地覆盖（在原 token 之后重定义，整体转暖以匹配包公球 icon） ===== */
+:root{
+  --dh-color-ink-950:#403425;
+  --dh-color-ink-800:#54452f;
+  --dh-color-ink-600:#94805f;
+  --dh-color-mist-50:#fefcf7;
+  --dh-color-mist-100:#fefcf6;
+  --dh-color-mist-200:#f9f3e7;
+  --dh-color-mist-300:#f3ebda;
+  --dh-color-sage-300:#f6ebcf;
+  --dh-color-sage-500:#eed9a8;
+  --dh-color-sage-600:#eec274;
+  --dh-color-sage-700:#dcac58;
+  --dh-color-sage-100:#fbf3e1;
+  --dh-color-sage-800:#b58c46;
+  --dh-color-cream-50:#fffef9;
+  --dh-color-cream-100:#fffbf1;
+  --dh-color-orange-400:#f4c193;
+  --dh-color-orange-500:#f0b177;
+  --dh-color-clay-200:#f0dccd;
+  --dh-color-clay-400:#deb08c;
+  --dh-alpha-sage-09: rgba(170,132,60,.08);
+  --dh-alpha-sage-16: rgba(225,188,120,.16);
+  --dh-alpha-ink-04: rgba(90,70,40,.04);
+  --dh-alpha-ink-08: rgba(90,70,40,.07);
+  --dh-alpha-ink-12: rgba(90,70,40,.10);
+  --dh-shadow-soft:0 14px 30px rgba(175,135,65,.10);
+  --dh-shadow-card:0 16px 34px rgba(175,135,65,.11);
+  --dh-shadow-float:0 18px 38px rgba(175,135,65,.10);
+  --dh-shadow-press:0 8px 18px rgba(175,135,65,.10);
+  --dh-bg-app: linear-gradient(180deg,#fdf8ef 0%,#fefdf8 42%,#fffefb 58%,#fcf6ea 100%);
+  --dh-bg-canvas:#fefaf2;
+  --dh-bg-surface-muted: rgba(251,246,236,.85);
+  --dh-bg-hero: linear-gradient(145deg,#fffef9,#fcf5e7);
+  --dh-fg-muted: rgba(155,132,92,.68);
+  --dh-fg-on-primary:#6b5330;
+}
