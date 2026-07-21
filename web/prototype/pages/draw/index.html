@@ -65,17 +65,8 @@
     .cp-hue input::-moz-range-thumb { width:22px; height:22px; border:0; border-radius:50%; background:#fff; box-shadow:0 1px 5px rgba(0,0,0,.35); cursor:pointer; }
     .cp-foot { display:flex; align-items:center; gap:9px; margin-top:16px; }
     .cp-preview { width:34px; height:34px; flex:none; border-radius:10px; border:1px solid rgba(29,36,31,.1); }
-    .cp-hex { flex:none; font-size:12px; font-weight:var(--dh-font-weight-bold); color:var(--dh-fg-secondary); letter-spacing:.02em; }
-    .cp-eyedropper { margin-left:auto; display:inline-flex; align-items:center; gap:5px; height:34px; padding:0 12px; border:1px solid rgba(110,132,107,.32); border-radius:999px; background:rgba(255,255,255,.85); color:var(--dh-fg-secondary); font:inherit; font-size:12px; font-weight:var(--dh-font-weight-bold); cursor:pointer; }
-    .cp-eyedropper svg { width:15px; height:15px; }
+    .cp-hex { flex:none; margin-right:auto; font-size:12px; font-weight:var(--dh-font-weight-bold); color:var(--dh-fg-secondary); letter-spacing:.02em; }
     .cp-apply { flex:none; height:34px; padding:0 16px; border:0; border-radius:999px; background:var(--dh-color-sage-600); color:#fff; font:inherit; font-size:12px; font-weight:var(--dh-font-weight-bold); cursor:pointer; }
-
-    /* 取色模式（移动端自实现：点击画面取色）*/
-    .dh-screen.is-picking { cursor:crosshair; }
-    .pick-bar { position:absolute; z-index:70; left:50%; top:64px; transform:translateX(-50%); display:flex; align-items:center; gap:10px; max-width:calc(100% - 28px); padding:8px 10px 8px 14px; border-radius:999px; background:rgba(29,36,31,.9); color:#fff; box-shadow:var(--dh-shadow-float); }
-    .pick-bar[hidden] { display:none; }
-    .pick-bar span { font-size:11px; font-weight:var(--dh-font-weight-semibold); white-space:nowrap; }
-    .pick-cancel { flex:none; height:26px; padding:0 11px; border:0; border-radius:999px; background:rgba(255,255,255,.2); color:#fff; font:inherit; font-size:11px; font-weight:var(--dh-font-weight-bold); cursor:pointer; }
 
     .category-row { margin-top:11px; }
     .category-label { display:block; margin:0 0 6px 2px; font-size:10px; font-weight:var(--dh-font-weight-bold); color:var(--dh-fg-muted); }
@@ -110,7 +101,8 @@
     /* ---- 阶段 C · 结果 ---- */
     .result-phase { align-items:center; justify-content:flex-start; padding-top:6px; }
     .result-badge { margin:2px 0 10px; padding:5px 11px; border-radius:999px; background:var(--dh-color-sage-100,#e4efdf); color:var(--dh-color-sage-800,#3f5540); font-size:11px; font-weight:var(--dh-font-weight-heavy); }
-    .result-card { width:100%; max-width:230px; padding:16px; border:1px solid rgba(117,139,113,.2); border-radius:20px; background:rgba(255,255,255,.92); box-shadow:var(--dh-shadow-card); text-align:center; box-sizing:border-box; }
+    .result-card { position:relative; width:100%; max-width:230px; padding:16px; border:1px solid rgba(117,139,113,.2); border-radius:20px; background:rgba(255,255,255,.92); box-shadow:var(--dh-shadow-card); text-align:center; box-sizing:border-box; }
+    .result-edit { position:absolute; z-index:2; right:10px; top:10px; display:inline-flex; align-items:center; gap:3px; height:26px; padding:0 11px; border:1px solid rgba(110,132,107,.3); border-radius:999px; background:rgba(255,255,255,.9); color:var(--dh-color-sage-700); font:inherit; font-size:11px; font-weight:var(--dh-font-weight-bold); cursor:pointer; }
     .result-visual { position:relative; height:118px; margin:0 auto 12px; border:1px solid var(--dh-border-soft); border-radius:14px; background:linear-gradient(145deg,#edf2e9,#fffaf2); overflow:hidden; }
     .result-visual .object { position:absolute; left:50%; bottom:16px; transform:translateX(-50%) scale(1.55); transform-origin:bottom center; background:var(--object); box-shadow:inset 0 8px rgba(255,255,255,.18); }
     .object--sofa{width:47px;height:22px;border-radius:12px 12px 5px 5px}.object--sofa::before{content:"";position:absolute;left:9px;top:-12px;width:29px;height:16px;border-radius:9px 9px 3px 3px;background:var(--accent)}
@@ -124,8 +116,7 @@
     .result-meta { margin:8px 0 0; font-size:10px; font-weight:var(--dh-font-weight-semibold); color:var(--dh-fg-muted); }
     .result-actions { display:flex; flex-direction:column; gap:9px; width:100%; max-width:230px; margin-top:14px; }
     .result-actions .primary-button { margin-top:0; }
-    .link-row { display:flex; gap:9px; }
-    .link-row .secondary-button { flex:1; text-align:center; text-decoration:none; display:grid; place-items:center; }
+    .secondary-button.block { width:100%; box-sizing:border-box; text-align:center; text-decoration:none; display:grid; place-items:center; min-height:42px; }
 
     .toast { position:absolute; z-index:40; left:50%; bottom:78px; transform:translateX(-50%) translateY(8px); opacity:0; padding:9px 12px; border-radius:999px; background:rgba(29,36,31,.9); color:white; font-size:11px; font-weight:var(--dh-font-weight-semibold); pointer-events:none; transition:.2s ease; text-align:center; }
     .toast.show { opacity:1; transform:translateX(-50%); }
@@ -190,16 +181,15 @@
             <section class="phase result-phase" id="resultPhase" aria-live="polite">
               <span class="result-badge">组件已生成</span>
               <div class="result-card">
+                <button class="result-edit" id="editDraw" type="button" aria-label="返回编辑">✎ 编辑</button>
                 <div class="result-visual" id="resultVisual"></div>
                 <input class="result-name" id="resultName" maxlength="16" aria-label="组件名称" />
                 <p class="result-meta" id="resultMeta"></p>
               </div>
               <div class="result-actions">
                 <a class="primary-button" id="toMyHome" href="../my-home/index.html" style="display:grid;place-items:center;text-decoration:none;">去我的家摆放</a>
-                <div class="link-row">
-                  <a class="secondary-button" href="../inspiration-library/index.html">查看灵感库</a>
-                  <button class="secondary-button" id="drawAgain" type="button">再画一个</button>
-                </div>
+                <a class="secondary-button block" id="toLibrary" href="../inspiration-library/index.html">查看灵感库</a>
+                <button class="secondary-button block" id="drawAgain" type="button">再画一个</button>
               </div>
             </section>
 
@@ -212,7 +202,6 @@
           <a class="dh-tab" href="../discover/index.html" aria-label="刷一刷"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/discover.svg" alt="" /></span></a>
           <a class="dh-tab" href="../my-home/index.html" aria-label="我的家"><span class="dh-tab-icon"><img src="../../assets/icons/navigation/my-home.svg" alt="" /></span></a>
         </nav>
-        <div class="pick-bar" id="pickBar" hidden><span>点击画面任意位置吸取颜色</span><button class="pick-cancel" id="pickCancel" type="button">取消</button></div>
         <div class="cp-overlay" id="cpOverlay" hidden>
           <div class="cp-backdrop" id="cpBackdrop"></div>
           <div class="cp-sheet" role="dialog" aria-modal="true" aria-label="自定义颜色">
@@ -223,7 +212,6 @@
             <div class="cp-foot">
               <span class="cp-preview" id="cpPreview"></span>
               <span class="cp-hex" id="cpHex">#000000</span>
-              <button class="cp-eyedropper" id="cpEyedropper" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/></svg>吸色</button>
               <button class="cp-apply" id="cpApply" type="button">使用</button>
             </div>
           </div>
@@ -235,7 +223,7 @@
   </main>
 
   <script type="module">
-    import { FURNITURE_CATEGORIES, addUserAsset, toggleFavorite } from '../shared/asset-library-data.js';
+    import { FURNITURE_CATEGORIES, addUserAsset, toggleFavorite, removeUserAsset } from '../shared/asset-library-data.js';
 
     // 品类 → 3D primitive 映射（与 my-home createAssetGroup / 灵感库 .object--* 对齐）
     const PRIMITIVE_BY_CATEGORY = {
@@ -270,6 +258,8 @@
     const resultName = document.getElementById('resultName');
     const resultMeta = document.getElementById('resultMeta');
     const drawAgain = document.getElementById('drawAgain');
+    const toLibrary = document.getElementById('toLibrary');
+    const editDraw = document.getElementById('editDraw');
 
     const state = { color:SWATCHES[0], size:5, category:'decor', strokes:[], drawing:false, current:null, pollTimer:null, job:null, generatedAsset:null };
     let toastTimer = null;
@@ -370,7 +360,6 @@
     const cpHue = document.getElementById('cpHue');
     const cpPreview = document.getElementById('cpPreview');
     const cpHex = document.getElementById('cpHex');
-    const cpEyedropper = document.getElementById('cpEyedropper');
     const cpApply = document.getElementById('cpApply');
     const cp = { h:0, s:1, v:1, hex:'#ff0000' };
 
@@ -435,67 +424,6 @@
     cpApply.addEventListener('click', () => { applyCustomColor(cp.hex); closePicker(); });
     cpClose.addEventListener('click', closePicker);
     cpBackdrop.addEventListener('click', closePicker);
-    // 应用吸到的颜色（同步更新自定义入口与浮层内部状态）
-    function applyPickedColor(hex) {
-      applyCustomColor(hex);
-      const [h, s, v] = rgbToHsv(...(hexToRgb(hex) || [0, 0, 0]));
-      cp.h = h; cp.s = s; cp.v = v; cp.hex = hex;
-    }
-    // 解析 rgb()/rgba() 计算值 → {r,g,b,a}
-    function parseCssColor(value) {
-      const m = /rgba?\(([^)]+)\)/i.exec(value || '');
-      if (!m) return null;
-      const parts = m[1].split(',').map((n) => parseFloat(n));
-      return { r:parts[0], g:parts[1], b:parts[2], a:parts.length > 3 ? parts[3] : 1 };
-    }
-    // 移动端自实现吸色：画布像素优先，否则回溯元素背景色
-    function samplePageColor(clientX, clientY) {
-      const rect = canvas.getBoundingClientRect();
-      if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
-        const px = Math.floor((clientX - rect.left) * dpr);
-        const py = Math.floor((clientY - rect.top) * dpr);
-        try {
-          const data = ctx.getImageData(px, py, 1, 1).data;
-          if (data[3] > 10) return rgbToHex(data[0], data[1], data[2]);
-        } catch { /* 跨域污染时忽略，走回溯 */ }
-      }
-      let node = document.elementFromPoint(clientX, clientY);
-      while (node) {
-        const color = parseCssColor(getComputedStyle(node).backgroundColor);
-        if (color && color.a > 0) return rgbToHex(color.r, color.g, color.b);
-        node = node.parentElement;
-      }
-      return null;
-    }
-
-    const dhScreen = document.querySelector('.dh-screen');
-    const pickBar = document.getElementById('pickBar');
-    const pickCancel = document.getElementById('pickCancel');
-    let pickMode = false;
-    function enterPickMode() { pickMode = true; pickBar.hidden = false; dhScreen.classList.add('is-picking'); }
-    function exitPickMode() { pickMode = false; pickBar.hidden = true; dhScreen.classList.remove('is-picking'); }
-    // 捕获阶段拦截，抢在画布落笔之前完成取色
-    dhScreen.addEventListener('pointerdown', (event) => {
-      if (!pickMode || event.target.closest('#pickBar')) return;
-      event.preventDefault();
-      event.stopPropagation();
-      const hex = samplePageColor(event.clientX, event.clientY);
-      exitPickMode();
-      if (hex) { applyPickedColor(hex); showToast(`已吸取 ${hex.toUpperCase()}`); }
-      else showToast('这里没吸到颜色，换个位置试试');
-    }, true);
-    pickCancel.addEventListener('click', exitPickMode);
-    document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && pickMode) exitPickMode(); });
-
-    cpEyedropper.addEventListener('click', async () => {
-      closePicker();
-      if (window.EyeDropper) { // 桌面：优先原生吸色器
-        try { const { sRGBHex } = await new EyeDropper().open(); applyPickedColor(sRGBHex); showToast(`已吸取 ${sRGBHex.toUpperCase()}`); }
-        catch { /* 用户取消 */ }
-        return;
-      }
-      enterPickMode(); // 移动端：点击画面取色
-    });
     categoryTabs.innerHTML = FURNITURE_CATEGORIES.map((category) => `<button class="category-tab" data-category="${category.id}" role="tab" aria-selected="${category.id === state.category}">${category.label}</button>`).join('');
     categoryTabs.addEventListener('click', (event) => {
       const tab = event.target.closest('[data-category]');
@@ -593,9 +521,9 @@
 
     function finishGeneration() {
       const asset = buildAsset();
-      addUserAsset(asset);
-      toggleFavorite(asset.id); // 自动收藏 → 我的家抽屉可调用（闭环）
       state.generatedAsset = asset;
+      addUserAsset(asset);
+      toggleFavorite(asset.id); // 生成即入库 + 自动收藏（闭环）
       renderResult(asset);
       setPhase('result');
       showToast('已生成并加入灵感库收藏');
@@ -610,21 +538,34 @@
       resultMeta.textContent = `家具类 · ${category.label} · 已收藏`;
     }
 
-    // 名称编辑：写回用户资产（保持收藏 id 不变）
+    // 名称编辑：写回已入库的用户资产（同 id 覆盖）
     resultName.addEventListener('change', () => {
       const asset = state.generatedAsset;
       if (!asset) return;
-      const name = resultName.value.trim() || asset.name;
-      asset.name = name;
-      resultName.value = name;
-      addUserAsset(asset); // 同 id 覆盖
-      showToast('组件名称已更新');
+      asset.name = resultName.value.trim() || asset.name;
+      resultName.value = asset.name;
+      addUserAsset(asset);
+    });
+
+    // 查看灵感库：直达该组件所属细分标签全部页
+    toLibrary.addEventListener('click', (event) => {
+      event.preventDefault();
+      location.href = `../inspiration-library/index.html#catalog=furniture:${state.generatedAsset.category}`;
+    });
+    // 编辑：不满意 → 从灵感库撤回当前组件，返回画布继续修改（保留笔迹）
+    editDraw.addEventListener('click', () => {
+      if (state.generatedAsset) removeUserAsset(state.generatedAsset.id);
+      state.generatedAsset = null;
+      setPhase('draw');
+      requestAnimationFrame(fitCanvas);
     });
 
     genBack.addEventListener('click', () => { clearTimeout(state.pollTimer); setPhase('draw'); requestAnimationFrame(fitCanvas); });
     genRetry.addEventListener('click', startGeneration);
     generateBtn.addEventListener('click', startGeneration);
+    // 再画一个：当前组件已入库，清空画布重新开始
     drawAgain.addEventListener('click', () => {
+      state.generatedAsset = null;
       state.strokes = [];
       redraw();
       syncToolState();
