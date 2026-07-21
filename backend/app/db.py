@@ -41,6 +41,21 @@ CREATE TABLE IF NOT EXISTS tracks(
   created_at   REAL NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_tracks_video ON tracks(video_id);
+CREATE TABLE IF NOT EXISTS asset_video_segments(
+  segment_id    TEXT PRIMARY KEY,
+  asset_id      TEXT NOT NULL,
+  video_id      TEXT NOT NULL,
+  t_start       REAL NOT NULL,
+  t_end         REAL NOT NULL,
+  representative_t REAL NOT NULL DEFAULT 0,
+  created_at    REAL NOT NULL,
+  updated_at    REAL NOT NULL,
+  UNIQUE(asset_id, video_id, t_start, t_end)
+);
+CREATE INDEX IF NOT EXISTS idx_asset_video_segments_asset
+  ON asset_video_segments(asset_id, video_id, t_start);
+CREATE INDEX IF NOT EXISTS idx_asset_video_segments_video
+  ON asset_video_segments(video_id, t_start, t_end);
 CREATE TABLE IF NOT EXISTS assets(
   asset_id     TEXT PRIMARY KEY,
   name         TEXT NOT NULL DEFAULT '',

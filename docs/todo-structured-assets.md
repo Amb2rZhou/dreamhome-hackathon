@@ -20,9 +20,8 @@
 
 ## 数据补全
 
-- [ ] 为缺轨迹的 3 件人工补录资产创建人工时间点轨迹
-- [ ] 复核 8 件“source track 已绑定到另一资产”的候选，按审核结果合并或换绑
-- [ ] 处理 4 件无有效 source track 的旧测试/废弃记录
+- [x] 建立独立 `asset_video_segments`，前端只读取视频开始/结束/代表秒数
+- [ ] 把人工补录的零长度区间在复验时扩成准确开始/结束秒数
 - [ ] 为 284 件缺真实尺寸的资产补充 `{w,h,d,source,confidence}`（单位米）
 - [ ] 为非本地 `/samples` 媒体补齐哈希和几何信息，或明确标记 demo-only
 - [ ] 给补全历史文件补建 `source_crop/context/completed_input` 的完整版本链

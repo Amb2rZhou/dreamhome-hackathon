@@ -54,22 +54,13 @@ async def review_duplicates():
 
 @router.get("/{asset_id}/appearances")
 async def asset_appearances(asset_id: str):
-    """Return every original-video interval bound to an asset.
-
-    Frontends use this to seek/highlight the asset at the exact seconds where it
-    appears.  Tracks remain the source of truth; no time range is inferred from
-    the thumbnail or the asset's single ``t_best`` value.
-    """
+    """Return frontend-facing video intervals; tracking internals stay private."""
     if not db.get_asset(asset_id):
         raise HTTPException(404, "asset not found")
-    rows = db._exec(
-        """SELECT track_id, video_id, t_start, t_end, best_frame_t
-             FROM tracks
-            WHERE asset_id=?
-            ORDER BY video_id, t_start, t_end""",
-        (asset_id,),
-    ).fetchall()
-    return [dict(row) for row in rows]
+    return db._rows(
+        """SELECT segment_id,video_id,t_start,t_end,representative_t
+             FROM asset_video_segments WHERE asset_id=?
+            ORDER BY video_id,t_start,t_end""", (asset_id,))
 
 
 @router.get("/{asset_id}/full")
@@ -79,8 +70,9 @@ async def full_asset(asset_id: str):
     if not asset:
         raise HTTPException(404, "asset not found")
     appearances = db._rows(
-        """SELECT track_id,video_id,t_start,t_end,best_frame_t,category
-             FROM tracks WHERE asset_id=? ORDER BY video_id,t_start""", (asset_id,))
+        """SELECT segment_id,video_id,t_start,t_end,representative_t
+             FROM asset_video_segments WHERE asset_id=? ORDER BY video_id,t_start""",
+        (asset_id,))
     media = db._rows(
         """SELECT media_id,kind,version,url,mime_type,width_px,height_px,bytes,sha256,
                   is_current,metadata_json,created_at

@@ -68,7 +68,8 @@ async def run(video_id: str, execute: bool, asset_ids: set[str]) -> int:
     errors = 0
     for row in rows:
         appearances = db._exec(
-            "SELECT track_id, t_start, t_end FROM tracks WHERE asset_id=? ORDER BY t_start",
+            """SELECT segment_id,t_start,t_end FROM asset_video_segments
+                 WHERE asset_id=? ORDER BY t_start""",
             (row["asset_id"],),
         ).fetchall()
         if not appearances:

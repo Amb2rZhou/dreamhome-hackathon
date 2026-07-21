@@ -7,7 +7,7 @@
 - `asset_id`、`name`、`space`、`status`、`created_by`
 - `labels.category/sub/colors/materials/styles/features/mount`
 - `size_prior`: 真实世界尺寸，单位米，推荐 `{w,h,d,source,confidence}`
-- `appearances[]`: `video_id/track_id/t_start/t_end/best_frame_t/category`
+- `appearances[]`: `segment_id/video_id/t_start/t_end/representative_t`
 - `media[]`: 原始裁切、补全输入、缩略图、3D、预览及其历史版本
 - `review`: 人工审核结论、原因和更新时间
 
@@ -26,7 +26,7 @@
 
 ## 视频时间关系
 
-`tracks` 是“资产在原视频何时出现”的唯一事实来源。一件资产可以绑定多个视频、多个不连续时间段。不要只使用资产上的 `source.t_best` 代替时间范围；`t_best` 仅用于跳转代表帧。
+`asset_video_segments` 是前端使用的资产视频区间。一件资产可以对应多个视频、多个不连续时间段。检测轨迹仅供后台识别管线内部使用，不进入资产库接口，也不要求前端理解。
 
 ## 用户的家
 
