@@ -28,6 +28,7 @@
 
 ## 前端联调
 
+- [x] 正式 `/api/assets` 默认只返回 ready 且人工审核通过的资产
 - [ ] 资产详情改用 `GET /api/assets/{asset_id}/full`
 - [ ] 视频跳转使用 `appearances[].t_start/t_end/best_frame_t`
 - [ ] “我的家”资产抽屉改用真实 `/api/assets`，移除硬编码 mock ID

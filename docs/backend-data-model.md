@@ -11,6 +11,10 @@
 - `media[]`: 原始裁切、补全输入、缩略图、3D、预览及其历史版本
 - `review`: 人工审核结论、原因和更新时间
 
+正式资产列表使用 `GET /api/assets`，默认只返回 `status=ready` 且人工审核
+`verdict=pass` 的资产。后台排查可使用 `publishable_only=false`；审核工具使用
+`include_all_status=true`，不会因正式库过滤而丢失候选或历史记录。
+
 ### 媒体类型
 
 `asset_media.kind` 使用：

@@ -36,11 +36,19 @@ def _refresh_generating(asset: dict) -> dict:
 @router.get("", response_model=List[AssetOut])
 async def list_assets(space: str = "", category: str = "", q: str = "",
                       include_all_status: bool = False,
-                      exclude_special: bool = True):
+                      exclude_special: bool = True,
+                      publishable_only: bool = True):
     """主入口：分类浏览 + 搜索。include_all_status=true 给审核页用。
+    普通前端默认只返回 ready 且人工审核通过的正式资产；审核页传
+    include_all_status=true 时保留所有状态。publishable_only=false 仅供后台排查。
     exclude_special=true(默认)过滤专项库资产(窗户/吊顶/地板/光线/窗外景观或 labels.special)。"""
     assets = db.list_assets(space=space, category=category, q=q,
                             include_all_status=include_all_status)
+    if publishable_only and not include_all_status:
+        approved = {row["asset_id"] for row in db._rows(
+            "SELECT asset_id FROM asset_reviews WHERE verdict='pass'"
+        )}
+        assets = [asset for asset in assets if asset["asset_id"] in approved]
     if exclude_special:
         assets = [a for a in assets if not _is_special(a)]
     return [_refresh_generating(a) for a in assets]
