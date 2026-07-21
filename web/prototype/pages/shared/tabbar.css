@@ -1,0 +1,29 @@
+:root { --dh-tabbar-height: 56px; --dh-tabbar-bottom: 19px; --dh-tabbar-safe-space: 100px; }
+
+/* 主底部导航（4 tab：灵感库 / 拍一张 / 刷一刷 / 我的家）
+   奶油可爱风：内联 SVG + currentColor，未选中暖灰、选中琥珀主题色，无中央突出。 */
+.dh-tabbar.dh-tabbar--main {
+  position: absolute; left: 50%; bottom: var(--dh-tabbar-bottom); z-index: var(--dh-tabbar-z);
+  transform: translateX(-50%); width: calc(100% - 24px); height: var(--dh-tabbar-height);
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0;
+  padding: 6px 6px 8px; border-radius: 26px;
+  background: var(--dh-tabbar-bg); border: var(--dh-card-border); box-shadow: var(--dh-shadow-soft);
+  overflow: visible;
+}
+.dh-tabbar.dh-tabbar--main .dh-tab {
+  min-width: 0; min-height: 44px; display: grid; place-items: center;
+  border: 0; border-radius: 15px; text-decoration: none; opacity: 1;
+  color: #b8ad98; /* 未选中：暖灰 */
+  -webkit-tap-highlight-color: transparent;
+  transition: color .18s ease;
+}
+.dh-tabbar.dh-tabbar--main .dh-tab:focus-visible { outline: 2px solid var(--dh-color-sage-500); outline-offset: 2px; }
+.dh-tabbar.dh-tabbar--main .dh-tab-icon {
+  width: 27px; height: 27px; display: grid; place-items: center;
+  background: none; border: 0; border-radius: 0; margin: 0; padding: 0;
+  transition: transform .18s ease;
+}
+.dh-tabbar.dh-tabbar--main .dh-tab-icon svg { width: 100%; height: 100%; display: block; fill: currentColor; }
+.dh-tabbar.dh-tabbar--main .dh-tab--active { color: #c78f2a; } /* 选中：琥珀主题色 */
+.dh-tabbar.dh-tabbar--main .dh-tab--active .dh-tab-icon { transform: translateY(-1px) scale(1.06); }
+@media (max-width: 420px) { .dh-tabbar.dh-tabbar--main { width: calc(100% - 18px); } }
