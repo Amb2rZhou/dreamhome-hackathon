@@ -233,7 +233,8 @@ def all_assets_raw(status: str = "ready") -> list[dict]:
 def update_asset(asset_id: str, **fields: Any) -> None:
     mapping = {"labels": ("labels_json", lambda v: json.dumps(v, ensure_ascii=False)),
                "merged_from": ("merged_from_json", json.dumps),
-               "source": ("source_json", lambda v: json.dumps(v, ensure_ascii=False))}
+               "source": ("source_json", lambda v: json.dumps(v, ensure_ascii=False)),
+               "size_prior": ("size_prior_json", json.dumps)}
     cols, params = [], []
     for k, v in fields.items():
         col, conv = mapping.get(k, (k, lambda x: x))

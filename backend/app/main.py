@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .config import settings
-from .routers import video, photo, sketch, voice, jobs, assets, videos, library, tracks_fix
+from .routers import video, photo, sketch, voice, jobs, assets, videos, library, tracks_fix, annotations, agent, scenes, review_qc, frame_assets, libraries
 
 app = FastAPI(
     title="DreamHome API",
@@ -37,6 +37,17 @@ app.include_router(videos.router)
 app.include_router(library.router)
 # 轨迹手动矫正(配套 /review/fix.html 工作台)
 app.include_router(tracks_fix.router)
+app.include_router(review_qc.router)
+# 视频对照标注(配套 /review/rebuild.html,圈缺失物品)
+app.include_router(annotations.router)
+# 反馈→后台 Claude Code 会话(配套 /review/rebuild.html 视频旁工作流面板)
+app.include_router(agent.router)
+# 场景资产(每视频一份重建布局,rebuild.html ?v= 加载/保存)
+app.include_router(scenes.router)
+# 帧级资产识别+圈选对比(T1/T2,配套 rebuild.html 绿框叠加层)
+app.include_router(frame_assets.router)
+# 专项资产库(窗户/吊顶/地板/光线/窗外景观,T6)
+app.include_router(libraries.router)
 
 
 @app.get("/api/health", tags=["health"])
