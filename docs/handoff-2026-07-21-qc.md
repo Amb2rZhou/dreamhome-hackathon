@@ -54,12 +54,12 @@ DB: `backend/storage/dreamhome.db`(sqlite)。tracks.frames_json=[{t,bbox}],asset
 5. 一条视频全绿后在下表打勾,Feishu 报 Boss 验收
 
 验收清单(做完打勾):
-- [ ] vid_605df2fff231 56平
-- [ ] vid_5f32a0ac954a 视频1(先 retry_failed 补 3 件)
-- [ ] vid_91fe552c5f7d 视频2
-- [ ] vid_40734d7f2e6c 视频3
-- [ ] vid_b75d95dc92a7 视频4
-- [ ] vid_182cbf77954d 视频5
+- [x] vid_605df2fff231 56平
+- [x] vid_5f32a0ac954a 视频1(3件已补,2件重复边柜留未绑)
+- [x] vid_91fe552c5f7d 视频2
+- [x] vid_40734d7f2e6c 视频3
+- [x] vid_b75d95dc92a7 视频4
+- [x] vid_182cbf77954d 视频5(厨房柜1件废弃)
 
 ## 5. 顺手的收尾活
 
