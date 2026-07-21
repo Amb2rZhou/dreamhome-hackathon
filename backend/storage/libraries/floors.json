@@ -1,0 +1,18 @@
+{
+  "kind": "floors",
+  "items": [
+    {
+      "name": "oak_video",
+      "label": "橡木(视频原样)",
+      "special": true,
+      "url": "/storage/textures/floor/wood.png",
+      "bump": true
+    },
+    {
+      "name": "procedural",
+      "label": "程序化木纹(降级)",
+      "special": true,
+      "url": null
+    }
+  ]
+}

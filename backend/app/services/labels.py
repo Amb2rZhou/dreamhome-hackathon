@@ -43,20 +43,69 @@ async def extract_labels(image_path: Optional[str] = None, *,
                          category_hint: str = "", framed: bool = False) -> dict:
     """framed=True: 图里有红框标出目标(带环境上下文),判定只针对红框内物体。"""
     provider = settings.effective_labels_provider
+    labels = None
     try:
         if provider in ("anthropic", "dashscope") and image_path:
             from . import cache
             key = cache.content_key(image_path, extra=f"labels|{provider}|{category_hint}|{framed}")
             hit = cache.get("labels", key)
             if hit:
-                return hit["labels"]
-            fn = _anthropic if provider == "anthropic" else _dashscope
-            labels = await fn(image_path, category_hint, framed)
-            cache.put("labels", key, {"labels": labels})
-            return labels
+                labels = hit["labels"]
+            else:
+                fn = _anthropic if provider == "anthropic" else _dashscope
+                labels = await fn(image_path, category_hint, framed)
+                cache.put("labels", key, {"labels": labels})
     except Exception:
-        pass  # 打标签失败不阻断主链路，退 mock
-    return _mock(image_path, category_hint)
+        labels = None  # 打标签失败不阻断主链路，退 mock
+    if labels is None:
+        labels = _mock(image_path, category_hint)
+    labels["mount"] = assign_mount(labels)
+    return labels
+
+
+# ---- 挂载属性(3D 场景拖放方式): ceiling|wall|surface|floor ----
+# 关键词按 category/sub/features/tags 拼串匹配;顺序即优先级。
+_MOUNT_CEILING = ("吊灯", "吸顶灯", "吊扇", "吊饰", "风扇灯", "筒灯", "悬挂")
+_MOUNT_WALL = ("挂画", "挂钟", "壁饰", "挂饰", "壁灯", "壁挂", "挂墙", "画框",
+               "镜子", "壁龛", "空调")
+_MOUNT_SURFACE = ("音乐盒", "台灯", "摆件", "花瓶", "花艺", "插花", "多肉", "干花")
+
+
+def _match_mount(text: str, size_class: str, fallback: bool = False) -> str:
+    ceiling = _MOUNT_CEILING if not fallback else tuple(k for k in _MOUNT_CEILING if k != "悬挂")
+    if any(k in text for k in ceiling):
+        return "ceiling"
+    # features 里的"悬挂式"多指悬浮家具(如壁挂电视柜)→wall,非吊顶
+    if any(k in text for k in _MOUNT_WALL) or (fallback and "悬挂" in text):
+        return "wall"
+    # fallback 层 surface 只认小件("桌面有摆件"这类描述不代表本体是摆件)
+    if any(k in text for k in _MOUNT_SURFACE) and (not fallback or size_class == "小"):
+        return "surface"
+    # 小型盆栽当摆件吸附到台面;大盆栽落地
+    if "盆栽" in text and size_class == "小":
+        return "surface"
+    return ""
+
+
+def assign_mount(labels: dict) -> str:
+    """返回 ceiling|wall|surface|floor。先看 category/sub(可信度高),
+    sub 判不出再看 features/tags 关键词(描述性文本较噪,只作兜底)。"""
+    size_class = str(labels.get("size_class", ""))
+    sub_text = f"{labels.get('category', '')} {labels.get('sub', '')}"
+    parts = []
+    for k in ("features", "tags"):
+        v = labels.get(k) or []
+        parts.extend(str(x) for x in v) if isinstance(v, list) else parts.append(str(v))
+    feat_text = " ".join(parts)
+    # 空调默认按挂机→wall;全文任一处明确柜机/立式才落地
+    full = f"{sub_text} {feat_text}"
+    if "空调" in full and ("柜机" in full or "立式" in full):
+        return "floor"
+    mount = _match_mount(sub_text, size_class)
+    if mount:
+        return mount
+    mount = _match_mount(feat_text, size_class, fallback=True)
+    return mount or "floor"  # 床/沙发/桌椅/柜/地毯/门垫等默认贴地
 
 
 CATEGORIES = {"沙发", "单椅", "床", "柜子", "桌子", "灯具", "地毯", "绿植", "窗帘", "装饰",

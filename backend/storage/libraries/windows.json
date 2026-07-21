@@ -1,0 +1,53 @@
+{
+  "kind": "windows",
+  "items": [
+    {
+      "name": "grid_window",
+      "label": "普通窗·黑框格栅",
+      "special": true,
+      "style": "grid",
+      "type": "window",
+      "defaults": { "width": 1.2, "height": 1.4, "sill": 0.9 }
+    },
+    {
+      "name": "grid_bay",
+      "label": "飘窗·黑框格栅",
+      "special": true,
+      "style": "grid",
+      "type": "bay",
+      "defaults": { "width": 1.7, "height": 1.95, "sill": 0.45 }
+    },
+    {
+      "name": "grid_floor",
+      "label": "落地窗·黑框格栅",
+      "special": true,
+      "style": "grid",
+      "type": "floor",
+      "defaults": { "width": 2.0, "height": 2.5, "sill": 0 }
+    },
+    {
+      "name": "plain_window",
+      "label": "普通窗·细框简约",
+      "special": true,
+      "style": "plain",
+      "type": "window",
+      "defaults": { "width": 1.2, "height": 1.4, "sill": 0.9 }
+    },
+    {
+      "name": "plain_bay",
+      "label": "飘窗·细框简约",
+      "special": true,
+      "style": "plain",
+      "type": "bay",
+      "defaults": { "width": 1.7, "height": 1.95, "sill": 0.45 }
+    },
+    {
+      "name": "plain_floor",
+      "label": "落地窗·细框简约",
+      "special": true,
+      "style": "plain",
+      "type": "floor",
+      "defaults": { "width": 2.0, "height": 2.5, "sill": 0 }
+    }
+  ]
+}

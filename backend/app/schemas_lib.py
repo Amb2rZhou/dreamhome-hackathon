@@ -2,7 +2,7 @@
 
 bbox 一律归一化 [x, y, w, h]，原点左上。
 """
-from typing import List, Optional
+from typing import List, Optional, Union
 from pydantic import BaseModel, Field
 
 
@@ -15,11 +15,13 @@ class Labels(BaseModel):
     styles: List[str] = Field(default_factory=list)
     features: List[str] = Field(default_factory=list)   # 形态特征：圆弧扶手/细腿/簇绒…
     size_class: str = ""               # 尺寸档：小/中/大
+    mount: str = ""                    # 挂载类型:floor/wall/ceiling/surface(T5,决定场景内拖拽锚定面)
+    special: bool = False              # 专项库资产标记(窗户/吊顶/地板/光线/窗外景观,不进常规资产库)
 
 
 class AssetSource(BaseModel):
     video_id: str = ""
-    track_id: str = ""
+    track_id: Optional[str] = ""       # 手动图生3D的资产可能没有 track,容忍 null
     t_best: float = 0                  # 资产详情页跳原视频的时间点
 
 
@@ -28,7 +30,7 @@ class AssetOut(BaseModel):
     name: str = ""
     space: str = ""
     labels: Labels = Field(default_factory=Labels)
-    size_prior: Optional[List[float]] = None
+    size_prior: Optional[Union[List[float], dict]] = None   # 手动图生3D写的是 {w,h,d} 对象,两种都容忍
     glb_url: str = ""
     thumb_url: str = ""
     source: AssetSource = Field(default_factory=AssetSource)

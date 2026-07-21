@@ -1,0 +1,29 @@
+{
+  "kind": "views",
+  "items": [
+    {
+      "name": "dusk_city",
+      "label": "黄昏城市(视频原样)",
+      "special": true,
+      "url": "/storage/textures/views/dusk_city.png",
+      "raw_url": "/storage/textures/views/raw_dusk_city.jpg",
+      "enhanced": true
+    },
+    {
+      "name": "dusk_sky_raw",
+      "label": "傍晚偏蓝天空(视频原样裁切)",
+      "special": true,
+      "url": "/storage/textures/views/raw_dusk_sky.jpg",
+      "raw_url": "/storage/textures/views/raw_dusk_sky.jpg",
+      "enhanced": false
+    },
+    {
+      "name": "blue_lake",
+      "label": "蓝调山湖(AI生成·备选)",
+      "special": true,
+      "url": "/storage/textures/views/dusk_sky.png",
+      "raw_url": "/storage/textures/views/raw_dusk_sky.jpg",
+      "enhanced": true
+    }
+  ]
+}
