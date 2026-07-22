@@ -523,7 +523,7 @@
         const modelId=modelIdFromPath(item.glb);
         const fallbackModelUrl=staticDemo&&modelId?`${STATIC_DEMO_ROOT}/models/${modelId}.glb`:modelId?`${BACKEND}/api/scenes/model/${modelId}`:new URL(item.glb,BACKEND).href;
         const modelUrl=modelId&&USE_OSS_MODELS?`${OSS_MODEL_ROOT}/${modelId}.glb`:fallbackModelUrl;
-        const sizePrior=sizePriors.get(item.id)||null;
+        const sizePrior=sizePriors.get(item.id)||item.sizePrior||null;
         runtimeAssets.set(item.id,{id:item.id,name:item.name,category:'真实组件',modelUrl,fallbackModelUrl:modelUrl===fallbackModelUrl?'':fallbackModelUrl,dimensions:sizePrior?[sizePrior.w,sizePrior.h,sizePrior.d]:[item.targetW||.7,item.targetW||.7,item.targetW||.7],sizePrior,mount:item.mount||'floor',rawModel:true});
         const scale=Array.isArray(item.scale)?item.scale:[1,1,1];
         return {id:item.id,homeId:`video-${sceneData.video_id}`,assetId:item.id,roomId:room.id,position:{x:item.pos[0],y:item.pos[1],z:item.pos[2]},rotation:{x:0,y:THREE.MathUtils.degToRad(item.rotYDeg||0),z:0},scale:{x:scale[0],y:scale[1],z:scale[2]}};
