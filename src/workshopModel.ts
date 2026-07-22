@@ -10,6 +10,8 @@ export interface WorkshopReadyFurniture {
 
 export interface WorkshopLassoTask {
   source: 'lasso'
+  batchId: string
+  sourceFrame: { videoId: string; time: number }
   id: string
   name: string
   imageUrl: string
@@ -17,6 +19,13 @@ export interface WorkshopLassoTask {
   progress?: number
   resultComponentId?: string
   resultComponent?: LibraryComponent
+}
+
+export interface WorkshopBatchGroup {
+  id: string
+  createdAt: number
+  sourceFrame: { videoId: string; time: number }
+  tasks: WorkshopLassoTask[]
 }
 
 export type WorkshopHomeContext =
@@ -35,6 +44,7 @@ export interface WorkshopData {
   home: WorkshopHomeContext
   readyFurniture: WorkshopReadyFurniture[]
   lassoTasks: WorkshopLassoTask[]
+  batchGroups: WorkshopBatchGroup[]
 }
 
 function taskStatus(job: CraftJob): WorkshopTaskStatus {
@@ -52,10 +62,12 @@ function readyFurniture(components: LibraryComponent[]): WorkshopReadyFurniture[
   }))
 }
 
-function lassoTask(job: CraftJob): WorkshopLassoTask {
+function lassoTask(job: CraftJob, batch: CraftBatch): WorkshopLassoTask {
   const status = taskStatus(job)
   return {
     source: 'lasso',
+    batchId: batch.id,
+    sourceFrame: batch.sourceFrame,
     id: job.id,
     name: job.name,
     imageUrl: job.resultComponent?.sticker || job.snapshot,
@@ -67,24 +79,31 @@ function lassoTask(job: CraftJob): WorkshopLassoTask {
 }
 
 export function workshopFromAppState({
-  batch,
+  batches,
   blogger,
   sharedHomeFurniture,
 }: {
-  batch: CraftBatch | null
+  batches: CraftBatch[]
   blogger: Blogger
   sharedHomeFurniture: LibraryComponent[]
 }): WorkshopData {
-  if (!batch) {
+  if (batches.length === 0) {
     return {
       id: 'workshop-empty',
       home: { type: 'none' },
       readyFurniture: [],
       lassoTasks: [],
+      batchGroups: [],
     }
   }
 
-  const currentReadyFurniture = readyFurniture(batch.publicComponents)
+  const currentReadyFurniture = readyFurniture(batches.flatMap((batch) => batch.publicComponents))
+  const batchGroups = batches.map((batch) => ({
+    id: batch.id,
+    createdAt: batch.createdAt,
+    sourceFrame: batch.sourceFrame,
+    tasks: batch.jobs.map((job) => lassoTask(job, batch)),
+  }))
   const home = blogger.hasHome
     ? {
         type: 'shared' as const,
@@ -97,91 +116,11 @@ export function workshopFromAppState({
     : { type: 'none' as const }
 
   return {
-    id: batch.id,
+    id: batches.map((batch) => batch.id).join('|'),
     home,
     readyFurniture: currentReadyFurniture,
-    lassoTasks: batch.jobs.map(lassoTask),
-  }
-}
-
-const mockJobs = (components: LibraryComponent[]): WorkshopLassoTask[] => {
-  const processing = components[0]
-  const queuedFirst = components[1]
-  const queuedSecond = components[2]
-  const completed = components[3]
-  return [
-    {
-      source: 'lasso',
-      id: 'mock-processing',
-      name: processing?.name ?? '待识别家具',
-      imageUrl: processing?.completedImageUrl ?? processing?.sticker ?? '',
-      status: 'processing',
-      progress: 58,
-    },
-    {
-      source: 'lasso',
-      id: 'mock-queued-1',
-      name: queuedFirst?.name ?? '待识别家具',
-      imageUrl: queuedFirst?.completedImageUrl ?? queuedFirst?.sticker ?? '',
-      status: 'queued',
-      progress: 0,
-    },
-    {
-      source: 'lasso',
-      id: 'mock-queued-2',
-      name: queuedSecond?.name ?? '待识别家具',
-      imageUrl: queuedSecond?.completedImageUrl ?? queuedSecond?.sticker ?? '',
-      status: 'queued',
-      progress: 0,
-    },
-    {
-      source: 'lasso',
-      id: 'mock-completed',
-      name: completed?.name ?? '已完成家具',
-      imageUrl: completed?.completedImageUrl ?? completed?.sticker ?? '',
-      status: 'completed',
-      progress: 100,
-      resultComponentId: completed?.id,
-      resultComponent: completed,
-    },
-  ]
-}
-
-export function createWorkshopMocks({
-  library,
-  homeFurniture,
-  blogger,
-}: {
-  library: LibraryComponent[]
-  homeFurniture: LibraryComponent[]
-  blogger: Blogger
-}): Record<'empty' | 'assets' | 'home', WorkshopData> {
-  return {
-    empty: {
-      id: 'mock-empty',
-      home: { type: 'none' },
-      readyFurniture: [],
-      lassoTasks: [],
-    },
-    assets: {
-      id: 'mock-assets',
-      home: { type: 'none' },
-      readyFurniture: readyFurniture(library),
-      lassoTasks: mockJobs(library),
-    },
-    home: {
-      id: 'mock-home',
-      home: {
-        type: 'shared',
-        id: blogger.id,
-        name: blogger.homeName,
-        subtitle: blogger.homeDesc,
-        layoutId: blogger.homeLayoutId,
-        furniture: readyFurniture(homeFurniture),
-      },
-      readyFurniture: readyFurniture(library),
-      lassoTasks: mockJobs(library),
-    },
+    lassoTasks: batchGroups.flatMap((group) => group.tasks),
+    batchGroups,
   }
 }
 
