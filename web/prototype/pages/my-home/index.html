@@ -370,6 +370,8 @@
     const escapeText = (value) => String(value ?? '').replace(/[&<>"']/g,(char)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
     const shortAssetName = (value,limit=7) => { const name=String(value??'');return name.length>limit?`${name.slice(0,limit)}…`:name; };
     const sceneNameKey = (videoId) => `dreamhome_scene_name_${videoId}`;
+    const sceneProjectKey = (videoId) => `dreamhome_video_project_${videoId}_v1`;
+    const sceneBaselineKey = (videoId) => `dreamhome_video_baseline_${videoId}_v1`;
     const displaySceneName = (scene) => localStorage.getItem(sceneNameKey(scene.video_id))?.trim() || scene.title;
     const uid = (prefix) => `${prefix}-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)}`;
     const now = () => new Date().toISOString();
@@ -384,7 +386,7 @@
     const USE_LOCAL_BACKEND = ['127.0.0.1','localhost'].includes(location.hostname) && QUERY.get('demo')!=='1';
     const normalizeHomeProject = (project) => { if(!project?.id)return null;const template=TEMPLATES.find(item=>item.id===project.source?.templateId);return {...project,realScene:project.realScene||(template?.realScene?clone(template.realScene):undefined),daylight:project.daylight||template?.realScene?.cfg?.light||'day',placements:Array.isArray(project.placements)?project.placements:[],finishes:{floorAssetId:null,wallpaperAssetId:null,...project.finishes}}; };
     function tell(message) { ui.liveRegion.textContent = message; ui.toast.textContent = message; ui.toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => ui.toast.classList.remove('show'), 1800); }
-    function saveSoon() { if (state.project?.source?.type === 'video_rebuild') { ui.editorHomeMeta.textContent='本次体验中的调整'; return; } state.dirty = true; clearTimeout(saveTimer); saveTimer = setTimeout(() => { if (state.project) { homeSceneService.saveProject(state.project); state.dirty = false; ui.editorHomeMeta.textContent = '3D 布局已保存'; } }, 360); ui.editorHomeMeta.textContent = '正在保存布局'; }
+    function saveSoon() { state.dirty = true; clearTimeout(saveTimer); saveTimer = setTimeout(() => { if (state.project) { if(state.project.source?.type==='video_rebuild')localStorage.setItem(sceneProjectKey(state.project.source.videoId),JSON.stringify({...state.project,updatedAt:now()}));else homeSceneService.saveProject(state.project); state.dirty = false; ui.editorHomeMeta.textContent = '3D 布局已保存'; } }, 360); ui.editorHomeMeta.textContent = '正在保存布局'; }
 
     const MockHomeSceneService = {
       async submitHomeGeneration({templateId, drawingFile}) { return { id: uid('job'), templateId: templateId || 'two-one', drawingName: drawingFile?.name || null, startedAt: Date.now() }; },
@@ -528,7 +530,10 @@
         const scale=Array.isArray(item.scale)?item.scale:[1,1,1];
         return {id:item.id,homeId:`video-${sceneData.video_id}`,assetId:item.id,roomId:room.id,position:{x:item.pos[0],y:item.pos[1],z:item.pos[2]},rotation:{x:0,y:THREE.MathUtils.degToRad(item.rotYDeg||0),z:0},scale:{x:scale[0],y:scale[1],z:scale[2]}};
       });
-      return {schemaVersion:3,id:`video-${sceneData.video_id}`,name:localStorage.getItem(sceneNameKey(sceneData.video_id))?.trim()||sceneData.title,source:{type:'video_rebuild',videoId:sceneData.video_id},realScene:{room:sceneData.room,balcony:sceneData.balcony||null,extras:sceneData.extras||[],cfg:sceneData.cfg||{windows:[]}},envelope:{width:sceneData.room.w,depth:sceneData.room.d},walls,rooms:[room],windowSlots:[],placements,finishes:{floorAssetId:null,wallpaperAssetId:null},daylight:sceneData.cfg?.light||'dusk'};
+      const baseline={schemaVersion:3,id:`video-${sceneData.video_id}`,name:localStorage.getItem(sceneNameKey(sceneData.video_id))?.trim()||sceneData.title,source:{type:'video_rebuild',videoId:sceneData.video_id},realScene:{room:sceneData.room,balcony:sceneData.balcony||null,extras:sceneData.extras||[],cfg:sceneData.cfg||{windows:[]}},envelope:{width:sceneData.room.w,depth:sceneData.room.d},walls,rooms:[room],windowSlots:[],placements,finishes:{floorAssetId:null,wallpaperAssetId:null},daylight:sceneData.cfg?.light||'dusk'};
+      if(!localStorage.getItem(sceneBaselineKey(sceneData.video_id)))localStorage.setItem(sceneBaselineKey(sceneData.video_id),JSON.stringify({...baseline,createdAt:now()}));
+      try{const saved=JSON.parse(localStorage.getItem(sceneProjectKey(sceneData.video_id))||'null');if(saved?.source?.videoId===sceneData.video_id&&Array.isArray(saved.placements))return normalizeHomeProject({...baseline,...saved,id:baseline.id,source:baseline.source,realScene:baseline.realScene,envelope:baseline.envelope,walls:baseline.walls,rooms:baseline.rooms});}catch{}
+      return baseline;
     }
     async function openVideoScene(videoId, title='视频户型重建') {
       disposeScene();
