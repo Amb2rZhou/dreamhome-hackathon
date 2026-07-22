@@ -25,10 +25,12 @@ export const FURNITURE_CATEGORIES = [
 const asset = (id, kind, name, options = {}) => ({ id, kind, name, source: 'platform', ...options });
 
 export const COMPONENT_ASSETS = [
-  asset('floorplan-one-one', 'floorplan', '一室一厅', { templateId: 'one-one', thumbnail: 'plan-one', supported: true }),
-  asset('floorplan-two-one', 'floorplan', '两室一厅', { templateId: 'two-one', thumbnail: 'plan-two', supported: true }),
-  asset('floorplan-three-two', 'floorplan', '三室两厅', { templateId: 'three-two', thumbnail: 'plan-three', supported: true }),
-  asset('floorplan-courtyard', 'floorplan', '庭院平层', { templateId: 'courtyard', thumbnail: 'plan-courtyard', supported: false }),
+  asset('floorplan-wide-living', 'floorplan', '横厅客厅', { templateId: 'wide-living', supported: true, previewImage:'../../assets/scenes/templates/wide-living.png?v=3', planPreview:{ path:'M8 18H92V82H8Z', dividers:[[58,18,58,82]], windows:[[25,18,75,18]] } }),
+  asset('floorplan-long-living', 'floorplan', '窄长客厅', { templateId: 'long-living', supported: true, previewImage:'../../assets/scenes/templates/long-living.png?v=2', planPreview:{ path:'M27 7H73V93H27Z', dividers:[[27,61,73,61]], windows:[[73,22,73,48],[43,93,59,93]] } }),
+  asset('floorplan-square-lounge', 'floorplan', '方形会客厅', { templateId: 'square-lounge', supported: true, previewImage:'../../assets/scenes/templates/square-lounge.png?v=2', planPreview:{ path:'M14 14H86V86H14Z', dividers:[[50,14,50,48],[14,48,86,48]], windows:[[27,14,45,14],[14,59,14,77]] } }),
+  asset('floorplan-l-living', 'floorplan', 'L形客厅', { templateId: 'l-living', supported: true, previewImage:'../../assets/scenes/templates/l-living.png?v=2', planPreview:{ path:'M10 12H58V38H90V88H10Z', dividers:[[58,38,58,64]], windows:[[23,12,43,12],[90,51,90,72]] } }),
+  asset('floorplan-bay-bedroom', 'floorplan', '飘窗卧室', { templateId: 'bay-bedroom', supported: true, previewImage:'../../assets/scenes/templates/bay-bedroom.png?v=2', planPreview:{ path:'M13 20H34V11H66V20H87V85H13Z', dividers:[[13,58,87,58]], windows:[[36,11,64,11]] } }),
+  asset('floorplan-corner-bedroom', 'floorplan', '转角卧室', { templateId: 'corner-bedroom', supported: true, previewImage:'../../assets/scenes/templates/corner-bedroom.png?v=2', planPreview:{ path:'M10 18H90V84H10Z', dividers:[[62,18,62,84]], windows:[[10,35,10,58],[67,84,84,84]] } }),
   asset('floor-oak', 'floor', '原木浅橡', { finish: { color: '#cfae7f', accent: '#ad895b', pattern: 'grain' } }),
   asset('floor-terrazzo', 'floor', '暖白水磨石', { finish: { color: '#ded9cb', accent: '#a9afa5', pattern: 'speckle' } }),
   asset('floor-walnut', 'floor', '胡桃木拼花', { finish: { color: '#835d42', accent: '#b58764', pattern: 'parquet' } }),
@@ -169,3 +171,49 @@ export function toggleFavorite(id) {
 export function isSupportedFloorplan(asset) {
   return asset?.kind === 'floorplan' && asset.supported === true;
 }
+
+// ===== 后端真实资产同步(联调注入,主会话添加) =====
+// 启动时从 DreamHome 后端拉取视频产线的真实资产(GLB),映射为前端 furniture 资产并自动收藏,
+// 使其出现在灵感库与「我的家」抽屉里。后端未启动时静默跳过,页面照常用 mock 数据。
+const BACKEND = 'http://127.0.0.1:8000';
+const CAT_MAP = { '沙发':'sofa', '单椅':'seating', '床':'bed', '桌子':'table', '柜子':'cabinet',
+                  '灯具':'lighting', '装饰':'decor', '地毯':'decor', '绿植':'decor',
+                  '家电':'decor', '卫浴':'bathroom', '其他':'decor' };
+const PRIM_MAP = { sofa:'sofa', seating:'chair', bed:'bed', table:'table', cabinet:'cabinet',
+                   lighting:'lamp', decor:'plant', bathroom:'cabinet' };
+export async function syncBackendAssets() {
+  try {
+    const r = await fetch(`${BACKEND}/api/assets?exclude_special=true`);
+    if (!r.ok) return 0;
+    const list = await r.json();
+    const mapped = list.filter((a) => a.status === 'ready' && a.glb_url).map((a) => {
+      const category = CAT_MAP[(a.labels || {}).category] || 'decor';
+      const sp = a.size_prior;
+      const dims = sp && sp.w ? [sp.w, sp.h, sp.d]
+        : (Array.isArray(sp) && sp.length === 3 ? sp : [0.7, 0.7, 0.7]);
+      return {
+        id: a.asset_id, kind: 'furniture', name: a.name, source: 'user', visibility: 'public',
+        category, primitive: PRIM_MAP[category] || 'cabinet',
+        color: '#c9b18f', accent: '#e8dcc8',
+        dimensions: dims, sizePrior: sp && sp.w ? sp : null, rawModel: true,
+        modelUrl: a.glb_url?.startsWith('/') ? `${BACKEND}${a.glb_url}` : a.glb_url,
+        thumbnail: a.thumb_url?.startsWith('/') ? `${BACKEND}${a.thumb_url}` : (a.thumb_url || ''),
+        sourceType: 'video_selection',
+        mount: (a.labels || {}).mount || 'floor',
+      };
+    });
+    if (!mapped.length) return 0;
+    // 合并进用户资产存储(同 id 覆盖),并自动收藏使其进「我的家」抽屉
+    const existing = getUserAssets().filter((i) => !mapped.some((m) => m.id === i.id));
+    setUserAssets(existing.concat(mapped));
+    const fav = getFavorites();
+    mapped.forEach((m) => fav.add(m.id));
+    setFavorites(fav);
+    console.log(`[backend-sync] 已同步 ${mapped.length} 件真实资产(GLB)进资产库`);
+    return mapped.length;
+  } catch (e) {
+    console.log('[backend-sync] 后端未启动或不可达,使用 mock 资产', e.message);
+    return 0;
+  }
+}
+syncBackendAssets();
