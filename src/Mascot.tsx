@@ -43,16 +43,19 @@ export type CollectionMascotMode = 'none' | 'collecting' | 'ready' | 'receiving'
 
 const IDLE_ACCENT_DELAY = 10_000
 const WORK_ACCENT_DELAY = 2_500
+const MOTION_ASSET_ROOT = '/prototype/assets/mascot/motion'
 // 统一角色脚底基线；各段素材的轻微视觉差异在这里校准，不需要重新导出。
 const MOTIONS: Record<MotionName, MotionClip> = {
-  coldStart: { src: '/mascot-motion/cold-start.mov', loop: false, scale: 1, x: 0, y: 0 },
-  idle: { src: '/mascot-motion/idle.mov', loop: true, scale: 1, x: 0, y: 0 },
-  idleMagnifier: { src: '/mascot-motion/idle-magnifier.mov', loop: false, scale: 0.98, x: 1, y: 1 },
-  idleBelt: { src: '/mascot-motion/idle-belt.mov', loop: false, scale: 1.02, x: -1, y: 0 },
-  working: { src: '/mascot-motion/working.mov', loop: true, scale: 1, x: 0, y: 0 },
-  workingHammer: { src: '/mascot-motion/working-hammer.mov', loop: false, scale: 0.96, x: 1, y: 1 },
-  workingDrawing: { src: '/mascot-motion/working-drawing.mov', loop: false, scale: 0.96, x: 0, y: 1 },
-  complete: { src: '/mascot-motion/complete.mov', loop: true, scale: 0.98, x: 0, y: 1 },
+  // GitHub 中可跨浏览器播放的动态素材统一使用 WebM；原先引用的 idle/cold-start
+  // MOV 文件并未上传，导致首页一进入就回退到旧静态 PNG。
+  coldStart: { src: `${MOTION_ASSET_ROOT}/assembly-loading.webm`, loop: false, scale: 1, x: 0, y: 0 },
+  idle: { src: `${MOTION_ASSET_ROOT}/assembly-loading.webm`, loop: true, scale: 1, x: 0, y: 0 },
+  idleMagnifier: { src: `${MOTION_ASSET_ROOT}/working-drawing.webm`, loop: false, scale: 0.98, x: 1, y: 1 },
+  idleBelt: { src: `${MOTION_ASSET_ROOT}/working-hammer.webm`, loop: false, scale: 1.02, x: -1, y: 0 },
+  working: { src: `${MOTION_ASSET_ROOT}/assembly-loading.webm`, loop: true, scale: 1, x: 0, y: 0 },
+  workingHammer: { src: `${MOTION_ASSET_ROOT}/working-hammer.webm`, loop: false, scale: 0.96, x: 1, y: 1 },
+  workingDrawing: { src: `${MOTION_ASSET_ROOT}/working-drawing.webm`, loop: false, scale: 0.96, x: 0, y: 1 },
+  complete: { src: `${MOTION_ASSET_ROOT}/assembly-loading.webm`, loop: true, scale: 0.98, x: 0, y: 1 },
 }
 
 const FALLBACK_IMG: Record<MascotState, string> = {
@@ -403,7 +406,7 @@ export function Mascot({
           <>
             {motionView.previous && previousClip && (
               <BlackKeyVideo
-                key={previousClip.src}
+                key={`outgoing-${motionView.previous}-${previousClip.src}`}
                 className="mascot-motion-layer mascot-motion-layer--outgoing"
                 src={previousClip.src}
                 loop={previousClip.loop}
@@ -417,7 +420,7 @@ export function Mascot({
               />
             )}
             <BlackKeyVideo
-              key={clip.src}
+              key={`incoming-${motion}-${clip.src}`}
               className="mascot-motion-layer mascot-motion-layer--incoming"
               src={clip.src}
               loop={clip.loop}
