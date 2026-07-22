@@ -115,7 +115,9 @@ const amberFeedVideo = (
   overrides: Partial<Omit<FeedVideo, 'id' | 'src' | 'source'>> = {},
 ): FeedVideo => ({
   id,
-  src: `/videos/amber/${id}.mp4`,
+  // The eight Douyin source videos are versioned with the static prototype.
+  // Keep the feed pointed at that canonical GitHub/Vercel asset location.
+  src: `/prototype/assets/videos/${id}.mp4`,
   author: '@家居灵感研究所',
   caption: `家装灵感实拍 ${ordinal} · 把喜欢的家具圈进小工坊`,
   music: '原声 - Amber 家装灵感视频',
