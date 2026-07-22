@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_9c5579b81c97",
+  "video_id": "vid_182cbf77954d",
+  "appearances": [
+    {
+      "start_sec": 17.0,
+      "end_sec": 18.0,
+      "representative_sec": 18.0
+    }
+  ],
+  "name": "吧台",
+  "space": "",
+  "type": {
+    "category": "桌子",
+    "subcategory": "吧台"
+  },
+  "labels": {
+    "category": "桌子",
+    "sub": "吧台",
+    "colors": [
+      "黑色",
+      "银色"
+    ],
+    "materials": [
+      "金属",
+      "石材"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "带水槽",
+      "嵌入式龙头",
+      "长条形",
+      "台面光滑"
+    ],
+    "size_class": "中",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.5004035234451294,
+      -0.21006368100643158,
+      -0.18341206014156342
+    ],
+    "bounds_max": [
+      0.5000848770141602,
+      0.213134765625,
+      0.18883661925792694
+    ],
+    "dimensions_model_unit": [
+      1.0004884004592896,
+      0.4231984466314316,
+      0.37224867939949036
+    ],
+    "center": [
+      -0.00015932321548461914,
+      0.0015355423092842102,
+      0.0027122795581817627
+    ],
+    "vertex_count": 7399,
+    "triangle_count": 11820,
+    "collision": {
+      "type": "box",
+      "center": [
+        -0.00015932321548461914,
+        0.0015355423092842102,
+        0.0027122795581817627
+      ],
+      "dimensions": [
+        1.0004884004592896,
+        0.4231984466314316,
+        0.37224867939949036
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.21006368100643158,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.162679+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_9c5579b81c97/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 6119,
+      "sha256": "6fd3bc987938f40fca17366a5b26e09cab9a65e1bcd371565084e139a2406c6c",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_9c5579b81c97/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 7159,
+      "sha256": "dc471f6b9c7b863fd0120d059abec3e07670f45f4aa306f8684f937e666480fa"
+    },
+    "completed_input": {
+      "path": "assets/ast_9c5579b81c97/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1384219,
+      "sha256": "f21d32a6aef4a117f5abf49bf6189db82aedd85b687f274ce26d5679c32fc507",
+      "width_px": 990,
+      "height_px": 1057
+    },
+    "model_3d": {
+      "path": "assets/ast_9c5579b81c97/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1268052,
+      "sha256": "387b9a1e1444aff788910b4c6043898070dad1d348c93e7bb8afa7cd4e9bf2b3"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T12:29:30.343207+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-20T18:35:27.475806+00:00"
+}

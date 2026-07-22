@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_f090666d70fe",
+  "video_id": "vid_5f32a0ac954a",
+  "appearances": [
+    {
+      "start_sec": 4.5,
+      "end_sec": 7.0,
+      "representative_sec": 5.5
+    },
+    {
+      "start_sec": 9.0,
+      "end_sec": 10.0,
+      "representative_sec": 9.0
+    }
+  ],
+  "name": "坐垫",
+  "space": "",
+  "type": {
+    "category": "单椅",
+    "subcategory": "坐垫"
+  },
+  "labels": {
+    "category": "单椅",
+    "sub": "坐垫",
+    "colors": [
+      "红色",
+      "白色"
+    ],
+    "materials": [
+      "布艺"
+    ],
+    "styles": [
+      "卡通"
+    ],
+    "features": [
+      "圆形",
+      "带斑点",
+      "拟人化设计"
+    ],
+    "size_class": "小",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.48923519253730774,
+      -0.38171300292015076,
+      -0.4994887411594391
+    ],
+    "bounds_max": [
+      0.4964182674884796,
+      0.38300034403800964,
+      0.49980422854423523
+    ],
+    "dimensions_model_unit": [
+      0.9856534600257874,
+      0.7647133469581604,
+      0.9992929697036743
+    ],
+    "center": [
+      0.0035915374755859375,
+      0.0006436705589294434,
+      0.0001577436923980713
+    ],
+    "vertex_count": 14155,
+    "triangle_count": 24590,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.0035915374755859375,
+        0.0006436705589294434,
+        0.0001577436923980713
+      ],
+      "dimensions": [
+        0.9856534600257874,
+        0.7647133469581604,
+        0.9992929697036743
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.38171300292015076,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.185451+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_f090666d70fe/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 19279,
+      "sha256": "5e6051cf2acd553fa58c36aa5f4357603df320a2b6246cc5feeef197b436e301",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_f090666d70fe/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 8445,
+      "sha256": "f6a01edb2f7216c7508f91e9954bf40da4c26e9720bb48cdc1238d291ac1dc69"
+    },
+    "completed_input": {
+      "path": "assets/ast_f090666d70fe/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1364545,
+      "sha256": "cbfe1e58526a9f55c4a17d1318ac90d7395207d22f1974d8a29dcfbdce13d803",
+      "width_px": 768,
+      "height_px": 1454
+    },
+    "model_3d": {
+      "path": "assets/ast_f090666d70fe/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1593168,
+      "sha256": "895beb14ffceb5ba1f1f6cdb6f300a598e759beff8a7583c37a200fd894fb608"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T14:36:07.819434+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-20T16:58:52.096105+00:00"
+}

@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_066a09702c58",
+  "video_id": "vid_5c7efd168eb7",
+  "appearances": [
+    {
+      "start_sec": 24.5,
+      "end_sec": 25.5,
+      "representative_sec": 25.0
+    }
+  ],
+  "name": "挂画",
+  "space": "",
+  "type": {
+    "category": "装饰",
+    "subcategory": "挂画"
+  },
+  "labels": {
+    "category": "装饰",
+    "sub": "挂画",
+    "colors": [
+      "米色",
+      "棕色",
+      "黑色"
+    ],
+    "materials": [
+      "画布",
+      "木质画框"
+    ],
+    "styles": [
+      "复古"
+    ],
+    "features": [
+      "帆网图案",
+      "竖条支撑结构",
+      "自然风景主题",
+      "单幅装裱"
+    ],
+    "size_class": "中"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.500618577003479,
+      -0.33825698494911194,
+      -0.016343936324119568
+    ],
+    "bounds_max": [
+      0.4999940097332001,
+      0.32899948954582214,
+      0.01576622948050499
+    ],
+    "dimensions_model_unit": [
+      1.000612586736679,
+      0.6672564744949341,
+      0.03211016580462456
+    ],
+    "center": [
+      -0.00031228363513946533,
+      -0.0046287477016448975,
+      -0.0002888534218072891
+    ],
+    "vertex_count": 6835,
+    "triangle_count": 9712,
+    "collision": {
+      "type": "box",
+      "center": [
+        -0.00031228363513946533,
+        -0.0046287477016448975,
+        -0.0002888534218072891
+      ],
+      "dimensions": [
+        1.000612586736679,
+        0.6672564744949341,
+        0.03211016580462456
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.33825698494911194,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.214706+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_066a09702c58/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 96218,
+      "sha256": "1ad42d90f73d66224aca9600845ae9b165ad9a494cd3da6b560df17d07269af2",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_066a09702c58/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 37858,
+      "sha256": "e232841c860bd1262cf58cb330e84a05d9bd820a7c01c0bf810120166c821cfd"
+    },
+    "completed_input": {
+      "path": "assets/ast_066a09702c58/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 5745925,
+      "sha256": "7a2d6b4e995af1c109965271aedeffca5cef67875071b7a78489d895bbe59116",
+      "width_px": 1935,
+      "height_px": 2167
+    },
+    "model_3d": {
+      "path": "assets/ast_066a09702c58/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1464812,
+      "sha256": "ecff3d33dce5d5c6d4b57a030bcef5cb5a5d0b60e8e6ebe9c8c21469c77aa87d"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T15:45:02.184114+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-16T17:41:36.078305+00:00"
+}

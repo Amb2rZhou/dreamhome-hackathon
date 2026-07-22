@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_a4807b023418",
+  "video_id": "vid_182cbf77954d",
+  "appearances": [
+    {
+      "start_sec": 37.0,
+      "end_sec": 39.5,
+      "representative_sec": 39.5
+    }
+  ],
+  "name": "镜子",
+  "space": "",
+  "type": {
+    "category": "装饰",
+    "subcategory": "镜子"
+  },
+  "labels": {
+    "category": "装饰",
+    "sub": "镜子",
+    "colors": [
+      "金色"
+    ],
+    "materials": [
+      "金属",
+      "玻璃"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "竖长形",
+      "边框装饰"
+    ],
+    "size_class": "大",
+    "complete": true,
+    "mount": "wall"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.33053117990493774,
+      -0.5006235241889954,
+      -0.18163080513477325
+    ],
+    "bounds_max": [
+      0.33019939064979553,
+      0.49992936849594116,
+      0.18187913298606873
+    ],
+    "dimensions_model_unit": [
+      0.6607305705547333,
+      1.0005528926849365,
+      0.363509938120842
+    ],
+    "center": [
+      -0.00016589462757110596,
+      -0.0003470778465270996,
+      0.0001241639256477356
+    ],
+    "vertex_count": 16282,
+    "triangle_count": 27351,
+    "collision": {
+      "type": "box",
+      "center": [
+        -0.00016589462757110596,
+        -0.0003470778465270996,
+        0.0001241639256477356
+      ],
+      "dimensions": [
+        0.6607305705547333,
+        1.0005528926849365,
+        0.363509938120842
+      ]
+    },
+    "anchor": {
+      "surface": "wall",
+      "point": [
+        0,
+        -0.0003470778465270996,
+        -0.18163080513477325
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.163480+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_a4807b023418/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 8230,
+      "sha256": "98ffa8f711e5d1db0dbc30d97a61f78367ffd1b2d731884674ba3a352c972893",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_a4807b023418/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 5753,
+      "sha256": "dba13b668d16fb45f4a8420da3e6b35a8369a9693334c819cd273f4de3969899"
+    },
+    "completed_input": {
+      "path": "assets/ast_a4807b023418/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1934308,
+      "sha256": "014007cd4957c6f860b007f664de04f20279b120e41dcfb471d53f6db5d02ea2",
+      "width_px": 768,
+      "height_px": 1406
+    },
+    "model_3d": {
+      "path": "assets/ast_a4807b023418/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1630872,
+      "sha256": "3e593ff783a013804b75977694eee48604a564497cdd3738c27c70c6dc6e8ef0"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T12:31:03.945486+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-20T18:33:04.026575+00:00"
+}

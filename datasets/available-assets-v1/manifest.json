@@ -1,0 +1,1340 @@
+{
+  "schema_version": 1,
+  "dataset_id": "available-assets-v1",
+  "generated_at": "2026-07-22T17:09:23.098449+00:00",
+  "completeness_policy": {
+    "status": "ready",
+    "human_review": "pass for video assets; not required for offline_photo assets",
+    "physical_size_m": "included when known; null dimensions plus size_status=missing otherwise",
+    "video_id": "required for video assets; null for offline_photo assets",
+    "appearance_interval": "at least one non-zero interval for video assets; empty for offline_photo assets",
+    "completed_input": "required local file with SHA-256",
+    "model_3d": "required local GLB with SHA-256",
+    "geometry": "required parsed GLB metadata",
+    "track_ids_exposed": false,
+    "source_provenance": "offline_photo assets use source.type=offline_photo and label=线下拍照生成"
+  },
+  "asset_count": 169,
+  "size_known_count": 7,
+  "size_missing_count": 162,
+  "video_count": 8,
+  "assets": [
+    {
+      "asset_id": "ast_002889f330aa",
+      "name": "悬挂绿植",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_002889f330aa/asset.json"
+    },
+    {
+      "asset_id": "ast_00e00df1bfeb",
+      "name": "办公椅",
+      "video_id": "vid_40734d7f2e6c",
+      "size_status": "known",
+      "record": "assets/ast_00e00df1bfeb/asset.json"
+    },
+    {
+      "asset_id": "ast_047e5f3f4bbc",
+      "name": "吊灯",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_047e5f3f4bbc/asset.json"
+    },
+    {
+      "asset_id": "ast_0594b3591b5a",
+      "name": "挂饰",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_0594b3591b5a/asset.json"
+    },
+    {
+      "asset_id": "ast_066240429d81",
+      "name": "盆栽植物",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_066240429d81/asset.json"
+    },
+    {
+      "asset_id": "ast_066a09702c58",
+      "name": "挂画",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_066a09702c58/asset.json"
+    },
+    {
+      "asset_id": "ast_06c83d58cb62",
+      "name": "胡桃木双层宠物窝边几",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_06c83d58cb62/asset.json"
+    },
+    {
+      "asset_id": "ast_07ad0c3cef0c",
+      "name": "凳子",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_07ad0c3cef0c/asset.json"
+    },
+    {
+      "asset_id": "ast_09f5ed9678b1",
+      "name": "挂画",
+      "video_id": "vid_40734d7f2e6c",
+      "size_status": "known",
+      "record": "assets/ast_09f5ed9678b1/asset.json"
+    },
+    {
+      "asset_id": "ast_0a006f1f3c2d",
+      "name": "吊灯",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_0a006f1f3c2d/asset.json"
+    },
+    {
+      "asset_id": "ast_0b091395b9c2",
+      "name": "盆栽",
+      "video_id": "vid_91fe552c5f7d",
+      "size_status": "missing",
+      "record": "assets/ast_0b091395b9c2/asset.json"
+    },
+    {
+      "asset_id": "ast_0c40e643ff23",
+      "name": "边柜",
+      "video_id": "vid_5f32a0ac954a",
+      "size_status": "missing",
+      "record": "assets/ast_0c40e643ff23/asset.json"
+    },
+    {
+      "asset_id": "ast_0dfe071baec6",
+      "name": "洗衣机",
+      "video_id": "vid_605df2fff231",
+      "size_status": "missing",
+      "record": "assets/ast_0dfe071baec6/asset.json"
+    },
+    {
+      "asset_id": "ast_108a3cf096de",
+      "name": "吊灯",
+      "video_id": "vid_605df2fff231",
+      "size_status": "missing",
+      "record": "assets/ast_108a3cf096de/asset.json"
+    },
+    {
+      "asset_id": "ast_12910011860f",
+      "name": "盆栽植物",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_12910011860f/asset.json"
+    },
+    {
+      "asset_id": "ast_12e8c8bee10d",
+      "name": "悬挂绿植",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_12e8c8bee10d/asset.json"
+    },
+    {
+      "asset_id": "ast_1d5625a52638",
+      "name": "边柜",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_1d5625a52638/asset.json"
+    },
+    {
+      "asset_id": "ast_1ddb5e7e233c",
+      "name": "储物床",
+      "video_id": "vid_91fe552c5f7d",
+      "size_status": "missing",
+      "record": "assets/ast_1ddb5e7e233c/asset.json"
+    },
+    {
+      "asset_id": "ast_200d07a11612",
+      "name": "边柜",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_200d07a11612/asset.json"
+    },
+    {
+      "asset_id": "ast_2044e3063585",
+      "name": "餐桌",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_2044e3063585/asset.json"
+    },
+    {
+      "asset_id": "ast_22654404df94",
+      "name": "茶几",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_22654404df94/asset.json"
+    },
+    {
+      "asset_id": "ast_22cf0d15bedd",
+      "name": "双人床",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_22cf0d15bedd/asset.json"
+    },
+    {
+      "asset_id": "ast_23dd1b781087",
+      "name": "白色立式空调",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_23dd1b781087/asset.json"
+    },
+    {
+      "asset_id": "ast_251c115561c7",
+      "name": "花艺摆件",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_251c115561c7/asset.json"
+    },
+    {
+      "asset_id": "ast_255fdfcd9c44",
+      "name": "吊灯",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_255fdfcd9c44/asset.json"
+    },
+    {
+      "asset_id": "ast_26add72bff83",
+      "name": "盆栽植物",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_26add72bff83/asset.json"
+    },
+    {
+      "asset_id": "ast_279a3b8e3809",
+      "name": "电视柜",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_279a3b8e3809/asset.json"
+    },
+    {
+      "asset_id": "ast_2baa861742c3",
+      "name": "吊灯",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_2baa861742c3/asset.json"
+    },
+    {
+      "asset_id": "ast_2c9b8fa14140",
+      "name": "落地扇",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_2c9b8fa14140/asset.json"
+    },
+    {
+      "asset_id": "ast_2e0f65b42cfc",
+      "name": "电视",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_2e0f65b42cfc/asset.json"
+    },
+    {
+      "asset_id": "ast_2e37968e66b8",
+      "name": "编织地毯",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_2e37968e66b8/asset.json"
+    },
+    {
+      "asset_id": "ast_3141d754dd57",
+      "name": "波斯地毯",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_3141d754dd57/asset.json"
+    },
+    {
+      "asset_id": "ast_314af305efe6",
+      "name": "边柜",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_314af305efe6/asset.json"
+    },
+    {
+      "asset_id": "ast_31c15251a859",
+      "name": "干花摆件",
+      "video_id": "vid_605df2fff231",
+      "size_status": "missing",
+      "record": "assets/ast_31c15251a859/asset.json"
+    },
+    {
+      "asset_id": "ast_3323727dd208",
+      "name": "吊灯",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_3323727dd208/asset.json"
+    },
+    {
+      "asset_id": "ast_365d3a551e24",
+      "name": "餐椅",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_365d3a551e24/asset.json"
+    },
+    {
+      "asset_id": "ast_390a0d12583c",
+      "name": "扶手椅",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_390a0d12583c/asset.json"
+    },
+    {
+      "asset_id": "ast_3ae34f96cd4e",
+      "name": "盆栽植物",
+      "video_id": "vid_91fe552c5f7d",
+      "size_status": "missing",
+      "record": "assets/ast_3ae34f96cd4e/asset.json"
+    },
+    {
+      "asset_id": "ast_3d31fe60ee00",
+      "name": "奶油白人体工学办公椅",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_3d31fe60ee00/asset.json"
+    },
+    {
+      "asset_id": "ast_3db63d01c4b9",
+      "name": "盆栽植物",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_3db63d01c4b9/asset.json"
+    },
+    {
+      "asset_id": "ast_3ff4abe05c99",
+      "name": "边柜",
+      "video_id": "vid_605df2fff231",
+      "size_status": "missing",
+      "record": "assets/ast_3ff4abe05c99/asset.json"
+    },
+    {
+      "asset_id": "ast_40ae0466aba8",
+      "name": "三人沙发",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_40ae0466aba8/asset.json"
+    },
+    {
+      "asset_id": "ast_42a4923c5286",
+      "name": "盆栽植物",
+      "video_id": "vid_91fe552c5f7d",
+      "size_status": "missing",
+      "record": "assets/ast_42a4923c5286/asset.json"
+    },
+    {
+      "asset_id": "ast_43bc7ba471cf",
+      "name": "储物床",
+      "video_id": "vid_605df2fff231",
+      "size_status": "missing",
+      "record": "assets/ast_43bc7ba471cf/asset.json"
+    },
+    {
+      "asset_id": "ast_4455b63b1e0b",
+      "name": "玻璃罩摆件",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_4455b63b1e0b/asset.json"
+    },
+    {
+      "asset_id": "ast_45226bd63340",
+      "name": "音乐盒",
+      "video_id": "vid_40734d7f2e6c",
+      "size_status": "known",
+      "record": "assets/ast_45226bd63340/asset.json"
+    },
+    {
+      "asset_id": "ast_47005d5bb062",
+      "name": "美式深色实木双联书柜",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_47005d5bb062/asset.json"
+    },
+    {
+      "asset_id": "ast_47483320f59c",
+      "name": "洗衣机",
+      "video_id": "vid_605df2fff231",
+      "size_status": "missing",
+      "record": "assets/ast_47483320f59c/asset.json"
+    },
+    {
+      "asset_id": "ast_486bad7aa5ab",
+      "name": "吊灯",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_486bad7aa5ab/asset.json"
+    },
+    {
+      "asset_id": "ast_49b16f2d03ab",
+      "name": "吊灯",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_49b16f2d03ab/asset.json"
+    },
+    {
+      "asset_id": "ast_4a6964d61395",
+      "name": "编织地毯",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_4a6964d61395/asset.json"
+    },
+    {
+      "asset_id": "ast_4aec4a8b4da8",
+      "name": "盆栽植物",
+      "video_id": "vid_91fe552c5f7d",
+      "size_status": "missing",
+      "record": "assets/ast_4aec4a8b4da8/asset.json"
+    },
+    {
+      "asset_id": "ast_4bdfae0538e5",
+      "name": "长方形地毯",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_4bdfae0538e5/asset.json"
+    },
+    {
+      "asset_id": "ast_4d362c616d1d",
+      "name": "吊灯",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_4d362c616d1d/asset.json"
+    },
+    {
+      "asset_id": "ast_4e1531addf4a",
+      "name": "花瓶",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_4e1531addf4a/asset.json"
+    },
+    {
+      "asset_id": "ast_4fb74f9d26fa",
+      "name": "吧台椅",
+      "video_id": "vid_5f32a0ac954a",
+      "size_status": "missing",
+      "record": "assets/ast_4fb74f9d26fa/asset.json"
+    },
+    {
+      "asset_id": "ast_5229f072c636",
+      "name": "卡通图案地毯",
+      "video_id": "vid_5f32a0ac954a",
+      "size_status": "missing",
+      "record": "assets/ast_5229f072c636/asset.json"
+    },
+    {
+      "asset_id": "ast_526f65606601",
+      "name": "绿色软包波浪高靠背木床",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_526f65606601/asset.json"
+    },
+    {
+      "asset_id": "ast_55361e0c8415",
+      "name": "盆栽植物",
+      "video_id": "vid_91fe552c5f7d",
+      "size_status": "missing",
+      "record": "assets/ast_55361e0c8415/asset.json"
+    },
+    {
+      "asset_id": "ast_55d33aa2ab71",
+      "name": "长方形地毯",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_55d33aa2ab71/asset.json"
+    },
+    {
+      "asset_id": "ast_57daabd937d2",
+      "name": "休闲椅",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_57daabd937d2/asset.json"
+    },
+    {
+      "asset_id": "ast_5994f5b4f77c",
+      "name": "盆栽植物",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_5994f5b4f77c/asset.json"
+    },
+    {
+      "asset_id": "ast_5b04b8b73171",
+      "name": "三层矩形吸顶灯",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_5b04b8b73171/asset.json"
+    },
+    {
+      "asset_id": "ast_5b314219acf0",
+      "name": "三人沙发",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_5b314219acf0/asset.json"
+    },
+    {
+      "asset_id": "ast_5b54d74d8192",
+      "name": "花瓶",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_5b54d74d8192/asset.json"
+    },
+    {
+      "asset_id": "ast_5fc414eee7e8",
+      "name": "餐椅",
+      "video_id": "vid_605df2fff231",
+      "size_status": "missing",
+      "record": "assets/ast_5fc414eee7e8/asset.json"
+    },
+    {
+      "asset_id": "ast_62a36eb63689",
+      "name": "台灯",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_62a36eb63689/asset.json"
+    },
+    {
+      "asset_id": "ast_655a4e7f4daf",
+      "name": "落地灯",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_655a4e7f4daf/asset.json"
+    },
+    {
+      "asset_id": "ast_670765d4c8c6",
+      "name": "吊灯",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_670765d4c8c6/asset.json"
+    },
+    {
+      "asset_id": "ast_676a5967fa8b",
+      "name": "实木椅",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_676a5967fa8b/asset.json"
+    },
+    {
+      "asset_id": "ast_694e0fa76046",
+      "name": "盆栽植物",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_694e0fa76046/asset.json"
+    },
+    {
+      "asset_id": "ast_696c30f84af4",
+      "name": "格子柜",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_696c30f84af4/asset.json"
+    },
+    {
+      "asset_id": "ast_6e40e3458f09",
+      "name": "边柜",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_6e40e3458f09/asset.json"
+    },
+    {
+      "asset_id": "ast_705b70b74c7b",
+      "name": "台灯",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_705b70b74c7b/asset.json"
+    },
+    {
+      "asset_id": "ast_717c98fe0e21",
+      "name": "餐椅",
+      "video_id": "vid_91fe552c5f7d",
+      "size_status": "missing",
+      "record": "assets/ast_717c98fe0e21/asset.json"
+    },
+    {
+      "asset_id": "ast_74f8f8b7a284",
+      "name": "壁灯",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_74f8f8b7a284/asset.json"
+    },
+    {
+      "asset_id": "ast_778c2ec0480d",
+      "name": "三人沙发",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_778c2ec0480d/asset.json"
+    },
+    {
+      "asset_id": "ast_794404a15cd8",
+      "name": "边几",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_794404a15cd8/asset.json"
+    },
+    {
+      "asset_id": "ast_79d7df1565e0",
+      "name": "插花摆件",
+      "video_id": "vid_605df2fff231",
+      "size_status": "missing",
+      "record": "assets/ast_79d7df1565e0/asset.json"
+    },
+    {
+      "asset_id": "ast_7a6844fdf7e6",
+      "name": "餐桌",
+      "video_id": "vid_91fe552c5f7d",
+      "size_status": "missing",
+      "record": "assets/ast_7a6844fdf7e6/asset.json"
+    },
+    {
+      "asset_id": "ast_7a8fbee4cbc2",
+      "name": "美式深色实木高柱床架",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_7a8fbee4cbc2/asset.json"
+    },
+    {
+      "asset_id": "ast_7ad385273d1f",
+      "name": "台灯",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_7ad385273d1f/asset.json"
+    },
+    {
+      "asset_id": "ast_7b10d7d4bdb6",
+      "name": "米白色布艺多人沙发",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_7b10d7d4bdb6/asset.json"
+    },
+    {
+      "asset_id": "ast_7bbac9ee11d9",
+      "name": "壁灯",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_7bbac9ee11d9/asset.json"
+    },
+    {
+      "asset_id": "ast_7d1a1127850a",
+      "name": "吊灯",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_7d1a1127850a/asset.json"
+    },
+    {
+      "asset_id": "ast_7d4063c26a78",
+      "name": "台灯",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_7d4063c26a78/asset.json"
+    },
+    {
+      "asset_id": "ast_8016d7db99e3",
+      "name": "盆栽植物",
+      "video_id": "vid_91fe552c5f7d",
+      "size_status": "missing",
+      "record": "assets/ast_8016d7db99e3/asset.json"
+    },
+    {
+      "asset_id": "ast_829e24c0efb7",
+      "name": "盆栽植物",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_829e24c0efb7/asset.json"
+    },
+    {
+      "asset_id": "ast_877b640e3d3c",
+      "name": "长方形地毯",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_877b640e3d3c/asset.json"
+    },
+    {
+      "asset_id": "ast_88ceb53354e6",
+      "name": "深灰色狗形布艺儿童椅",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_88ceb53354e6/asset.json"
+    },
+    {
+      "asset_id": "ast_8926f9413f29",
+      "name": "床头桌",
+      "video_id": "vid_40734d7f2e6c",
+      "size_status": "known",
+      "record": "assets/ast_8926f9413f29/asset.json"
+    },
+    {
+      "asset_id": "ast_8a6c621c6f5f",
+      "name": "边柜",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_8a6c621c6f5f/asset.json"
+    },
+    {
+      "asset_id": "ast_8aa72b6f028f",
+      "name": "原木色电视柜",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_8aa72b6f028f/asset.json"
+    },
+    {
+      "asset_id": "ast_8ac797d254fe",
+      "name": "餐椅",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_8ac797d254fe/asset.json"
+    },
+    {
+      "asset_id": "ast_8b053762e304",
+      "name": "三人沙发",
+      "video_id": "vid_5f32a0ac954a",
+      "size_status": "missing",
+      "record": "assets/ast_8b053762e304/asset.json"
+    },
+    {
+      "asset_id": "ast_924f98656f6a",
+      "name": "画框",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_924f98656f6a/asset.json"
+    },
+    {
+      "asset_id": "ast_95c2097ced78",
+      "name": "长凳",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_95c2097ced78/asset.json"
+    },
+    {
+      "asset_id": "ast_95dd6f2a9f1a",
+      "name": "边柜",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_95dd6f2a9f1a/asset.json"
+    },
+    {
+      "asset_id": "ast_97854ca2b58d",
+      "name": "现代一体式餐边柜",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_97854ca2b58d/asset.json"
+    },
+    {
+      "asset_id": "ast_980f1a89dee5",
+      "name": "洗衣机",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_980f1a89dee5/asset.json"
+    },
+    {
+      "asset_id": "ast_9aa4c4becf13",
+      "name": "吧台",
+      "video_id": "vid_605df2fff231",
+      "size_status": "missing",
+      "record": "assets/ast_9aa4c4becf13/asset.json"
+    },
+    {
+      "asset_id": "ast_9afc1e9adbda",
+      "name": "餐椅",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_9afc1e9adbda/asset.json"
+    },
+    {
+      "asset_id": "ast_9b81d305c7aa",
+      "name": "米白色大地毯",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_9b81d305c7aa/asset.json"
+    },
+    {
+      "asset_id": "ast_9c5579b81c97",
+      "name": "吧台",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_9c5579b81c97/asset.json"
+    },
+    {
+      "asset_id": "ast_9c86b997e241",
+      "name": "台灯",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_9c86b997e241/asset.json"
+    },
+    {
+      "asset_id": "ast_9d3dc36f80d6",
+      "name": "米白色花朵坐垫",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_9d3dc36f80d6/asset.json"
+    },
+    {
+      "asset_id": "ast_9e221dde2c78",
+      "name": "餐桌",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_9e221dde2c78/asset.json"
+    },
+    {
+      "asset_id": "ast_9f12a8edc4d5",
+      "name": "三人沙发",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_9f12a8edc4d5/asset.json"
+    },
+    {
+      "asset_id": "ast_a1018a9c3c29",
+      "name": "三人沙发",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_a1018a9c3c29/asset.json"
+    },
+    {
+      "asset_id": "ast_a188c23c1ff7",
+      "name": "双人床",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_a188c23c1ff7/asset.json"
+    },
+    {
+      "asset_id": "ast_a1a4c88b4f00",
+      "name": "边柜",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_a1a4c88b4f00/asset.json"
+    },
+    {
+      "asset_id": "ast_a4807b023418",
+      "name": "镜子",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_a4807b023418/asset.json"
+    },
+    {
+      "asset_id": "ast_a50c067b4bee",
+      "name": "茶几",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_a50c067b4bee/asset.json"
+    },
+    {
+      "asset_id": "ast_a7316084fd9c",
+      "name": "盆栽植物",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_a7316084fd9c/asset.json"
+    },
+    {
+      "asset_id": "ast_ad67a8cd1fbf",
+      "name": "木质扶手软垫淋浴椅",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_ad67a8cd1fbf/asset.json"
+    },
+    {
+      "asset_id": "ast_ae6d83d34fba",
+      "name": "茶几",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_ae6d83d34fba/asset.json"
+    },
+    {
+      "asset_id": "ast_b0bed2f4384e",
+      "name": "台灯",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_b0bed2f4384e/asset.json"
+    },
+    {
+      "asset_id": "ast_b30865a2f123",
+      "name": "边柜",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_b30865a2f123/asset.json"
+    },
+    {
+      "asset_id": "ast_b3479a4b5400",
+      "name": "边柜",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_b3479a4b5400/asset.json"
+    },
+    {
+      "asset_id": "ast_b590657ab045",
+      "name": "电视",
+      "video_id": "vid_605df2fff231",
+      "size_status": "missing",
+      "record": "assets/ast_b590657ab045/asset.json"
+    },
+    {
+      "asset_id": "ast_b7f81d8b8dcd",
+      "name": "边几",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_b7f81d8b8dcd/asset.json"
+    },
+    {
+      "asset_id": "ast_b80193251739",
+      "name": "书桌",
+      "video_id": "vid_40734d7f2e6c",
+      "size_status": "known",
+      "record": "assets/ast_b80193251739/asset.json"
+    },
+    {
+      "asset_id": "ast_b80f4e4a387b",
+      "name": "门垫",
+      "video_id": "vid_40734d7f2e6c",
+      "size_status": "known",
+      "record": "assets/ast_b80f4e4a387b/asset.json"
+    },
+    {
+      "asset_id": "ast_b914f61b3e04",
+      "name": "餐椅",
+      "video_id": "vid_91fe552c5f7d",
+      "size_status": "missing",
+      "record": "assets/ast_b914f61b3e04/asset.json"
+    },
+    {
+      "asset_id": "ast_bca29a5798f3",
+      "name": "圆形地毯",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_bca29a5798f3/asset.json"
+    },
+    {
+      "asset_id": "ast_be92a6195a80",
+      "name": "现代悬空一体式餐边柜",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_be92a6195a80/asset.json"
+    },
+    {
+      "asset_id": "ast_c2313401d014",
+      "name": "户外木椅",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_c2313401d014/asset.json"
+    },
+    {
+      "asset_id": "ast_c26b4f2fe8b3",
+      "name": "吊灯",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_c26b4f2fe8b3/asset.json"
+    },
+    {
+      "asset_id": "ast_c5ab118e8f8d",
+      "name": "吊灯",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_c5ab118e8f8d/asset.json"
+    },
+    {
+      "asset_id": "ast_c708e898e8ab",
+      "name": "干花摆件",
+      "video_id": "vid_605df2fff231",
+      "size_status": "missing",
+      "record": "assets/ast_c708e898e8ab/asset.json"
+    },
+    {
+      "asset_id": "ast_cab487441837",
+      "name": "黑色平板电视",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_cab487441837/asset.json"
+    },
+    {
+      "asset_id": "ast_cb57b5ec3ecf",
+      "name": "餐椅",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_cb57b5ec3ecf/asset.json"
+    },
+    {
+      "asset_id": "ast_ccc6f7405f39",
+      "name": "双人床",
+      "video_id": "vid_40734d7f2e6c",
+      "size_status": "known",
+      "record": "assets/ast_ccc6f7405f39/asset.json"
+    },
+    {
+      "asset_id": "ast_cd8aec2bdb05",
+      "name": "镜子",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_cd8aec2bdb05/asset.json"
+    },
+    {
+      "asset_id": "ast_ceea9d7f3729",
+      "name": "吊灯",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_ceea9d7f3729/asset.json"
+    },
+    {
+      "asset_id": "ast_cef97bc30bd9",
+      "name": "餐桌",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_cef97bc30bd9/asset.json"
+    },
+    {
+      "asset_id": "ast_d1831cd30c87",
+      "name": "边柜",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_d1831cd30c87/asset.json"
+    },
+    {
+      "asset_id": "ast_d51bc4042307",
+      "name": "台灯",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_d51bc4042307/asset.json"
+    },
+    {
+      "asset_id": "ast_d5fa083d4fb4",
+      "name": "圆形双层木质藤编茶几",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_d5fa083d4fb4/asset.json"
+    },
+    {
+      "asset_id": "ast_d60dbc13017f",
+      "name": "台灯",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_d60dbc13017f/asset.json"
+    },
+    {
+      "asset_id": "ast_d6becd14a3ca",
+      "name": "长桌",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_d6becd14a3ca/asset.json"
+    },
+    {
+      "asset_id": "ast_d723e8bfe067",
+      "name": "藤编椅",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_d723e8bfe067/asset.json"
+    },
+    {
+      "asset_id": "ast_d83b2f2061bc",
+      "name": "休闲椅",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_d83b2f2061bc/asset.json"
+    },
+    {
+      "asset_id": "ast_d8f0d7606d01",
+      "name": "三人沙发",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_d8f0d7606d01/asset.json"
+    },
+    {
+      "asset_id": "ast_da645619b597",
+      "name": "落地扇",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_da645619b597/asset.json"
+    },
+    {
+      "asset_id": "ast_db99f8bdf507",
+      "name": "圆桌",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_db99f8bdf507/asset.json"
+    },
+    {
+      "asset_id": "ast_dcd3feda0d96",
+      "name": "双人床",
+      "video_id": "vid_605df2fff231",
+      "size_status": "missing",
+      "record": "assets/ast_dcd3feda0d96/asset.json"
+    },
+    {
+      "asset_id": "ast_dd77d67b65bc",
+      "name": "餐椅",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_dd77d67b65bc/asset.json"
+    },
+    {
+      "asset_id": "ast_ddf364c7834d",
+      "name": "小型木质猫爬架",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_ddf364c7834d/asset.json"
+    },
+    {
+      "asset_id": "ast_dec6af78617b",
+      "name": "壁灯",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_dec6af78617b/asset.json"
+    },
+    {
+      "asset_id": "ast_e68deb64781e",
+      "name": "三人沙发",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_e68deb64781e/asset.json"
+    },
+    {
+      "asset_id": "ast_e7dddcb4b337",
+      "name": "衣柜",
+      "video_id": "vid_605df2fff231",
+      "size_status": "missing",
+      "record": "assets/ast_e7dddcb4b337/asset.json"
+    },
+    {
+      "asset_id": "ast_e85d108fbd22",
+      "name": "床头柜",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_e85d108fbd22/asset.json"
+    },
+    {
+      "asset_id": "ast_e8e7b81eba5c",
+      "name": "三人沙发",
+      "video_id": "vid_91fe552c5f7d",
+      "size_status": "missing",
+      "record": "assets/ast_e8e7b81eba5c/asset.json"
+    },
+    {
+      "asset_id": "ast_ec839451b7ac",
+      "name": "吊灯",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_ec839451b7ac/asset.json"
+    },
+    {
+      "asset_id": "ast_ed2d44e09f94",
+      "name": "壁柜",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_ed2d44e09f94/asset.json"
+    },
+    {
+      "asset_id": "ast_ed6a1e7e7d4f",
+      "name": "弯曲木条休闲椅",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_ed6a1e7e7d4f/asset.json"
+    },
+    {
+      "asset_id": "ast_edf646ab154c",
+      "name": "盆栽植物",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_edf646ab154c/asset.json"
+    },
+    {
+      "asset_id": "ast_eea00f986e60",
+      "name": "电视柜",
+      "video_id": "vid_91fe552c5f7d",
+      "size_status": "missing",
+      "record": "assets/ast_eea00f986e60/asset.json"
+    },
+    {
+      "asset_id": "ast_f07062218262",
+      "name": "长方形地毯",
+      "video_id": "vid_b75d95dc92a7",
+      "size_status": "missing",
+      "record": "assets/ast_f07062218262/asset.json"
+    },
+    {
+      "asset_id": "ast_f080e5f7a1a8",
+      "name": "吸顶灯",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_f080e5f7a1a8/asset.json"
+    },
+    {
+      "asset_id": "ast_f090666d70fe",
+      "name": "坐垫",
+      "video_id": "vid_5f32a0ac954a",
+      "size_status": "missing",
+      "record": "assets/ast_f090666d70fe/asset.json"
+    },
+    {
+      "asset_id": "ast_f2d29b396fcd",
+      "name": "储物凳",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_f2d29b396fcd/asset.json"
+    },
+    {
+      "asset_id": "ast_f2ff866b688a",
+      "name": "原木色高书柜",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_f2ff866b688a/asset.json"
+    },
+    {
+      "asset_id": "ast_f4ad4e548d88",
+      "name": "边柜",
+      "video_id": "vid_182cbf77954d",
+      "size_status": "missing",
+      "record": "assets/ast_f4ad4e548d88/asset.json"
+    },
+    {
+      "asset_id": "ast_fa4fe463a624",
+      "name": "边柜",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_fa4fe463a624/asset.json"
+    },
+    {
+      "asset_id": "ast_fba5d6140749",
+      "name": "双人床",
+      "video_id": "vid_5c7efd168eb7",
+      "size_status": "missing",
+      "record": "assets/ast_fba5d6140749/asset.json"
+    },
+    {
+      "asset_id": "ast_fc4d08db170e",
+      "name": "吸顶灯",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_fc4d08db170e/asset.json"
+    },
+    {
+      "asset_id": "ast_ff3bb7d4a5ec",
+      "name": "落地扇",
+      "video_id": "vid_58a7a1504281",
+      "size_status": "missing",
+      "record": "assets/ast_ff3bb7d4a5ec/asset.json"
+    }
+  ],
+  "videos": [
+    {
+      "video_id": "vid_b75d95dc92a7",
+      "title": "97f0269f3dc9.mp4",
+      "duration_sec": 26.2,
+      "media": {
+        "path": "videos/vid_b75d95dc92a7/source.mp4",
+        "mime_type": "video/mp4",
+        "bytes": 3930579,
+        "sha256": "55935dd74b1e0913916dac5cd16f765ae22efbcbd0b8b37f583c47216c3c1996"
+      }
+    },
+    {
+      "video_id": "vid_40734d7f2e6c",
+      "title": "4ce22f239827.mp4",
+      "duration_sec": 12.13,
+      "media": {
+        "path": "videos/vid_40734d7f2e6c/source.mp4",
+        "mime_type": "video/mp4",
+        "bytes": 1459908,
+        "sha256": "bc027c081d46a14682790e6c15c4c196b8db159e900f0f7ec5444cd3c909138b"
+      }
+    },
+    {
+      "video_id": "vid_5c7efd168eb7",
+      "title": "09ac609e996a.mp4",
+      "duration_sec": 129.33,
+      "media": {
+        "path": "videos/vid_5c7efd168eb7/source.mp4",
+        "mime_type": "video/mp4",
+        "bytes": 23834725,
+        "sha256": "f954f0d009a9a80ce2eb5a9ea8bb65a26b23a19c7736f54e8fe84e124307ff4e"
+      }
+    },
+    {
+      "video_id": "vid_182cbf77954d",
+      "title": "fd37207363ec.mp4",
+      "duration_sec": 40.47,
+      "media": {
+        "path": "videos/vid_182cbf77954d/source.mp4",
+        "mime_type": "video/mp4",
+        "bytes": 5487261,
+        "sha256": "b05376c6affa2a23e00bbfff8bb5226ee2d5875e5593fb69bc9f2db25b0defb2"
+      }
+    },
+    {
+      "video_id": "vid_58a7a1504281",
+      "title": "b9154a093c74.mp4",
+      "duration_sec": 162.17,
+      "media": {
+        "path": "videos/vid_58a7a1504281/source.mp4",
+        "mime_type": "video/mp4",
+        "bytes": 15303441,
+        "sha256": "9aa57369be8277cc980c974b9319fb1e86f39bbdb0b81a244abddb956afcb01a"
+      }
+    },
+    {
+      "video_id": "vid_91fe552c5f7d",
+      "title": "22176d6e7c5e.mp4",
+      "duration_sec": 14.03,
+      "media": {
+        "path": "videos/vid_91fe552c5f7d/source.mp4",
+        "mime_type": "video/mp4",
+        "bytes": 3290725,
+        "sha256": "d81b23365fd73eb7fcab1a2caa8159a84a155b5ba398d572c2e6355de9a16ad8"
+      }
+    },
+    {
+      "video_id": "vid_5f32a0ac954a",
+      "title": "84a99c978c54.mp4",
+      "duration_sec": 10.55,
+      "media": {
+        "path": "videos/vid_5f32a0ac954a/source.mp4",
+        "mime_type": "video/mp4",
+        "bytes": 1595388,
+        "sha256": "730b786a9c9fe869aee41186c6c89101b98e9c2e5f3ca838bb93955e5914e9bc"
+      }
+    },
+    {
+      "video_id": "vid_605df2fff231",
+      "title": "03d305377517.mp4",
+      "duration_sec": 248.7,
+      "media": {
+        "path": "videos/vid_605df2fff231/source.mp4",
+        "mime_type": "video/mp4",
+        "bytes": 33029824,
+        "sha256": "47ebaa592a1aeef1d7365e2d73e93fd054fc6d51a4145b5e0a4b1fbf5d5a8487"
+      }
+    }
+  ],
+  "source_counts": {
+    "video": 149,
+    "offline_photo": 20
+  }
+}

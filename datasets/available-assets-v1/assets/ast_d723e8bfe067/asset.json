@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_d723e8bfe067",
+  "video_id": "vid_182cbf77954d",
+  "appearances": [
+    {
+      "start_sec": 9.5,
+      "end_sec": 12.0,
+      "representative_sec": 11.0
+    }
+  ],
+  "name": "藤编椅",
+  "space": "",
+  "type": {
+    "category": "单椅",
+    "subcategory": "藤编椅"
+  },
+  "labels": {
+    "category": "单椅",
+    "sub": "藤编椅",
+    "colors": [
+      "米色",
+      "棕色"
+    ],
+    "materials": [
+      "藤编",
+      "实木"
+    ],
+    "styles": [
+      "北欧",
+      "现代"
+    ],
+    "features": [
+      "编织靠背",
+      "倾斜椅背",
+      "细腿",
+      "扶手",
+      "低矮设计"
+    ],
+    "size_class": "中",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.23690886795520782,
+      -0.2713194489479065,
+      -0.3010793626308441
+    ],
+    "bounds_max": [
+      0.23770178854465485,
+      0.24290314316749573,
+      0.33843252062797546
+    ],
+    "dimensions_model_unit": [
+      0.47461065649986267,
+      0.5142225921154022,
+      0.6395118832588196
+    ],
+    "center": [
+      0.00039646029472351074,
+      -0.014208152890205383,
+      0.018676578998565674
+    ],
+    "vertex_count": 5390,
+    "triangle_count": 8734,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.00039646029472351074,
+        -0.014208152890205383,
+        0.018676578998565674
+      ],
+      "dimensions": [
+        0.47461065649986267,
+        0.5142225921154022,
+        0.6395118832588196
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.2713194489479065,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.167713+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_d723e8bfe067/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 26730,
+      "sha256": "f3de32b5eac9ddb7960945c27c2bcce1877323e4404e2dc897c876b46e44bbee",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_d723e8bfe067/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 8627,
+      "sha256": "3fa9ea47a38e0af9a656b1af60f5249b842414268a7a2b1ab9bf7d1ea1be3d96"
+    },
+    "completed_input": {
+      "path": "assets/ast_d723e8bfe067/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1343901,
+      "sha256": "60bffdc4e1cbe574d1e45dcf273ca26a19c50b0cced08521d4b28fc6e5c33e2c",
+      "width_px": 899,
+      "height_px": 1164
+    },
+    "model_3d": {
+      "path": "assets/ast_d723e8bfe067/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1466216,
+      "sha256": "db87420ed06daf2ce6a20c870240e40832eca70cdf8ae93b378031383ee01e1d"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T12:27:29.263112+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-20T18:21:19.155099+00:00"
+}

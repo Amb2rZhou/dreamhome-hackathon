@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_d5fa083d4fb4",
+  "source": {
+    "type": "offline_photo",
+    "label": "线下拍照生成",
+    "url": null
+  },
+  "video_id": null,
+  "appearances": [],
+  "name": "圆形双层木质藤编茶几",
+  "space": "",
+  "type": {
+    "category": "桌子",
+    "subcategory": "茶几"
+  },
+  "labels": {
+    "category": "桌子",
+    "sub": "茶几",
+    "colors": [
+      "浅木色",
+      "透明"
+    ],
+    "materials": [
+      "实木",
+      "玻璃",
+      "藤编"
+    ],
+    "styles": [
+      "现代",
+      "北欧"
+    ],
+    "features": [
+      "圆形",
+      "双层设计",
+      "玻璃台面",
+      "藤编下层",
+      "细腿"
+    ],
+    "size_class": "中",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.5005770921707153,
+      -0.14379152655601501,
+      -0.5002285242080688
+    ],
+    "bounds_max": [
+      0.5001608729362488,
+      0.14286567270755768,
+      0.5000174641609192
+    ],
+    "dimensions_model_unit": [
+      1.0007379651069641,
+      0.2866571992635727,
+      1.000245988368988
+    ],
+    "center": [
+      -0.00020810961723327637,
+      -0.0004629269242286682,
+      -0.0001055300235748291
+    ],
+    "vertex_count": 12981,
+    "triangle_count": 19282,
+    "collision": {
+      "type": "box",
+      "center": [
+        -0.00020810961723327637,
+        -0.0004629269242286682,
+        -0.0001055300235748291
+      ],
+      "dimensions": [
+        1.0007379651069641,
+        0.2866571992635727,
+        1.000245988368988
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.14379152655601501,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-22T16:54:13.980069+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_d5fa083d4fb4/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 201213,
+      "sha256": "1326372b6c237cc9fe4a86482b28fdc4b05ab4d2ec5450ed4c9129445143cd3b",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_d5fa083d4fb4/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 74825,
+      "sha256": "3947bf7807df1a87cfd2a1c7606d9e754b641e822d44041df49abdf0f0936cb2"
+    },
+    "completed_input": {
+      "path": "assets/ast_d5fa083d4fb4/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1335310,
+      "sha256": "58a6883d8e743346127f26bee081a842b70ce7476c4573c8e7e4470cc9cce6b5",
+      "width_px": 868,
+      "height_px": 1205
+    },
+    "model_3d": {
+      "path": "assets/ast_d5fa083d4fb4/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1709908,
+      "sha256": "2a5b41da04874a1ce92d7374bddc99bf4c53387e342694b3c1aa0e1ac95e0535"
+    }
+  },
+  "review": {
+    "verdict": "not_required",
+    "reason": "C 端线下拍照生成资产，不需要人工审核",
+    "reviewed_at": null
+  },
+  "created_by": "annotation",
+  "created_at": "2026-07-22T15:20:39.710274+00:00"
+}

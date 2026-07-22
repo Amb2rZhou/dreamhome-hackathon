@@ -1,0 +1,244 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Amb2rZhou/dreamhome-hackathon/datasets/available-assets-v1/schema.json",
+  "title": "DreamHome Available Asset",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "availability",
+    "asset_id",
+    "video_id",
+    "appearances",
+    "name",
+    "type",
+    "labels",
+    "size_status",
+    "physical_size_m",
+    "geometry",
+    "media",
+    "review"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "availability": {
+      "const": "available"
+    },
+    "asset_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "type",
+        "label",
+        "url"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "offline_photo"
+          ]
+        },
+        "label": {
+          "const": "线下拍照生成"
+        },
+        "url": {
+          "type": "null"
+        }
+      }
+    },
+    "video_id": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "appearances": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "start_sec",
+          "end_sec",
+          "representative_sec"
+        ],
+        "properties": {
+          "start_sec": {
+            "type": "number",
+            "minimum": 0
+          },
+          "end_sec": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "representative_sec": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "type": {
+      "type": "object",
+      "required": [
+        "category",
+        "subcategory"
+      ],
+      "properties": {
+        "category": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subcategory": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "labels": {
+      "type": "object"
+    },
+    "size_status": {
+      "enum": [
+        "known",
+        "missing"
+      ]
+    },
+    "physical_size_m": {
+      "type": "object",
+      "required": [
+        "width",
+        "height",
+        "depth"
+      ],
+      "properties": {
+        "width": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "depth": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "geometry": {
+      "type": "object"
+    },
+    "media": {
+      "type": "object",
+      "required": [
+        "context",
+        "source_crop",
+        "completed_input",
+        "model_3d"
+      ]
+    },
+    "review": {
+      "type": "object",
+      "required": [
+        "verdict",
+        "reason",
+        "reviewed_at"
+      ],
+      "properties": {
+        "verdict": {
+          "enum": [
+            "pass",
+            "not_required"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "reviewed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "source"
+        ],
+        "properties": {
+          "source": {
+            "properties": {
+              "type": {
+                "const": "offline_photo"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "video_id": {
+            "type": "null"
+          },
+          "appearances": {
+            "maxItems": 0
+          },
+          "review": {
+            "properties": {
+              "verdict": {
+                "const": "not_required"
+              },
+              "reviewed_at": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "video_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "appearances": {
+            "minItems": 1
+          },
+          "review": {
+            "properties": {
+              "verdict": {
+                "const": "pass"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

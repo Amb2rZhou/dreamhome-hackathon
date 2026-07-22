@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_7a6844fdf7e6",
+  "video_id": "vid_91fe552c5f7d",
+  "appearances": [
+    {
+      "start_sec": 0.0,
+      "end_sec": 3.5,
+      "representative_sec": 2.0
+    }
+  ],
+  "name": "餐桌",
+  "space": "",
+  "type": {
+    "category": "桌子",
+    "subcategory": "餐桌"
+  },
+  "labels": {
+    "category": "桌子",
+    "sub": "餐桌",
+    "colors": [
+      "浅木色",
+      "白色"
+    ],
+    "materials": [
+      "实木",
+      "玻璃"
+    ],
+    "styles": [
+      "现代",
+      "北欧"
+    ],
+    "features": [
+      "长方形",
+      "细腿",
+      "光滑台面",
+      "带椅子"
+    ],
+    "size_class": "大",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.49967387318611145,
+      -0.20813769102096558,
+      -0.4006127119064331
+    ],
+    "bounds_max": [
+      0.501060426235199,
+      0.20511503517627716,
+      0.4022452235221863
+    ],
+    "dimensions_model_unit": [
+      1.0007342994213104,
+      0.41325272619724274,
+      0.8028579354286194
+    ],
+    "center": [
+      0.0006932765245437622,
+      -0.0015113279223442078,
+      0.0008162558078765869
+    ],
+    "vertex_count": 7523,
+    "triangle_count": 12858,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.0006932765245437622,
+        -0.0015113279223442078,
+        0.0008162558078765869
+      ],
+      "dimensions": [
+        1.0007342994213104,
+        0.41325272619724274,
+        0.8028579354286194
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.20813769102096558,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.183932+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_7a6844fdf7e6/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 111498,
+      "sha256": "06a3218bf83130b7a30cadff915c09f50de13eaf7d41f16ccf79f33681fb07e7",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_7a6844fdf7e6/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 36360,
+      "sha256": "890389b2d0e779cba635a9f7d3a430cc1a2ebe074d0b5671717fd7f452b19261"
+    },
+    "completed_input": {
+      "path": "assets/ast_7a6844fdf7e6/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 2573096,
+      "sha256": "78b99504c917e5477792314f4e6de5bdab9bc3b4c6719876830d7d983f41621c",
+      "width_px": 2454,
+      "height_px": 768
+    },
+    "model_3d": {
+      "path": "assets/ast_7a6844fdf7e6/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1277504,
+      "sha256": "54c1e615d0adf5b5b1b740900d33ceddf20b99bf9ab3135e8cbb13508e663d9d"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T14:30:59.401855+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-20T17:21:42.093027+00:00"
+}

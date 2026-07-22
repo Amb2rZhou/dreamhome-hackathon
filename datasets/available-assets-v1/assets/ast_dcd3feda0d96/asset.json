@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_dcd3feda0d96",
+  "video_id": "vid_605df2fff231",
+  "appearances": [
+    {
+      "start_sec": 106.0,
+      "end_sec": 108.5,
+      "representative_sec": 107.0
+    }
+  ],
+  "name": "双人床",
+  "space": "",
+  "type": {
+    "category": "床",
+    "subcategory": "双人床"
+  },
+  "labels": {
+    "category": "床",
+    "sub": "双人床",
+    "colors": [
+      "灰色",
+      "白色"
+    ],
+    "materials": [
+      "布艺",
+      "金属"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "带床头板",
+      "铺有床品",
+      "床下有储物空间"
+    ],
+    "size_class": "大",
+    "complete": false,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.4553429186344147,
+      -0.1930566132068634,
+      -0.5000593662261963
+    ],
+    "bounds_max": [
+      0.4551442563533783,
+      0.1904667466878891,
+      0.5001950263977051
+    ],
+    "dimensions_model_unit": [
+      0.910487174987793,
+      0.3835233598947525,
+      1.0002543926239014
+    ],
+    "center": [
+      -9.933114051818848e-05,
+      -0.001294933259487152,
+      6.783008575439453e-05
+    ],
+    "vertex_count": 11640,
+    "triangle_count": 18319,
+    "collision": {
+      "type": "box",
+      "center": [
+        -9.933114051818848e-05,
+        -0.001294933259487152,
+        6.783008575439453e-05
+      ],
+      "dimensions": [
+        0.910487174987793,
+        0.3835233598947525,
+        1.0002543926239014
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.1930566132068634,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.192535+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_dcd3feda0d96/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 95919,
+      "sha256": "e887a18939172cb3d85590324df0f3b623834e7907a32ce751b8ac349b6df3fd",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_dcd3feda0d96/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 29451,
+      "sha256": "86fc9985532f4076084925d9f1b0e584f2f7e8d17d2a8415d71dc7b67d4201a3"
+    },
+    "completed_input": {
+      "path": "assets/ast_dcd3feda0d96/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1431143,
+      "sha256": "a554b2b6a325ff5a48d15d9f65b426fccb53627d9e12b53139818585f41fd15c",
+      "width_px": 823,
+      "height_px": 1272
+    },
+    "model_3d": {
+      "path": "assets/ast_dcd3feda0d96/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1488900,
+      "sha256": "e89ef7d8964349529ef44908edcd4a423a83785f767890eed6a31e52fd14acb9"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T14:38:55.918371+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-19T15:30:58.031891+00:00"
+}

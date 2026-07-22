@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_ccc6f7405f39",
+  "video_id": "vid_40734d7f2e6c",
+  "appearances": [
+    {
+      "start_sec": 0.0,
+      "end_sec": 12.0,
+      "representative_sec": 11.0
+    }
+  ],
+  "name": "双人床",
+  "space": "",
+  "type": {
+    "category": "床",
+    "subcategory": "双人床"
+  },
+  "labels": {
+    "category": "床",
+    "sub": "双人床",
+    "colors": [
+      "白色"
+    ],
+    "materials": [
+      "布艺",
+      "棉质"
+    ],
+    "styles": [
+      "现代",
+      "简约"
+    ],
+    "features": [
+      "带床头",
+      "铺有被子",
+      "床单褶皱",
+      "床脚可见"
+    ],
+    "size_class": "大",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "known",
+  "physical_size_m": {
+    "width": 2.359,
+    "height": 0.785,
+    "depth": 2.52
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.4709339439868927,
+      -0.18980954587459564,
+      -0.49934709072113037
+    ],
+    "bounds_max": [
+      0.4643823802471161,
+      0.18394005298614502,
+      0.499857097864151
+    ],
+    "dimensions_model_unit": [
+      0.9353163242340088,
+      0.37374959886074066,
+      0.9992041885852814
+    ],
+    "center": [
+      -0.0032757818698883057,
+      -0.0029347464442253113,
+      0.00025500357151031494
+    ],
+    "vertex_count": 13049,
+    "triangle_count": 21188,
+    "collision": {
+      "type": "box",
+      "center": [
+        -0.0032757818698883057,
+        -0.0029347464442253113,
+        0.00025500357151031494
+      ],
+      "dimensions": [
+        0.9353163242340088,
+        0.37374959886074066,
+        0.9992041885852814
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.18980954587459564,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.162419+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_ccc6f7405f39/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 108005,
+      "sha256": "775e7f57398bb7f707c71a1638104326da389c88860407ebd628b792c90be748",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_ccc6f7405f39/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 32127,
+      "sha256": "c4fb4f1ab8a7dbe5b7a35e61dc94f03ee04757caaddb35ad9bdbdbc024a0d11a"
+    },
+    "completed_input": {
+      "path": "assets/ast_ccc6f7405f39/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1406804,
+      "sha256": "f65b795ed24a9f69a85aa62c035f23f55c0dafe4de60928c5e8fa31424b8c729",
+      "width_px": 859,
+      "height_px": 1219
+    },
+    "model_3d": {
+      "path": "assets/ast_ccc6f7405f39/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1525436,
+      "sha256": "e5257727abb9c6e3455c2f31650655852fc2f8a1274dcff0f8a0f9137a51f55d"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T12:26:00.643636+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-20T18:43:49.543563+00:00"
+}

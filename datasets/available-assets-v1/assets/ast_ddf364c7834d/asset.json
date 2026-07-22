@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_ddf364c7834d",
+  "source": {
+    "type": "offline_photo",
+    "label": "线下拍照生成",
+    "url": null
+  },
+  "video_id": null,
+  "appearances": [],
+  "name": "小型木质猫爬架",
+  "space": "",
+  "type": {
+    "category": "其他",
+    "subcategory": "猫爬架"
+  },
+  "labels": {
+    "category": "其他",
+    "sub": "猫爬架",
+    "colors": [
+      "棕色",
+      "米色",
+      "绿色"
+    ],
+    "materials": [
+      "实木",
+      "布艺",
+      "绳索"
+    ],
+    "styles": [
+      "现代",
+      "北欧"
+    ],
+    "features": [
+      "圆形平台",
+      "吊床设计",
+      "顶部绿植装饰",
+      "竖直立柱",
+      "底座支撑"
+    ],
+    "size_class": "小",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.5008162260055542,
+      -0.16675540804862976,
+      -0.501112699508667
+    ],
+    "bounds_max": [
+      0.5005847811698914,
+      0.17659494280815125,
+      0.5012678503990173
+    ],
+    "dimensions_model_unit": [
+      1.0014010071754456,
+      0.343350350856781,
+      1.0023805499076843
+    ],
+    "center": [
+      -0.0001157224178314209,
+      0.004919767379760742,
+      7.75754451751709e-05
+    ],
+    "vertex_count": 10101,
+    "triangle_count": 16156,
+    "collision": {
+      "type": "box",
+      "center": [
+        -0.0001157224178314209,
+        0.004919767379760742,
+        7.75754451751709e-05
+      ],
+      "dimensions": [
+        1.0014010071754456,
+        0.343350350856781,
+        1.0023805499076843
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.16675540804862976,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-22T16:54:18.569588+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_ddf364c7834d/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 97817,
+      "sha256": "5973ee56ad7a551694bee751be2910e8c7b36351d8bd7f17903452c615810357",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_ddf364c7834d/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 52484,
+      "sha256": "66a7f738b65cc2d09a714b5169ccf6861e717c7787caf305bded54ecc2ed82a8"
+    },
+    "completed_input": {
+      "path": "assets/ast_ddf364c7834d/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1113199,
+      "sha256": "905d1e898e58d79a7e136fc3a09f66c55f94f621c83a20ec8baa3c8b9312d61f",
+      "width_px": 768,
+      "height_px": 1363
+    },
+    "model_3d": {
+      "path": "assets/ast_ddf364c7834d/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1281740,
+      "sha256": "f6331890067edafea7f2ba3b1b2d641a5cb9def7173c913cc1d06664da737b00"
+    }
+  },
+  "review": {
+    "verdict": "not_required",
+    "reason": "C 端线下拍照生成资产，不需要人工审核",
+    "reviewed_at": null
+  },
+  "created_by": "annotation",
+  "created_at": "2026-07-22T15:21:04.065784+00:00"
+}
