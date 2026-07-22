@@ -54,16 +54,27 @@ export const adaptBackendAsset = (rec) => {
   const sourceLabel = rec.source_label || (sourceType === 'offline_photo' ? '线下拍照生成' : '平台组件');
   const known = rec.size_status === 'known' && rec.physical_size_m?.width != null;
   const color = colorForAsset(rec);
+  const categoryDims = CATEGORY_DIMENSIONS[category] || [1, .8, .6];
+  const modelDims = Array.isArray(rec.dimensions_model_unit)
+    ? rec.dimensions_model_unit.map((value) => Math.max(Number(value) || 0, .001))
+    : null;
+  const modelLongest = modelDims ? Math.max(...modelDims) : 0;
+  const targetLongest = Math.max(...categoryDims);
   const dims = known
     ? [rec.physical_size_m.width, rec.physical_size_m.height, rec.physical_size_m.depth]
-    : (CATEGORY_DIMENSIONS[category] || [1, .8, .6]);
+    : modelLongest > 0
+      ? modelDims.map((value) => value / modelLongest * targetLongest)
+      : categoryDims;
   return {
     id: rec.asset_id, kind: 'furniture', name: rec.name, source: 'platform', sourceType, sourceLabel,
     category, subcategory: rec.type.subcategory, primitive: CATEGORY_PRIMITIVE[category] || 'cabinet',
     color, accent: lightenHex(color, .3),
     dimensions: dims,
-    // 「我的家」房间放置：真实 GLB 走 rawModel 归一化到 sizePrior（真实米制或分类兜底尺寸），避免原始网格尺度失真
-    rawModel: !!(rec.model_url), sizePrior: { w: dims[0], h: dims[1], d: dims[2] }, mount: 'floor',
+    // 有米制尺寸时按真实尺寸归一化；缺尺寸时只做统一等比缩放，保留 GLB 原始宽高深比例。
+    rawModel: !!(rec.model_url), sizePrior: { w: dims[0], h: dims[1], d: dims[2] },
+    sizePriorVersion: known ? 1 : 2,
+    legacySizePrior: known ? null : { w: categoryDims[0], h: categoryDims[1], d: categoryDims[2] },
+    mount: 'floor',
     sizeStatus: rec.size_status, thumbnail: rec.thumbnail, videoId: rec.video_id,
     modelUrl: rec.model_url || null, frameUrl: rec.frame_url || null,
     videoUrl: rec.video_url || null, videoSec: rec.representative_sec ?? null,
