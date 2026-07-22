@@ -16,7 +16,7 @@ export interface FalJobResponse {
   model_url?: string | null
   thumbnail_url?: string | null
   error?: string | null
-  quality_mode?: 'fast' | 'production' | null
+  quality_mode?: 'draft' | 'fast' | 'production' | null
   library_attached?: boolean
 }
 

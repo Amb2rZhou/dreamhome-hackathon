@@ -1,6 +1,7 @@
 {
   "functions": {
     "api/photo-to-3d.js": { "maxDuration": 60 },
+    "api/selection-to-3d.js": { "maxDuration": 60 },
     "api/jobs/[id].js": { "maxDuration": 30 }
   },
   "headers": [

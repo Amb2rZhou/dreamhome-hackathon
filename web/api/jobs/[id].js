@@ -29,6 +29,8 @@ module.exports = async function handler(req, res) {
       status: "succeeded",
       progress: 100,
       provider: "fal",
+      quality_mode: "draft",
+      library_attached: false,
       model_url: modelUrl,
       thumbnail_url: thumbnailUrl,
     });

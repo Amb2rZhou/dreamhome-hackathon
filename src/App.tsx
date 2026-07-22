@@ -5,7 +5,7 @@ import { genSticker } from './stickerGen'
 import { captureBbox, captureVideoSelectionUpload, saveTraceToBackend, loadTracesFromBackend, traceImageUrl, type VideoSelectionUpload } from './segmentApi'
 import { prepareEdgeSamFrame, segmentWithEdgeSam, warmupEdgeSam } from './mobileSam'
 import { falJobToComponent, getFalJob } from './falGenerationApi'
-import { confirmVideoSelection, submitVideoSelection } from './videoSelectionApi'
+import { submitVideoSelectionDraft } from './videoSelectionApi'
 import { Mascot, type CollectionMascotMode } from './Mascot'
 import { WorkshopDetail } from './WorkshopDetail'
 import { FrameAssetsDrawer } from './FrameAssetsDrawer'
@@ -706,29 +706,20 @@ function App() {
               ? selectionRequestsRef.current.get(craft.sourceSelectionId)
               : null
             if (!pendingSelection) throw new Error('原始帧和圈选已丢失，请保持页面打开后重试')
-            const selection = await submitVideoSelection({
+            const submitted = await submitVideoSelectionDraft({
               videoId: pendingSelection.videoId,
               time: pendingSelection.time,
               upload: pendingSelection.upload,
-            })
-            const submitted = await confirmVideoSelection({
-              videoId: pendingSelection.videoId,
-              selectId: selection.select_id,
-              generateNew: true,
-              qualityMode: 'production',
+              prompt: craft.name === '待分类家具' ? '单件家具' : craft.name,
             })
             if (!submitted.job_id) throw new Error('后端未返回 3D 任务')
             if (cancelled) return
-            const recognizedLabel = selection.labels.sub || selection.labels.category || craft.name
-            const recognizedCategory = (
-              MOCK_OBJECTS.find((item) => item.label === selection.labels.category)?.label ?? craft.category
-            ) as FurnitureCategory
             dispatch({
               type: 'CRAFT_BACKEND_SUBMITTED',
               id: craft.id,
               backendJobId: submitted.job_id,
-              name: recognizedLabel,
-              category: recognizedCategory,
+              name: craft.name,
+              category: craft.category,
             })
           } catch (error) {
             if (cancelled) return

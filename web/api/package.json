@@ -1,5 +1,8 @@
 {
   "name": "dreamhome-fal-api",
   "private": true,
-  "type": "commonjs"
+  "type": "commonjs",
+  "dependencies": {
+    "sharp": "^0.35.3"
+  }
 }

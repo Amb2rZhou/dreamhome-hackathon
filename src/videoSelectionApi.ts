@@ -28,6 +28,15 @@ export interface VideoSelectConfirmResponse {
   library_attached?: boolean
 }
 
+export interface VideoSelectionDraftResponse {
+  job_id: string
+  status: 'queued'
+  provider: 'fal'
+  quality_mode: 'draft'
+  isolation_mode: 'polygon'
+  library_attached: false
+}
+
 export class VideoSelectionError extends Error {
   status: number
 
@@ -44,6 +53,39 @@ async function responseJson<T>(response: Response): Promise<T> {
     throw new VideoSelectionError(payload.detail || payload.error || `圈选服务请求失败 (${response.status})`, response.status)
   }
   return payload as T
+}
+
+function blobDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result || ''))
+    reader.onerror = () => reject(new VideoSelectionError('无法读取完整原帧'))
+    reader.readAsDataURL(blob)
+  })
+}
+
+export async function submitVideoSelectionDraft(input: {
+  videoId: string
+  time: number
+  upload: VideoSelectionUpload
+  prompt?: string
+}): Promise<VideoSelectionDraftResponse> {
+  const frameDataUrl = await blobDataUrl(input.upload.frame)
+  const response = await fetch(dreamHomeApiUrl('/api/selection-to-3d'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      video_id: input.videoId,
+      t: input.time,
+      frame_data_url: frameDataUrl,
+      frame_width: input.upload.frameWidth,
+      frame_height: input.upload.frameHeight,
+      bbox: input.upload.bbox,
+      polygon: input.upload.polygon,
+      prompt: input.prompt || '',
+    }),
+  })
+  return responseJson<VideoSelectionDraftResponse>(response)
 }
 
 export async function submitVideoSelection(input: {
