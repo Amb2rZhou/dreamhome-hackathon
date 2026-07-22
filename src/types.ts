@@ -24,7 +24,12 @@ export interface CraftBatch {
   jobs: CraftJob[]
   publicComponents: LibraryComponent[]
   createdAt: number
+  sourceFrame: {
+    videoId: string
+    time: number
+  }
   notified: boolean
+  notifiedAt?: number
   dismissed: boolean
 }
 

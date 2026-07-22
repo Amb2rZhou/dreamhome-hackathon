@@ -10,7 +10,7 @@ import { Mascot, type CollectionMascotMode } from './Mascot'
 import { WorkshopDetail } from './WorkshopDetail'
 import { FrameAssetsDrawer } from './FrameAssetsDrawer'
 import { FurnitureAssetThumbnail } from './FurnitureAssetThumbnail'
-import { createWorkshopMocks, workshopFromAppState } from './workshopModel'
+import { workshopFromAppState } from './workshopModel'
 import { assetsForVideoFrame, defaultAssetFrame } from './availableAssets.generated'
 import {
   CommentIcon,
@@ -45,6 +45,7 @@ interface State {
   batches: CraftBatch[]
   showCraftResult: boolean
   showCollectionDetail: boolean
+  activeWorkshopBatchId: string | null
   craftStartTip: boolean
   craftStartTipShown: boolean
   traces: TraceEntry[]
@@ -90,7 +91,12 @@ type Action =
   | { type: 'CLOSE_PREVIEW' }
   | { type: 'SHOW_TOAST'; msg: string }
   | { type: 'HIDE_TOAST' }
-  | { type: 'START_CRAFT_BATCH'; jobs: CraftJob[]; publicComponents?: LibraryComponent[] }
+  | {
+      type: 'START_CRAFT_BATCH'
+      jobs: CraftJob[]
+      publicComponents?: LibraryComponent[]
+      sourceFrame: { videoId: string; time: number }
+    }
   | { type: 'CRAFT_ORDERING_DONE'; id: string }
   | { type: 'HIDE_CRAFT_START_TIP' }
   | { type: 'CRAFT_DONE'; id: string; component: LibraryComponent }
@@ -101,7 +107,7 @@ type Action =
   | { type: 'CRAFT_CONFIRM_STORE' }
   | { type: 'CRAFT_DISCARD' }
   | { type: 'CLEAR_CRAFT_DONE_BUBBLE' }
-  | { type: 'SHOW_COLLECTION_DETAIL' }
+  | { type: 'SHOW_COLLECTION_DETAIL'; batchId?: string }
   | { type: 'HIDE_COLLECTION_DETAIL' }
   | { type: 'ADD_TRACE'; trace: TraceEntry }
   | { type: 'UPDATE_TRACE'; id: string; patch: Partial<TraceEntry> }
@@ -125,6 +131,7 @@ const initialState: State = {
   currentCraft: null,
   showCraftResult: false,
   showCollectionDetail: false,
+  activeWorkshopBatchId: null,
   craftStartTip: false,
   craftStartTipShown: false,
   batches: [],
@@ -252,6 +259,7 @@ function reducer(state: State, action: Action): State {
         jobs: action.jobs.map((j) => ({ ...j, status: 'ordering' as const })),
         publicComponents,
         createdAt: Date.now(),
+        sourceFrame: action.sourceFrame,
         notified: false,
         dismissed: false,
       }
@@ -330,7 +338,9 @@ function reducer(state: State, action: Action): State {
         && !b.notified
       ))
       const batchJustDone = !!batchDone
-      const notifiedBatches = batchJustDone ? batches.map((b) => (b.id === batchDone!.id ? { ...b, notified: true } : b)) : batches
+      const notifiedBatches = batchJustDone
+        ? batches.map((b) => (b.id === batchDone!.id ? { ...b, notified: true, notifiedAt: Date.now() } : b))
+        : batches
       return {
         ...state,
         currentCraft: next ? { ...next, status: 'ordering' } : null,
@@ -367,7 +377,9 @@ function reducer(state: State, action: Action): State {
         currentCraft: next ? { ...next, status: 'ordering' } : null,
         craftQueue: restQueue,
         batches: terminalBatch
-          ? batches.map((batch) => batch.id === terminalBatch.id ? { ...batch, notified: true } : batch)
+          ? batches.map((batch) => batch.id === terminalBatch.id
+            ? { ...batch, notified: true, notifiedAt: Date.now() }
+            : batch)
           : batches,
         mascot: terminalBatch ? 'happy' : (next ? 'working' : 'sleeping'),
         toast: '这件家具暂时没加工好，换个更完整的角度再试试。',
@@ -412,20 +424,31 @@ function reducer(state: State, action: Action): State {
       return { ...state, batches, mascot: (state.currentCraft || state.craftQueue.length > 0) ? 'working' : 'sleeping' }
     }
     case 'SHOW_COLLECTION_DETAIL': {
-      const batches = state.batches.map((batch) => (
-        batch.jobs.every((job) => job.status === 'done' || job.status === 'failed')
-          ? { ...batch, dismissed: true }
-          : batch
+      const requestedBatch = action.batchId
+        ? state.batches.find((batch) => batch.id === action.batchId)
+        : null
+      const completedBatch = [...state.batches].reverse().find((batch) => (
+        !batch.dismissed
+        && batch.jobs.length > 0
+        && batch.jobs.every((job) => job.status === 'done' || job.status === 'failed')
       ))
+      const targetBatch = requestedBatch ?? completedBatch ?? state.batches[state.batches.length - 1] ?? null
+      const targetIsTerminal = !!targetBatch
+        && targetBatch.jobs.length > 0
+        && targetBatch.jobs.every((job) => job.status === 'done' || job.status === 'failed')
+      const batches = targetBatch && targetIsTerminal
+        ? state.batches.map((batch) => batch.id === targetBatch.id ? { ...batch, dismissed: true } : batch)
+        : state.batches
       return {
         ...state,
         batches,
         showCollectionDetail: true,
+        activeWorkshopBatchId: targetBatch?.id ?? null,
         mascot: (state.currentCraft || state.craftQueue.length > 0) ? 'working' : 'sleeping',
       }
     }
     case 'HIDE_COLLECTION_DETAIL':
-      return { ...state, showCollectionDetail: false }
+      return { ...state, showCollectionDetail: false, activeWorkshopBatchId: null }
     case 'ADD_TRACE':
       return { ...state, traces: [action.trace, ...state.traces] }
     case 'UPDATE_TRACE':
@@ -495,21 +518,13 @@ function App() {
   const latestBatch = state.batches[state.batches.length - 1] ?? null
   const latestBatchCount = latestBatch ? latestBatch.jobs.length : 0
   const liveWorkshopData = useMemo(() => workshopFromAppState({
-    batch: latestBatch,
+    batches: state.batches,
     blogger: CURRENT_BLOGGER,
     sharedHomeFurniture: [],
-  }), [latestBatch])
-  const workshopMocks = useMemo(() => createWorkshopMocks({
-    library: activeFrameAssets,
-    homeFurniture: activeFrameAssets,
-    blogger: CURRENT_BLOGGER,
-  }), [activeFrameAssets])
-  const requestedWorkshopMock = import.meta.env.DEV
-    ? new URLSearchParams(window.location.search).get('workshop')
-    : null
-  const workshopData = !latestBatch && (requestedWorkshopMock === 'empty' || requestedWorkshopMock === 'assets' || requestedWorkshopMock === 'home')
-    ? workshopMocks[requestedWorkshopMock]
-    : liveWorkshopData
+  }), [state.batches])
+  // 调试 URL 也不再注入模拟/实时识别资产。
+  // 没有用户主动圈选形成的批次时，小工坊必须保持空白态。
+  const workshopData = liveWorkshopData
   const awaitingCollectionView = state.batches.some((batch) => (
     !batch.dismissed
     && batch.jobs.length > 0
@@ -590,19 +605,6 @@ function App() {
     const nextVideo = FEED_VIDEOS[nextIndex]
     setFeedIndex(nextIndex)
     setPausedFrame({ videoId: nextVideo.id, time: defaultAssetFrame(nextVideo.id) })
-    setCollectionMascotMode('none')
-    dispatch({ type: 'CHANGE_FEED_VIDEO' })
-  }
-
-  const recoverMissingFeedVideo = () => {
-    // Amber 视频由素材库提供；在新电脑尚未配置素材库地址时，
-    // 自动切到仓库内自带的视频，避免整屏黑色并保持资产与视频一致。
-    if (activeFeedVideo.id === 'home-1') return
-    const fallbackIndex = FEED_VIDEOS.findIndex((video) => video.id === 'home-1')
-    if (fallbackIndex < 0) return
-    const fallbackVideo = FEED_VIDEOS[fallbackIndex]
-    setFeedIndex(fallbackIndex)
-    setPausedFrame({ videoId: fallbackVideo.id, time: defaultAssetFrame(fallbackVideo.id) })
     setCollectionMascotMode('none')
     dispatch({ type: 'CHANGE_FEED_VIDEO' })
   }
@@ -728,7 +730,6 @@ function App() {
           playsInline
           autoPlay
           preload="auto"
-          onError={recoverMissingFeedVideo}
         />
 
         {state.phase === 'browse' && (
@@ -828,7 +829,7 @@ function App() {
                 }
               })
               dispatch({ type: 'SHOW_TOAST', msg: '已收到，正在创建 3D 任务…' })
-              dispatch({ type: 'START_CRAFT_BATCH', jobs, publicComponents })
+              dispatch({ type: 'START_CRAFT_BATCH', jobs, publicComponents, sourceFrame: pausedFrame })
             }}
             crafting={!!state.currentCraft}
           />
@@ -1811,7 +1812,12 @@ function SessionLayer({
       }
     }))
 
-    dispatch({ type: 'START_CRAFT_BATCH', jobs, publicComponents })
+    dispatch({
+      type: 'START_CRAFT_BATCH',
+      jobs,
+      publicComponents,
+      sourceFrame: { videoId, time: pausedTime },
+    })
   }
 
   const endPickup = (e: React.PointerEvent) => {

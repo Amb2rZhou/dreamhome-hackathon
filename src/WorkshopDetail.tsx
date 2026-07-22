@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { FurnitureModelPreview } from './FurnitureModelPreview'
-import type { LibraryComponent } from './types'
+import { FrameAssetsDrawer } from './FrameAssetsDrawer'
 import type { WorkshopData, WorkshopLassoTask } from './workshopModel'
 import { workshopStatusSummary } from './workshopModel'
 import './WorkshopDetail.css'
@@ -11,21 +10,6 @@ interface WorkshopDetailProps {
   onToggleFavorite: (id: string) => void
   onClose: () => void
   onRetryTask?: (id: string) => void
-}
-
-function HeartIcon({ filled }: { filled: boolean }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="M20.8 4.7a5.5 5.5 0 0 0-7.8 0L12 5.8l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.4 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"
-        fill={filled ? 'currentColor' : 'none'}
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
 }
 
 function EmptyWorkshopIcon({ kind }: { kind: 'ready' | 'lasso' }) {
@@ -48,10 +32,12 @@ function EmptyWorkshopIcon({ kind }: { kind: 'ready' | 'lasso' }) {
 
 function TaskRow({
   task,
+  batchLabel,
   onOpen,
   onRetry,
 }: {
   task: WorkshopLassoTask
+  batchLabel: string
   onOpen: () => void
   onRetry: () => void
 }) {
@@ -61,7 +47,10 @@ function TaskRow({
       <span className="workshop-task-thumb">
         {task.imageUrl ? <img src={task.imageUrl} alt="" /> : <span aria-hidden="true">⌗</span>}
       </span>
-      <span className="workshop-task-name">{task.name}</span>
+      <span className="workshop-task-name">
+        <strong>{task.name}</strong>
+        <small>{batchLabel}</small>
+      </span>
       {task.status === 'processing' && <span className="workshop-task-status is-processing"><i />加工中</span>}
       {task.status === 'completed' && <span className="workshop-task-status is-completed">查看 <b>›</b></span>}
       {task.status === 'failed' && <span className="workshop-task-status is-failed">重新圈选</span>}
@@ -79,100 +68,10 @@ function TaskRow({
   )
 }
 
-function FurnitureDetail({
-  component,
-  favorite,
-  onFavorite,
-  onClose,
-}: {
-  component: LibraryComponent
-  favorite: boolean
-  onFavorite: () => void
-  onClose: () => void
-}) {
-  return (
-    <div
-      className="workshop-furniture-layer"
-      onClick={(event) => {
-        event.stopPropagation()
-        onClose()
-      }}
-    >
-      <section
-        className="workshop-furniture-detail"
-        role="dialog"
-        aria-modal="true"
-        aria-label={`${component.name}详情`}
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="workshop-furniture-preview">
-          <FurnitureModelPreview
-            modelUrl={component.modelUrl}
-            fallbackImage={component.completedImageUrl ?? component.sticker}
-            name={component.name}
-          />
-        </div>
-        <p className="workshop-furniture-hint">
-          {component.modelUrl ? '拖动旋转查看 3D 家具' : '家具素材预览'}
-        </p>
-
-        <div className="workshop-furniture-meta">
-          <div>
-            <h3>
-              {component.name}
-              {component.sourceVideo && (
-                <span className="workshop-source-mark" aria-label="来自视频">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M9 5H5v14h14v-4M13 5h6v6M19 5l-8 8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
-              )}
-            </h3>
-            <p>{component.sourceCategory ?? component.category} · {component.size}</p>
-          </div>
-          <button
-            className={`workshop-detail-favorite ${favorite ? 'is-favorite' : ''}`}
-            onClick={onFavorite}
-            aria-pressed={favorite}
-          >
-            <HeartIcon filled={favorite} />
-            {favorite ? '已收藏' : '收藏'}
-          </button>
-        </div>
-
-        <div className="workshop-furniture-tags" aria-label="家具标签">
-          {component.styleTags.slice(0, 3).map((tag) => <span key={tag}>{tag}</span>)}
-        </div>
-
-        {component.sourceDescription && (
-          <p className="workshop-furniture-description">{component.sourceDescription}</p>
-        )}
-
-        {component.sourceVideo && (
-          <div className="workshop-source-context">
-            {component.sourceVideo.frameImg && (
-              <img src={component.sourceVideo.frameImg} alt={`${component.name}来源画面`} loading="lazy" decoding="async" />
-            )}
-            <div>
-              <strong>来源视频</strong>
-              <span>{component.sourceVideo.videoId ?? component.sourceVideo.blogger}</span>
-              <small>
-                {component.sourceVideo.startSec !== undefined && component.sourceVideo.endSec !== undefined
-                  ? `${component.sourceVideo.startSec.toFixed(1)}–${component.sourceVideo.endSec.toFixed(1)}s`
-                  : component.sourceVideo.frameTime}
-              </small>
-            </div>
-          </div>
-        )}
-      </section>
-    </div>
-  )
-}
-
 export function WorkshopDetail({ data, favoriteIds, onToggleFavorite, onClose, onRetryTask }: WorkshopDetailProps) {
   const [closing, setClosing] = useState(false)
   const [queueExpanded, setQueueExpanded] = useState(false)
-  const [activeComponent, setActiveComponent] = useState<LibraryComponent | null>(null)
+  const [activeBatchId, setActiveBatchId] = useState<string | null>(null)
   const closeTimerRef = useRef<number | null>(null)
   const appliedLassoFavoritesRef = useRef(new Set<string>())
 
@@ -182,7 +81,7 @@ export function WorkshopDetail({ data, favoriteIds, onToggleFavorite, onClose, o
 
   useEffect(() => {
     setQueueExpanded(false)
-    setActiveComponent(null)
+    setActiveBatchId(null)
   }, [data.id])
 
   // 圈选打造成功的家具默认收藏；同款识别进入“现有家具”时保持未收藏。
@@ -199,8 +98,21 @@ export function WorkshopDetail({ data, favoriteIds, onToggleFavorite, onClose, o
   const processing = useMemo(() => data.lassoTasks.filter((task) => task.status === 'processing'), [data.lassoTasks])
   const queued = useMemo(() => data.lassoTasks.filter((task) => task.status === 'queued'), [data.lassoTasks])
   const completed = useMemo(() => data.lassoTasks.filter((task) => task.status === 'completed'), [data.lassoTasks])
+  const completedComponents = useMemo(() => {
+    if (!activeBatchId) return []
+    const batch = data.batchGroups.find((group) => group.id === activeBatchId)
+    return batch?.tasks.flatMap((task) => (
+      task.status === 'completed' && task.resultComponent ? [task.resultComponent] : []
+    )) ?? []
+  }, [activeBatchId, data.batchGroups])
   const failed = useMemo(() => data.lassoTasks.filter((task) => task.status === 'failed'), [data.lassoTasks])
   const isEmpty = data.lassoTasks.length === 0
+  const batchLabelFor = (task: WorkshopLassoTask) => {
+    const batchIndex = data.batchGroups.findIndex((group) => group.id === task.batchId)
+    const seconds = Math.max(0, Math.round(task.sourceFrame.time))
+    const timestamp = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
+    return `第 ${batchIndex + 1} 批 · ${timestamp}`
+  }
 
   const leave = (action: () => void) => {
     if (closing) return
@@ -241,7 +153,7 @@ export function WorkshopDetail({ data, favoriteIds, onToggleFavorite, onClose, o
                     <div className="workshop-task-head"><strong>需要处理</strong><span>{failed.length} 件</span></div>
                     <div className="workshop-task-list">
                       {failed.map((task) => (
-                        <TaskRow key={task.id} task={task} onOpen={() => {}} onRetry={() => onRetryTask?.(task.id)} />
+                        <TaskRow key={task.id} task={task} batchLabel={batchLabelFor(task)} onOpen={() => {}} onRetry={() => onRetryTask?.(task.id)} />
                       ))}
                     </div>
                   </section>
@@ -252,7 +164,7 @@ export function WorkshopDetail({ data, favoriteIds, onToggleFavorite, onClose, o
                     <div className="workshop-task-head"><strong>加工队列</strong><span>{processing.length + queued.length} 件</span></div>
                     <div className="workshop-task-list">
                       {processing.map((task) => (
-                        <TaskRow key={task.id} task={task} onOpen={() => {}} onRetry={() => {}} />
+                        <TaskRow key={task.id} task={task} batchLabel={batchLabelFor(task)} onOpen={() => {}} onRetry={() => {}} />
                       ))}
                     </div>
                     {queued.length > 0 && (
@@ -264,7 +176,7 @@ export function WorkshopDetail({ data, favoriteIds, onToggleFavorite, onClose, o
                         {queueExpanded && (
                           <div className="workshop-task-list workshop-queued-list">
                             {queued.map((task) => (
-                              <TaskRow key={task.id} task={task} onOpen={() => {}} onRetry={() => {}} />
+                              <TaskRow key={task.id} task={task} batchLabel={batchLabelFor(task)} onOpen={() => {}} onRetry={() => {}} />
                             ))}
                           </div>
                         )}
@@ -281,7 +193,8 @@ export function WorkshopDetail({ data, favoriteIds, onToggleFavorite, onClose, o
                         <TaskRow
                           key={task.id}
                           task={task}
-                          onOpen={() => task.resultComponent && setActiveComponent(task.resultComponent)}
+                          batchLabel={batchLabelFor(task)}
+                          onOpen={() => task.resultComponent && setActiveBatchId(task.batchId)}
                           onRetry={() => {}}
                         />
                       ))}
@@ -294,12 +207,15 @@ export function WorkshopDetail({ data, favoriteIds, onToggleFavorite, onClose, o
         </main>
       </section>
 
-      {activeComponent && (
-        <FurnitureDetail
-          component={activeComponent}
-          favorite={favoriteIds.includes(activeComponent.id)}
-          onFavorite={() => onToggleFavorite(activeComponent.id)}
-          onClose={() => setActiveComponent(null)}
+      {activeBatchId && completedComponents.length > 0 && (
+        <FrameAssetsDrawer
+          assets={completedComponents}
+          favoriteIds={favoriteIds}
+          onFavorite={onToggleFavorite}
+          onClose={() => setActiveBatchId(null)}
+          title={`本次圈选完成 ${completedComponents.length} 件`}
+          subtitle="点选缩略图，切换查看这批打造好的 3D 家具"
+          ariaLabel="本次圈选完成家具详情"
         />
       )}
     </div>

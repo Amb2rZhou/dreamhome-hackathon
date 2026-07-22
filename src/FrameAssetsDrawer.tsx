@@ -9,11 +9,17 @@ export function FrameAssetsDrawer({
   favoriteIds = [],
   onClose,
   onFavorite,
+  title,
+  subtitle,
+  ariaLabel,
 }: {
   assets: LibraryComponent[]
   favoriteIds?: string[]
   onClose: () => void
   onFavorite: (id: string) => void
+  title?: string
+  subtitle?: string
+  ariaLabel?: string
 }) {
   const [activeId, setActiveId] = useState(assets[0]?.id ?? '')
   const activeIndex = useMemo(() => {
@@ -32,7 +38,10 @@ export function FrameAssetsDrawer({
   return (
     <div
       className="frame-assets-drawer-layer"
-      onClick={onClose}
+      onClick={(event) => {
+        event.stopPropagation()
+        onClose()
+      }}
       onPointerDown={(event) => event.stopPropagation()}
       aria-hidden="false"
     >
@@ -40,15 +49,15 @@ export function FrameAssetsDrawer({
         className="frame-assets-drawer"
         role="dialog"
         aria-modal="true"
-        aria-label="本帧识别家具详情"
+        aria-label={ariaLabel ?? '本帧识别家具详情'}
         onClick={(event) => event.stopPropagation()}
       >
         <div className="frame-assets-drawer-handle" aria-hidden="true" />
 
         <header className="frame-assets-drawer-header">
           <div>
-            <strong>本帧识别 {assets.length} 件</strong>
-            <span>点选缩略图，直接切换对应 3D 家具</span>
+            <strong>{title ?? `本帧识别 ${assets.length} 件`}</strong>
+            <span>{subtitle ?? '点选缩略图，直接切换对应 3D 家具'}</span>
           </div>
         </header>
 
