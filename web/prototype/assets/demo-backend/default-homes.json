@@ -1,0 +1,1004 @@
+{
+  "version": 2,
+  "homes": [
+    {
+      "schemaVersion": 3,
+      "id": "video-vid_91fe552c5f7d",
+      "name": "48平长厅公寓",
+      "source": {
+        "type": "video_rebuild",
+        "videoId": "vid_91fe552c5f7d"
+      },
+      "realScene": {
+        "room": {
+          "w": 4.8,
+          "d": 9.2,
+          "h": 2.8
+        },
+        "balcony": null,
+        "extras": [],
+        "cfg": {
+          "light": "day",
+          "view": "day_city",
+          "estimated": true,
+          "windows": [
+            {
+              "id": "main-floor-window",
+              "wall": "back",
+              "type": "floor",
+              "style": "plain",
+              "center": 0,
+              "width": 4.2,
+              "height": 2.55,
+              "sill": 0
+            }
+          ]
+        }
+      },
+      "envelope": {
+        "width": 4.8,
+        "depth": 9.2
+      },
+      "walls": [
+        {
+          "id": "real-n",
+          "axis": "x",
+          "at": -4.6,
+          "from": -2.4,
+          "to": 2.4,
+          "role": "exterior"
+        },
+        {
+          "id": "real-s",
+          "axis": "x",
+          "at": 4.6,
+          "from": -2.4,
+          "to": 2.4,
+          "role": "exterior"
+        },
+        {
+          "id": "real-w",
+          "axis": "z",
+          "at": -2.4,
+          "from": -4.6,
+          "to": 4.6,
+          "role": "exterior"
+        },
+        {
+          "id": "real-e",
+          "axis": "z",
+          "at": 2.4,
+          "from": -4.6,
+          "to": 4.6,
+          "role": "exterior"
+        }
+      ],
+      "rooms": [
+        {
+          "id": "room-real",
+          "name": "真实场景",
+          "label": "真实场景",
+          "type": "bedroom",
+          "zone": "private",
+          "x": 0,
+          "z": 0,
+          "width": 4.8,
+          "depth": 9.2
+        }
+      ],
+      "windowSlots": [],
+      "placements": [
+        {
+          "id": "ast_7a6844fdf7e6",
+          "homeId": "video-vid_91fe552c5f7d",
+          "assetId": "ast_7a6844fdf7e6",
+          "roomId": "room-real",
+          "position": {
+            "x": -0.9646731126789172,
+            "y": 0,
+            "z": 2.2547955057480618
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1.7324505642594183,
+            "y": 2.1703266153328995,
+            "z": 1.1914573248156146
+          },
+          "sourceScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "sizeNormalizationVersion": 1,
+          "modelBaseScale": {
+            "x": 1.4489360470990993,
+            "y": 1.8151539396327248,
+            "z": 0.9964760334985814
+          },
+          "modelScaleNormalized": true
+        },
+        {
+          "id": "ast_717c98fe0e21",
+          "homeId": "video-vid_91fe552c5f7d",
+          "assetId": "ast_717c98fe0e21",
+          "roomId": "room-real",
+          "position": {
+            "x": -0.6227422226936964,
+            "y": 0,
+            "z": 2.7000748973851305
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 0.916637559062179,
+            "y": 0.8996873965716113,
+            "z": 1.0852589251217128
+          },
+          "sourceScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "sizeNormalizationVersion": 1,
+          "modelBaseScale": {
+            "x": 0.8402511435841744,
+            "y": 0.8247134937510074,
+            "z": 0.9948207379276657
+          },
+          "modelScaleNormalized": true
+        },
+        {
+          "id": "ast_b914f61b3e04",
+          "homeId": "video-vid_91fe552c5f7d",
+          "assetId": "ast_b914f61b3e04",
+          "roomId": "room-real",
+          "position": {
+            "x": -1.2709150453348887,
+            "y": 0,
+            "z": 2.680947997435691
+          },
+          "rotation": {
+            "x": 0,
+            "y": 3.141592653589793,
+            "z": 0
+          },
+          "scale": {
+            "x": 0.901447495379011,
+            "y": 0.924256269276341,
+            "z": 0.901906107250897
+          },
+          "sourceScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "sizeNormalizationVersion": 1,
+          "modelBaseScale": {
+            "x": 0.8034373306637137,
+            "y": 0.8237662133881348,
+            "z": 0.8038460798144381
+          },
+          "modelScaleNormalized": true
+        },
+        {
+          "id": "ast_ec05acc016d9",
+          "homeId": "video-vid_91fe552c5f7d",
+          "assetId": "ast_ec05acc016d9",
+          "roomId": "room-real",
+          "position": {
+            "x": -0.9947221093446026,
+            "y": 2.72,
+            "z": 2.2461372902588708
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1.502400734822224,
+            "y": 1.6846433004631802,
+            "z": 1.5051568434255607
+          },
+          "sourceScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "sizeNormalizationVersion": 1,
+          "modelBaseScale": {
+            "x": 1.502400734822224,
+            "y": 1.6846433004631802,
+            "z": 1.5051568434255607
+          },
+          "modelScaleNormalized": true
+        },
+        {
+          "id": "ast_eea00f986e60",
+          "homeId": "video-vid_91fe552c5f7d",
+          "assetId": "ast_eea00f986e60",
+          "roomId": "room-real",
+          "position": {
+            "x": 2.12,
+            "y": 0,
+            "z": -1.35
+          },
+          "rotation": {
+            "x": 0,
+            "y": -1.5707963267948966,
+            "z": 0
+          },
+          "scale": {
+            "x": 2.9039820898931326,
+            "y": 3.018608774433483,
+            "z": 2.294057670216111
+          },
+          "sourceScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "sizeNormalizationVersion": 1,
+          "modelBaseScale": {
+            "x": 1.896604424292298,
+            "y": 1.9714676535793598,
+            "z": 1.4982599038941289
+          },
+          "modelScaleNormalized": true
+        },
+        {
+          "id": "ast_42a4923c5286",
+          "homeId": "video-vid_91fe552c5f7d",
+          "assetId": "ast_42a4923c5286",
+          "roomId": "room-real",
+          "position": {
+            "x": -1.8224733764158003,
+            "y": 0,
+            "z": -4.090071697235306
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1.8660812783539316,
+            "y": 1.7490774639559659,
+            "z": 1.8630482327978914
+          },
+          "sourceScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "sizeNormalizationVersion": 1,
+          "modelBaseScale": {
+            "x": 1.8660812783539316,
+            "y": 1.7490774639559659,
+            "z": 1.8630482327978914
+          },
+          "modelScaleNormalized": true
+        },
+        {
+          "id": "placement-c82ea016-7e71-4f24-961c-c34ac53d7a4e",
+          "homeId": "video-vid_91fe552c5f7d",
+          "assetId": "ast_0c40e643ff23",
+          "roomId": "room-real",
+          "userAdded": true,
+          "position": {
+            "x": -2.1363847585306597,
+            "y": 0,
+            "z": 2.0620796165867894
+          },
+          "rotation": {
+            "x": 0,
+            "y": -4.685820424785719,
+            "z": 0
+          },
+          "scale": {
+            "x": 2.363019392423721,
+            "y": 2.363019392423721,
+            "z": 2.363019392423721
+          },
+          "sizeNormalizationVersion": 2,
+          "modelBaseScale": {
+            "x": 1.1997965799944523,
+            "y": 1.1997965799944523,
+            "z": 1.1997965799944523
+          },
+          "modelScaleNormalized": true
+        },
+        {
+          "id": "placement-5add173d-988c-44ad-8fb1-388e916ebb89",
+          "homeId": "video-vid_91fe552c5f7d",
+          "assetId": "ast_b7f81d8b8dcd",
+          "roomId": "room-real",
+          "userAdded": true,
+          "position": {
+            "x": 0.016190464860473153,
+            "y": 0,
+            "z": -1.4141822539429771
+          },
+          "rotation": {
+            "x": 0,
+            "y": -1.5570140801365102,
+            "z": 0
+          },
+          "scale": {
+            "x": 2.476691604082167,
+            "y": 2.476691604082167,
+            "z": 2.476691604082167
+          },
+          "sizeNormalizationVersion": 2,
+          "modelBaseScale": {
+            "x": 1.1991513774213716,
+            "y": 1.1991513774213716,
+            "z": 1.1991513774213718
+          },
+          "modelScaleNormalized": true
+        },
+        {
+          "id": "placement-37720ca9-25d0-42ab-92c3-f30ebc748fe3",
+          "homeId": "video-vid_91fe552c5f7d",
+          "assetId": "ast_7b10d7d4bdb6",
+          "roomId": "room-real",
+          "userAdded": true,
+          "position": {
+            "x": -1.7307694104114033,
+            "y": 0,
+            "z": -1.4322914926936325
+          },
+          "rotation": {
+            "x": 0,
+            "y": -4.7268973558537,
+            "z": 0
+          },
+          "scale": {
+            "x": 3.3753556146805512,
+            "y": 3.3753556146805517,
+            "z": 3.3753556146805512
+          },
+          "sizeNormalizationVersion": 2,
+          "modelBaseScale": {
+            "x": 1.9005478292287676,
+            "y": 1.9005478292287679,
+            "z": 1.9005478292287676
+          },
+          "modelScaleNormalized": true
+        },
+        {
+          "id": "placement-f4ed3e28-7153-4d90-9c50-99f1e3488864",
+          "homeId": "video-vid_91fe552c5f7d",
+          "assetId": "ast_4a6964d61395",
+          "roomId": "room-real",
+          "userAdded": true,
+          "position": {
+            "x": -0.8120382536752813,
+            "y": 0,
+            "z": -1.4452944402824954
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 3.1420603292299645,
+            "y": 3.142060329229965,
+            "z": 3.1420603292299645
+          },
+          "sizeNormalizationVersion": 2,
+          "modelBaseScale": {
+            "x": 2.1977276336395297,
+            "y": 2.19772763363953,
+            "z": 2.1977276336395297
+          },
+          "modelScaleNormalized": true
+        },
+        {
+          "id": "placement-39733e5c-cca6-4503-bb70-7f92653cf9ad",
+          "homeId": "video-vid_91fe552c5f7d",
+          "assetId": "ast_2e0f65b42cfc",
+          "roomId": "room-real",
+          "userAdded": true,
+          "position": {
+            "x": 2.2569318963598373,
+            "y": 0.8999999999999999,
+            "z": -1.2375850350280326
+          },
+          "rotation": {
+            "x": 0,
+            "y": -4.724272066092711,
+            "z": 0
+          },
+          "scale": {
+            "x": 1.5842349408868317,
+            "y": 1.5842349408868317,
+            "z": 1.5842349408868317
+          },
+          "sizeNormalizationVersion": 2,
+          "modelBaseScale": {
+            "x": 0.998792855576722,
+            "y": 0.998792855576722,
+            "z": 0.998792855576722
+          },
+          "modelScaleNormalized": true
+        },
+        {
+          "id": "placement-df2a1cb5-86e9-4b5e-a4ee-d8d14ecaf94c",
+          "homeId": "video-vid_91fe552c5f7d",
+          "assetId": "ast_dec6af78617b",
+          "roomId": "room-real",
+          "userAdded": true,
+          "position": {
+            "x": -1.8976919839616222,
+            "y": 1.6000000000000003,
+            "z": -0.9989407762096774
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.449996918962427,
+            "z": 0
+          },
+          "scale": {
+            "x": 0.9363330235271143,
+            "y": 0.9363330235271143,
+            "z": 0.9363330235271143
+          },
+          "sizeNormalizationVersion": 2,
+          "modelBaseScale": {
+            "x": 1.437937332946424,
+            "y": 1.437937332946424,
+            "z": 1.437937332946424
+          },
+          "modelScaleNormalized": true
+        },
+        {
+          "id": "placement-c9ac31ad-c81a-46fe-a20a-66f8e333c3b2",
+          "homeId": "video-vid_91fe552c5f7d",
+          "assetId": "ast_88ceb53354e6",
+          "roomId": "room-real",
+          "userAdded": true,
+          "position": {
+            "x": -0.8130861141314178,
+            "y": 0,
+            "z": -3.882010776159328
+          },
+          "rotation": {
+            "x": 0,
+            "y": -0.5802209300111059,
+            "z": 0
+          },
+          "scale": {
+            "x": 0.9638169798059613,
+            "y": 0.963816979805961,
+            "z": 0.963816979805961
+          },
+          "sizeNormalizationVersion": 2,
+          "modelBaseScale": {
+            "x": 1.0001101317088803,
+            "y": 1.00011013170888,
+            "z": 1.00011013170888
+          },
+          "modelScaleNormalized": true
+        },
+        {
+          "id": "placement-335f8c1f-896b-455f-be77-c0d571877479",
+          "homeId": "video-vid_91fe552c5f7d",
+          "assetId": "ast_9d3dc36f80d6",
+          "roomId": "room-real",
+          "userAdded": true,
+          "position": {
+            "x": -1.5081914381250094,
+            "y": 0.5,
+            "z": -2.107363252007327
+          },
+          "rotation": {
+            "x": 0,
+            "y": 3.878958723356842,
+            "z": 0
+          },
+          "scale": {
+            "x": 0.575220161632266,
+            "y": 0.575220161632266,
+            "z": 0.575220161632266
+          },
+          "sizeNormalizationVersion": 2,
+          "modelBaseScale": {
+            "x": 0.39994231102510214,
+            "y": 0.3999423110251021,
+            "z": 0.39994231102510214
+          },
+          "modelScaleNormalized": true
+        },
+        {
+          "id": "placement-637b9fd0-3ddc-407e-9c6e-514a444c597d",
+          "homeId": "video-vid_91fe552c5f7d",
+          "assetId": "ast_79d7df1565e0",
+          "roomId": "room-real",
+          "userAdded": true,
+          "position": {
+            "x": 2.0851317567567564,
+            "y": 0.8999999999999999,
+            "z": -0.10831968245967756
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 0.4712091648999412,
+            "y": 0.4712091648999412,
+            "z": 0.4712091648999412
+          },
+          "sizeNormalizationVersion": 2,
+          "modelBaseScale": {
+            "x": 0.40016591275269436,
+            "y": 0.40016591275269436,
+            "z": 0.40016591275269436
+          },
+          "modelScaleNormalized": true
+        },
+        {
+          "id": "placement-687de592-33c2-4083-83d4-f5a283e6007e",
+          "homeId": "video-vid_91fe552c5f7d",
+          "assetId": "ast_06c83d58cb62",
+          "roomId": "room-real",
+          "userAdded": true,
+          "position": {
+            "x": 2.091015315682497,
+            "y": 0,
+            "z": 0.5550404279151451
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 0.6462175146060238,
+            "y": 0.6462175146060238,
+            "z": 0.6462175146060238
+          },
+          "sizeNormalizationVersion": 2,
+          "modelBaseScale": {
+            "x": 1.1985519975162946,
+            "y": 1.1985519975162948,
+            "z": 1.1985519975162948
+          },
+          "modelScaleNormalized": true
+        },
+        {
+          "id": "placement-60852d23-a270-4921-9a9a-e282dc841445",
+          "homeId": "video-vid_91fe552c5f7d",
+          "assetId": "ast_12910011860f",
+          "roomId": "room-real",
+          "userAdded": true,
+          "position": {
+            "x": -0.953363892280619,
+            "y": 0.8999999999999999,
+            "z": 2.29562347617974
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 0.7006565673484546,
+            "y": 0.7006565673484545,
+            "z": 0.7006565673484544
+          },
+          "sizeNormalizationVersion": 2,
+          "modelBaseScale": {
+            "x": 0.7006565673484546,
+            "y": 0.7006565673484545,
+            "z": 0.7006565673484544
+          },
+          "modelScaleNormalized": true
+        }
+      ],
+      "finishes": {
+        "floorAssetId": null,
+        "wallpaperAssetId": null
+      },
+      "daylight": "day",
+      "createdAt": "2026-07-22T19:01:29.013Z",
+      "updatedAt": "2026-07-22T19:29:11.385Z",
+      "previewImage": "data:image/webp;base64,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"
+    },
+    {
+      "schemaVersion": 3,
+      "id": "video-vid_40734d7f2e6c",
+      "name": "卧室(单间公寓)",
+      "source": {
+        "type": "video_rebuild",
+        "videoId": "vid_40734d7f2e6c"
+      },
+      "realScene": {
+        "room": {
+          "w": 4.2,
+          "d": 5.2,
+          "h": 2.8
+        },
+        "balcony": {
+          "x0": -0.1,
+          "x1": 2.1,
+          "depth": 0.95
+        },
+        "extras": [
+          {
+            "dims": [
+              0.28,
+              0.3,
+              0.9
+            ],
+            "pos": [
+              -1.9,
+              2.25,
+              0.1
+            ],
+            "color": "f7f7f5",
+            "note": "空调挂机"
+          }
+        ],
+        "cfg": {
+          "light": "overcast",
+          "view": "dusk_city",
+          "windows": [
+            {
+              "id": "bay1",
+              "wall": "back",
+              "type": "bay",
+              "style": "grid",
+              "center": -1.15,
+              "width": 1.7,
+              "height": 1.95,
+              "sill": 0.45
+            },
+            {
+              "id": "balc1",
+              "wall": "balcony",
+              "type": "floor",
+              "style": "grid",
+              "center": 1,
+              "width": 2,
+              "height": 2.5,
+              "sill": 0
+            }
+          ]
+        }
+      },
+      "envelope": {
+        "width": 4.2,
+        "depth": 5.2
+      },
+      "walls": [
+        {
+          "id": "real-n",
+          "axis": "x",
+          "at": -2.6,
+          "from": -2.1,
+          "to": 2.1,
+          "role": "exterior"
+        },
+        {
+          "id": "real-s",
+          "axis": "x",
+          "at": 2.6,
+          "from": -2.1,
+          "to": 2.1,
+          "role": "exterior"
+        },
+        {
+          "id": "real-w",
+          "axis": "z",
+          "at": -2.1,
+          "from": -2.6,
+          "to": 2.6,
+          "role": "exterior"
+        },
+        {
+          "id": "real-e",
+          "axis": "z",
+          "at": 2.1,
+          "from": -2.6,
+          "to": 2.6,
+          "role": "exterior"
+        }
+      ],
+      "rooms": [
+        {
+          "id": "room-real",
+          "name": "真实场景",
+          "label": "真实场景",
+          "type": "bedroom",
+          "zone": "private",
+          "x": 0,
+          "z": 0,
+          "width": 4.2,
+          "depth": 5.2
+        }
+      ],
+      "windowSlots": [],
+      "placements": [
+        {
+          "id": "ast_ccc6f7405f39",
+          "homeId": "video-vid_40734d7f2e6c",
+          "assetId": "ast_ccc6f7405f39",
+          "roomId": "room-real",
+          "position": {
+            "x": -0.87,
+            "y": 0,
+            "z": -0.533
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.5707963267948966,
+            "z": 0
+          },
+          "scale": {
+            "x": 2.522,
+            "y": 2.1017,
+            "z": 2.522
+          },
+          "sourceScale": {
+            "x": 2.522,
+            "y": 2.1017,
+            "z": 2.522
+          }
+        },
+        {
+          "id": "ast_8926f9413f29",
+          "homeId": "video-vid_40734d7f2e6c",
+          "assetId": "ast_8926f9413f29",
+          "roomId": "room-real",
+          "position": {
+            "x": -1.284,
+            "y": 0,
+            "z": 0.706
+          },
+          "rotation": {
+            "x": 0,
+            "y": -1.5882496193148399,
+            "z": 0
+          },
+          "scale": {
+            "x": 0.9654,
+            "y": 0.8496,
+            "z": 0.9654
+          },
+          "sourceScale": {
+            "x": 0.9654,
+            "y": 0.8496,
+            "z": 0.9654
+          }
+        },
+        {
+          "id": "ast_b80193251739",
+          "homeId": "video-vid_40734d7f2e6c",
+          "assetId": "ast_b80193251739",
+          "roomId": "room-real",
+          "position": {
+            "x": 1.833,
+            "y": 0,
+            "z": 0.685
+          },
+          "rotation": {
+            "x": 0,
+            "y": -1.5707963267948966,
+            "z": 0
+          },
+          "scale": {
+            "x": 1.4368,
+            "y": 1.0776,
+            "z": 0.4789
+          },
+          "sourceScale": {
+            "x": 1.4368,
+            "y": 1.0776,
+            "z": 0.4789
+          }
+        },
+        {
+          "id": "ast_00e00df1bfeb",
+          "homeId": "video-vid_40734d7f2e6c",
+          "assetId": "ast_00e00df1bfeb",
+          "roomId": "room-real",
+          "position": {
+            "x": 1.386,
+            "y": 0,
+            "z": 0.56
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.5707963267948966,
+            "z": 0
+          },
+          "scale": {
+            "x": 0.8534,
+            "y": 0.8534,
+            "z": 0.8534
+          },
+          "sourceScale": {
+            "x": 0.8534,
+            "y": 0.8534,
+            "z": 0.8534
+          }
+        },
+        {
+          "id": "ast_09f5ed9678b1",
+          "homeId": "video-vid_40734d7f2e6c",
+          "assetId": "ast_09f5ed9678b1",
+          "roomId": "room-real",
+          "position": {
+            "x": -0.235,
+            "y": 1.468,
+            "z": -2.56
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 0.4992,
+            "y": 0.4992,
+            "z": 0.4992
+          },
+          "sourceScale": {
+            "x": 0.4992,
+            "y": 0.4992,
+            "z": 0.4992
+          }
+        },
+        {
+          "id": "ast_45226bd63340",
+          "homeId": "video-vid_40734d7f2e6c",
+          "assetId": "ast_45226bd63340",
+          "roomId": "room-real",
+          "position": {
+            "x": 1.888,
+            "y": 1.455,
+            "z": -0.319
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 0.5612,
+            "y": 0.5612,
+            "z": 0.5612
+          },
+          "sourceScale": {
+            "x": 0.5612,
+            "y": 0.5612,
+            "z": 0.5612
+          }
+        },
+        {
+          "id": "ast_b80f4e4a387b",
+          "homeId": "video-vid_40734d7f2e6c",
+          "assetId": "ast_b80f4e4a387b",
+          "roomId": "room-real",
+          "position": {
+            "x": 1.336,
+            "y": 0,
+            "z": -1.055
+          },
+          "rotation": {
+            "x": 0,
+            "y": 4.729842272904633,
+            "z": 0
+          },
+          "scale": {
+            "x": 0.9122,
+            "y": 0.6081,
+            "z": 0.9122
+          },
+          "sourceScale": {
+            "x": 0.9122,
+            "y": 0.6081,
+            "z": 0.9122
+          }
+        },
+        {
+          "id": "ast_665e55cee687",
+          "homeId": "video-vid_40734d7f2e6c",
+          "assetId": "ast_665e55cee687",
+          "roomId": "room-real",
+          "position": {
+            "x": 1.838,
+            "y": 0,
+            "z": -1.318
+          },
+          "rotation": {
+            "x": 0,
+            "y": -1.5707963267948966,
+            "z": 0
+          },
+          "scale": {
+            "x": 2.5199,
+            "y": 2.5199,
+            "z": 1.89
+          },
+          "sourceScale": {
+            "x": 2.5199,
+            "y": 2.5199,
+            "z": 1.89
+          }
+        },
+        {
+          "id": "ast_cf21f0f0a02c",
+          "homeId": "video-vid_40734d7f2e6c",
+          "assetId": "ast_cf21f0f0a02c",
+          "roomId": "room-real",
+          "position": {
+            "x": -1.15,
+            "y": 0.59,
+            "z": -2.85
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1.4947,
+            "y": 1.2997,
+            "z": 1.1048
+          },
+          "sourceScale": {
+            "x": 1.4947,
+            "y": 1.2997,
+            "z": 1.1048
+          }
+        },
+        {
+          "id": "ast_6410374831cb",
+          "homeId": "video-vid_40734d7f2e6c",
+          "assetId": "ast_6410374831cb",
+          "roomId": "room-real",
+          "position": {
+            "x": 1.909,
+            "y": 0,
+            "z": -0.204
+          },
+          "rotation": {
+            "x": 0,
+            "y": -1.5882496193148399,
+            "z": 0
+          },
+          "scale": {
+            "x": 0.9455,
+            "y": 1.4546,
+            "z": 0.7273
+          },
+          "sourceScale": {
+            "x": 0.9455,
+            "y": 1.4546,
+            "z": 0.7273
+          }
+        }
+      ],
+      "finishes": {
+        "floorAssetId": null,
+        "wallpaperAssetId": null
+      },
+      "daylight": "dusk",
+      "createdAt": "2026-07-22T19:01:29.008Z",
+      "updatedAt": "2026-07-22T19:26:57.628Z",
+      "previewImage": "data:image/webp;base64,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"
+    }
+  ]
+}

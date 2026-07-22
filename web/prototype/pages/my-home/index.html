@@ -209,7 +209,6 @@
     .plan-wall-line { background:rgba(166,126,59,.68); }.plan-wall-line--exterior { background:#8f6a2c; }
     .upload-box { border-color:rgba(190,155,90,.46); }
     .upload-action { background:rgba(250,241,220,.88); color:#9b7024; }
-    .export-homes-button{align-self:center;margin:-2px auto 12px;padding:8px 15px;border:1px solid rgba(190,155,90,.45);border-radius:999px;background:#fffaf0;color:#86672f;font:700 12px/1 system-ui;cursor:pointer}
     .generation-orbit { background:radial-gradient(circle at 34% 30%,#fff 0 7%,#faefd6 8% 40%,#efd9ad 41% 100%); }
     .generation-orbit::before { border-color:rgba(181,140,70,.42); }
     .progress-track { background:rgba(215,177,105,.2); }.progress-bar { background:linear-gradient(90deg,#eed9a8,#dcac58); }
@@ -251,7 +250,6 @@
           <section class="screen-phase setup-phase" id="setupPhase" aria-labelledby="myHomeTitle">
             <div class="setup-intro"><h2>梦想中的家是什么样的？</h2><p>从户型模板开始，一点一点拼出我的家。</p></div>
             <section class="continue-box" id="continueBox" aria-labelledby="continueTitle" hidden><div class="template-heading"><b id="continueTitle">继续编辑</b></div><div class="home-grid" id="homeGrid" aria-label="已保存的家"></div></section>
-            <button class="export-homes-button" id="exportHomesButton" type="button">下载布局快照</button>
             <section class="template-box" id="templateBox" aria-labelledby="templateTitle"><div class="template-heading"><b id="templateTitle">从收藏户型生成</b></div><div class="template-grid" id="templateGrid" aria-label="选择收藏户型"></div></section>
             <span id="uploadName" hidden></span><input id="drawingInput" type="file" accept="image/png,image/jpeg,image/webp" hidden />
             <p class="setup-error" id="setupError" role="alert"></p>
@@ -310,10 +308,10 @@
     import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
     import { FURNITURE_CATEGORIES, getAsset, getAssets, getFavorites, setFavorites, addUserAsset, isSupportedFloorplan } from '../shared/asset-library-data.js?v=20260722c';
     import { renderTemplatePreviews, disposeTemplatePreviews } from '../shared/template-preview-3d.js';
+    import { DEFAULT_HOMES } from '../shared/default-homes.generated.js';
 
     const STORAGE_KEY = 'dreamhome.my-home.v1';
     const HOMES_KEY = 'dreamhome.my-home.homes.v1';
-    const USE_MOCK_HOME_SERVICE = true;
     const MOCK_FAILURE = new URLSearchParams(location.search).has('mockFailure');
     const wall = (id, axis, at, from, to, role='partition') => ({id,axis,at,from,to,role});
     const TEMPLATES = [
@@ -394,9 +392,13 @@
     const displaySceneName = (scene) => localStorage.getItem(sceneNameKey(scene.video_id))?.trim() || scene.title;
     const uid = (prefix) => `${prefix}-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)}`;
     const now = () => new Date().toISOString();
-    const BACKEND = 'http://127.0.0.1:8000';
-    const STATIC_DEMO_ROOT = '../../assets/demo-backend';
     const QUERY = new URLSearchParams(location.search);
+    const BACKEND = QUERY.get('apiBase')?.trim() || window.DREAMHOME_API_BASE_URL || 'http://127.0.0.1:8000';
+    const HOME_USER_KEY = 'dreamhome.home-user-id.v1';
+    const queryHomeUserId = QUERY.get('userId')?.trim();
+    if (queryHomeUserId) localStorage.setItem(HOME_USER_KEY, queryHomeUserId);
+    const HOME_USER_ID = queryHomeUserId || localStorage.getItem(HOME_USER_KEY)?.trim() || '';
+    const STATIC_DEMO_ROOT = '../../assets/demo-backend';
     const MODEL_ROOT_OVERRIDE = QUERY.get('modelRoot')?.trim();
     // 桌面演示优先使用高清原始模型；models-v1 仅保留为可选的轻量资源，不再默认加载。
     const STATIC_MODEL_ROOT = `${STATIC_DEMO_ROOT}/models`;
@@ -407,7 +409,7 @@
     const USE_LOCAL_BACKEND = ['127.0.0.1','localhost'].includes(location.hostname) && QUERY.get('demo')!=='1';
     const normalizeHomeProject = (project) => project && project.id ? {...project, daylight: project.daylight || 'day', placements:Array.isArray(project.placements)?project.placements:[], finishes:{floorAssetId:null,wallpaperAssetId:null,...project.finishes}} : null;
     function tell(message) { ui.liveRegion.textContent = message; ui.toast.textContent = message; ui.toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => ui.toast.classList.remove('show'), 1800); }
-    function persistProjectNow(){if(!state.project||state.caseMode)return true;try{const previewImage=sceneRuntime?.capturePreview?.();if(previewImage)state.project.previewImage=previewImage;homeSceneService.saveProject({...state.project,updatedAt:now()});state.dirty=false;ui.editorHomeMeta.textContent='3D 布局已保存';return true;}catch(error){state.dirty=true;ui.editorHomeMeta.textContent='布局保存失败';tell('布局保存失败，请勿关闭页面');return false;}}
+    async function persistProjectNow(){if(!state.project||state.caseMode)return true;try{const previewImage=sceneRuntime?.capturePreview?.();if(previewImage)state.project.previewImage=previewImage;const project={...state.project,updatedAt:now()};homeSceneService.saveProject(project);const result=await homeSceneService.syncProject(project);if(result?.revision)state.project.revision=result.revision;state.dirty=false;ui.editorHomeMeta.textContent=HOME_USER_ID?'3D 布局已同步':'3D 布局已保存在本机';return true;}catch(error){state.dirty=true;ui.editorHomeMeta.textContent='布局同步失败';tell('布局已保存在本机，后端同步失败');return false;}}
     function saveSoon() { if(state.caseMode)return;state.dirty = true; clearTimeout(saveTimer);ui.editorHomeMeta.textContent = '正在保存布局';saveTimer=setTimeout(persistProjectNow,360); }
     const MockHomeSceneService = {
       async submitHomeGeneration({templateId, drawingFile}) { return { id: uid('job'), templateId: templateId || 'two-one', drawingName: drawingFile?.name || null, startedAt: Date.now() }; },
@@ -417,6 +419,7 @@
         try {
           const store = JSON.parse(localStorage.getItem(HOMES_KEY) || 'null');
           let homes = store && Array.isArray(store.homes) ? store.homes : [];
+          if (!store) homes = clone(DEFAULT_HOMES);
           // 把旧版单独保存的视频房间迁入统一项目列表，之后所有入口都复用同一编辑器和保存链路。
           const legacyVideoKeys=Array.from({length:localStorage.length},(_,index)=>localStorage.key(index)).filter(key=>key?.startsWith('dreamhome_video_project_')&&key.endsWith('_v1'));
           legacyVideoKeys.forEach((key)=>{const legacyVideo=JSON.parse(localStorage.getItem(key)||'null');const migrated=normalizeHomeProject(legacyVideo);if(migrated&&!homes.some((home)=>home.id===migrated.id))homes.push(migrated);if(migrated)localStorage.removeItem(key);});
@@ -433,13 +436,41 @@
       saveProject(project) { const homes = this.loadHomes().filter((home) => home.id !== project.id); homes.unshift({...project, schemaVersion:3, updatedAt: now()}); localStorage.setItem(HOMES_KEY, JSON.stringify({version:2, homes})); },
       deleteHome(id) { const homes = this.loadHomes().filter((home) => home.id !== id); localStorage.setItem(HOMES_KEY, JSON.stringify({version:2, homes})); }
     };
-    const HttpHomeSceneService = {
-      async submitHomeGeneration({templateId, drawingFile}) { const form = new FormData(); if (templateId) form.append('template_id', templateId); if (drawingFile) form.append('file', drawingFile); const response = await fetch('/api/home-generation', {method:'POST', body:form}); if (!response.ok) throw new Error('提交户型生成任务失败'); return response.json(); },
-      async getJob(job) { const response = await fetch(`/api/jobs/${job.id}`); if (!response.ok) throw new Error('获取任务状态失败'); return response.json(); },
-      async listAssets() { const response = await fetch('/api/assets'); if (!response.ok) throw new Error('获取资产失败'); return response.json(); },
-      loadProject() { return null; }, saveProject() {}, loadHomes() { return []; }, deleteHome() {}
+    const homeSceneService = {
+      submitHomeGeneration: (...args) => MockHomeSceneService.submitHomeGeneration(...args),
+      getJob: (...args) => MockHomeSceneService.getJob(...args),
+      listAssets: (...args) => MockHomeSceneService.listAssets(...args),
+      loadHomes: () => MockHomeSceneService.loadHomes(),
+      saveProject: (project) => MockHomeSceneService.saveProject(project),
+      deleteHome: (id) => MockHomeSceneService.deleteHome(id),
+      async syncProject(project) {
+        if (!HOME_USER_ID) return null;
+        const response=await fetch(`${BACKEND}/api/home-projects/${encodeURIComponent(project.id)}?user_id=${encodeURIComponent(HOME_USER_ID)}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(project),keepalive:true});
+        if(!response.ok)throw new Error(`保存项目失败 (${response.status})`);
+        return response.json();
+      },
+      async syncDelete(id) {
+        if (!HOME_USER_ID) return null;
+        const response=await fetch(`${BACKEND}/api/home-projects/${encodeURIComponent(id)}`,{method:'DELETE'});
+        if(!response.ok&&response.status!==404)throw new Error(`删除项目失败 (${response.status})`);
+        return response.status===404?null:response.json();
+      },
+      async hydrate() {
+        if (!HOME_USER_ID) return this.loadHomes();
+        const listResponse=await fetch(`${BACKEND}/api/home-projects?user_id=${encodeURIComponent(HOME_USER_ID)}`);
+        if(!listResponse.ok)throw new Error(`读取项目失败 (${listResponse.status})`);
+        const summaries=await listResponse.json();
+        const serverHomes=(await Promise.all((Array.isArray(summaries)?summaries:[]).map(async(summary)=>{const response=await fetch(`${BACKEND}/api/home-projects/${encodeURIComponent(summary.project_id||summary.id)}`);return response.ok?normalizeHomeProject(await response.json()):null;}))).filter(Boolean);
+        const localHomes=this.loadHomes(),merged=new Map();
+        [...serverHomes,...localHomes].forEach((home)=>{const current=merged.get(home.id),incomingTime=Date.parse(home.updatedAt||home.createdAt||0)||0,currentTime=Date.parse(current?.updatedAt||current?.createdAt||0)||0;if(!current||incomingTime>currentTime)merged.set(home.id,home);});
+        const homes=[...merged.values()].sort((a,b)=>String(b.updatedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.createdAt||'')));
+        localStorage.setItem(HOMES_KEY,JSON.stringify({version:2,homes}));
+        const serverById=new Map(serverHomes.map(home=>[home.id,home]));
+        await Promise.all(homes.filter(home=>{const server=serverById.get(home.id);return !server||(Date.parse(home.updatedAt||0)||0)>(Date.parse(server.updatedAt||0)||0);}).map(home=>this.syncProject(home)));
+        return homes;
+      }
     };
-    const homeSceneService = USE_MOCK_HOME_SERVICE ? MockHomeSceneService : HttpHomeSceneService;
+    const syncProjectInBackground=(project)=>homeSceneService.syncProject(project).catch((error)=>console.warn('[DreamHome] 后端同步暂不可用，已保留本地副本',error));
 
     function downloadHomesSnapshot() {
       persistProjectNow();
@@ -450,7 +481,6 @@
       setTimeout(() => URL.revokeObjectURL(href), 1000);
       tell(`已导出 ${homes.length} 个房间布局`);
     }
-    document.getElementById('exportHomesButton')?.addEventListener('click', downloadHomesSnapshot);
 
     // 仅在显式导出地址下，把当前浏览器已保存的全部编辑态打包；普通页面不显示额外按钮。
     if (QUERY.get('exportHomes') === '1') {
@@ -600,7 +630,7 @@
         if(existingIds.has(scene.video_id))continue;
         const sceneData=await loadVideoSceneData(scene.video_id);
         const project=projectFromVideoScene(sceneData,[],true);
-        homeSceneService.saveProject(project);
+        homeSceneService.saveProject(project);syncProjectInBackground(project);
         existingIds.add(scene.video_id);
         added=true;
       }
@@ -657,13 +687,13 @@
         const assets=assetsResponse?.ok?await assetsResponse.json():[];
         const project=projectFromVideoScene(sceneData,assets,!USE_LOCAL_BACKEND);
         if(caseMode)enterProjectEditor(project);
-        else{homeSceneService.saveProject(project);updateGeneration('processing',58);enterProjectEditor(project,{loading:true,title});}
+        else{homeSceneService.saveProject(project);syncProjectInBackground(project);updateGeneration('processing',58);enterProjectEditor(project,{loading:true,title});}
       } catch(error) { pendingSceneStartedAt=0;pendingSceneTitle='';state.phase='setup'; updatePhases(); tell(error.message); }
     }
     function updatePhases() { const root=document.querySelector('.dh-root'),sceneLoading=state.phase==='scene-loading',generating=['submitting','polling','error'].includes(state.phase)||sceneLoading,editor=state.phase==='editor'||sceneLoading,real=editor&&!!state.project?.realScene,roomTemplate=editor&&TEMPLATES.find(item=>item.id===state.project?.source?.templateId)?.scope==='room';ui.setupPhase.style.display=state.phase==='setup'?'flex':'none';ui.generationPhase.classList.toggle('is-visible',generating);ui.editorPhase.classList.toggle('is-visible',editor);root.classList.toggle('is-editor',editor);root.classList.toggle('is-real-scene',real);root.classList.toggle('is-scene-editor',real||roomTemplate);root.classList.toggle('is-case',editor&&state.caseMode);if(generating)genVideo?.play().catch(()=>{});else genVideo?.pause(); }
     function updateGeneration(status, progress, error = '') { const copy = {queued:['正在准备空间','正在读取你的户型信息'],processing:['正在生成 3D 户型','包公球正在装修你的梦想之家'],ready:['空间已准备好','正在进入你的 3D 家'],failed:['生成没有完成',error || '请检查图片或重新尝试']}[status] || ['正在准备空间','']; ui.generationMascotStage.dataset.status = status; ui.generationMascotStage.classList.toggle('is-constructing', status === 'processing'); ui.generationTitle.textContent = copy[0]; ui.generationCopy.textContent = copy[1]; ui.progressBar.style.width = `${progress}%`; ui.retryButton.hidden = status !== 'failed'; ui.backToSetup.textContent = status === 'failed' ? '返回选择' : '取消'; }
     async function startGeneration() { if (!state.selectedTemplateId && !state.drawingFile) { ui.setupError.textContent = '请选择一个户型模板，或上传一张设计图。'; return; } state.phase = 'submitting'; updatePhases(); updateGeneration('queued', 4); try { state.job = await homeSceneService.submitHomeGeneration({templateId:state.selectedTemplateId, drawingFile:state.drawingFile}); state.phase='polling'; pollJob(); } catch (error) { failGeneration(error.message); } }
-    async function pollJob() { clearTimeout(pollTimer); try { const jobState = await homeSceneService.getJob(state.job); const copyStatus = jobState.status === 'ready' ? 'ready' : jobState.status === 'failed' ? 'failed' : jobState.status; updateGeneration(copyStatus, jobState.progress, jobState.error); if (jobState.status === 'ready') { const project=normalizeHomeProject(jobState.result);project.placements.forEach((placement) => placement.homeId = project.id);homeSceneService.saveProject(project);enterProjectEditor(project);tell('3D 户型已生成，可以开始摆放');return; } if (jobState.status === 'failed') { state.phase='error'; updatePhases(); return; } pollTimer = setTimeout(pollJob, 680); } catch (error) { failGeneration(error.message); } }
+    async function pollJob() { clearTimeout(pollTimer); try { const jobState = await homeSceneService.getJob(state.job); const copyStatus = jobState.status === 'ready' ? 'ready' : jobState.status === 'failed' ? 'failed' : jobState.status; updateGeneration(copyStatus, jobState.progress, jobState.error); if (jobState.status === 'ready') { const project=normalizeHomeProject(jobState.result);project.placements.forEach((placement) => placement.homeId = project.id);homeSceneService.saveProject(project);syncProjectInBackground(project);enterProjectEditor(project);tell('3D 户型已生成，可以开始摆放');return; } if (jobState.status === 'failed') { state.phase='error'; updatePhases(); return; } pollTimer = setTimeout(pollJob, 680); } catch (error) { failGeneration(error.message); } }
     function failGeneration(message) { clearTimeout(pollTimer); state.phase='error'; updatePhases(); updateGeneration('failed', 0, message); }
     function returnToSetup() { clearTimeout(pollTimer);clearTimeout(saveTimer);if(state.caseMode){location.href='../inspiration-library/index.html';return;}if(state.project&&!persistProjectNow())return;disposeScene();state.project=null;state.selectedRoomId=null;state.selectedPlacementId=null;state.selectedWindowSlotId=null;state.phase='setup';renderSavedHomes();renderVideoScenes();updatePhases();ui.setupPhase.scrollTop=0; }
 
@@ -915,7 +945,7 @@
 
     ui.templateGrid.addEventListener('click',(event)=>{const button=event.target.closest('[data-template-id]'); if(button) selectTemplate(button.dataset.templateId);});
     ui.homeGrid.addEventListener('click',(event)=>{ const del=event.target.closest('[data-home-delete]'); if(del){ openDeleteConfirm(del.dataset.homeDelete); return; } const scene=event.target.closest('[data-video-scene]');if(scene){openVideoScene(scene.dataset.videoScene,scene.dataset.sceneTitle);return;}const card=event.target.closest('[data-home-id]'); if(card) openHome(card.dataset.homeId); });
-    ui.confirmModal.addEventListener('click',(event)=>{ if(event.target.closest('[data-confirm-close]')){ closeDeleteConfirm(); return; } if(event.target.closest('#confirmOk')){ const id=pendingDeleteId; closeDeleteConfirm(); if(id){ homeSceneService.deleteHome(id); renderSavedHomes(); renderVideoScenes(); tell('已删除这个家'); } } });
+    ui.confirmModal.addEventListener('click',(event)=>{ if(event.target.closest('[data-confirm-close]')){ closeDeleteConfirm(); return; } if(event.target.closest('#confirmOk')){ const id=pendingDeleteId; closeDeleteConfirm(); if(id){ homeSceneService.deleteHome(id);homeSceneService.syncDelete(id).catch(()=>tell('已从本机删除，后端删除暂未同步'));renderSavedHomes();renderVideoScenes();tell('已删除这个家'); } } });
     ui.drawingInput.addEventListener('change',()=>{const file=ui.drawingInput.files[0]; if (!file) return; if (!['image/png','image/jpeg','image/webp'].includes(file.type)) { state.drawingFile=null; ui.uploadName.textContent='请上传 PNG、JPG 或 WEBP 图片'; return; } state.selectedTemplateId=null; state.drawingFile=file; ui.uploadName.textContent=`${file.name} · ${(file.size/1024/1024).toFixed(1)} MB`; ui.setupError.textContent=''; renderTemplates(); });
     ui.generateButton.addEventListener('click',startGeneration); ui.backToSetup.addEventListener('click',returnToSetup); ui.retryButton.addEventListener('click',startGeneration);
     ui.editorHomeName.addEventListener('change',()=>{ if(!state.project) return; const name=ui.editorHomeName.value.trim(); if(!name){ ui.editorHomeName.value=state.project.name; return; } state.project.name=name; ui.editorHomeName.value=name; if(state.project.source?.type==='video_rebuild')localStorage.setItem(sceneNameKey(state.project.source.videoId),name);saveSoon();tell('家的名称已更新'); });
@@ -931,6 +961,7 @@
     ui.editorBack.addEventListener('click',returnToSetup); ui.shareButton.addEventListener('click',openShareSheet); ui.shareSheet.addEventListener('click',(event)=>{ if(event.target.closest('[data-share-close]')){ closeShareSheet(); return; } const target=event.target.closest('[data-share]'); if(target){ closeShareSheet(); tell(`已唤起分享 · ${target.querySelector('b')?.textContent || ''}`); } });
     document.addEventListener('keydown',(event)=>{if(event.key==='Escape' && state.interaction.mode!=='orbit') exitInteraction();}); window.addEventListener('pagehide',()=>{clearTimeout(saveTimer);persistProjectNow();});window.addEventListener('beforeunload',()=>{clearTimeout(saveTimer);persistProjectNow();disposeScene();});
     state.phase='setup';renderTemplates();renderSavedHomes();renderVideoScenes();updatePhases();
+    homeSceneService.hydrate().then(()=>{renderSavedHomes();renderVideoScenes();}).catch((error)=>console.warn('[DreamHome] 后端项目暂不可用，继续使用本地布局',error));
     // 从灵感库 banner 案例卡进入：只读案例模式（复用拼装编辑器，去掉抽屉与移动/调整，加收藏）
     const caseVideoId=QUERY.get('case');
     if(caseVideoId){ openVideoScene(caseVideoId,'案例空间',true); }
