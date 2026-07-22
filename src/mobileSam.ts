@@ -25,15 +25,18 @@ export type EdgeSamResult = {
 
 const MODEL_LONG_SIDE = 1024
 const FRAME_RENDER_SCALE = 2
-const STICKER_RENDER_SCALE = 2
+const STICKER_RENDER_SCALE = 1.5
 const ENCODER_URL = '/models/edge_sam_3x_encoder.onnx'
 const DECODER_URL = '/models/edge_sam_3x_decoder.onnx'
 const PIXEL_MEAN = [123.675, 116.28, 103.53] as const
 const PIXEL_STD = [58.395, 57.12, 57.375] as const
 
-// WebGPU is preferred for the heavy encoder. WASM stays single-threaded as a
-// universal fallback; the extra proxy worker is incompatible with WebGPU.
-ort.env.wasm.numThreads = 1
+// WebGPU is preferred for the heavy encoder. WASM uses a few threads only when
+// cross-origin isolation makes SharedArrayBuffer safe, otherwise it stays on
+// the universal single-thread fallback. The proxy worker conflicts with WebGPU.
+ort.env.wasm.numThreads = globalThis.crossOriginIsolated
+  ? Math.min(4, Math.max(1, Math.floor((navigator.hardwareConcurrency || 2) / 2)))
+  : 1
 ort.env.wasm.proxy = false
 
 let encoderSessionPromise: Promise<ort.InferenceSession> | null = null
@@ -87,8 +90,12 @@ function getDecoderSession(): Promise<ort.InferenceSession> {
 }
 
 export async function warmupEdgeSam(): Promise<void> {
-  // WebGPU and WASM share the same ONNX bootstrap. Initialize them in order to
-  // avoid two backends racing the one-time WASM setup on first page load.
+  // Download both model files together, then initialize sessions in order so
+  // WebGPU and WASM do not race the one-time ONNX bootstrap.
+  await Promise.all([
+    getModelBuffer(ENCODER_URL),
+    getModelBuffer(DECODER_URL),
+  ])
   await getEncoderSession()
   await getDecoderSession()
 }
@@ -1034,6 +1041,11 @@ type CandidateMetrics = {
   areaRatio: number
 }
 
+type DecodedSet = {
+  decoded: { masks: ort.Tensor; scores: number[] }
+  positivePrompts: Point[]
+}
+
 function scoreMaskCandidate(
   frame: PreparedFrame,
   masks: ort.Tensor,
@@ -1195,6 +1207,45 @@ function scoreMaskCandidate(
   }
 }
 
+function rankCandidates(
+  decodedSets: DecodedSet[],
+  frame: PreparedFrame,
+  box: Box,
+  renderBox: Box,
+  path: Point[],
+) {
+  return decodedSets.flatMap(({ decoded, positivePrompts }, promptSetIndex) => {
+    const dims = decoded.masks.dims
+    const maskSize = Number(dims[dims.length - 2]) * Number(dims[dims.length - 1])
+    const candidateCount = Math.max(1, Math.floor(decoded.masks.data.length / maskSize))
+    return Array.from({ length: candidateCount }, (_, index) => ({
+      index,
+      promptSetIndex,
+      decoded,
+      positivePrompts,
+      metrics: scoreMaskCandidate(
+        frame,
+        decoded.masks,
+        index,
+        decoded.scores[index] ?? 0,
+        box,
+        renderBox,
+        positivePrompts,
+        path,
+      ),
+    }))
+  }).sort((a, b) => b.metrics.score - a.metrics.score)
+}
+
+function isPlausibleCandidate(metrics: CandidateMetrics): boolean {
+  return metrics.anchorCoverage >= 0.5
+    && metrics.precision >= 0.36
+    && metrics.coverage >= 0.07
+    && metrics.renderSpill <= 0.42
+    && metrics.renderEdgeTouch <= 0.3
+    && metrics.screenEdgeTouch <= 0.035
+}
+
 export async function segmentWithEdgeSam(
   video: HTMLVideoElement,
   path: Point[],
@@ -1217,54 +1268,35 @@ export async function segmentWithEdgeSam(
     ...boundaryPromptSets.slice(0, 1),
   ]
   const negativePrompts = buildNegativePrompts(path, box)
-  const decodedSets = []
-  for (const positivePrompts of positivePromptSets) {
+  const decodedSets: DecodedSet[] = []
+  for (let promptSetIndex = 0; promptSetIndex < positivePromptSets.length; promptSetIndex++) {
+    const positivePrompts = positivePromptSets[promptSetIndex]
     const decoded = await decodeCandidates(
       decoder,
       frame,
       buildPromptSet(frame, box, positivePrompts, negativePrompts),
     )
     decodedSets.push({ decoded, positivePrompts })
+    // The centre prompt is normally sufficient. Only pay for the boundary
+    // decoder when all centre candidates fail the same quality gates used by
+    // the final selector.
+    if (
+      promptSetIndex === 0
+      && rankCandidates(decodedSets, frame, box, renderBox, path).some(({ metrics }) => isPlausibleCandidate(metrics))
+    ) break
   }
   const decodedAt = performance.now()
-  const rankedCandidates = decodedSets.flatMap(({ decoded, positivePrompts }, promptSetIndex) => {
-    const dims = decoded.masks.dims
-    const maskSize = Number(dims[dims.length - 2]) * Number(dims[dims.length - 1])
-    const candidateCount = Math.max(1, Math.floor(decoded.masks.data.length / maskSize))
-    return Array.from({ length: candidateCount }, (_, index) => ({
-      index,
-      promptSetIndex,
-      decoded,
-      positivePrompts,
-      metrics: scoreMaskCandidate(
-        frame,
-        decoded.masks,
-        index,
-        decoded.scores[index] ?? 0,
-        box,
-        renderBox,
-        positivePrompts,
-        path,
-      ),
-    }))
-  })
-    .sort((a, b) => b.metrics.score - a.metrics.score)
+  const rankedCandidates = rankCandidates(decodedSets, frame, box, renderBox, path)
 
   // Never surface an obviously wrong mask just because it ranked first among
   // weak candidates. Try the next plausible candidate; if none is clean enough
   // the UI asks the user to circle again instead of drawing a broken sticker.
-  const plausibleCandidates = rankedCandidates.filter(({ metrics }) => (
-    metrics.anchorCoverage >= 0.5
-    && metrics.precision >= 0.36
-    && metrics.coverage >= 0.07
-    && metrics.renderSpill <= 0.42
-    && metrics.renderEdgeTouch <= 0.3
-    && metrics.screenEdgeTouch <= 0.035
-  ))
+  const plausibleCandidates = rankedCandidates.filter(({ metrics }) => isPlausibleCandidate(metrics))
   const renderWidth = Math.max(1, Math.round(renderBox.w * STICKER_RENDER_SCALE))
   const renderHeight = Math.max(1, Math.round(renderBox.h * STICKER_RENDER_SCALE))
   const pathMask = rasterizePolygonMask(path, renderBox, renderWidth, renderHeight)
-  const renderedCandidates = plausibleCandidates.slice(0, 4).flatMap((candidate) => {
+  const renderedCandidates = []
+  for (const candidate of plausibleCandidates.slice(0, 4)) {
     const rendered = renderCutout(
       frame,
       candidate.decoded.masks,
@@ -1275,14 +1307,17 @@ export async function segmentWithEdgeSam(
       path,
       pathMask,
     )
-    if (!rendered) return []
-    if (rendered.finalInsidePrecision < 0.34 || rendered.renderEdgeTouch > 0.2) return []
-    return [{
+    if (!rendered) continue
+    if (rendered.finalInsidePrecision < 0.34 || rendered.renderEdgeTouch > 0.2) continue
+    renderedCandidates.push({
       candidate,
       rendered,
       finalScore: candidate.metrics.score + rendered.qualityScore * 0.32,
-    }]
-  }).sort((a, b) => b.finalScore - a.finalScore)
+    })
+    // Candidates are already ordered by semantic and boundary quality. Stop
+    // after the first one that also passes the expensive full-resolution gate.
+    break
+  }
   const selected = renderedCandidates[0]
   if (!selected) {
     console.info('[EdgeSAM] rejected low-quality candidates', rankedCandidates.slice(0, 3).map(({ metrics }) => ({
