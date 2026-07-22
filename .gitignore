@@ -31,6 +31,10 @@ build/
 !web/prototype/assets/videos/
 !web/prototype/assets/videos/*.mp4
 
+# 例外：包工球交互动画已做浏览器兼容封装，单文件均小于 GitHub 限制。
+!public/mascot-motion/*.mp4
+!web/mascot-motion/*.mp4
+
 # ---- 环境变量 / 密钥 ----
 .env
 .env.*

@@ -43,24 +43,22 @@ export type CollectionMascotMode = 'none' | 'collecting' | 'ready' | 'receiving'
 
 const IDLE_ACCENT_DELAY = 10_000
 const WORK_ACCENT_DELAY = 2_500
-const MOTION_ASSET_ROOT = '/prototype/assets/mascot/motion'
+const MOTION_ASSET_ROOT = '/mascot-motion'
 // 统一角色脚底基线；各段素材的轻微视觉差异在这里校准，不需要重新导出。
 const MOTIONS: Record<MotionName, MotionClip> = {
-  // GitHub 中可跨浏览器播放的动态素材统一使用 WebM；原先引用的 idle/cold-start
-  // MOV 文件并未上传，导致首页一进入就回退到旧静态 PNG。
-  coldStart: { src: `${MOTION_ASSET_ROOT}/assembly-loading.webm`, loop: false, scale: 1, x: 0, y: 0 },
-  idle: { src: `${MOTION_ASSET_ROOT}/assembly-loading.webm`, loop: true, scale: 1, x: 0, y: 0 },
-  idleMagnifier: { src: `${MOTION_ASSET_ROOT}/working-drawing.webm`, loop: false, scale: 0.98, x: 1, y: 1 },
-  idleBelt: { src: `${MOTION_ASSET_ROOT}/working-hammer.webm`, loop: false, scale: 1.02, x: -1, y: 0 },
-  working: { src: `${MOTION_ASSET_ROOT}/assembly-loading.webm`, loop: true, scale: 1, x: 0, y: 0 },
-  workingHammer: { src: `${MOTION_ASSET_ROOT}/working-hammer.webm`, loop: false, scale: 0.96, x: 1, y: 1 },
-  workingDrawing: { src: `${MOTION_ASSET_ROOT}/working-drawing.webm`, loop: false, scale: 0.96, x: 0, y: 1 },
-  complete: { src: `${MOTION_ASSET_ROOT}/assembly-loading.webm`, loop: true, scale: 0.98, x: 0, y: 1 },
+  // 与《包工球交互》状态文档逐项对应；MP4 为原始 H.264 MOV 的无损换封装。
+  coldStart: { src: `${MOTION_ASSET_ROOT}/cold-start.mp4`, loop: false, scale: 1, x: 0, y: 0 },
+  idle: { src: `${MOTION_ASSET_ROOT}/idle.mp4`, loop: true, scale: 1, x: 0, y: 0 },
+  idleMagnifier: { src: `${MOTION_ASSET_ROOT}/idle-magnifier.mp4`, loop: false, scale: 0.98, x: 1, y: 1 },
+  idleBelt: { src: `${MOTION_ASSET_ROOT}/idle-belt.mp4`, loop: false, scale: 1.02, x: -1, y: 0 },
+  working: { src: `${MOTION_ASSET_ROOT}/working.mp4`, loop: true, scale: 1, x: 0, y: 0 },
+  workingHammer: { src: `${MOTION_ASSET_ROOT}/working-hammer.mp4`, loop: false, scale: 0.96, x: 1, y: 1 },
+  workingDrawing: { src: `${MOTION_ASSET_ROOT}/working-drawing.mp4`, loop: false, scale: 0.96, x: 0, y: 1 },
+  complete: { src: `${MOTION_ASSET_ROOT}/complete.mp4`, loop: true, scale: 0.98, x: 0, y: 1 },
 }
 
 const FALLBACK_IMG: Record<MascotState, string> = {
-  // 冷启动/待机动画在部分浏览器无法解码 MOV 时，保持清醒的默认形象，
-  // 不再错误回退到睡眠态。
+  // 动态素材真正加载失败时才使用静态兜底；待机保持清醒形象。
   sleeping: '/mascot-initial.png',
   happy: '/mascot-happy.png',
   working: '/mascot-working.png',
