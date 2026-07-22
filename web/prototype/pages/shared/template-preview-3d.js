@@ -31,6 +31,19 @@ function viewTexture() {
   return viewTexturePromise ||= loadTexture(new URL('../../assets/scenes/window-views/day.webp', import.meta.url).href);
 }
 
+function coverTexture(texture, targetAspect) {
+  const copy = texture.clone();
+  const imageAspect = (texture.image?.width || 1) / (texture.image?.height || 1);
+  let visibleX = 1;
+  let visibleY = 1;
+  if (targetAspect > imageAspect) visibleY = imageAspect / targetAspect;
+  else visibleX = targetAspect / imageAspect;
+  copy.repeat.set(visibleX, visibleY);
+  copy.offset.set((1 - visibleX) / 2, (1 - visibleY) / 2);
+  copy.needsUpdate = true;
+  return copy;
+}
+
 function addBox(group, size, position, material) {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), material);
   mesh.position.set(...position);
@@ -53,7 +66,10 @@ function addWindow(group, side, spec, materials, kind = 'standard') {
   const horizontal = side === 'back' || side === 'front';
   frame.position.set(side === 'left' ? -spec.width/2+.071 : side === 'right' ? spec.width/2-.071 : 0, y, side === 'back' ? -spec.depth/2+.071 : side === 'front' ? spec.depth/2-.071 : 0);
   frame.rotation.y = horizontal ? 0 : Math.PI/2;
-  const view = new THREE.Mesh(new THREE.PlaneGeometry(width-.12, height-.12), materials.view);
+  const viewMaterial = materials.view.clone();
+  const view = new THREE.Mesh(new THREE.PlaneGeometry(width-.12, height-.12), viewMaterial);
+  view.userData.windowAspect = (width - .12) / (height - .12);
+  materials.windowViews.push(view);
   view.position.z = .065;
   frame.add(view);
   const bar = (w,h,x=0,yy=0) => { const item=new THREE.Mesh(new THREE.BoxGeometry(w,h,frameDepth),materials.frame);item.position.set(x,yy,.08);item.castShadow=true;frame.add(item); };
@@ -107,7 +123,7 @@ export async function renderTemplatePreview(canvas, templateId) {
   addBox(group,[t,h,spec.depth],[-spec.width/2,h/2,0],wallMat);
   addBox(group,[spec.width,.12,.24],[0,h-.06,-spec.depth/2+.05],trimMat);
   addBox(group,[.24,.12,spec.depth],[-spec.width/2+.05,h-.06,0],trimMat);
-  const materials={view:viewMat,frame:frameMat,cushion:cushionMat};
+  const materials={view:viewMat,frame:frameMat,cushion:cushionMat,windowViews:[]};
   spec.windows.forEach((entry)=>{const [side,kind='standard']=entry.split('-');addWindow(group,side,spec,materials,kind);});
   const ground=new THREE.Mesh(new THREE.PlaneGeometry(40,40),new THREE.ShadowMaterial({color:'#765f48',opacity:.13}));ground.rotation.x=-Math.PI/2;ground.position.y=-.13;ground.receiveShadow=true;scene.add(ground);
   const draw=()=>{renderer.render(scene,camera);if(!runtime.cancelled)canvas.style.backgroundImage=`url("${renderCanvas.toDataURL('image/webp',.86)}")`;};draw();
@@ -116,7 +132,13 @@ export async function renderTemplatePreview(canvas, templateId) {
   const [wood,landscape]=await Promise.all([floorTexture(),viewTexture()]);
   if(!runtime.cancelled){
     if (wood) { floorMat.map=wood;floorMat.color.set('#ffffff');floorMat.needsUpdate=true; }
-    if (landscape) { viewMat.map=landscape;viewMat.color.set('#ffffff');viewMat.needsUpdate=true; }
+    if (landscape) {
+      materials.windowViews.forEach((view)=>{
+        view.material.map=coverTexture(landscape,view.userData.windowAspect);
+        view.material.color.set('#ffffff');
+        view.material.needsUpdate=true;
+      });
+    }
     draw();
   }
   cleanup();runtime.cleanup=null;
