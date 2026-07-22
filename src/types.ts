@@ -1,6 +1,6 @@
 import { genSticker } from './stickerGen'
 
-export type FeedState = 'browse' | 'pause' | 'session' | 'confirm' | 'preview' | 'library' | 'assemble' | 'profile'
+export type FeedState = 'browse' | 'pause' | 'session' | 'confirm' | 'preview'
 
 export type MascotState = 'sleeping' | 'happy' | 'working'
 
@@ -10,13 +10,20 @@ export interface CraftJob {
   category: FurnitureCategory
   snapshot: string
   color: string
-  status: 'ordering' | 'crafting' | 'done'
+  status: 'ordering' | 'crafting' | 'done' | 'failed'
+  progress?: number
+  stage?: string
+  error?: string
+  backendJobId?: string
+  backendMode?: 'fal' | 'local-fallback'
   resultComponent?: LibraryComponent
 }
 
 export interface CraftBatch {
   id: string
   jobs: CraftJob[]
+  publicComponents: LibraryComponent[]
+  createdAt: number
   notified: boolean
   dismissed: boolean
 }
@@ -26,6 +33,8 @@ export interface SelectedObject {
   box: { x: number; y: number; w: number; h: number }
   items: { label: string; thumbnail: string }[]
   snapshot: string
+  source: 'public' | 'custom'
+  publicAssetId?: string
 }
 
 export interface TraceEntry {
@@ -55,26 +64,134 @@ export interface Blogger {
   homeDesc: string
 }
 
-export type FurnitureCategory = '沙发' | '茶几' | '吊灯' | '绿植' | '装饰画' | '地毯'
+export type FurnitureCategory = '沙发' | '茶几' | '吊灯' | '绿植' | '装饰画' | '地毯' | '其他'
 
 export interface LibraryComponent {
   id: string
   category: FurnitureCategory
+  sourceCategory?: string
   name: string
   source: string
+  sourceDescription?: string
   size: string
   styleTags: string[]
   thumbnail: string
   color: string
   sticker: string
+  completedImageUrl?: string
+  sourceCropUrl?: string
+  modelUrl?: string
   sourceVideo?: {
     blogger: string
     frameTime: string
     frameImg?: string
+    videoId?: string
+    startSec?: number
+    endSec?: number
+    appearances?: Array<{
+      startSec: number
+      endSec: number
+      representativeSec: number
+    }>
   }
 }
 
-export const VIDEO_SRC = '/videos/home-1.mp4'
+export interface FeedVideo {
+  id: string
+  src: string
+  author: string
+  authorBadge?: string
+  publishedAt?: string
+  captionBadge?: string
+  captionAction?: string
+  caption: string
+  music: string
+  source: 'local' | 'amber'
+}
+
+const amberFeedVideo = (
+  id: string,
+  ordinal: string,
+  overrides: Partial<Omit<FeedVideo, 'id' | 'src' | 'source'>> = {},
+): FeedVideo => ({
+  id,
+  src: `/videos/amber/${id}.mp4`,
+  author: '@家居灵感研究所',
+  caption: `家装灵感实拍 ${ordinal} · 把喜欢的家具圈进小工坊`,
+  music: '原声 - Amber 家装灵感视频',
+  source: 'amber',
+  ...overrides,
+})
+
+export const FEED_VIDEOS: FeedVideo[] = [
+  amberFeedVideo('vid_40734d7f2e6c', '02', {
+    author: '@鸡蛋灌饼',
+    publishedAt: '5天前',
+    captionBadge: '查看图文版',
+    caption: '我说幸福万万岁！ #治愈系小窝 #宅家 #卧室布置',
+    music: '原声 - 鸡蛋灌饼',
+  }),
+  {
+    id: 'home-1',
+    src: '/videos/home-1.mp4',
+    author: '@家居灵感研究所',
+    caption: '这个北欧风客厅太治愈了，每一处软装都想抄回家',
+    music: '原声 - home_vibes · 北欧治愈系居家BGM',
+    source: 'local',
+  },
+  amberFeedVideo('vid_b75d95dc92a7', '01', {
+    author: '@拾点',
+    publishedAt: '04月22日',
+    caption: '房价会跌，生活总不能跌吧～ #原木风室内装修 #日式原木风家居 #温馨…',
+    captionAction: '展开',
+    music: '原声 - 拾点',
+  }),
+  amberFeedVideo('vid_5c7efd168eb7', '03', {
+    author: '@拾点',
+    publishedAt: '01月01日',
+    caption: '普通人家在大城市的小房子｜69平3室2厅 #家的样子 #小户型 #理想的…',
+    captionAction: '展开',
+    music: '原声 - 拾点',
+  }),
+  amberFeedVideo('vid_182cbf77954d', '04', {
+    author: '@山月知心的家',
+    publishedAt: '5天前',
+    caption: '第 83 集｜两个人住，东西不多，清清爽爽的原木风小家 - 轻风格的家，',
+    captionAction: '展开',
+    music: '原声 - 山月知心的家',
+  }),
+  amberFeedVideo('vid_58a7a1504281', '05', {
+    author: '@sweet安宅',
+    authorBadge: '章节要点⌃',
+    publishedAt: '01月06日',
+    caption: 'room tour｜大城市普通人的家🏡 #ins风客厅布置 #人生选择题 #享受…',
+    captionAction: '展开',
+    music: '生活水底、nightfall',
+  }),
+  amberFeedVideo('vid_91fe552c5f7d', '06', {
+    author: '@云上的小路',
+    publishedAt: '05月24日',
+    caption: '买不起大房子，有一个48平的小家也很不错啊#抖音宝藏生活家#温馨的…',
+    captionAction: '展开',
+    music: '原声 - 云上的小路',
+  }),
+  amberFeedVideo('vid_5f32a0ac954a', '07', {
+    author: '@lila（求关注版）',
+    publishedAt: '07月03日',
+    caption: '27岁时给自己买的一室一厅',
+    music: '原声 - lila（求关注版）',
+  }),
+  amberFeedVideo('vid_605df2fff231', '08', {
+    author: '@一叁Iris',
+    publishedAt: '2025年08月11日',
+    caption: '一镜到底｜云参观耗时大半年装修好的家吧🏡 #家的样子 #一镜到底 #中…',
+    captionAction: '展开',
+    music: '原声 - 一叁Iris',
+  }),
+]
+
+// 兼容仍依赖单视频常量的旧模块；Feed 主界面使用 FEED_VIDEOS。
+export const VIDEO_SRC = FEED_VIDEOS[0].src
 
 export const MOCK_OBJECTS = [
   { label: '沙发', thumbnail: '🛋️' },
@@ -92,6 +209,7 @@ export const CATEGORY_COLOR: Record<FurnitureCategory, string> = {
   '绿植': '#4a7c37',
   '装饰画': '#5c6bc0',
   '地毯': '#9e6b5a',
+  '其他': '#c59a43',
 }
 
 const RAW_SEED: Omit<LibraryComponent, 'sticker'>[] = [
@@ -114,6 +232,7 @@ const BLOGGER_HOME_NAMES: Record<FurnitureCategory, string> = {
   '绿植': '天堂鸟落地',
   '装饰画': '肌理浮雕画',
   '地毯': '剑麻几何地毯',
+  '其他': '待分类家具',
 }
 
 export const BLOGGER_HOME_PACK: LibraryComponent[] = (
@@ -151,4 +270,3 @@ export const CURRENT_BLOGGER: Blogger = {
   homeName: '奶油风一居小家',
   homeDesc: '12 件软装 · 8㎡客厅',
 }
-
