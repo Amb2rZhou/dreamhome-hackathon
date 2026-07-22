@@ -1,16 +1,136 @@
 .mascot-root {
   position: absolute;
-  width: 64px;
-  height: 64px;
-  z-index: 50;
+  width: 80px;
+  height: 80px;
+  z-index: 70;
   touch-action: none;
   cursor: grab;
   transition: filter 0.2s;
 }
 .mascot-root.dragging { cursor: grabbing; }
+.mascot-media-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  overflow: visible;
+  pointer-events: none;
+}
+.mascot-awaiting-view .mascot-media-frame {
+  transform-origin: 50% 100%;
+  animation: mascotAwaitingViewJump 0.9s cubic-bezier(0.42, 0, 0.24, 1) infinite;
+}
+@keyframes mascotAwaitingViewJump {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  12% { transform: translateY(1px) scale(1.04, 0.96); }
+  48% { transform: translateY(-10px) scale(0.98, 1.03); }
+  72% { transform: translateY(0) scale(1.03, 0.97); }
+}
+.mascot-media-frame.is-collecting {
+  overflow: visible;
+}
+.mascot-collection-figure {
+  position: absolute;
+  left: -17px;
+  top: 4px;
+  width: 88px;
+  height: 88px;
+  transform-origin: 65% 74%;
+  animation: mascotCollectionIn 220ms ease-out both;
+  filter: drop-shadow(0 8px 11px rgba(56, 44, 24, 0.24));
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 220ms ease;
+}
+.mascot-collection-ready .mascot-collection-figure {
+  transform: translateY(-1px) scale(1.05);
+  filter: drop-shadow(0 0 13px rgba(255, 202, 55, 0.72));
+}
+.mascot-collection-receiving .mascot-collection-figure {
+  animation: mascotCollectionReceive 360ms ease-out both;
+}
+.mascot-collection-tip {
+  position: absolute;
+  right: 38px;
+  bottom: 61px;
+  z-index: 6;
+  width: max-content;
+  max-width: 142px;
+  padding: 7px 19px 7px 10px;
+  border-radius: 0;
+  white-space: normal;
+  line-height: 1.35;
+  background: linear-gradient(135deg, rgba(255,255,255,0.88), rgba(255,255,255,0.66));
+  border: 0;
+  box-shadow: none;
+  filter: drop-shadow(0 8px 18px rgba(31, 38, 48, 0.17));
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  backdrop-filter: blur(18px) saturate(145%);
+  -webkit-mask: url('/ui/bubble-tail-right.svg') center / 100% 100% no-repeat;
+  mask: url('/ui/bubble-tail-right.svg') center / 100% 100% no-repeat;
+  color: #30343a;
+  font-size: 10px;
+  font-weight: 700;
+  pointer-events: none;
+  animation: mascotMotionFadeIn 180ms ease-out both;
+}
+.mascot-collection-ready .mascot-collection-tip,
+.mascot-collection-receiving .mascot-collection-tip {
+  color: #30343a;
+  background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+}
+@keyframes mascotCollectionIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes mascotCollectionReceive {
+  0%, 100% { transform: translateY(-1px) scale(1.05); }
+  48% { transform: translateY(-3px) scale(1.11) rotate(-1deg); }
+}
+.mascot-motion-layer {
+  position: absolute;
+  inset: 0;
+  width: 80px;
+  height: 80px;
+  display: block;
+  pointer-events: none;
+  transform-origin: 50% 100%;
+  transform: translate(var(--motion-x, 0), var(--motion-y, 0)) scale(var(--motion-scale, 1));
+  filter: drop-shadow(0 8px 12px rgba(63, 86, 64, 0.22));
+}
+.mascot-motion-layer--incoming {
+  z-index: 2;
+  animation: mascotMotionFadeIn var(--fade-duration, 240ms) ease-out both;
+}
+.mascot-motion-layer--outgoing {
+  z-index: 1;
+  animation: mascotMotionFadeOut var(--fade-duration, 240ms) ease-in both;
+}
+.black-key-source {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.black-key-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+@keyframes mascotMotionFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes mascotMotionFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mascot-motion-layer--incoming,
+  .mascot-motion-layer--outgoing { animation-duration: 80ms; }
+}
 .mascot-img {
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
   object-fit: contain;
   pointer-events: none;
   transform: translate(0, -4px) perspective(420px) rotateX(2deg);
@@ -57,77 +177,191 @@
 
 .mascot-bubble {
   position: absolute;
-  bottom: 72px;
-  width: 230px;
-  background: #FFFDF8;
-  border-radius: 18px;
-  padding: 14px 14px 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  z-index: 4;
+  bottom: 58px;
+  width: max-content;
+  min-width: 132px;
+  max-width: 184px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.67));
+  border: 0;
+  border-radius: 0;
+  padding: 10px 13px 10px;
+  box-shadow: none;
+  filter: drop-shadow(0 10px 22px rgba(31, 38, 48, 0.18));
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  backdrop-filter: blur(20px) saturate(150%);
   animation: bubbleIn 0.3s cubic-bezier(0.22,1,0.36,1);
 }
 .mascot-bubble.bubble-right {
-  left: 72px;
+  left: 58px;
+  padding-left: 22px;
+  -webkit-mask: url('/ui/bubble-tail-left.svg') center / 100% 100% no-repeat;
+  mask: url('/ui/bubble-tail-left.svg') center / 100% 100% no-repeat;
   transform-origin: bottom left;
 }
 .mascot-bubble.bubble-left {
-  right: 72px;
+  right: 58px;
+  padding-right: 22px;
+  -webkit-mask: url('/ui/bubble-tail-right.svg') center / 100% 100% no-repeat;
+  mask: url('/ui/bubble-tail-right.svg') center / 100% 100% no-repeat;
   transform-origin: bottom right;
+}
+.mascot-bubble-complete {
+  width: 236px;
+  max-width: 236px;
+}
+.mascot-bubble-complete .mascot-bubble-text { padding-right: 0; }
+.mascot-bubble-complete .mascot-bubble-actions { right: 1px; bottom: -6px; }
+.mascot-bubble-guide {
+  width: 244px;
+  max-width: 244px;
+}
+.mascot-bubble-guide .mascot-bubble-cta-tail {
+  white-space: normal;
+}
+.mascot-bubble-guide .mascot-bubble-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.mascot-bubble-guide .mascot-bubble-cta-space {
+  display: none;
+}
+.mascot-bubble-guide .mascot-bubble-actions {
+  position: static;
+  align-self: flex-end;
+  margin: 4px 0 -3px;
 }
 @keyframes bubbleIn {
   from { opacity: 0; transform: translateY(6px) scale(0.85); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
-.mascot-bubble.bubble-right::after {
-  content: "";
-  position: absolute;
-  bottom: 12px;
-  left: -7px;
-  border: 7px solid transparent;
-  border-right-color: #FFFDF8;
-  border-left: 0;
-}
-.mascot-bubble.bubble-left::after {
-  content: "";
-  position: absolute;
-  bottom: 12px;
-  right: -7px;
-  border: 7px solid transparent;
-  border-left-color: #FFFDF8;
-  border-right: 0;
-}
 .mascot-bubble-text {
-  font-size: 13px;
-  font-weight: 600;
-  color: #1A1A1A;
-  line-height: 1.45;
+  font-size: 11px;
+  font-weight: 560;
+  color: #292d33;
+  line-height: 1.35;
   white-space: normal;
   word-break: break-word;
 }
-.mascot-bubble-actions {
+.mascot-bubble-copy {
+  position: relative;
+  display: block;
+}
+.mascot-bubble-copy .mascot-bubble-text {
+  display: inline;
+}
+.mascot-bubble-cta-tail {
+  white-space: nowrap;
+}
+.mascot-bubble-cta-space {
+  display: inline-block;
+  width: 51px;
+  height: 1px;
+}
+.mascot-bubble-copy-wide .mascot-bubble-cta-space {
+  display: none;
+}
+.mascot-bubble-copy-wide {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 10px;
-  gap: 6px;
+  align-items: flex-end;
+  gap: 8px;
+}
+.mascot-bubble-copy-wide .mascot-bubble-text {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-right: 0;
+}
+.mascot-bubble-copy-wide .mascot-bubble-cta-tail {
+  white-space: normal;
+}
+.mascot-bubble-copy-wide .mascot-bubble-actions {
+  position: static;
+  flex: 0 0 auto;
+  margin: 0 0 1px;
+}
+.mascot-bubble-actions {
+  display: inline-flex;
+  align-items: center;
+  position: absolute;
+  right: 0;
+  bottom: -3px;
+  margin: 0;
+  white-space: nowrap;
 }
 .mascot-bubble-x {
   position: absolute;
-  top: 6px; right: 6px;
+  top: 6px;
+  right: 7px;
+  z-index: 3;
   border: none;
   background: transparent;
-  color: #B8B8B8;
-  width: 22px; height: 22px;
+  color: rgba(45,49,55,0.52);
+  width: 20px; height: 20px;
+  padding: 0;
   border-radius: 50%;
   font-size: 12px;
+  line-height: 1;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
 }
+.mascot-bubble.bubble-left .mascot-bubble-x { right: 23px; }
+.mascot-bubble.bubble-right .mascot-bubble-x { right: 7px; }
 .mascot-bubble-btn {
   border: none;
-  background: #1A1A1A;
+  background: rgba(28,30,34,0.88);
   color: #fff;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 600;
-  padding: 6px 16px;
+  padding: 5px 11px;
   border-radius: 999px;
+  box-shadow:
+    0 4px 10px rgba(20,22,26,0.16),
+    inset 0 1px 0 rgba(255,255,255,0.18);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   cursor: pointer;
 }
+.mascot-bubble:not(.mascot-bubble-guide) .mascot-bubble-text { padding-right: 14px; }
+.mascot-bubble-guide .mascot-bubble-text { padding-right: 0; }
+.mascot-bubble-guide .mascot-bubble-text { white-space: normal; }
+.mascot-bubble-start .mascot-bubble-text,
+.mascot-bubble-notice .mascot-bubble-text { padding-right: 0; }
+.mascot-progress-guide::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 2px;
+  border: 2px solid rgba(255, 197, 54, 0.92);
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(255,197,54,.38);
+  pointer-events: none;
+  animation: mascotProgressGuidePulse 1.35s ease-out infinite;
+}
+@keyframes mascotProgressGuidePulse {
+  0% { opacity: 0.9; transform: scale(0.72); }
+  72%, 100% { opacity: 0; transform: scale(1.22); }
+}
+.mascot-task-badge {
+  position: absolute;
+  right: -7px;
+  bottom: -3px;
+  top: auto;
+  z-index: 8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 20px;
+  padding: 0 6px;
+  border: 1px solid rgba(20,22,26,.14);
+  border-radius: 999px;
+  background: rgba(255,255,255,.96);
+  color: #17191d;
+  box-shadow: 0 3px 9px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.9);
+  font-size: 9px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.mascot-task-badge span { font-size: 9px; line-height: 1; }

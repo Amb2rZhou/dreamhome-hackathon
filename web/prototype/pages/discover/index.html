@@ -1,43 +1,45 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>DreamHome · 刷一刷</title><link rel="stylesheet" href="./dreamhome-d-system.css"/><link rel="stylesheet" href="../shared/tabbar.css"/><link rel="stylesheet" href="../shared/status-bar.css"/><style>
-.feature-content{height:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px var(--dh-tabbar-safe-space);text-align:center}.feature-icon{width:72px;height:72px;padding:18px;border-radius:26px;background:var(--dh-color-sage-100);color:var(--dh-color-sage-700)}.feature-icon img{width:100%;height:100%;display:block}h1{margin:18px 0 8px;font-size:22px;letter-spacing:0}p{max-width:220px;margin:0;color:var(--dh-fg-secondary);font-size:13px;line-height:1.7}.feature-action{margin-top:22px;min-width:132px;height:42px;border:0;border-radius:15px;background:var(--dh-color-sage-600);color:#6b5330;font:inherit;font-size:13px;font-weight:var(--dh-font-weight-bold)}
-body { margin:0; min-width:320px; background:var(--dh-bg-canvas); }
-.dh-screen.dh-topwhite .dh-statusbar { background: var(--dh-bg-surface); } /* 主页面顶栏统一为底部导航同色 */
-.preview-stage { min-height:100vh; display:grid; place-items:center; padding:28px 18px; box-sizing:border-box; }
-@media (max-width:420px) { .preview-stage { min-height:100svh; padding:18px 10px; } }
-/* 源视频帧视图：从灵感库组件详情「链接」icon 跳入，定位到该组件被提取的画面 */
-.dh-screen.is-video .feature-content{display:none}
-.video-view{position:absolute;inset:0;z-index:40;display:none;background:#14120f;border-radius:inherit;overflow:hidden}
-.dh-screen.is-video .video-view{display:block}
-.video-view video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
-.video-view .vv-top{position:absolute;z-index:2;top:0;left:0;right:0;display:flex;align-items:center;gap:9px;padding:50px 14px 22px;background:linear-gradient(#000000a6,transparent);color:#fff}
-.video-view .vv-back{width:34px;height:34px;flex:none;border:0;border-radius:50%;background:rgba(0,0,0,.34);color:#fff;font-size:22px;line-height:1;cursor:pointer}
-.video-view .vv-top b{font-size:15px;font-weight:var(--dh-font-weight-heavy)}
-.video-view .vv-info{position:absolute;z-index:2;left:0;right:0;bottom:0;padding:30px 16px calc(18px + var(--dh-tabbar-safe-space));background:linear-gradient(transparent,#000000cc 46%);color:#fff}
-.video-view .vv-name{font-size:17px;font-weight:var(--dh-font-weight-heavy)}
-.video-view .vv-tag{display:inline-block;margin-top:7px;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.16);font-size:11px;font-weight:var(--dh-font-weight-bold)}
-.video-view .vv-note{margin:9px 0 0;font-size:12px;line-height:1.6;color:rgba(255,255,255,.82)}
-.video-view .vv-note b{color:#ffd479;font-weight:var(--dh-font-weight-bold)}
-</style></head><body><main class="preview-stage"><section class="dh-phone-shell"><div class="dh-screen dh-topwhite"><div class="dh-island" aria-hidden="true"></div><div class="dh-statusbar"><span class="status-time">9:41</span><div class="status-icons" aria-hidden="true"><div class="bars"><i></i><i></i><i></i></div><span>5G</span><div class="bat"></div></div></div><div class="feature-content"><span class="feature-icon"><img src="../../assets/icons/navigation/discover.svg" alt=""/></span><h1>刷一刷</h1><p>装修视频信息流与家具圈选将在这里接入</p><button class="feature-action" type="button">即将接入</button></div><div class="video-view" id="videoView"><video id="vvVideo" playsinline preload="metadata" controls></video><div class="vv-top"><button class="vv-back" id="vvBack" type="button" aria-label="返回">‹</button><b>刷一刷</b></div><div class="vv-info"><div class="vv-name" id="vvName"></div><span class="vv-tag" id="vvTag"></span><p class="vv-note" id="vvNote"></p></div></div><nav class="dh-tabbar dh-tabbar--main" aria-label="主功能导航"><a class="dh-tab" href="../capture/index.html" aria-label="拍一张"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8.7 4.6c-.6 0-1.15.32-1.44.84l-.7 1.24H4.6A2.6 2.6 0 0 0 2 9.32v8.28a2.6 2.6 0 0 0 2.6 2.6h14.8a2.6 2.6 0 0 0 2.6-2.6V9.32a2.6 2.6 0 0 0-2.6-2.6h-1.96l-.7-1.24a1.65 1.65 0 0 0-1.44-.84H8.7Zm3.3 5.1a3.55 3.55 0 1 0 0 7.1 3.55 3.55 0 0 0 0-7.1Z"/></svg></span></a><a class="dh-tab dh-tab--active" href="./index.html" aria-label="刷一刷" aria-current="page"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M6.4 3.2h11.2A3.4 3.4 0 0 1 21 6.6v10.8a3.4 3.4 0 0 1-3.4 3.4H6.4A3.4 3.4 0 0 1 3 17.4V6.6a3.4 3.4 0 0 1 3.4-3.4Zm3.5 5.05c-.5-.3-1.14.06-1.14.65v6.3c0 .59.64.95 1.14.65l5.2-3.15c.48-.29.48-1.01 0-1.3l-5.2-3.15Z"/></svg></span></a><a class="dh-tab" href="../inspiration-library/index.html" aria-label="灵感库"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12 2.6a6.4 6.4 0 0 0-3.9 11.48c.46.36.74.9.82 1.48l.13.94h5.84l.13-.94c.08-.58.36-1.12.82-1.48A6.4 6.4 0 0 0 12 2.6Z"/><rect x="8.7" y="17.4" width="6.6" height="1.9" rx=".95"/><rect x="9.6" y="20" width="4.8" height="1.9" rx=".95"/></svg></span></a><a class="dh-tab" href="../my-favorites/index.html" aria-label="我的收藏"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7 3.6h10a2.2 2.2 0 0 1 2.2 2.2v13.9c0 .86-.94 1.38-1.66.92L12 17.2l-5.54 3.42c-.72.46-1.66-.06-1.66-.92V5.8A2.2 2.2 0 0 1 7 3.6Z"/></svg></span></a><a class="dh-tab" href="../my-home/index.html" aria-label="我的家"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10.7 3.3a2 2 0 0 1 2.6 0l6.8 5.86c.44.38.7.94.7 1.53v7.71a2 2 0 0 1-2 2h-2.8a1 1 0 0 1-1-1v-4.4a1 1 0 0 0-1-1h-2.4a1 1 0 0 0-1 1v4.4a1 1 0 0 1-1 1H6.2a2 2 0 0 1-2-2V10.7c0-.59.26-1.15.7-1.53L10.7 3.3Z"/></svg></span></a></nav><div class="dh-home-indicator" aria-hidden="true"></div></div></section></main><script type="module">
-import { getAsset, FURNITURE_CATEGORIES } from '../shared/asset-library-data.js';
-const screen = document.querySelector('.dh-screen');
-const video = document.getElementById('vvVideo');
-const fmt = (s) => { s = Math.max(0, Math.floor(s || 0)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
-function render() {
-  const m = location.hash.match(/^#asset=(.+)$/);
-  const asset = m ? getAsset(decodeURIComponent(m[1])) : null;
-  if (!asset || !asset.videoUrl) { screen.classList.remove('is-video'); video.pause?.(); video.removeAttribute('src'); video.load?.(); return; }
-  const cat = FURNITURE_CATEGORIES.find((c) => c.id === asset.category)?.label || asset.category || '';
-  document.getElementById('vvName').textContent = asset.name;
-  document.getElementById('vvTag').textContent = cat ? `家具类 · ${cat}` : '家具类';
-  const sec = asset.videoSec;
-  document.getElementById('vvNote').innerHTML = `已定位到 <b>${asset.name}</b> 在这条装修视频中出现的画面${sec != null ? ` · <b>${fmt(sec)}</b>` : ''}，点击播放查看完整视频。`;
-  video.poster = asset.frameUrl || '';
-  video.src = asset.videoUrl;
-  screen.classList.add('is-video');
-  if (asset.videoSec != null) video.addEventListener('loadedmetadata', () => { try { video.currentTime = asset.videoSec; } catch (_) {} }, { once: true });
-}
-document.getElementById('vvBack').addEventListener('click', () => { video.pause(); location.hash = ''; });
-window.addEventListener('hashchange', render);
-render();
-</script></body></html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <title>DreamHome · 刷一刷</title>
+  <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .discover-app {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+    }
+
+    .discover-fallback {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font: 14px/1.5 system-ui, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <noscript class="discover-fallback">请开启 JavaScript 体验“刷一刷”。</noscript>
+  <iframe
+    class="discover-app"
+    src="./app/index.html"
+    title="DreamHome 刷一刷"
+    allow="autoplay; camera; microphone; fullscreen"
+  ></iframe>
+</body>
+</html>
