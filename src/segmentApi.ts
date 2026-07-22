@@ -127,6 +127,40 @@ export interface VideoSelectionUpload {
   polygon: Array<[number, number]>
 }
 
+export async function sourceCropDataUrl(
+  upload: VideoSelectionUpload,
+  maxEdge = 1024,
+): Promise<string> {
+  const bitmap = await createImageBitmap(upload.frame)
+  try {
+    const [x, y, w, h] = upload.bbox
+    const sourceX = Math.max(0, Math.floor(x * bitmap.width))
+    const sourceY = Math.max(0, Math.floor(y * bitmap.height))
+    const sourceWidth = Math.max(1, Math.min(bitmap.width - sourceX, Math.ceil(w * bitmap.width)))
+    const sourceHeight = Math.max(1, Math.min(bitmap.height - sourceY, Math.ceil(h * bitmap.height)))
+    const scale = Math.min(1, maxEdge / Math.max(sourceWidth, sourceHeight))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(sourceWidth * scale))
+    canvas.height = Math.max(1, Math.round(sourceHeight * scale))
+    const context = canvas.getContext('2d')
+    if (!context) throw new Error('无法准备原始帧圈选区域')
+    context.drawImage(
+      bitmap,
+      sourceX,
+      sourceY,
+      sourceWidth,
+      sourceHeight,
+      0,
+      0,
+      canvas.width,
+      canvas.height,
+    )
+    return canvas.toDataURL('image/jpeg', 0.88)
+  } finally {
+    bitmap.close()
+  }
+}
+
 const clamp01 = (value: number) => Math.max(0, Math.min(1, value))
 
 // Prepare the backend selection artifact from untouched source pixels. The

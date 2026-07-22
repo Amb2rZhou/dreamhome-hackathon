@@ -2,9 +2,9 @@ import { useReducer, useRef, useEffect, useMemo, useState, useCallback } from 'r
 import { createPortal } from 'react-dom'
 import { FEED_VIDEOS, MOCK_OBJECTS, LIBRARY_SEED, CATEGORY_COLOR, CURRENT_BLOGGER, type FeedVideo, type FeedState, type SelectedObject, type LibraryComponent, type FurnitureCategory, type MascotState, type CraftJob, type CraftBatch, type TraceEntry } from './types'
 import { genSticker } from './stickerGen'
-import { captureBbox, captureVideoSelectionUpload, saveTraceToBackend, loadTracesFromBackend, traceImageUrl } from './segmentApi'
+import { captureBbox, captureVideoSelectionUpload, sourceCropDataUrl, saveTraceToBackend, loadTracesFromBackend, traceImageUrl, type VideoSelectionUpload } from './segmentApi'
 import { prepareEdgeSamFrame, segmentWithEdgeSam, warmupEdgeSam } from './mobileSam'
-import { falJobToComponent, getFalJob } from './falGenerationApi'
+import { falJobToComponent, getFalJob, submitFalGeneration } from './falGenerationApi'
 import { confirmVideoSelection, submitVideoSelection, type VideoSelectResponse } from './videoSelectionApi'
 import { Mascot, type CollectionMascotMode } from './Mascot'
 import { WorkshopDetail } from './WorkshopDetail'
@@ -69,7 +69,8 @@ type SessionGuideStage = 'idle' | 'pause' | 'recognize' | 'drag' | 'progress' | 
 
 type PendingSelectionRequests = Map<string, {
   videoId: string
-  request: Promise<VideoSelectResponse>
+  upload: VideoSelectionUpload
+  request: Promise<VideoSelectResponse | null>
 }>
 
 type Action =
@@ -609,6 +610,15 @@ function App() {
       return () => clearTimeout(t)
     }
     if (craft.status === 'crafting') {
+      if (craft.backendMode === 'unavailable') {
+        const timer = window.setTimeout(() => dispatch({
+          type: 'CRAFT_FAILED',
+          id: craft.id,
+          error: craft.error || '3D 服务提交失败',
+          stage: 'submit',
+        }), 250)
+        return () => window.clearTimeout(timer)
+      }
       if (craft.backendMode === 'fal' && craft.backendJobId) {
         let cancelled = false
         let timer = 0
@@ -1638,11 +1648,12 @@ function SessionLayer({
         // the mascot. The browser-SAM cutout remains presentation-only.
         selectionRequests.set(objId, {
           videoId,
-          request: submitVideoSelection({
-            videoId,
-            time: selectionTime,
-            upload: selectionUpload,
-          }),
+          upload: selectionUpload,
+          request: submitVideoSelection({ videoId, time: selectionTime, upload: selectionUpload })
+            .catch((error) => {
+              console.warn('[selection] full backend unavailable; fast 3D route remains available', error)
+              return null
+            }),
         })
       }
       dispatch({ type: 'OBJECT_RECOGNIZED', obj })
@@ -1748,7 +1759,6 @@ function SessionLayer({
       onCraftDropped()
     }
 
-    let fallbackUsed = false
     const jobs: CraftJob[] = await Promise.all(customObjects.map(async (obj) => {
       const initialLabel = obj.items[0]?.label || '待分类家具'
       const fallbackCategory = (MOCK_OBJECTS.find((item) => item.label === initialLabel)?.label ?? '其他') as FurnitureCategory
@@ -1765,16 +1775,37 @@ function SessionLayer({
         const pendingSelection = selectionRequests.get(obj.id)
         if (!pendingSelection) throw new Error('原始帧圈选尚未准备好')
         const selection = await pendingSelection.request
-        const submitted = await confirmVideoSelection({
-          videoId: pendingSelection.videoId,
-          selectId: selection.select_id,
-          generateNew: true,
-        })
+        let submitted: { job_id?: string | null }
+        let recognizedLabel = initialLabel
+        let recognizedCategory = fallbackCategory
+        if (selection) {
+          recognizedLabel = selection.labels.sub || selection.labels.category || initialLabel
+          recognizedCategory = (
+            MOCK_OBJECTS.find((item) => item.label === selection.labels.category)?.label ?? fallbackCategory
+          ) as FurnitureCategory
+          try {
+            submitted = await confirmVideoSelection({
+              videoId: pendingSelection.videoId,
+              selectId: selection.select_id,
+              generateNew: true,
+              qualityMode: 'production',
+            })
+          } catch (error) {
+            console.warn('[selection] production route unavailable; using raw TRELLIS route', error)
+            submitted = await submitFalGeneration(
+              await sourceCropDataUrl(pendingSelection.upload),
+              recognizedLabel,
+            )
+          }
+        } else {
+          // Vercel's raw TRELLIS route receives an RGB crop from the complete
+          // source frame. It never receives the browser-SAM mask/cutout.
+          submitted = await submitFalGeneration(
+            await sourceCropDataUrl(pendingSelection.upload),
+            initialLabel,
+          )
+        }
         if (!submitted.job_id) throw new Error('后端未返回 3D 任务')
-        const recognizedLabel = selection.labels.sub || selection.labels.category || initialLabel
-        const recognizedCategory = (
-          MOCK_OBJECTS.find((item) => item.label === selection.labels.category)?.label ?? fallbackCategory
-        ) as FurnitureCategory
         selectionRequests.delete(obj.id)
         return {
           ...fallbackJob,
@@ -1786,17 +1817,17 @@ function SessionLayer({
         }
       } catch (error) {
         selectionRequests.delete(obj.id)
-        fallbackUsed = true
-        console.warn('[selection] backend unavailable; using local demo job', error)
-        return fallbackJob
+        console.warn('[selection] 3D submission failed', error)
+        return {
+          ...fallbackJob,
+          backendMode: 'unavailable',
+          error: error instanceof Error ? error.message : '3D 服务提交失败',
+        }
       }
     }))
 
     dispatch({ type: 'HIDE_ORDERING' })
     dispatch({ type: 'START_CRAFT_BATCH', jobs, publicComponents })
-    if (fallbackUsed) {
-      dispatch({ type: 'SHOW_TOAST', msg: '3D 服务暂时未连接，已保留本地演示结果。' })
-    }
   }
 
   const endPickup = (e: React.PointerEvent) => {

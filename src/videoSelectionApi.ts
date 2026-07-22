@@ -24,6 +24,8 @@ export interface VideoSelectConfirmResponse {
   asset_id?: string | null
   job_id?: string | null
   track_id: string
+  quality_mode?: 'reuse' | 'fast' | 'production'
+  library_attached?: boolean
 }
 
 export class VideoSelectionError extends Error {
@@ -73,6 +75,7 @@ export async function confirmVideoSelection(input: {
   selectId: string
   useAssetId?: string
   generateNew?: boolean
+  qualityMode?: 'fast' | 'production'
 }): Promise<VideoSelectConfirmResponse> {
   const response = await fetch(dreamHomeApiUrl(`/api/videos/${encodeURIComponent(input.videoId)}/select/confirm`), {
     method: 'POST',
@@ -81,6 +84,7 @@ export async function confirmVideoSelection(input: {
       select_id: input.selectId,
       use_asset_id: input.useAssetId || null,
       generate_new: input.generateNew ?? false,
+      quality_mode: input.qualityMode || 'fast',
     }),
   })
   return responseJson<VideoSelectConfirmResponse>(response)

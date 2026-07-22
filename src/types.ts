@@ -15,7 +15,7 @@ export interface CraftJob {
   stage?: string
   error?: string
   backendJobId?: string
-  backendMode?: 'fal' | 'local-fallback'
+  backendMode?: 'fal' | 'local-fallback' | 'unavailable'
   resultComponent?: LibraryComponent
 }
 

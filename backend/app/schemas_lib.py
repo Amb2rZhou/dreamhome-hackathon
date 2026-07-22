@@ -115,7 +115,7 @@ class SelectConfirmRequest(BaseModel):
     use_asset_id: Optional[str] = None  # 确认同款：挂现有资产，不重新生成
     generate_new: bool = False          # 生成新资产
     quality_mode: Literal["fast", "production"] = "fast"
-    user_id: str = "demo"               # production 成功后自动加入该用户素材库
+    user_id: str = ""                   # 有明确用户身份时才自动加入素材库
 
 
 class SelectConfirmResponse(BaseModel):
