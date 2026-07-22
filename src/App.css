@@ -14,7 +14,7 @@
 }
 
 body {
-  background: #111;
+  background: linear-gradient(90deg, #faf4e6, #fefdf8 48%, #f8f2e3);
   font-family: 'DouyinMeihao', 'PingFang SC', sans-serif;
 }
 
@@ -23,35 +23,30 @@ input,
 textarea { font-family: inherit; }
 
 .iphone-device {
-  --iphone-screen-width: 393px;
-  --iphone-screen-height: 852px;
-  --iphone-shell-width: 423px;
-  --iphone-shell-height: 882px;
+  --iphone-screen-width: 296px;
+  --iphone-screen-height: 670px;
+  --iphone-shell-width: 320px;
+  --iphone-shell-height: 694px;
   position: relative;
   width: var(--iphone-shell-width);
   height: var(--iphone-shell-height);
-  padding: 15px;
+  padding: 12px;
   flex: 0 0 auto;
-  border-radius: 62px;
-  background: linear-gradient(145deg, #262a2e, #070809 54%, #34383b);
+  border-radius: 50px;
+  background: linear-gradient(145deg, #262a2e, #090a0b 54%, #34383b);
   box-shadow:
+    0 28px 60px rgba(24,34,42,.28),
     inset 0 0 0 2px rgba(255,255,255,.12),
-    inset 0 0 0 7px #0b0d0f,
-    0 34px 90px rgba(0,0,0,.5);
+    inset 0 0 0 6px #0a0c0e;
   zoom: min(
     1,
-    calc((100dvh - 36px) / 882px),
-    calc((100vw - 20px) / 423px)
+    calc((100dvh - 56px) / 694px),
+    calc((100vw - 36px) / 320px)
   );
 }
 
 .iphone-side-btn {
-  position: absolute;
-  z-index: -1;
-  width: 5px;
-  border-radius: 999px;
-  background: #171a1d;
-  box-shadow: inset 1px 0 0 rgba(255,255,255,.16);
+  display: none;
 }
 .iphone-side-btn--action { left: -3px; top: 158px; height: 64px; }
 .iphone-side-btn--volume { left: -3px; top: 238px; height: 92px; }
@@ -59,30 +54,30 @@ textarea { font-family: inherit; }
 
 .phone-viewport {
   --design-width: 390;
-  --design-height: 844;
+  --design-height: 882;
   width: var(--iphone-screen-width);
   height: var(--iphone-screen-height);
   position: relative;
   flex: 0 0 auto;
-  /* `clip` keeps the scaled 844px layout from becoming a focus-scroll container. */
+  /* `clip` keeps the scaled design layout from becoming a focus-scroll container. */
   overflow: clip;
-  border-radius: 48px;
+  border-radius: 39px;
   background: #000;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.22);
 }
 
 .phone {
   width: 390px;
-  height: 844px;
+  height: 882px;
   margin: 0;
   background: #000;
-  border-radius: 48px;
+  border-radius: 51px;
   overflow: hidden;
   position: relative;
   transform-origin: top left;
   transform: scale(
-    calc(393 / var(--design-width)),
-    calc(852 / var(--design-height))
+    calc(296 / var(--design-width)),
+    calc(670 / var(--design-height))
   );
 }
 
@@ -96,8 +91,8 @@ textarea { font-family: inherit; }
   position: absolute;
   inset: 0 0 auto;
   z-index: 101;
-  height: 58px;
-  padding: 16px 28px 0;
+  height: 50px;
+  padding: 20px 22px 0;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -146,22 +141,22 @@ textarea { font-family: inherit; }
 .ios-dynamic-island {
   position: absolute;
   z-index: 102;
-  top: 11px;
+  top: 16px;
   left: 50%;
-  width: 126px;
-  height: 37px;
+  width: 96px;
+  height: 26px;
   transform: translateX(-50%);
   border-radius: 999px;
   background: #08090a;
-  box-shadow: inset 0 -1px 2px rgba(255,255,255,.14), 0 6px 18px rgba(0,0,0,.16);
+  box-shadow: none;
 }
 .ios-home-indicator {
   position: absolute;
   z-index: 102;
   left: 50%;
-  bottom: 8px;
-  width: 139px;
-  height: 5px;
+  bottom: 7px;
+  width: 112px;
+  height: 4px;
   transform: translateX(-50%);
   border-radius: 999px;
   background: #fff;

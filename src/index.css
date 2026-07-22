@@ -8,14 +8,14 @@ html, body, #root {
   width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
-  background: #111;
+  background: linear-gradient(90deg, #faf4e6, #fefdf8 48%, #f8f2e3);
 }
 
 #root {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 18px 10px;
+  padding: 28px 18px;
 }
 
 @media (max-height: 730px) {
