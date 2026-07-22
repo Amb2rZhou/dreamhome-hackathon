@@ -10,12 +10,13 @@ export interface CraftJob {
   category: FurnitureCategory
   snapshot: string
   color: string
-  status: 'ordering' | 'crafting' | 'done' | 'failed'
+  status: 'ordering' | 'crafting' | 'waiting' | 'done' | 'failed'
   progress?: number
   stage?: string
   error?: string
   backendJobId?: string
-  backendMode?: 'fal' | 'local-fallback' | 'unavailable'
+  backendMode?: 'fal' | 'local-fallback' | 'retry' | 'waiting' | 'unavailable'
+  sourceSelectionId?: string
   resultComponent?: LibraryComponent
 }
 

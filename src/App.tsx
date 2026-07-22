@@ -5,7 +5,7 @@ import { genSticker } from './stickerGen'
 import { captureBbox, captureVideoSelectionUpload, saveTraceToBackend, loadTracesFromBackend, traceImageUrl, type VideoSelectionUpload } from './segmentApi'
 import { prepareEdgeSamFrame, segmentWithEdgeSam, warmupEdgeSam } from './mobileSam'
 import { falJobToComponent, getFalJob } from './falGenerationApi'
-import { confirmVideoSelection, submitVideoSelection, type VideoSelectResponse } from './videoSelectionApi'
+import { confirmVideoSelection, submitVideoSelection } from './videoSelectionApi'
 import { Mascot, type CollectionMascotMode } from './Mascot'
 import { WorkshopDetail } from './WorkshopDetail'
 import { FrameAssetsDrawer } from './FrameAssetsDrawer'
@@ -69,9 +69,13 @@ type SessionGuideStage = 'idle' | 'pause' | 'recognize' | 'drag' | 'progress' | 
 
 type PendingSelectionRequests = Map<string, {
   videoId: string
+  time: number
   upload: VideoSelectionUpload
-  request: Promise<VideoSelectResponse | null>
 }>
+
+const isCraftTerminal = (job: CraftJob) => (
+  job.status === 'done' || job.status === 'failed' || job.status === 'waiting'
+)
 
 type Action =
   | { type: 'PAUSE' }
@@ -102,6 +106,9 @@ type Action =
   | { type: 'CRAFT_DONE'; id: string; component: LibraryComponent }
   | { type: 'CRAFT_PROGRESS'; id: string; progress: number; stage?: string }
   | { type: 'CRAFT_FAILED'; id: string; error: string; stage?: string }
+  | { type: 'CRAFT_WAITING'; id: string; error: string }
+  | { type: 'CRAFT_BACKEND_SUBMITTED'; id: string; backendJobId: string; name: string; category: FurnitureCategory }
+  | { type: 'RETRY_CRAFT'; id: string }
   | { type: 'SHOW_CRAFT_RESULT' }
   | { type: 'HIDE_CRAFT_RESULT' }
   | { type: 'CRAFT_CONFIRM_STORE' }
@@ -334,7 +341,7 @@ function reducer(state: State, action: Action): State {
       const restQueue = state.craftQueue.slice(1)
       const batchDone = batches.find((b) => (
         b.jobs.some((j) => j.id === doneJob.id)
-        && b.jobs.every((j) => j.status === 'done' || j.status === 'failed')
+        && b.jobs.every(isCraftTerminal)
         && !b.notified
       ))
       const batchJustDone = !!batchDone
@@ -366,10 +373,9 @@ function reducer(state: State, action: Action): State {
       }))
       const next = state.craftQueue[0] ?? null
       const restQueue = state.craftQueue.slice(1)
-      const terminal = (job: CraftJob) => job.status === 'done' || job.status === 'failed'
       const terminalBatch = batches.find((batch) => (
         batch.jobs.some((job) => job.id === failedJob.id)
-        && batch.jobs.every(terminal)
+        && batch.jobs.every(isCraftTerminal)
         && !batch.notified
       ))
       return {
@@ -387,12 +393,81 @@ function reducer(state: State, action: Action): State {
         craftStartTipShown: next ? state.craftStartTipShown : false,
       }
     }
+    case 'CRAFT_WAITING': {
+      if (state.currentCraft?.id !== action.id) return state
+      const waitingJob: CraftJob = {
+        ...state.currentCraft,
+        status: 'waiting',
+        backendMode: 'waiting',
+        error: action.error,
+        stage: 'waiting_backend',
+      }
+      const batches = state.batches.map((batch) => ({
+        ...batch,
+        jobs: batch.jobs.map((job) => job.id === waitingJob.id ? waitingJob : job),
+      }))
+      const next = state.craftQueue[0] ?? null
+      const restQueue = state.craftQueue.slice(1)
+      return {
+        ...state,
+        currentCraft: next ? { ...next, status: 'ordering' } : null,
+        craftQueue: restQueue,
+        batches,
+        mascot: next ? 'working' : 'sleeping',
+        toast: '圈选已经保存，生成服务连接后可以直接重试。',
+        craftStartTip: false,
+        craftStartTipShown: next ? state.craftStartTipShown : false,
+      }
+    }
+    case 'CRAFT_BACKEND_SUBMITTED': {
+      if (state.currentCraft?.id !== action.id) return state
+      const submitted: CraftJob = {
+        ...state.currentCraft,
+        name: action.name,
+        category: action.category,
+        color: CATEGORY_COLOR[action.category],
+        backendMode: 'fal',
+        backendJobId: action.backendJobId,
+        error: undefined,
+        stage: 'generate_3d',
+      }
+      return {
+        ...state,
+        currentCraft: submitted,
+        batches: state.batches.map((batch) => ({
+          ...batch,
+          jobs: batch.jobs.map((job) => job.id === submitted.id ? submitted : job),
+        })),
+      }
+    }
+    case 'RETRY_CRAFT': {
+      const waitingJob = state.batches.flatMap((batch) => batch.jobs)
+        .find((job) => job.id === action.id && job.status === 'waiting')
+      if (!waitingJob) return state
+      const retryJob: CraftJob = {
+        ...waitingJob,
+        status: 'ordering',
+        backendMode: 'retry',
+        backendJobId: undefined,
+        progress: 0,
+        stage: 'submit',
+        error: undefined,
+      }
+      const batches = state.batches.map((batch) => ({
+        ...batch,
+        jobs: batch.jobs.map((job) => job.id === retryJob.id ? retryJob : job),
+      }))
+      if (state.currentCraft) {
+        return { ...state, batches, craftQueue: [...state.craftQueue, retryJob], mascot: 'working' }
+      }
+      return { ...state, batches, currentCraft: retryJob, mascot: 'working' }
+    }
     case 'SHOW_CRAFT_RESULT':
       return { ...state, showCraftResult: true }
     case 'HIDE_CRAFT_RESULT':
       return { ...state, showCraftResult: false }
     case 'CRAFT_CONFIRM_STORE': {
-      const doneBatch = state.batches.find((b) => b.jobs.every((j) => j.status === 'done' || j.status === 'failed') && !b.dismissed)
+      const doneBatch = state.batches.find((b) => b.jobs.every(isCraftTerminal) && !b.dismissed)
       if (!doneBatch) return { ...state, showCraftResult: false }
       const remainingBatches = state.batches.filter((b) => b.id !== doneBatch.id)
       const hasMore = !!state.currentCraft || state.craftQueue.length > 0
@@ -405,7 +480,7 @@ function reducer(state: State, action: Action): State {
       }
     }
     case 'CRAFT_DISCARD': {
-      const doneBatch = state.batches.find((b) => b.jobs.every((j) => j.status === 'done' || j.status === 'failed') && !b.dismissed)
+      const doneBatch = state.batches.find((b) => b.jobs.every(isCraftTerminal) && !b.dismissed)
       if (!doneBatch) return { ...state, showCraftResult: false }
       const remainingBatches = state.batches.filter((b) => b.id !== doneBatch.id)
       const hasMore = !!state.currentCraft || state.craftQueue.length > 0
@@ -418,7 +493,7 @@ function reducer(state: State, action: Action): State {
     }
     case 'CLEAR_CRAFT_DONE_BUBBLE': {
       const batches = state.batches.map((b) => {
-        if (b.jobs.every((j) => j.status === 'done' || j.status === 'failed') && !b.dismissed) return { ...b, dismissed: true }
+        if (b.jobs.every(isCraftTerminal) && !b.dismissed) return { ...b, dismissed: true }
         return b
       })
       return { ...state, batches, mascot: (state.currentCraft || state.craftQueue.length > 0) ? 'working' : 'sleeping' }
@@ -430,12 +505,12 @@ function reducer(state: State, action: Action): State {
       const completedBatch = [...state.batches].reverse().find((batch) => (
         !batch.dismissed
         && batch.jobs.length > 0
-        && batch.jobs.every((job) => job.status === 'done' || job.status === 'failed')
+        && batch.jobs.every(isCraftTerminal)
       ))
       const targetBatch = requestedBatch ?? completedBatch ?? state.batches[state.batches.length - 1] ?? null
       const targetIsTerminal = !!targetBatch
         && targetBatch.jobs.length > 0
-        && targetBatch.jobs.every((job) => job.status === 'done' || job.status === 'failed')
+        && targetBatch.jobs.every(isCraftTerminal)
       const batches = targetBatch && targetIsTerminal
         ? state.batches.map((batch) => batch.id === targetBatch.id ? { ...batch, dismissed: true } : batch)
         : state.batches
@@ -528,7 +603,7 @@ function App() {
   const awaitingCollectionView = state.batches.some((batch) => (
     !batch.dismissed
     && batch.jobs.length > 0
-    && batch.jobs.every((job) => job.status === 'done' || job.status === 'failed')
+    && batch.jobs.every(isCraftTerminal)
   ))
   const iosStatusDark = state.showTrace
   const iosHomeDark = iosStatusDark || state.showCollectionDetail || state.showCraftResult || state.phase === 'preview'
@@ -619,12 +694,56 @@ function App() {
     if (craft.status === 'crafting') {
       if (craft.backendMode === 'unavailable') {
         const timer = window.setTimeout(() => dispatch({
-          type: 'CRAFT_FAILED',
+          type: 'CRAFT_WAITING',
           id: craft.id,
           error: craft.error || '3D 服务提交失败',
-          stage: 'submit',
         }), 250)
         return () => window.clearTimeout(timer)
+      }
+      if (craft.backendMode === 'retry') {
+        let cancelled = false
+        const submit = async () => {
+          try {
+            const pendingSelection = craft.sourceSelectionId
+              ? selectionRequestsRef.current.get(craft.sourceSelectionId)
+              : null
+            if (!pendingSelection) throw new Error('原始帧和圈选已丢失，请保持页面打开后重试')
+            const selection = await submitVideoSelection({
+              videoId: pendingSelection.videoId,
+              time: pendingSelection.time,
+              upload: pendingSelection.upload,
+            })
+            const submitted = await confirmVideoSelection({
+              videoId: pendingSelection.videoId,
+              selectId: selection.select_id,
+              generateNew: true,
+              qualityMode: 'production',
+            })
+            if (!submitted.job_id) throw new Error('后端未返回 3D 任务')
+            if (cancelled) return
+            const recognizedLabel = selection.labels.sub || selection.labels.category || craft.name
+            const recognizedCategory = (
+              MOCK_OBJECTS.find((item) => item.label === selection.labels.category)?.label ?? craft.category
+            ) as FurnitureCategory
+            dispatch({
+              type: 'CRAFT_BACKEND_SUBMITTED',
+              id: craft.id,
+              backendJobId: submitted.job_id,
+              name: recognizedLabel,
+              category: recognizedCategory,
+            })
+          } catch (error) {
+            if (cancelled) return
+            console.warn('[selection] production submission unavailable; preserving selection', error)
+            dispatch({
+              type: 'CRAFT_WAITING',
+              id: craft.id,
+              error: error instanceof Error ? error.message : '3D 生成服务暂时不可用',
+            })
+          }
+        }
+        void submit()
+        return () => { cancelled = true }
       }
       if (craft.backendMode === 'fal' && craft.backendJobId) {
         let cancelled = false
@@ -826,6 +945,8 @@ function App() {
                   snapshot: obj.snapshot,
                   color,
                   status: 'ordering' as const,
+                  backendMode: 'retry' as const,
+                  sourceSelectionId: obj.id,
                 }
               })
               dispatch({ type: 'SHOW_TOAST', msg: '已收到，正在创建 3D 任务…' })
@@ -841,6 +962,7 @@ function App() {
             favoriteIds={favoriteAssetIds}
             onToggleFavorite={toggleFavoriteAsset}
             onClose={() => dispatch({ type: 'HIDE_COLLECTION_DETAIL' })}
+            onRetryTask={(id) => dispatch({ type: 'RETRY_CRAFT', id })}
           />
         )}
 
@@ -1646,16 +1768,11 @@ function SessionLayer({
       }
       const selectionUpload = await selectionUploadPromise
       if (selectionUpload) {
-        // Start recognition while the user is still dragging the sticker toward
-        // the mascot. The browser-SAM cutout remains presentation-only.
+        // 圈选先在浏览器中落地；只有进入加工队列后才请求正式生产后端。
         selectionRequests.set(objId, {
           videoId,
+          time: selectionTime,
           upload: selectionUpload,
-          request: submitVideoSelection({ videoId, time: selectionTime, upload: selectionUpload })
-            .catch((error) => {
-              console.warn('[selection] full backend unavailable; fast 3D route remains available', error)
-              return null
-            }),
         })
       }
       dispatch({ type: 'OBJECT_RECOGNIZED', obj })
@@ -1761,56 +1878,20 @@ function SessionLayer({
       onCraftDropped()
     }
 
-    const jobs: CraftJob[] = await Promise.all(customObjects.map(async (obj) => {
+    const jobs: CraftJob[] = customObjects.map((obj) => {
       const initialLabel = obj.items[0]?.label || '待分类家具'
       const fallbackCategory = (MOCK_OBJECTS.find((item) => item.label === initialLabel)?.label ?? '其他') as FurnitureCategory
-      const fallbackJob: CraftJob = {
+      return {
         id: `craft-${obj.id}-0`,
         name: initialLabel,
         category: fallbackCategory,
         snapshot: obj.snapshot,
         color: CATEGORY_COLOR[fallbackCategory],
         status: 'ordering',
-        backendMode: 'local-fallback',
+        backendMode: 'retry',
+        sourceSelectionId: obj.id,
       }
-      try {
-        const pendingSelection = selectionRequests.get(obj.id)
-        if (!pendingSelection) throw new Error('原始帧圈选尚未准备好')
-        const selection = await pendingSelection.request
-        let submitted: { job_id?: string | null }
-        let recognizedLabel = initialLabel
-        let recognizedCategory = fallbackCategory
-        if (!selection) throw new Error('完整 3D 服务暂时不可用，请稍后重试')
-        recognizedLabel = selection.labels.sub || selection.labels.category || initialLabel
-        recognizedCategory = (
-          MOCK_OBJECTS.find((item) => item.label === selection.labels.category)?.label ?? fallbackCategory
-        ) as FurnitureCategory
-        submitted = await confirmVideoSelection({
-          videoId: pendingSelection.videoId,
-          selectId: selection.select_id,
-          generateNew: true,
-          qualityMode: 'production',
-        })
-        if (!submitted.job_id) throw new Error('后端未返回 3D 任务')
-        selectionRequests.delete(obj.id)
-        return {
-          ...fallbackJob,
-          name: recognizedLabel,
-          category: recognizedCategory,
-          color: CATEGORY_COLOR[recognizedCategory],
-          backendMode: 'fal',
-          backendJobId: submitted.job_id,
-        }
-      } catch (error) {
-        selectionRequests.delete(obj.id)
-        console.warn('[selection] 3D submission failed', error)
-        return {
-          ...fallbackJob,
-          backendMode: 'unavailable',
-          error: error instanceof Error ? error.message : '3D 服务提交失败',
-        }
-      }
-    }))
+    })
 
     dispatch({
       type: 'START_CRAFT_BATCH',

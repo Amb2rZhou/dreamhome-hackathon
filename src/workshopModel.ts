@@ -1,6 +1,6 @@
 import type { Blogger, CraftBatch, CraftJob, LibraryComponent } from './types'
 
-export type WorkshopTaskStatus = 'queued' | 'processing' | 'completed' | 'failed'
+export type WorkshopTaskStatus = 'queued' | 'processing' | 'waiting' | 'completed' | 'failed'
 
 export interface WorkshopReadyFurniture {
   source: 'readyMade'
@@ -50,6 +50,7 @@ export interface WorkshopData {
 function taskStatus(job: CraftJob): WorkshopTaskStatus {
   if (job.status === 'done') return 'completed'
   if (job.status === 'failed') return 'failed'
+  if (job.status === 'waiting') return 'waiting'
   if (job.status === 'crafting') return 'processing'
   return 'queued'
 }
@@ -129,10 +130,12 @@ export function workshopStatusSummary(data: WorkshopData): string {
   const queued = data.lassoTasks.filter((task) => task.status === 'queued').length
   const completed = data.lassoTasks.filter((task) => task.status === 'completed').length
   const failed = data.lassoTasks.filter((task) => task.status === 'failed').length
+  const waiting = data.lassoTasks.filter((task) => task.status === 'waiting').length
   const parts: string[] = []
   if (processing) parts.push(`${processing} 件加工中`)
   if (queued) parts.push(`${queued} 件待加工`)
   if (completed) parts.push(`${completed} 件已完成`)
+  if (waiting) parts.push(`${waiting} 件等待生成服务`)
   if (failed) parts.push(`${failed} 件需处理`)
   return parts.length > 0 ? parts.join(' · ') : '暂时没有加工任务'
 }

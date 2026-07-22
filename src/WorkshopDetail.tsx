@@ -41,7 +41,7 @@ function TaskRow({
   onOpen: () => void
   onRetry: () => void
 }) {
-  const actionable = task.status === 'completed' || task.status === 'failed'
+  const actionable = task.status === 'completed' || task.status === 'failed' || task.status === 'waiting'
   const content = (
     <>
       <span className="workshop-task-thumb">
@@ -53,6 +53,7 @@ function TaskRow({
       </span>
       {task.status === 'processing' && <span className="workshop-task-status is-processing"><i />加工中</span>}
       {task.status === 'completed' && <span className="workshop-task-status is-completed">查看 <b>›</b></span>}
+      {task.status === 'waiting' && <span className="workshop-task-status is-waiting">重试生成</span>}
       {task.status === 'failed' && <span className="workshop-task-status is-failed">重新圈选</span>}
     </>
   )
@@ -106,6 +107,7 @@ export function WorkshopDetail({ data, favoriteIds, onToggleFavorite, onClose, o
     )) ?? []
   }, [activeBatchId, data.batchGroups])
   const failed = useMemo(() => data.lassoTasks.filter((task) => task.status === 'failed'), [data.lassoTasks])
+  const waiting = useMemo(() => data.lassoTasks.filter((task) => task.status === 'waiting'), [data.lassoTasks])
   const isEmpty = data.lassoTasks.length === 0
   const batchLabelFor = (task: WorkshopLassoTask) => {
     const batchIndex = data.batchGroups.findIndex((group) => group.id === task.batchId)
@@ -148,6 +150,17 @@ export function WorkshopDetail({ data, favoriteIds, onToggleFavorite, onClose, o
               </div>
             ) : (
               <div className="workshop-task-groups">
+                {waiting.length > 0 && (
+                  <section className="workshop-task-group group-waiting">
+                    <div className="workshop-task-head"><strong>等待生成服务</strong><span>{waiting.length} 件</span></div>
+                    <div className="workshop-task-list">
+                      {waiting.map((task) => (
+                        <TaskRow key={task.id} task={task} batchLabel={batchLabelFor(task)} onOpen={() => {}} onRetry={() => onRetryTask?.(task.id)} />
+                      ))}
+                    </div>
+                  </section>
+                )}
+
                 {failed.length > 0 && (
                   <section className="workshop-task-group group-failed">
                     <div className="workshop-task-head"><strong>需要处理</strong><span>{failed.length} 件</span></div>
