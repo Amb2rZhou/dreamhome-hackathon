@@ -22,7 +22,7 @@ export const CATEGORY_PRIMITIVE = {
   灯具: 'lamp', 柜子: 'cabinet', 绿植: 'plant', 桌子: 'table', 单椅: 'chair',
   装饰: 'plant', 地毯: 'cabinet', 沙发: 'sofa', 家电: 'cabinet', 床: 'bed', 卫浴: 'cabinet',
 };
-// size_missing（142/149 件无真实米制尺寸）时的每类兜底尺寸 [宽,高,深]（米）
+// size_missing（162/169 件无真实米制尺寸）时的每类兜底尺寸 [宽,高,深]（米）
 export const CATEGORY_DIMENSIONS = {
   灯具: [.4, 1.4, .4], 柜子: [1.0, 1.2, .45], 绿植: [.4, .7, .4], 桌子: [1.2, .75, .7], 单椅: [.55, .9, .55],
   装饰: [.3, .4, .3], 地毯: [1.6, .02, 2.2], 沙发: [1.9, .82, .9], 家电: [.6, 1.0, .6], 床: [1.6, .5, 2.0], 卫浴: [.6, .8, .5],
@@ -50,13 +50,15 @@ const colorForAsset = (rec) => {
 // 后端记录 → 前端资产（适配层；将来接 API 只需把 import 换成 fetch、复用此函数）
 export const adaptBackendAsset = (rec) => {
   const category = rec.type.category;
+  const sourceType = rec.source_type || (rec.video_id ? 'video' : 'platform');
+  const sourceLabel = rec.source_label || (sourceType === 'offline_photo' ? '线下拍照生成' : '平台组件');
   const known = rec.size_status === 'known' && rec.physical_size_m?.width != null;
   const color = colorForAsset(rec);
   const dims = known
     ? [rec.physical_size_m.width, rec.physical_size_m.height, rec.physical_size_m.depth]
     : (CATEGORY_DIMENSIONS[category] || [1, .8, .6]);
   return {
-    id: rec.asset_id, kind: 'furniture', name: rec.name, source: 'platform', sourceType: 'platform',
+    id: rec.asset_id, kind: 'furniture', name: rec.name, source: 'platform', sourceType, sourceLabel,
     category, subcategory: rec.type.subcategory, primitive: CATEGORY_PRIMITIVE[category] || 'cabinet',
     color, accent: lightenHex(color, .3),
     dimensions: dims,
@@ -87,7 +89,7 @@ export const COMPONENT_ASSETS = [
   asset('wallpaper-sage', 'wallpaper', '苔藓绿植感', { finish: { color: '#bbcab4', accent: '#7f9677', pattern: 'leaf' } }),
   asset('wallpaper-grid', 'wallpaper', '米灰细格', { finish: { color: '#dfddd5', accent: '#aaa99f', pattern: 'grid' } }),
   asset('wallpaper-rust', 'wallpaper', '砖红手作纹', { finish: { color: '#c6846e', accent: '#9e5f4c', pattern: 'woven' } }),
-  // 家具类：来自后端真实资产数据集（datasets/available-assets-v1，149 件），经 adaptBackendAsset 适配。
+  // 家具类：来自后端真实资产数据集（169 件：149 件视频资产 + 20 件线下拍照资产），经 adaptBackendAsset 适配。
   ...BACKEND_ASSETS.map(adaptBackendAsset),
 ];
 
