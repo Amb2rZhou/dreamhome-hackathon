@@ -56,7 +56,9 @@ const MOTIONS: Record<MotionName, MotionClip> = {
 }
 
 const FALLBACK_IMG: Record<MascotState, string> = {
-  sleeping: '/mascot-sleeping.png',
+  // 冷启动/待机动画在部分浏览器无法解码 MOV 时，保持清醒的默认形象，
+  // 不再错误回退到睡眠态。
+  sleeping: '/mascot-initial.png',
   happy: '/mascot-happy.png',
   working: '/mascot-working.png',
 }

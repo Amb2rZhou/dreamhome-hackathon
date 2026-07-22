@@ -602,6 +602,19 @@ function App() {
     dispatch({ type: 'CHANGE_FEED_VIDEO' })
   }
 
+  const recoverMissingFeedVideo = () => {
+    // Amber 视频由素材库提供；在新电脑尚未配置素材库地址时，
+    // 自动切到仓库内自带的视频，避免整屏黑色并保持资产与视频一致。
+    if (activeFeedVideo.id === 'home-1') return
+    const fallbackIndex = FEED_VIDEOS.findIndex((video) => video.id === 'home-1')
+    if (fallbackIndex < 0) return
+    const fallbackVideo = FEED_VIDEOS[fallbackIndex]
+    setFeedIndex(fallbackIndex)
+    setPausedFrame({ videoId: fallbackVideo.id, time: defaultAssetFrame(fallbackVideo.id) })
+    setCollectionMascotMode('none')
+    dispatch({ type: 'CHANGE_FEED_VIDEO' })
+  }
+
   const craft = state.currentCraft
   useEffect(() => {
     if (!craft) return
@@ -723,6 +736,7 @@ function App() {
           playsInline
           autoPlay
           preload="auto"
+          onError={recoverMissingFeedVideo}
         />
 
         {state.phase === 'browse' && (
