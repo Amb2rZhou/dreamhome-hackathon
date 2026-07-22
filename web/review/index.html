@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DreamHome · 资产评审看板</title>
+<link rel="icon" href="data:," />
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+<style>
+  :root{
+    --bg:#f6f0e3; --surface:#fffdf8; --surface-2:#fbf5e9; --line:#e7dcc6;
+    --fg:#3a3327; --fg-2:#6f6353; --fg-3:#9a8d78; --accent:#c78f2a; --accent-soft:#f3e6c8;
+    --pass:#4f9d69; --pass-soft:#e4f1e7; --fail:#c15b4c; --fail-soft:#f7e6e2; --pending:#c3b79c;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:13px;line-height:1.5;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  button{font:inherit;cursor:pointer}
+  /* 顶栏 */
+  .topbar{display:flex;align-items:center;gap:18px;padding:11px 20px;background:var(--surface);border-bottom:1px solid var(--line);flex:none}
+  .brand{font-size:16px;font-weight:800;letter-spacing:.01em;white-space:nowrap}
+  .brand span{margin-left:8px;font-size:11px;font-weight:600;color:var(--fg-3)}
+  .progress{display:flex;gap:12px;font-size:12px;font-weight:600;color:var(--fg-2);white-space:nowrap}
+  .progress b{font-weight:800}
+  .progress .k-pass{color:var(--pass)} .progress .k-fail{color:var(--fail)} .progress .k-pend{color:var(--fg-3)}
+  .spacer{flex:1}
+  .filters{display:flex;align-items:center;gap:10px}
+  .segmented{display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .segmented button{border:0;background:transparent;padding:6px 11px;font-size:12px;font-weight:600;color:var(--fg-2)}
+  .segmented button.on{background:var(--accent);color:#fff}
+  select,input,textarea{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 9px}
+  input[type=search]{width:150px}
+  .actions{display:flex;gap:8px}
+  .btn{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:7px 13px;font-size:12px;font-weight:700;color:var(--fg)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  /* 布局 */
+  .layout{flex:1;display:flex;min-height:0}
+  .list{width:322px;flex:none;overflow-y:auto;border-right:1px solid var(--line);background:var(--surface)}
+  .row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--surface-2);cursor:pointer}
+  .row:hover{background:var(--surface-2)}
+  .row.sel{background:var(--accent-soft)}
+  .row .thumb{width:46px;height:46px;flex:none;border-radius:9px;background:var(--surface-2);border:1px solid var(--line);object-fit:contain}
+  .row .rmeta{min-width:0;flex:1}
+  .row .rname{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .rcat{font-size:11px;color:var(--fg-3)}
+  .dot{width:9px;height:9px;flex:none;border-radius:50%;background:var(--pending)}
+  .dot.pass{background:var(--pass)} .dot.fail{background:var(--fail)}
+  .idx{font-size:10px;color:var(--fg-3);width:26px;text-align:right;flex:none;font-variant-numeric:tabular-nums}
+  /* 详情 */
+  .detail{flex:1;display:flex;flex-direction:column;min-width:0}
+  .detail-body{flex:1;display:flex;min-height:0}
+  .media{width:44%;flex:none;display:flex;flex-direction:column;padding:16px;border-right:1px solid var(--line);background:var(--surface-2)}
+  .stage{flex:1;min-height:0;border-radius:14px;background:radial-gradient(circle at 42% 34%,#fffdf7,#f1e7d2 72%,#e4d7bd);border:1px solid var(--line);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;touch-action:none}
+  .stage canvas{display:block;width:100%;height:100%;cursor:grab} .stage canvas:active{cursor:grabbing}
+  .stage img{max-width:100%;max-height:100%;object-fit:contain}
+  .stage video{width:100%;height:100%;object-fit:contain;background:#000}
+  .stage .hint{position:absolute;bottom:9px;left:50%;transform:translateX(-50%);padding:3px 10px;border-radius:999px;background:rgba(40,34,24,.55);color:#fff;font-size:10px;font-weight:600;pointer-events:none}
+  .media-tabs{display:flex;gap:6px;margin-top:12px}
+  .media-tabs button{flex:1;border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:7px 0;font-size:12px;font-weight:700;color:var(--fg-2)}
+  .media-tabs button.on{background:var(--fg);border-color:var(--fg);color:#fff}
+  .media-tabs button:disabled{opacity:.4;cursor:not-allowed}
+  .fields{flex:1;overflow-y:auto;padding:16px 18px}
+  .grp{margin-bottom:15px}
+  .grp h3{margin:0 0 7px;font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--accent);text-transform:uppercase}
+  .kv{display:grid;grid-template-columns:104px 1fr;gap:3px 12px;font-size:12.5px}
+  .kv dt{color:var(--fg-3)} .kv dd{margin:0;color:var(--fg);word-break:break-word}
+  .chips{display:flex;flex-wrap:wrap;gap:5px}
+  .chip{padding:2px 8px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);font-size:11px;font-weight:600;color:var(--fg-2)}
+  .badge{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:700}
+  .badge.known{background:var(--pass-soft);color:var(--pass)} .badge.missing{background:var(--fail-soft);color:var(--fail)}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--fg-2)}
+  /* 评审条 */
+  .review-bar{flex:none;display:flex;align-items:flex-start;gap:14px;padding:12px 18px;border-top:1px solid var(--line);background:var(--surface)}
+  .verdict-btns{display:flex;gap:9px;flex:none}
+  .vbtn{border:2px solid var(--line);background:var(--surface);border-radius:11px;padding:10px 20px;font-size:14px;font-weight:800;color:var(--fg-2);min-width:104px}
+  .vbtn.pass.on{background:var(--pass);border-color:var(--pass);color:#fff}
+  .vbtn.fail.on{background:var(--fail);border-color:var(--fail);color:#fff}
+  .reason-wrap{flex:1;display:flex;flex-direction:column;gap:4px}
+  .reason-wrap label{font-size:11px;font-weight:700;color:var(--fg-2)}
+  .reason-wrap textarea{width:100%;min-height:44px;resize:vertical}
+  .reason-wrap.req textarea{border-color:var(--fail)}
+  .nav-btns{display:flex;flex-direction:column;gap:7px;flex:none}
+  .nav-btns button{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 14px;font-size:12px;font-weight:700}
+  .empty{margin:auto;color:var(--fg-3);font-size:14px}
+  .saved{font-size:11px;color:var(--pass);font-weight:700;height:14px}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">资产评审看板<span id="genAt"></span></div>
+  <div class="progress" id="progress"></div>
+  <div class="spacer"></div>
+  <div class="filters">
+    <div class="segmented" id="verdictFilter">
+      <button data-v="all" class="on">全部</button><button data-v="pending">待评</button><button data-v="pass">通过</button><button data-v="fail">不通过</button>
+    </div>
+    <select id="catFilter"></select>
+    <input type="search" id="search" placeholder="搜索 名称 / ID" />
+  </div>
+  <div class="actions">
+    <button class="btn" id="importBtn">导入</button>
+    <button class="btn primary" id="exportBtn">导出结果</button>
+  </div>
+</header>
+<main class="layout">
+  <aside class="list" id="list"></aside>
+  <section class="detail" id="detail"><div class="empty">从左侧选择一件资产开始评审</div></section>
+</main>
+<input type="file" id="importFile" accept="application/json" hidden />
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+const STORE_KEY = 'dreamhome.asset-review.v1';
+const $ = (s, r = document) => r.querySelector(s);
+
+let DATA = [];
+let byId = new Map();
+let reviews = load();
+let filter = { verdict: 'all', cat: 'all', q: '' };
+let selectedId = null;
+let mediaMode = '3d';
+let viewer = null; // { dispose }
+
+function load() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}') || {}; } catch { return {}; } }
+function save() { localStorage.setItem(STORE_KEY, JSON.stringify(reviews)); }
+function verdictOf(id) { return reviews[id]?.verdict || 'pending'; }
+
+// —— 工具 ——
+const fmtBytes = (b) => b == null ? '—' : b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(0) + ' KB' : (b / 1048576).toFixed(1) + ' MB';
+const vec = (a, u = '') => Array.isArray(a) ? a.map((n) => (+n).toFixed(3)).join(' × ') + (u ? ' ' + u : '') : '—';
+const sizeM = (s) => s && s.width != null ? `${(+s.width).toFixed(2)} × ${(+s.height).toFixed(2)} × ${(+s.depth).toFixed(2)} m` : '缺失';
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const chips = (arr) => (arr && arr.length) ? `<div class="chips">${arr.map((x) => `<span class="chip">${esc(x)}</span>`).join('')}</div>` : '<span class="mono">—</span>';
+
+// —— 列表 ——
+function filtered() {
+  const q = filter.q.trim().toLowerCase();
+  return DATA.filter((a) => {
+    if (filter.verdict !== 'all' && verdictOf(a.asset_id) !== filter.verdict) return false;
+    if (filter.cat !== 'all' && a.type.category !== filter.cat) return false;
+    if (q && !(a.name.toLowerCase().includes(q) || a.asset_id.toLowerCase().includes(q))) return false;
+    return true;
+  });
+}
+function renderList() {
+  const list = filtered();
+  $('#list').innerHTML = list.map((a, i) => {
+    const v = verdictOf(a.asset_id);
+    return `<div class="row ${a.asset_id === selectedId ? 'sel' : ''}" data-id="${a.asset_id}">
+      <span class="idx">${i + 1}</span>
+      <img class="thumb" src="${a.urls.render}" loading="lazy" alt="" />
+      <div class="rmeta"><div class="rname">${esc(a.name)}</div><div class="rcat">${esc(a.type.category)} · ${esc(a.type.subcategory)}</div></div>
+      <span class="dot ${v}"></span>
+    </div>`;
+  }).join('') || '<div class="empty" style="padding:24px">无匹配资产</div>';
+}
+function updateProgress() {
+  let pass = 0, fail = 0;
+  for (const a of DATA) { const v = verdictOf(a.asset_id); if (v === 'pass') pass++; else if (v === 'fail') fail++; }
+  const pend = DATA.length - pass - fail;
+  $('#progress').innerHTML = `评审 <b>${pass + fail}</b>/${DATA.length}　<span class="k-pass">通过 <b>${pass}</b></span>　<span class="k-fail">不通过 <b>${fail}</b></span>　<span class="k-pend">待评 <b>${pend}</b></span>`;
+}
+
+// —— 3D / 媒体 ——
+function disposeViewer() { if (viewer) { viewer.dispose(); viewer = null; } }
+function open3D(asset, host) {
+  const width = host.clientWidth, height = host.clientHeight;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(42, width / height, 0.01, 100);
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(width, height); renderer.outputColorSpace = THREE.SRGBColorSpace;
+  host.appendChild(renderer.domElement);
+  scene.add(new THREE.HemisphereLight('#ffffff', '#c3d2bd', 1.15));
+  scene.add(new THREE.AmbientLight('#ffffff', 0.35));
+  const key = new THREE.DirectionalLight('#ffffff', 1.1); key.position.set(3, 5, 4); scene.add(key);
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.dampingFactor = 0.09; controls.enablePan = false; controls.autoRotate = true; controls.autoRotateSpeed = 1.1; controls.target.set(0, 0, 0);
+  host.addEventListener('pointerdown', () => { controls.autoRotate = false; }, { once: true });
+  let raf = 0; const tick = () => { controls.update(); renderer.render(scene, camera); raf = requestAnimationFrame(tick); };
+  const handle = { dispose() { cancelAnimationFrame(raf); controls.dispose(); scene.traverse((o) => { if (o.isMesh) { o.geometry?.dispose(); const m = o.material; Array.isArray(m) ? m.forEach((x) => x?.dispose()) : m?.dispose(); } }); renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove(); } };
+  viewer = handle;
+  const draco = new DRACOLoader(); draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/libs/draco/');
+  const loader = new GLTFLoader(); loader.setDRACOLoader(draco);
+  loader.load(asset.urls.model, (gltf) => {
+    if (viewer !== handle) return;
+    const box = new THREE.Box3().setFromObject(gltf.scene);
+    gltf.scene.position.sub(box.getCenter(new THREE.Vector3()));
+    const r = box.getBoundingSphere(new THREE.Sphere()).radius || 1;
+    const dist = (r / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2))) * 1.15;
+    camera.position.set(dist * 0.6, dist * 0.42, dist * 0.78); camera.near = Math.max(0.01, dist - r * 2); camera.far = dist + r * 4; camera.updateProjectionMatrix();
+    scene.add(gltf.scene); tick();
+  }, undefined, () => { host.innerHTML = '<div class="hint">GLB 加载失败</div>'; });
+}
+function setMedia(mode) {
+  mediaMode = mode; disposeViewer();
+  const asset = byId.get(selectedId); if (!asset) return;
+  const stage = $('#stage'); stage.innerHTML = '';
+  $('#mediaTabs').querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.m === mode));
+  if (mode === '3d') { stage.innerHTML = '<div class="hint">拖动可 360° 查看</div>'; open3D(asset, stage); }
+  else if (mode === 'render') { stage.innerHTML = `<img src="${asset.urls.render}" alt="" />`; }
+  else if (mode === 'frame') { stage.innerHTML = `<img src="${asset.urls.frame}" alt="" /><div class="hint">源视频识别帧 (context.jpg)</div>`; }
+  else if (mode === 'video') {
+    if (!asset.urls.video) { stage.innerHTML = '<div class="hint">无源视频</div>'; return; }
+    const rep = asset.appearances?.[0]?.representative_sec;
+    stage.innerHTML = `<video controls playsinline preload="metadata" poster="${asset.urls.frame}" src="${asset.urls.video}"></video>`;
+    const v = stage.querySelector('video');
+    if (rep != null) v.addEventListener('loadedmetadata', () => { try { v.currentTime = rep; } catch (_) {} }, { once: true });
+  }
+}
+
+// —— 字段 ——
+function fieldsHTML(a) {
+  const g = a.geometry || {}, m = a.media || {}, rv = a.review || {};
+  const mediaRow = (label, f) => f ? `<dt>${label}</dt><dd>${fmtBytes(f.bytes)}${f.width_px ? ` · ${f.width_px}×${f.height_px}` : ''} <span class="mono">${(f.sha256 || '').slice(0, 10)}</span></dd>` : '';
+  const app = (a.appearances || []).map((x) => `${x.start_sec}s–${x.end_sec}s <span class="mono">(rep ${x.representative_sec}s)</span>`).join('<br>') || '—';
+  return `
+  <div class="grp"><h3>标识</h3><dl class="kv">
+    <dt>asset_id</dt><dd class="mono">${esc(a.asset_id)}</dd>
+    <dt>名称</dt><dd>${esc(a.name)}</dd>
+    <dt>video_id</dt><dd class="mono">${esc(a.video_id)}</dd>
+    <dt>availability</dt><dd>${esc(a.availability)}</dd>
+    <dt>space</dt><dd>${esc(a.space) || '—'}</dd>
+    <dt>created</dt><dd class="mono">${esc((a.created_at || '').slice(0, 19))} · ${esc(a.created_by)}</dd>
+  </dl></div>
+  <div class="grp"><h3>分类</h3><dl class="kv">
+    <dt>type</dt><dd>${esc(a.type.category)} / ${esc(a.type.subcategory)}</dd>
+    <dt>labels.cat</dt><dd>${esc(a.labels?.category)} / ${esc(a.labels?.sub)}</dd>
+    <dt>size_class</dt><dd>${esc(a.labels?.size_class) || '—'}</dd>
+  </dl></div>
+  <div class="grp"><h3>标签</h3><dl class="kv">
+    <dt>颜色</dt><dd>${chips(a.labels?.colors)}</dd>
+    <dt>材质</dt><dd>${chips(a.labels?.materials)}</dd>
+    <dt>风格</dt><dd>${chips(a.labels?.styles)}</dd>
+    <dt>特征</dt><dd>${chips(a.labels?.features)}</dd>
+  </dl></div>
+  <div class="grp"><h3>尺寸 / 几何</h3><dl class="kv">
+    <dt>size_status</dt><dd><span class="badge ${a.size_status}">${esc(a.size_status)}</span></dd>
+    <dt>真实尺寸</dt><dd>${sizeM(a.physical_size_m)}</dd>
+    <dt>模型尺寸</dt><dd class="mono">${vec(g.dimensions_model_unit)}</dd>
+    <dt>bounds min</dt><dd class="mono">${vec(g.bounds_min)}</dd>
+    <dt>bounds max</dt><dd class="mono">${vec(g.bounds_max)}</dd>
+    <dt>顶点 / 三角</dt><dd class="mono">${(g.vertex_count ?? '—').toLocaleString?.() || g.vertex_count} / ${(g.triangle_count ?? '—').toLocaleString?.() || g.triangle_count}</dd>
+    <dt>碰撞盒</dt><dd class="mono">${g.collision?.type || '—'} · ${vec(g.collision?.dimensions)}</dd>
+    <dt>放置锚点</dt><dd>${g.anchor?.surface || '—'} <span class="mono">${vec(g.anchor?.point)}</span></dd>
+  </dl></div>
+  <div class="grp"><h3>出现时段</h3><dl class="kv"><dt>appearances</dt><dd>${app}</dd></dl></div>
+  <div class="grp"><h3>媒体文件</h3><dl class="kv">
+    ${mediaRow('context', m.context)}
+    ${mediaRow('source_crop', m.source_crop)}
+    ${mediaRow('completed_input', m.completed_input)}
+    ${mediaRow('model_3d', m.model_3d)}
+  </dl></div>
+  <div class="grp"><h3>后端原始 review</h3><dl class="kv">
+    <dt>verdict</dt><dd>${esc(rv.verdict) || '—'}</dd>
+    <dt>reason</dt><dd>${esc(rv.reason) || '—'}</dd>
+    <dt>reviewed_at</dt><dd class="mono">${esc((rv.reviewed_at || '').slice(0, 19))}</dd>
+  </dl></div>`;
+}
+
+// —— 详情 + 评审控件 ——
+function renderDetail() {
+  const a = byId.get(selectedId);
+  if (!a) { $('#detail').innerHTML = '<div class="empty">从左侧选择一件资产开始评审</div>'; return; }
+  const r = reviews[a.asset_id] || {};
+  const v = r.verdict || 'pending';
+  $('#detail').innerHTML = `
+    <div class="detail-body">
+      <div class="media">
+        <div class="stage" id="stage"></div>
+        <div class="media-tabs" id="mediaTabs">
+          <button data-m="3d">3D 模型</button>
+          <button data-m="render">渲染图</button>
+          <button data-m="frame">源视频帧</button>
+          <button data-m="video" ${a.urls.video ? '' : 'disabled'}>源视频</button>
+        </div>
+      </div>
+      <div class="fields">${fieldsHTML(a)}</div>
+    </div>
+    <div class="review-bar">
+      <div class="verdict-btns">
+        <button class="vbtn pass ${v === 'pass' ? 'on' : ''}" data-set="pass">✓ 通过</button>
+        <button class="vbtn fail ${v === 'fail' ? 'on' : ''}" data-set="fail">✗ 不通过</button>
+      </div>
+      <div class="reason-wrap ${v === 'fail' ? 'req' : ''}" id="reasonWrap" ${v === 'fail' ? '' : 'style="visibility:hidden"'}>
+        <label>不通过理由（必填，将随不合格清单交后端重生成）</label>
+        <textarea id="reason" placeholder="例如：网格破面 / 贴图错位 / 与原物差异大 / 尺度异常…">${esc(r.reason || '')}</textarea>
+      </div>
+      <div class="nav-btns">
+        <div class="saved" id="saved"></div>
+        <button data-nav="prev">↑ 上一件</button>
+        <button data-nav="next">↓ 下一件</button>
+      </div>
+    </div>`;
+  setMedia('3d');
+}
+
+function setVerdict(id, v) {
+  const cur = reviews[id]?.verdict;
+  const nv = cur === v ? 'pending' : v; // 再点一次取消
+  reviews[id] = { verdict: nv, reason: nv === 'fail' ? (reviews[id]?.reason || '') : '', updatedAt: new Date().toISOString() };
+  if (nv === 'pending') delete reviews[id];
+  save(); updateProgress(); renderList();
+  // 局部更新评审条
+  const a = byId.get(id); if (a) renderReviewBar(a);
+  flashSaved();
+}
+function renderReviewBar(a) {
+  const v = verdictOf(a.asset_id), r = reviews[a.asset_id] || {};
+  $('.verdict-btns .pass').classList.toggle('on', v === 'pass');
+  $('.verdict-btns .fail').classList.toggle('on', v === 'fail');
+  const wrap = $('#reasonWrap');
+  wrap.style.visibility = v === 'fail' ? 'visible' : 'hidden';
+  wrap.classList.toggle('req', v === 'fail');
+  $('#reason').value = r.reason || '';
+  if (v === 'fail') $('#reason').focus();
+}
+let savedT = 0;
+function flashSaved() { const el = $('#saved'); if (!el) return; el.textContent = '已保存 ✓'; clearTimeout(savedT); savedT = setTimeout(() => { el.textContent = ''; }, 1200); }
+
+function select(id) {
+  disposeViewer();
+  selectedId = id;
+  renderList();
+  renderDetail();
+  const rowEl = $(`.row[data-id="${id}"]`); rowEl?.scrollIntoView({ block: 'nearest' });
+}
+function move(delta) {
+  const list = filtered(); if (!list.length) return;
+  let i = list.findIndex((a) => a.asset_id === selectedId);
+  i = i < 0 ? 0 : Math.min(list.length - 1, Math.max(0, i + delta));
+  select(list[i].asset_id);
+}
+
+// —— 导出 / 导入 ——
+function downloadJSON(filename, obj) {
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob); const a = document.createElement('a');
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function exportResults() {
+  const reviewed = DATA.filter((a) => reviews[a.asset_id]);
+  const results = reviewed.map((a) => ({
+    asset_id: a.asset_id, name: a.name, category: a.type.category,
+    verdict: reviews[a.asset_id].verdict, reason: reviews[a.asset_id].reason || '',
+    reviewed_at: reviews[a.asset_id].updatedAt,
+  }));
+  const passed = results.filter((o) => o.verdict === 'pass').length;
+  // 不合格重生成工单：附 video_id + 后端默认帧 representative_sec，后端可直接据此重跑
+  const failItems = reviewed.filter((a) => reviews[a.asset_id].verdict === 'fail').map((a) => ({
+    asset_id: a.asset_id, name: a.name, category: a.type.category,
+    reason: reviews[a.asset_id].reason || '',
+    video_id: a.video_id, representative_sec: a.appearances?.[0]?.representative_sec ?? null,
+    reviewed_at: reviews[a.asset_id].updatedAt,
+  }));
+  // ① 完整评审结果（后端 review 同形状）
+  downloadJSON('asset-review-results.json', { reviewed: results.length, passed, failed: failItems.length, results });
+  // ② 纯不合格清单（重生成工单）
+  if (failItems.length) setTimeout(() => downloadJSON('asset-review-failures.json', { failed: failItems.length, items: failItems }), 400);
+}
+function importResults(file) {
+  const fr = new FileReader();
+  fr.onload = () => {
+    try {
+      const j = JSON.parse(fr.result);
+      const arr = Array.isArray(j) ? j : (j.results || []);
+      for (const o of arr) if (o.asset_id && (o.verdict === 'pass' || o.verdict === 'fail')) reviews[o.asset_id] = { verdict: o.verdict, reason: o.reason || '', updatedAt: o.reviewed_at || new Date().toISOString() };
+      save(); updateProgress(); renderList(); if (selectedId) renderDetail();
+      alert(`已导入 ${arr.length} 条评审。`);
+    } catch (e) { alert('导入失败：' + e.message); }
+  };
+  fr.readAsText(file);
+}
+
+// —— 事件 ——
+$('#list').addEventListener('click', (e) => { const row = e.target.closest('.row'); if (row) select(row.dataset.id); });
+$('#detail').addEventListener('click', (e) => {
+  const s = e.target.closest('[data-set]'); if (s) { setVerdict(selectedId, s.dataset.set); return; }
+  const m = e.target.closest('[data-m]'); if (m && !m.disabled) { setMedia(m.dataset.m); return; }
+  const n = e.target.closest('[data-nav]'); if (n) { move(n.dataset.nav === 'next' ? 1 : -1); return; }
+});
+$('#detail').addEventListener('input', (e) => { if (e.target.id === 'reason') { if (!reviews[selectedId]) return; reviews[selectedId].reason = e.target.value; reviews[selectedId].updatedAt = new Date().toISOString(); save(); flashSaved(); } });
+$('#verdictFilter').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; filter.verdict = b.dataset.v; $('#verdictFilter').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b)); renderList(); });
+$('#catFilter').addEventListener('change', (e) => { filter.cat = e.target.value; renderList(); });
+$('#search').addEventListener('input', (e) => { filter.q = e.target.value; renderList(); });
+$('#exportBtn').addEventListener('click', exportResults);
+$('#importBtn').addEventListener('click', () => $('#importFile').click());
+$('#importFile').addEventListener('change', (e) => { if (e.target.files[0]) importResults(e.target.files[0]); e.target.value = ''; });
+window.addEventListener('keydown', (e) => {
+  const t = e.target; if (t.tagName === 'TEXTAREA' || t.tagName === 'INPUT' || t.tagName === 'SELECT') return;
+  if (e.key === 'ArrowDown' || e.key === 'j') { e.preventDefault(); move(1); }
+  else if (e.key === 'ArrowUp' || e.key === 'k') { e.preventDefault(); move(-1); }
+  else if (e.key === '1') setVerdict(selectedId, 'pass');
+  else if (e.key === '2') setVerdict(selectedId, 'fail');
+});
+
+// —— 启动 ——
+fetch('./review-data.generated.json').then((r) => r.json()).then((j) => {
+  DATA = j.assets; byId = new Map(DATA.map((a) => [a.asset_id, a]));
+  if (j.generated_at) $('#genAt').textContent = ` · 数据 ${String(j.generated_at).slice(0, 10)}`;
+  const cats = [...new Set(DATA.map((a) => a.type.category))];
+  $('#catFilter').innerHTML = '<option value="all">全部分类</option>' + cats.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  updateProgress(); renderList();
+  if (DATA[0]) select(DATA[0].asset_id);
+}).catch((e) => { $('#detail').innerHTML = `<div class="empty">数据加载失败：${esc(e.message)}<br>先跑 <code>node tools/build-review-data.mjs</code></div>`; });
+</script>
+</body>
+</html>
