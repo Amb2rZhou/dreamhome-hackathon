@@ -590,8 +590,6 @@ function App() {
     })
     return () => preloads.forEach((image) => { image.src = '' })
   }, [activeFrameAssets])
-  const latestBatch = state.batches[state.batches.length - 1] ?? null
-  const latestBatchCount = latestBatch ? latestBatch.jobs.length : 0
   const liveWorkshopData = useMemo(() => workshopFromAppState({
     batches: state.batches,
     blogger: CURRENT_BLOGGER,
@@ -881,7 +879,6 @@ function App() {
           awaitingCollectionView={awaitingCollectionView}
           craftStartTip={state.craftStartTip}
           busy={!!state.currentCraft || state.craftQueue.length > 0}
-          taskCount={latestBatchCount}
           collectionMode={state.phase === 'session' ? collectionMascotMode : 'none'}
           guideMode={state.phase === 'session'
             ? (state.selected.length > 0 && collectionMascotMode === 'none' ? 'drag' : null)

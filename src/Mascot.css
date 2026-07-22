@@ -97,11 +97,11 @@
 }
 .mascot-motion-layer--incoming {
   z-index: 2;
-  animation: mascotMotionFadeIn var(--fade-duration, 240ms) ease-out both;
+  animation: mascotMotionFadeIn var(--fade-duration, 300ms) ease-in-out both;
 }
 .mascot-motion-layer--outgoing {
   z-index: 1;
-  animation: mascotMotionFadeOut var(--fade-duration, 240ms) ease-in both;
+  animation: mascotMotionFadeOut var(--fade-duration, 300ms) ease-in-out both;
 }
 .black-key-source {
   position: absolute;
@@ -343,25 +343,3 @@
   0% { opacity: 0.9; transform: scale(0.72); }
   72%, 100% { opacity: 0; transform: scale(1.22); }
 }
-.mascot-task-badge {
-  position: absolute;
-  right: -7px;
-  bottom: -3px;
-  top: auto;
-  z-index: 8;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 28px;
-  height: 20px;
-  padding: 0 6px;
-  border: 1px solid rgba(20,22,26,.14);
-  border-radius: 999px;
-  background: rgba(255,255,255,.96);
-  color: #17191d;
-  box-shadow: 0 3px 9px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.9);
-  font-size: 9px;
-  font-weight: 800;
-  cursor: pointer;
-}
-.mascot-task-badge span { font-size: 9px; line-height: 1; }

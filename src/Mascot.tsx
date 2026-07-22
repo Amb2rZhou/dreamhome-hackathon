@@ -27,7 +27,6 @@ interface MascotProps {
   awaitingCollectionView: boolean
   craftStartTip: boolean
   busy: boolean
-  taskCount: number
   collectionMode: CollectionMascotMode
   guideMode: 'recognize' | 'drag' | null
   progressGuideActive: boolean
@@ -43,6 +42,7 @@ export type CollectionMascotMode = 'none' | 'collecting' | 'ready' | 'receiving'
 
 const IDLE_ACCENT_DELAY = 10_000
 const WORK_ACCENT_DELAY = 2_500
+const MOTION_FADE_MS = 300
 const MOTION_ASSET_ROOT = '/mascot-motion'
 // 统一角色脚底基线；各段素材的轻微视觉差异在这里校准，不需要重新导出。
 const MOTIONS: Record<MotionName, MotionClip> = {
@@ -67,10 +67,6 @@ const FALLBACK_IMG: Record<MascotState, string> = {
 function chooseDifferent<T extends string>(options: readonly T[], previous: T | null): T {
   const available = options.filter((option) => option !== previous)
   return available[Math.floor(Math.random() * available.length)] ?? options[0]
-}
-
-function isWorkingMotion(motion: MotionName) {
-  return motion === 'working' || motion === 'workingHammer' || motion === 'workingDrawing'
 }
 
 function BubbleActionCopy({
@@ -104,7 +100,6 @@ export function Mascot({
   awaitingCollectionView,
   craftStartTip,
   busy,
-  taskCount,
   collectionMode,
   guideMode,
   progressGuideActive,
@@ -145,14 +140,44 @@ export function Mascot({
   const lastIdleAccentRef = useRef<'idleMagnifier' | 'idleBelt' | null>(null)
   const lastWorkAccentRef = useRef<'workingHammer' | 'workingDrawing' | null>(null)
   const bootPlayingRef = useRef(firstMotion === 'coldStart')
+  const preloadedVideosRef = useRef<Map<string, HTMLVideoElement>>(new Map())
 
   useEffect(() => {
     if (!motionView.previous) return
     const timer = window.setTimeout(() => {
       setMotionView((current) => ({ ...current, previous: null }))
-    }, 460)
+    }, MOTION_FADE_MS + 40)
     return () => window.clearTimeout(timer)
   }, [motionView.previous])
+
+  useEffect(() => {
+    const likelyNextMotions: MotionName[] = awaitingCollectionView
+      ? ['complete']
+      : busy || state === 'working'
+        ? ['working', 'workingHammer', 'workingDrawing', 'complete']
+        : ['idle', 'idleMagnifier', 'idleBelt']
+
+    likelyNextMotions.forEach((name) => {
+      const src = MOTIONS[name].src
+      if (preloadedVideosRef.current.has(src)) return
+      const video = document.createElement('video')
+      video.preload = 'auto'
+      video.muted = true
+      video.playsInline = true
+      video.src = src
+      video.load()
+      preloadedVideosRef.current.set(src, video)
+    })
+  }, [awaitingCollectionView, busy, state])
+
+  useEffect(() => () => {
+    preloadedVideosRef.current.forEach((video) => {
+      video.pause()
+      video.removeAttribute('src')
+      video.load()
+    })
+    preloadedVideosRef.current.clear()
+  }, [])
 
   const baseMotion = useCallback((): MotionName => {
     if (busy || state === 'working') return 'working'
@@ -321,10 +346,7 @@ export function Mascot({
   const bubbleSide = pos.x > 225 ? 'right' : 'left'
   const clip = MOTIONS[motion]
   const previousClip = motionView.previous ? MOTIONS[motionView.previous] : null
-  const processingCrossfade = !!motionView.previous
-    && isWorkingMotion(motion)
-    && isWorkingMotion(motionView.previous)
-  const fadeDuration = processingCrossfade ? '420ms' : '240ms'
+  const fadeDuration = `${MOTION_FADE_MS}ms`
 
   return (
     <div
@@ -375,16 +397,6 @@ export function Mascot({
           />
         </div>
       )}
-      {taskCount > 0 && collectionMode === 'none' && (
-        <button
-          className="mascot-task-badge"
-          onPointerDown={(event) => event.stopPropagation()}
-          onClick={(event) => { event.stopPropagation(); onOpenCollection() }}
-          aria-label={`查看本次收集，共 ${taskCount} 件`}
-        >
-          <span>{taskCount}件</span>
-        </button>
-      )}
       {collectionMode !== 'none' && (
         <div className="mascot-collection-tip">
           {collectionMode === 'collecting' && '打包完成，拖进小车开始加工吧。'}
@@ -422,7 +434,7 @@ export function Mascot({
               className="mascot-motion-layer mascot-motion-layer--incoming"
               src={clip.src}
               loop={clip.loop}
-              preload={motion === 'idle' || motion === 'coldStart' ? 'auto' : 'metadata'}
+              preload="auto"
               onEnded={onMotionEnded}
               onError={() => setVideoFailed(true)}
               style={{
