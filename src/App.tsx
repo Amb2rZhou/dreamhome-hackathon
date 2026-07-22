@@ -1726,8 +1726,9 @@ function SessionLayer({
       pathRef.current = []
       recognizingRef.current = true
       setIsRecognizing(true)
-      // Keep the user's original circle on screen and let React paint its
-      // breathing state before the decoder/post-processing starts.
+      // Let React paint once before preparing the lightweight preview. The
+      // lasso must not remain blocked on EdgeSAM: slower devices can take
+      // several seconds to initialise ONNX/WASM.
       await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()))
       const video = document.querySelector<HTMLVideoElement>('.video')
       const selectionTime = video?.currentTime ?? pausedTime
@@ -1745,7 +1746,9 @@ function SessionLayer({
             return null
           })
         : Promise.resolve(null)
-      // bbox 截图只作为 pipeline 输入；不会再伪装成“已识别家具”。
+      // The contextual bbox is an immediate, temporary preview. The original
+      // full frame remains the production input and EdgeSAM can refine this
+      // preview asynchronously without blocking the gesture.
       let bboxDataUrl = ''
       if (video && path.length > 2) {
         bboxDataUrl = (await captureBbox(video, box)) ?? ''
@@ -1767,29 +1770,21 @@ function SessionLayer({
           status: 'pending',
         },
       })
-      // 唯一识别链路：浏览器端 EdgeSAM。不会调用万相、remove.bg 或后端补全。
-      const edgeSamResult = video
-        ? await segmentWithEdgeSam(video, path, box).catch((error) => {
-            console.warn('[EdgeSAM] cutout failed', error)
+      // Start EdgeSAM now, but never await it on the interaction path.
+      // Web SAM is presentation-only; production still receives the original
+      // frame and selection coordinates.
+      const edgeSamPromise = video
+        ? segmentWithEdgeSam(video, path, box).catch((error) => {
+            console.warn('[EdgeSAM] background cutout failed; keeping contextual preview', error)
             return null
           })
-        : null
-      const cutout = edgeSamResult?.dataUrl ?? null
-      if (!cutout) {
-        recognizingRef.current = false
-        setIsRecognizing(false)
-        clearCanvas()
-        dispatch({ type: 'UPDATE_TRACE', id: objId, patch: { status: 'failed' } })
-        dispatch({ type: 'OBJECT_FAILED' })
-        setTimeout(() => dispatch({ type: 'HIDE_FAIL_HINT' }), 2000)
-        return
-      }
-
+        : Promise.resolve(null)
+      const preview = bboxDataUrl || genSticker('其他', CATEGORY_COLOR.其他, 99)
       const obj: SelectedObject = {
         id: objId,
-        box: edgeSamResult?.box ?? box,
+        box,
         items: [recognizedItem],
-        snapshot: cutout,
+        snapshot: preview,
         source: 'custom',
       }
       const selectionUpload = await selectionUploadPromise
@@ -1803,8 +1798,8 @@ function SessionLayer({
         })
       }
       dispatch({ type: 'OBJECT_RECOGNIZED', obj })
-      // The sticker pops in first; retire the hand-drawn loop on the following
-      // frame so the two visuals feel like one continuous transformation.
+      // The preview is now usable. Retire the hand-drawn loop immediately;
+      // EdgeSAM and realtime labelling continue in the background.
       window.requestAnimationFrame(() => {
         recognizingRef.current = false
         setIsRecognizing(false)
@@ -1816,42 +1811,58 @@ function SessionLayer({
       } else {
         setDragGuideVisible(false)
       }
-      const realtimeLabel = await realtimeLabelPromise
-      const realtimeThumbnail = MOCK_OBJECTS.find((item) => item.label === realtimeLabel)?.thumbnail ?? '✦'
-      dispatch({
-        type: 'UPDATE_OBJECT_LABEL',
-        id: objId,
-        label: realtimeLabel,
-        thumbnail: realtimeThumbnail,
-      })
-      dispatch({
-        type: 'UPDATE_TRACE',
-        id: objId,
-        patch: {
-          label: realtimeLabel,
-          cutoutDataUrl: cutout,
-          inpaintDataUrl: null,
-          finalDataUrl: cutout,
-          status: 'done',
-        },
-      })
-      const traceStatus: TraceEntry['status'] = 'done'
-      console.log('[pipeline]', objId, 'edgeSam: ok', 'label:', realtimeLabel, 'path:', path.length, 'box:', box)
-
-      // 持久化到后端文件系统（成功失败都保存，不受 localStorage 5MB 限制）
-      try {
-        const saved = await saveTraceToBackend({
+      void realtimeLabelPromise.then((realtimeLabel) => {
+        const realtimeThumbnail = MOCK_OBJECTS.find((item) => item.label === realtimeLabel)?.thumbnail ?? '✦'
+        dispatch({
+          type: 'UPDATE_OBJECT_LABEL',
           id: objId,
-          ts: Date.now(),
           label: realtimeLabel,
-          status: traceStatus,
-          bboxDataUrl,
-          inpaintDataUrl: null,
+          thumbnail: realtimeThumbnail,
         })
-        console.log('[pipeline] backend save:', saved ? 'ok' : 'fail')
-      } catch (e) {
-        console.warn('[pipeline] backend save error:', e)
-      }
+        dispatch({ type: 'UPDATE_TRACE', id: objId, patch: { label: realtimeLabel } })
+      })
+
+      void Promise.all([edgeSamPromise, realtimeLabelPromise]).then(async ([edgeSamResult, realtimeLabel]) => {
+        const refinedCutout = edgeSamResult?.dataUrl ?? null
+        if (refinedCutout) {
+          dispatch({ type: 'UPDATE_SNAPSHOT', id: objId, snapshot: refinedCutout })
+        }
+        const finalPreview = refinedCutout || preview
+        dispatch({
+          type: 'UPDATE_TRACE',
+          id: objId,
+          patch: {
+            label: realtimeLabel,
+            cutoutDataUrl: refinedCutout,
+            inpaintDataUrl: null,
+            finalDataUrl: finalPreview,
+            status: 'done',
+          },
+        })
+        console.log(
+          '[pipeline]',
+          objId,
+          refinedCutout ? 'edgeSam: ok' : 'edgeSam: fallback preview',
+          'label:', realtimeLabel,
+          'path:', path.length,
+          'box:', box,
+        )
+
+        // Persist diagnostic trace without blocking selection or dragging.
+        try {
+          const saved = await saveTraceToBackend({
+            id: objId,
+            ts: Date.now(),
+            label: realtimeLabel,
+            status: 'done',
+            bboxDataUrl,
+            inpaintDataUrl: null,
+          })
+          console.log('[pipeline] backend save:', saved ? 'ok' : 'fail')
+        } catch (error) {
+          console.warn('[pipeline] backend save error:', error)
+        }
+      })
     }
     const onTouchMove = (e: TouchEvent) => {
       if (!drawingRef.current || !e.touches[0]) return
