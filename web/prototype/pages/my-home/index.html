@@ -531,7 +531,7 @@
     const sceneDataCache=new Map();
     const DEFAULT_DEMO_SCENE_IDS=['vid_40734d7f2e6c','vid_91fe552c5f7d'];
     const LEGACY_DEMO_SCENE_IDS=[...DEFAULT_DEMO_SCENE_IDS,'vid_5f32a0ac954a'];
-    const DEFAULT_DEMO_SEED_KEY='dreamhome.default-demo-homes.v2';
+    const DEFAULT_DEMO_SEED_KEY='dreamhome.default-demo-homes.v3';
     // 联调优先真机后端(127.0.0.1:8000)，后端不可达时回退随包静态 demo 数据，保证本地离线也能预览
     async function fetchSceneResource(apiPath, staticPath) {
       if (USE_LOCAL_BACKEND) {
