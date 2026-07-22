@@ -1,6 +1,6 @@
 import * as THREE from "./vendor/three.module.js";
 
-const API_BASE = new URLSearchParams(location.search).get("api") || "http://localhost:8000";
+const API_BASE = new URLSearchParams(location.search).get("api") || location.origin;
 
 const PRESETS = [
   { id: "preset-sofa", name: "绿色绒面沙发", kind: "sofa", thumbnail: "./assets/gallery/sofa.jpg", color: "#5f7f52", size: [2.1, .82, .86] },
@@ -252,26 +252,25 @@ function runProgress() {
 
 async function tryBackendGeneration(imageUrl, prompt, source) {
   try {
-    els.statusPill.textContent = "提交后端中";
-    const file = await imageSourceToFile(imageUrl, `${source || "photo"}.jpg`);
-    const form = new FormData();
-    form.append("file", file, file.name);
-    form.append("texture", "true");
-    form.append("meta", JSON.stringify({
-      category: nameFromPrompt(prompt, "家具"),
-      style: "用户主体图",
-      prompt
-    }));
-
-    const submit = await fetch(`${API_BASE}/api/photo-to-3d`, { method: "POST", body: form });
-    if (!submit.ok) return null;
+    els.statusPill.textContent = "正在压缩照片";
+    const imageDataUrl = await imageSourceToDataUrl(imageUrl);
+    els.statusPill.textContent = "提交 Fal 队列中";
+    const submit = await fetch(`${API_BASE}/api/photo-to-3d`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image_data_url: imageDataUrl, prompt })
+    });
+    if (!submit.ok) {
+      const payload = await submit.json().catch(() => ({}));
+      throw new Error(payload.error || "提交3D生成失败");
+    }
     const job = await submit.json();
-    if (!job.job_id) return null;
+    if (!job.job_id) throw new Error("服务端没有返回任务编号");
 
     for (let i = 0; i < 120; i += 1) {
       await wait(2000);
       const result = await fetch(`${API_BASE}/api/jobs/${job.job_id}`);
-      if (!result.ok) return null;
+      if (!result.ok) throw new Error("读取3D生成状态失败");
       const payload = await result.json();
       if (payload.status === "failed") {
         throw new Error(payload.error || "后端生成失败");
@@ -285,12 +284,29 @@ async function tryBackendGeneration(imageUrl, prompt, source) {
         };
       }
     }
-    return null;
-  } catch {
-    return null;
+    throw new Error("3D生成超时，请稍后重试");
+  } catch (error) {
+    throw error;
   } finally {
     updateStatus();
   }
+}
+
+async function imageSourceToDataUrl(src) {
+  const image = new Image();
+  image.decoding = "async";
+  image.src = src;
+  await image.decode();
+  const maxSide = 1024;
+  const scale = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+  canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+  const context = canvas.getContext("2d", { alpha: false });
+  context.fillStyle = "#fff";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", 0.86);
 }
 
 async function imageSourceToFile(src, filename) {

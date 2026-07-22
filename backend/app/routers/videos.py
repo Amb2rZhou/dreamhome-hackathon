@@ -16,6 +16,7 @@ from ..schemas_lib import (DetectBox, DetectResponse, MatchCandidate, SelectConf
                            VideoIndex, VideoOut)
 from ..services.detect import detect_frame
 from ..services.labels import extract_labels
+from ..services.selection_production import production_readiness, start_selection_production
 from ..store import create_job
 from ..utils import workpath
 
@@ -123,7 +124,7 @@ async def detect(video_id: str, req: DetectRequest):
                           provider="mock" if not req.frame_data_uri else "auto")
 
 
-def _save_cutout(frame_data_uri: Optional[str], bbox: list) -> str:
+def _save_cutout(frame_data_uri: Optional[str], bbox: list) -> tuple[str, bool]:
     """截帧裁出圈选区域；无截帧/无 PIL 时落占位图，保证链路不断。"""
     path = workpath("select", ".png")
     if frame_data_uri and "," in frame_data_uri:
@@ -135,12 +136,12 @@ def _save_cutout(frame_data_uri: Optional[str], bbox: list) -> str:
             W, H = img.size
             x, y, w, h = bbox
             img.crop((int(x * W), int(y * H), int((x + w) * W), int((y + h) * H))).save(path)
-            return path
+            return path, True
         except Exception:
             pass
     with open(path, "wb") as f:
         f.write(_PLACEHOLDER_PNG)
-    return path
+    return path, False
 
 
 @router.post("/{video_id}/select", response_model=SelectResponse)
@@ -148,7 +149,12 @@ async def select(video_id: str, req: SelectRequest):
     """圈选：抠图 → 提标签(与入库同一 schema) → 库内标签匹配 → 返候选给用户确认。"""
     if not db.get_video(video_id):
         raise HTTPException(404, "video not found")
-    cutout = _save_cutout(req.frame_data_uri, req.bbox)
+    if (len(req.bbox) != 4 or req.bbox[0] < 0 or req.bbox[1] < 0
+            or req.bbox[2] <= 0 or req.bbox[3] <= 0
+            or req.bbox[0] + req.bbox[2] > 1
+            or req.bbox[1] + req.bbox[3] > 1):
+        raise HTTPException(422, "bbox must be normalized [x,y,w,h] with positive size")
+    cutout, has_source_frame = _save_cutout(req.frame_data_uri, req.bbox)
     labels = await extract_labels(cutout, category_hint=req.category_hint)
     cands = []
     for c in matching.match_candidates(labels):
@@ -158,16 +164,33 @@ async def select(video_id: str, req: SelectRequest):
     sid = uuid.uuid4().hex
     _SELECTS[sid] = {"video_id": video_id, "t": req.t, "bbox": req.bbox,
                      "labels": labels, "cutout": cutout, "track_id": req.track_id,
+                     "has_source_frame": has_source_frame,
                      "created": time.time()}
     return SelectResponse(select_id=sid, labels=labels, candidates=cands)
 
 
 @router.post("/{video_id}/select/confirm", response_model=SelectConfirmResponse)
 async def select_confirm(video_id: str, req: SelectConfirmRequest):
-    """确认圈选结果：挂现有资产(不重新生成)，或生成新资产。"""
-    sel = _SELECTS.pop(req.select_id, None)
+    """确认圈选结果：复用同款，或选择 fast/production 生成新资产。"""
+    sel = _SELECTS.get(req.select_id)
     if not sel or sel["video_id"] != video_id:
         raise HTTPException(404, "select session not found (expired?)")
+
+    if req.use_asset_id and req.generate_new:
+        raise HTTPException(400, "use_asset_id and generate_new are mutually exclusive")
+    if req.quality_mode == "production" and not req.generate_new:
+        raise HTTPException(400, "quality_mode=production requires generate_new=true")
+    if req.use_asset_id and not db.get_asset(req.use_asset_id):
+        raise HTTPException(404, "asset not found")
+    if req.quality_mode == "production" and not sel.get("has_source_frame"):
+        raise HTTPException(422, "production mode requires a valid frame_data_uri in /select")
+    if req.quality_mode == "production":
+        readiness = production_readiness()
+        if not readiness["ready"]:
+            raise HTTPException(503, {"message": "production pipeline is not ready",
+                                      "capability": readiness})
+
+    _SELECTS.pop(req.select_id, None)
 
     track_id = sel.get("track_id") if sel.get("track_id") and db.get_track(sel["track_id"]) else None
     if not track_id:
@@ -176,13 +199,30 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
                                    t_start=sel["t"], t_end=sel["t"], best_frame_t=sel["t"])
 
     if req.use_asset_id:
-        if not db.get_asset(req.use_asset_id):
-            raise HTTPException(404, "asset not found")
         db.bind_track_asset(track_id, req.use_asset_id)
-        return SelectConfirmResponse(asset_id=req.use_asset_id, track_id=track_id)
+        return SelectConfirmResponse(asset_id=req.use_asset_id, track_id=track_id,
+                                     quality_mode="reuse")
 
     if not req.generate_new:
         raise HTTPException(400, "either use_asset_id or generate_new=true")
+
+    if req.quality_mode == "production":
+        asset_id, job = start_selection_production(
+            video_id=video_id,
+            track_id=track_id,
+            t=sel["t"],
+            bbox=sel["bbox"],
+            cutout_path=sel["cutout"],
+            labels=sel["labels"],
+            user_id=req.user_id,
+        )
+        return SelectConfirmResponse(
+            asset_id=asset_id,
+            job_id=job.job_id,
+            track_id=track_id,
+            quality_mode="production",
+            library_attached=False,
+        )
 
     job = create_job("video", sel["cutout"], meta={"category": sel["labels"].get("category")})
     asset_id = db.insert_asset(
@@ -192,4 +232,5 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
         status="generating", job_id=job.job_id, created_by="user",
     )
     db.bind_track_asset(track_id, asset_id)
-    return SelectConfirmResponse(asset_id=asset_id, job_id=job.job_id, track_id=track_id)
+    return SelectConfirmResponse(asset_id=asset_id, job_id=job.job_id, track_id=track_id,
+                                 quality_mode="fast")

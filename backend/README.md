@@ -9,6 +9,7 @@
 | 视频 → 3D | `POST /api/video-to-3d` | 视频 + 可选圈选 bbox | job_id |
 | 拍照 → 3D | `POST /api/photo-to-3d` | 照片 + 可选 bbox | job_id |
 | 画画 → 3D | `POST /api/sketch-to-3d` | 线稿 PNG | job_id |
+| Feed 圈选 → 正式 3D 资产 | `POST /api/videos/{id}/select` → `POST .../select/confirm` | 暂停帧 + 归一化 bbox | asset_id + job_id |
 | 语音编辑 | `POST /api/voice-edit` | ASR 文本 | 结构化编辑指令 |
 | 任务查询 | `GET /api/jobs/{job_id}` | job_id | 进度 + GLB url |
 
@@ -50,6 +51,10 @@ uvicorn app.main:app --reload --port 8000
 联调数据:`python seed_demo.py`(6 资产 + 1 已索引视频带轨迹 + 1 未索引视频)。
 离线批量:`python -m pipeline.run <video.mp4> --source-url <抖音链接>`,mock 可跑,
 真检测填 `REMOTE_GPU_URL`(gpu/setup.sh 起的推理服务)、真 3D 填 `FAL_KEY`。
+
+Feed 联调用完整生产链时，在 `/select/confirm` 传
+`{"generate_new":true,"quality_mode":"production","user_id":"..."}`；成功资产会自动加入该用户素材库。
+完整请求、状态和错误契约见 [`docs/feed-selection-api.md`](../docs/feed-selection-api.md)。
 
 ## 结构
 
