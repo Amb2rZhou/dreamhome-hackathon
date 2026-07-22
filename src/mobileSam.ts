@@ -248,6 +248,35 @@ function pointInPolygon(point: Point, path: Point[]): boolean {
   return inside
 }
 
+function rasterizePolygonMask(path: Point[], box: Box, width: number, height: number): Uint8Array {
+  if (path.length < 3) return new Uint8Array(width * height).fill(255)
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const context = canvas.getContext('2d', { willReadFrequently: true })
+  if (!context) throw new Error('Unable to rasterize lasso path')
+  context.fillStyle = '#ffffff'
+  context.beginPath()
+  context.moveTo(
+    (path[0].x - box.x) * STICKER_RENDER_SCALE,
+    (path[0].y - box.y) * STICKER_RENDER_SCALE,
+  )
+  for (let index = 1; index < path.length; index++) {
+    context.lineTo(
+      (path[index].x - box.x) * STICKER_RENDER_SCALE,
+      (path[index].y - box.y) * STICKER_RENDER_SCALE,
+    )
+  }
+  context.closePath()
+  context.fill('evenodd')
+  const rgba = context.getImageData(0, 0, width, height).data
+  const mask = new Uint8Array(width * height)
+  for (let source = 3, target = 0; source < rgba.length; source += 4, target += 1) {
+    mask[target] = rgba[source]
+  }
+  return mask
+}
+
 function buildNegativePrompts(path: Point[], box: Box): Point[] {
   const inset = 2
   const cornerCandidates: Point[] = [
@@ -687,6 +716,7 @@ function renderCutout(
   box: Box,
   anchors: Point[],
   path: Point[],
+  pathMask: Uint8Array,
 ): RenderedCandidate | null {
   const outputWidth = Math.max(1, Math.round(box.w * STICKER_RENDER_SCALE))
   const outputHeight = Math.max(1, Math.round(box.h * STICKER_RENDER_SCALE))
@@ -734,7 +764,7 @@ function renderCutout(
       const edge = clamp((logit + 0.38) / 0.76, 0, 1)
       const softened = edge * edge * (3 - 2 * edge)
       const rawAlpha = Math.round(softened * 255)
-      const insidePath = pointInPolygon({ x: screenX, y: screenY }, path)
+      const insidePath = pathMask[y * outputWidth + x] > 0
       if (insidePath) constraintArea += 1
       if (rawAlpha > 127) {
         rawForeground += 1
@@ -850,7 +880,7 @@ function renderCutout(
   const borderRadius = 3.94 * STICKER_RENDER_SCALE
   // Dense radial sampling makes the expanded outline a continuous ribbon
   // instead of a chain of offset silhouettes with visible scallops.
-  const outlineSamples = 96
+  const outlineSamples = 36
   for (let index = 0; index < outlineSamples; index++) {
     const angle = index / outlineSamples * Math.PI * 2
     const offsetX = Math.cos(angle) * borderRadius
@@ -887,11 +917,7 @@ function renderCutout(
   for (let y = 0; y < outputHeight; y++) {
     for (let x = 0; x < outputWidth; x++) {
       if (alpha[y * outputWidth + x] <= 127) continue
-      const screenPoint = {
-        x: box.x + (x + 0.5) / STICKER_RENDER_SCALE,
-        y: box.y + (y + 0.5) / STICKER_RENDER_SCALE,
-      }
-      if (pointInPolygon(screenPoint, path)) finalInsideForeground += 1
+      if (pathMask[y * outputWidth + x] > 0) finalInsideForeground += 1
     }
   }
   let renderEdgeOpaque = 0
@@ -981,13 +1007,8 @@ async function decodeCandidates(
   prompt: { coordinates: Float32Array; labels: Float32Array },
 ): Promise<{ masks: ort.Tensor; scores: number[] }> {
   const pointCount = prompt.labels.length
-  const embedding = new ort.Tensor(
-    'float32',
-    new Float32Array(frame.embedding.data as Float32Array),
-    frame.embedding.dims,
-  )
   const result = await decoder.run({
-    image_embeddings: embedding,
+    image_embeddings: frame.embedding,
     point_coords: new ort.Tensor('float32', prompt.coordinates, [1, pointCount, 2]),
     point_labels: new ort.Tensor('float32', prompt.labels, [1, pointCount]),
   })
@@ -1181,6 +1202,7 @@ export async function segmentWithEdgeSam(
 ): Promise<EdgeSamResult | null> {
   const startedAt = performance.now()
   await prepareEdgeSamFrame(video)
+  const frameReadyAt = performance.now()
   const frame = preparedFrame
   if (!frame) return null
   const decoder = await getDecoderSession()
@@ -1204,6 +1226,7 @@ export async function segmentWithEdgeSam(
     )
     decodedSets.push({ decoded, positivePrompts })
   }
+  const decodedAt = performance.now()
   const rankedCandidates = decodedSets.flatMap(({ decoded, positivePrompts }, promptSetIndex) => {
     const dims = decoded.masks.dims
     const maskSize = Number(dims[dims.length - 2]) * Number(dims[dims.length - 1])
@@ -1238,6 +1261,9 @@ export async function segmentWithEdgeSam(
     && metrics.renderEdgeTouch <= 0.3
     && metrics.screenEdgeTouch <= 0.035
   ))
+  const renderWidth = Math.max(1, Math.round(renderBox.w * STICKER_RENDER_SCALE))
+  const renderHeight = Math.max(1, Math.round(renderBox.h * STICKER_RENDER_SCALE))
+  const pathMask = rasterizePolygonMask(path, renderBox, renderWidth, renderHeight)
   const renderedCandidates = plausibleCandidates.slice(0, 4).flatMap((candidate) => {
     const rendered = renderCutout(
       frame,
@@ -1247,6 +1273,7 @@ export async function segmentWithEdgeSam(
       renderBox,
       candidate.positivePrompts,
       path,
+      pathMask,
     )
     if (!rendered) return []
     if (rendered.finalInsidePrecision < 0.34 || rendered.renderEdgeTouch > 0.2) return []
@@ -1282,6 +1309,9 @@ export async function segmentWithEdgeSam(
       finalInsidePrecision: Number(finalInsidePrecision.toFixed(3)),
       renderEdgeTouch: Number(renderEdgeTouch.toFixed(3)),
       negativePoints: negativePrompts.length,
+      frameMs: Math.round(frameReadyAt - startedAt),
+      decoderMs: Math.round(decodedAt - frameReadyAt),
+      postprocessMs: Math.round(performance.now() - decodedAt),
     },
   )
   return { ...rendered, elapsedMs }
