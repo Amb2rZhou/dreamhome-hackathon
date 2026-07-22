@@ -386,8 +386,8 @@
     const USE_LOCAL_BACKEND = ['127.0.0.1','localhost'].includes(location.hostname) && QUERY.get('demo')!=='1';
     const normalizeHomeProject = (project) => { if(!project?.id)return null;const template=TEMPLATES.find(item=>item.id===project.source?.templateId);return {...project,realScene:project.realScene||(template?.realScene?clone(template.realScene):undefined),daylight:project.daylight||template?.realScene?.cfg?.light||'day',placements:Array.isArray(project.placements)?project.placements:[],finishes:{floorAssetId:null,wallpaperAssetId:null,...project.finishes}}; };
     function tell(message) { ui.liveRegion.textContent = message; ui.toast.textContent = message; ui.toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => ui.toast.classList.remove('show'), 1800); }
-    function persistProjectNow(){if(!state.project)return false;try{if(state.project.source?.type==='video_rebuild')localStorage.setItem(sceneProjectKey(state.project.source.videoId),JSON.stringify({...state.project,updatedAt:now()}));else homeSceneService.saveProject(state.project);state.dirty=false;ui.editorHomeMeta.textContent='3D 布局已保存';return true;}catch(error){state.dirty=true;ui.editorHomeMeta.textContent='布局保存失败';tell('布局保存失败，请勿关闭页面');return false;}}
-    function saveSoon() { state.dirty = true; clearTimeout(saveTimer);ui.editorHomeMeta.textContent = '正在保存布局';if(state.project?.source?.type==='video_rebuild'){persistProjectNow();return;}saveTimer=setTimeout(persistProjectNow,360); }
+    function persistProjectNow(){if(!state.project)return false;try{homeSceneService.saveProject({...state.project,updatedAt:now()});state.dirty=false;ui.editorHomeMeta.textContent='3D 布局已保存';return true;}catch(error){state.dirty=true;ui.editorHomeMeta.textContent='布局保存失败';tell('布局保存失败，请勿关闭页面');return false;}}
+    function saveSoon() { state.dirty = true; clearTimeout(saveTimer);ui.editorHomeMeta.textContent = '正在保存布局';saveTimer=setTimeout(persistProjectNow,360); }
 
     const MockHomeSceneService = {
       async submitHomeGeneration({templateId, drawingFile}) { return { id: uid('job'), templateId: templateId || 'two-one', drawingName: drawingFile?.name || null, startedAt: Date.now() }; },
@@ -397,19 +397,18 @@
         try {
           const store = JSON.parse(localStorage.getItem(HOMES_KEY) || 'null');
           let homes = store && Array.isArray(store.homes) ? store.homes : [];
-          // 早期联调曾把视频场景压扁成简化手机端户型；新版改为进入原生重建工作台，清理这些不兼容存档。
-          const compatibleHomes = homes.filter((home) => home?.source?.type !== 'video_rebuild');
-          if (compatibleHomes.length !== homes.length) {
-            homes = compatibleHomes;
-            localStorage.setItem(HOMES_KEY, JSON.stringify({version:1, homes}));
-          }
+          // 把旧版单独保存的视频房间迁入统一项目列表，之后所有入口都复用同一编辑器和保存链路。
+          const legacyVideoKeys=Array.from({length:localStorage.length},(_,index)=>localStorage.key(index)).filter(key=>key?.startsWith('dreamhome_video_project_')&&key.endsWith('_v1'));
+          legacyVideoKeys.forEach((key)=>{const legacyVideo=JSON.parse(localStorage.getItem(key)||'null');const migrated=normalizeHomeProject(legacyVideo);if(migrated&&!homes.some((home)=>home.id===migrated.id))homes.push(migrated);if(migrated)localStorage.removeItem(key);});
           const legacy = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
           if (legacy?.project) { const migrated = normalizeHomeProject(legacy.project); if (migrated && !homes.some((home) => home.id === migrated.id)) homes = [migrated, ...homes]; localStorage.removeItem(STORAGE_KEY); localStorage.setItem(HOMES_KEY, JSON.stringify({version:1, homes})); }
-          return homes.map(normalizeHomeProject).filter(Boolean);
+          homes=homes.map(normalizeHomeProject).filter(Boolean).sort((a,b)=>String(b.updatedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.createdAt||'')));
+          localStorage.setItem(HOMES_KEY, JSON.stringify({version:2, homes}));
+          return homes;
         } catch { return []; }
       },
-      saveProject(project) { const homes = this.loadHomes().filter((home) => home.id !== project.id); homes.unshift({...project, schemaVersion:2, updatedAt: now()}); localStorage.setItem(HOMES_KEY, JSON.stringify({version:1, homes})); },
-      deleteHome(id) { const homes = this.loadHomes().filter((home) => home.id !== id); localStorage.setItem(HOMES_KEY, JSON.stringify({version:1, homes})); }
+      saveProject(project) { const homes = this.loadHomes().filter((home) => home.id !== project.id); homes.unshift({...project, schemaVersion:3, updatedAt: now()}); localStorage.setItem(HOMES_KEY, JSON.stringify({version:2, homes})); },
+      deleteHome(id) { const homes = this.loadHomes().filter((home) => home.id !== id); localStorage.setItem(HOMES_KEY, JSON.stringify({version:2, homes})); }
     };
     const HttpHomeSceneService = {
       async submitHomeGeneration({templateId, drawingFile}) { const form = new FormData(); if (templateId) form.append('template_id', templateId); if (drawingFile) form.append('file', drawingFile); const response = await fetch('/api/home-generation', {method:'POST', body:form}); if (!response.ok) throw new Error('提交户型生成任务失败'); return response.json(); },
@@ -471,16 +470,17 @@
         const area = template ? (template.meta || '').split('·')[0].trim() : '';
         const count = Array.isArray(home.placements) ? home.placements.length : 0;
         const meta = [area, `${count} 件家具`].filter(Boolean).join(' · ');
-        return `<article class="home-card" data-home-id="${home.id}" role="button" tabindex="0" aria-label="继续编辑 ${home.name}"><button class="home-del" data-home-delete="${home.id}" aria-label="删除 ${home.name}">×</button>${template?`<span class="home-card__preview" aria-hidden="true"><canvas data-template-preview="${template.id}"></canvas></span>`:`<div class="plan-mini" aria-hidden="true">${planThumbnail(home)}</div>`}<b>${home.name}</b><span>${meta}</span></article>`;
+        const preview=home.source?.type==='video_rebuild'?`<span class="video-scene-card__plan" aria-hidden="true"><img src="../../assets/scenes/${escapeText(home.source.videoId)}.jpg?v=2" alt="" loading="lazy" /></span>`:template?`<span class="home-card__preview" aria-hidden="true"><canvas data-template-preview="${template.id}"></canvas></span>`:`<div class="plan-mini" aria-hidden="true">${planThumbnail(home)}</div>`;
+        return `<article class="home-card" data-home-id="${home.id}" role="button" tabindex="0" aria-label="继续编辑 ${home.name}"><button class="home-del" data-home-delete="${home.id}" aria-label="删除 ${home.name}">×</button>${preview}<b>${home.name}</b><span>${meta}</span></article>`;
       }).join('');
       renderTemplatePreviews(ui.homeGrid);
       updateContinueGrid();
     }
-    function openHome(id) {
+    async function openHome(id) {
       const home = homeSceneService.loadHomes().find((item) => item.id === id);
       if (!home) return;
-      state.project = home; state.selectedRoomId = null; state.selectedPlacementId = null;
-      state.phase = 'editor'; updatePhases(); initEditor();
+      if(home.source?.type==='video_rebuild'){await openVideoScene(home.source.videoId,home.name);return;}
+      enterProjectEditor(home);
     }
     const sceneDataCache=new Map();
     async function loadVideoSceneData(videoId){
@@ -505,8 +505,8 @@
       try {
         const response=await fetch(USE_LOCAL_BACKEND?`${BACKEND}/api/scenes`:`${STATIC_DEMO_ROOT}/scenes/index.json`);
         if(!response.ok) throw new Error('场景列表读取失败');
-        const scenes=await response.json();
-        ui.homeGrid.insertAdjacentHTML('beforeend',scenes.map((scene)=>{const name=escapeText(displaySceneName(scene)),videoId=escapeText(scene.video_id);return `<button class="video-scene-card" data-video-scene="${videoId}" data-scene-title="${name}" aria-label="继续编辑 ${name}"><span class="video-scene-card__plan" aria-hidden="true"><img src="../../assets/scenes/${videoId}.jpg?v=2" alt="" loading="lazy" /></span><b>${name}</b></button>`;}).join(''));
+        const scenes=await response.json(),savedVideoIds=new Set(homeSceneService.loadHomes().filter(home=>home.source?.type==='video_rebuild').map(home=>home.source.videoId));
+        ui.homeGrid.insertAdjacentHTML('beforeend',scenes.filter(scene=>!savedVideoIds.has(scene.video_id)).map((scene)=>{const name=escapeText(displaySceneName(scene)),videoId=escapeText(scene.video_id);return `<button class="video-scene-card" data-video-scene="${videoId}" data-scene-title="${name}" aria-label="开始编辑 ${name}"><span class="video-scene-card__plan" aria-hidden="true"><img src="../../assets/scenes/${videoId}.jpg?v=2" alt="" loading="lazy" /></span><b>${name}</b></button>`;}).join(''));
         updateContinueGrid();
         scheduleVideoScenePreload(scenes);
       } catch(error) {
@@ -532,9 +532,10 @@
         return {id:item.id,homeId:`video-${sceneData.video_id}`,assetId:item.id,roomId:room.id,position:{x:item.pos[0],y:item.pos[1],z:item.pos[2]},rotation:{x:0,y:THREE.MathUtils.degToRad(item.rotYDeg||0),z:0},scale:{x:scale[0],y:scale[1],z:scale[2]}};
       });
       const baseline={schemaVersion:3,id:`video-${sceneData.video_id}`,name:localStorage.getItem(sceneNameKey(sceneData.video_id))?.trim()||sceneData.title,source:{type:'video_rebuild',videoId:sceneData.video_id},realScene:{room:sceneData.room,balcony:sceneData.balcony||null,extras:sceneData.extras||[],cfg:sceneData.cfg||{windows:[]}},envelope:{width:sceneData.room.w,depth:sceneData.room.d},walls,rooms:[room],windowSlots:[],placements,finishes:{floorAssetId:null,wallpaperAssetId:null},daylight:sceneData.cfg?.light||'dusk'};
-      try{if(!localStorage.getItem(sceneBaselineKey(sceneData.video_id)))localStorage.setItem(sceneBaselineKey(sceneData.video_id),JSON.stringify({...baseline,createdAt:now()}));const saved=JSON.parse(localStorage.getItem(sceneProjectKey(sceneData.video_id))||'null');if(saved?.source?.videoId===sceneData.video_id&&Array.isArray(saved.placements))return normalizeHomeProject({...baseline,...saved,id:baseline.id,source:baseline.source,realScene:baseline.realScene,envelope:baseline.envelope,walls:baseline.walls,rooms:baseline.rooms});localStorage.setItem(sceneProjectKey(sceneData.video_id),JSON.stringify({...baseline,createdAt:now(),updatedAt:now()}));}catch{}
-      return baseline;
+      try{if(!localStorage.getItem(sceneBaselineKey(sceneData.video_id)))localStorage.setItem(sceneBaselineKey(sceneData.video_id),JSON.stringify({...baseline,createdAt:now()}));const saved=homeSceneService.loadHomes().find(home=>home.id===baseline.id)||JSON.parse(localStorage.getItem(sceneProjectKey(sceneData.video_id))||'null');if(saved?.source?.videoId===sceneData.video_id&&Array.isArray(saved.placements))return normalizeHomeProject({...baseline,...saved,id:baseline.id,source:baseline.source,realScene:baseline.realScene,envelope:baseline.envelope,walls:baseline.walls,rooms:baseline.rooms});}catch{}
+      return normalizeHomeProject({...baseline,createdAt:now(),updatedAt:now()});
     }
+    function enterProjectEditor(project,{loading=false,title=''}={}){state.project=normalizeHomeProject(project);state.selectedRoomId=null;state.selectedPlacementId=null;state.selectedWindowSlotId=null;state.interaction.mode='orbit';state.phase=loading?'scene-loading':'editor';if(loading)pendingSceneTitle=title||state.project.name;updatePhases();initEditor();}
     async function openVideoScene(videoId, title='视频户型重建') {
       disposeScene();
       delete document.documentElement.dataset.sceneLoadMs;
@@ -546,18 +547,17 @@
       try {
         const [sceneData,assetsResponse]=await Promise.all([loadVideoSceneData(videoId),USE_LOCAL_BACKEND?fetch(`${BACKEND}/api/assets?include_all_status=true`):Promise.resolve(null)]);
         const assets=assetsResponse?.ok?await assetsResponse.json():[];
-        state.project=projectFromVideoScene(sceneData,assets,!USE_LOCAL_BACKEND);
-        state.selectedRoomId=null; state.selectedPlacementId=null; state.phase='scene-loading';
-        updatePhases(); updateGeneration('processing',58); initEditor();
+        const project=projectFromVideoScene(sceneData,assets,!USE_LOCAL_BACKEND);homeSceneService.saveProject(project);
+        updateGeneration('processing',58);enterProjectEditor(project,{loading:true,title});
       } catch(error) { pendingSceneStartedAt=0;pendingSceneTitle='';state.phase='setup'; updatePhases(); tell(error.message); }
     }
     function isRoomEditorProject(project) { return Boolean(project?.realScene || TEMPLATES.find(item=>item.id===project?.source?.templateId)?.scope==='room'); }
     function updatePhases() { const root=document.querySelector('.dh-root'),sceneLoading=state.phase==='scene-loading',generating=['submitting','polling','error'].includes(state.phase)||sceneLoading,editor=state.phase==='editor'||sceneLoading,roomEditor=editor&&isRoomEditorProject(state.project);ui.setupPhase.style.display=state.phase==='setup'?'flex':'none';ui.generationPhase.classList.toggle('is-visible',generating);ui.editorPhase.classList.toggle('is-visible',editor);root.classList.toggle('is-editor',editor);root.classList.toggle('is-real-scene',roomEditor);root.classList.toggle('is-scene-editor',roomEditor);if(generating)genVideo?.play().catch(()=>{});else genVideo?.pause(); }
     function updateGeneration(status, progress, error = '') { const copy = {queued:['正在准备空间','正在读取你的户型信息'],processing:['正在生成 3D 户型','包公球正在装修你的梦想之家'],ready:['空间已准备好','正在进入你的 3D 家'],failed:['生成没有完成',error || '请检查图片或重新尝试']}[status] || ['正在准备空间','']; ui.generationMascotStage.dataset.status = status; ui.generationMascotStage.classList.toggle('is-constructing', status === 'processing'); ui.generationTitle.textContent = copy[0]; ui.generationCopy.textContent = copy[1]; ui.progressBar.style.width = `${progress}%`; ui.retryButton.hidden = status !== 'failed'; ui.backToSetup.textContent = status === 'failed' ? '返回选择' : '取消'; }
     async function startGeneration() { if (!state.selectedTemplateId && !state.drawingFile) { ui.setupError.textContent = '请选择一个户型模板，或上传一张设计图。'; return; } state.phase = 'submitting'; updatePhases(); updateGeneration('queued', 4); try { state.job = await homeSceneService.submitHomeGeneration({templateId:state.selectedTemplateId, drawingFile:state.drawingFile}); state.phase='polling'; pollJob(); } catch (error) { failGeneration(error.message); } }
-    async function pollJob() { clearTimeout(pollTimer); try { const jobState = await homeSceneService.getJob(state.job); const copyStatus = jobState.status === 'ready' ? 'ready' : jobState.status === 'failed' ? 'failed' : jobState.status; updateGeneration(copyStatus, jobState.progress, jobState.error); if (jobState.status === 'ready') { state.project = jobState.result; state.project.placements.forEach((placement) => placement.homeId = state.project.id); homeSceneService.saveProject(state.project); state.phase='editor'; updatePhases(); initEditor(); tell('3D 户型已生成，可以开始摆放'); return; } if (jobState.status === 'failed') { state.phase='error'; updatePhases(); return; } pollTimer = setTimeout(pollJob, 680); } catch (error) { failGeneration(error.message); } }
+    async function pollJob() { clearTimeout(pollTimer); try { const jobState = await homeSceneService.getJob(state.job); const copyStatus = jobState.status === 'ready' ? 'ready' : jobState.status === 'failed' ? 'failed' : jobState.status; updateGeneration(copyStatus, jobState.progress, jobState.error); if (jobState.status === 'ready') { const project=normalizeHomeProject(jobState.result);project.placements.forEach((placement) => placement.homeId = project.id);homeSceneService.saveProject(project);enterProjectEditor(project);tell('3D 户型已生成，可以开始摆放');return; } if (jobState.status === 'failed') { state.phase='error'; updatePhases(); return; } pollTimer = setTimeout(pollJob, 680); } catch (error) { failGeneration(error.message); } }
     function failGeneration(message) { clearTimeout(pollTimer); state.phase='error'; updatePhases(); updateGeneration('failed', 0, message); }
-    function returnToSetup() { clearTimeout(pollTimer);if(state.project?.source?.type==='video_rebuild')persistProjectNow(); state.phase='setup'; renderSavedHomes(); renderVideoScenes(); updatePhases(); }
+    function returnToSetup() { clearTimeout(pollTimer);clearTimeout(saveTimer);if(state.project&&!persistProjectNow())return;disposeScene();state.project=null;state.selectedRoomId=null;state.selectedPlacementId=null;state.selectedWindowSlotId=null;state.phase='setup';renderSavedHomes();renderVideoScenes();updatePhases(); }
 
     function initEditor() { disposeScene(); const real=Boolean(state.project.realScene),finishes=state.project.finishes||{};state.selectedFloorPreset=finishes.floorPresetId||'warm-long-plank';state.selectedWallColor=finishes.wallColor||'#f3ecdc';state.selectedWindowStyle=finishes.windowStyle||'dark-grid';ui.editorHomeName.value = state.project.name; ui.editorHomeMeta.textContent = ''; ui.daylightButton.textContent = state.project.daylight === 'night' ? '🌙' : '☀'; renderRooms(); renderAssetDrawer(); resetModelLoadProgress(state.project); sceneRuntime = createScene(state.project); const initialName=real?state.project.realScene?.cfg?.light:state.project.daylight,index=REAL_TIME_SEQUENCE.indexOf(initialName);applyRealTimeProgress(index>=0?index*100:200); syncInspector(); }
 
@@ -803,7 +803,7 @@
     ui.confirmModal.addEventListener('click',(event)=>{ if(event.target.closest('[data-confirm-close]')){ closeDeleteConfirm(); return; } if(event.target.closest('#confirmOk')){ const id=pendingDeleteId; closeDeleteConfirm(); if(id){ homeSceneService.deleteHome(id); renderSavedHomes(); renderVideoScenes(); tell('已删除这个家'); } } });
     ui.drawingInput.addEventListener('change',()=>{const file=ui.drawingInput.files[0]; if (!file) return; if (!['image/png','image/jpeg','image/webp'].includes(file.type)) { state.drawingFile=null; ui.uploadName.textContent='请上传 PNG、JPG 或 WEBP 图片'; return; } state.selectedTemplateId=null; state.drawingFile=file; ui.uploadName.textContent=`${file.name} · ${(file.size/1024/1024).toFixed(1)} MB`; ui.setupError.textContent=''; renderTemplates(); });
     ui.generateButton.addEventListener('click',startGeneration); ui.backToSetup.addEventListener('click',returnToSetup); ui.retryButton.addEventListener('click',startGeneration);
-    ui.editorHomeName.addEventListener('change',()=>{ if(!state.project) return; const name=ui.editorHomeName.value.trim(); if(!name){ ui.editorHomeName.value=state.project.name; return; } state.project.name=name; ui.editorHomeName.value=name; if(state.project.source?.type==='video_rebuild'){localStorage.setItem(sceneNameKey(state.project.source.videoId),name);renderVideoScenes();tell('房间名称已更新');return;} saveSoon(); tell('家的名称已更新'); });
+    ui.editorHomeName.addEventListener('change',()=>{ if(!state.project) return; const name=ui.editorHomeName.value.trim(); if(!name){ ui.editorHomeName.value=state.project.name; return; } state.project.name=name; ui.editorHomeName.value=name; if(state.project.source?.type==='video_rebuild')localStorage.setItem(sceneNameKey(state.project.source.videoId),name);saveSoon();tell('家的名称已更新'); });
     ui.editorHomeName.addEventListener('keydown',(event)=>{ if(event.key==='Enter'){ event.preventDefault(); ui.editorHomeName.blur(); } });
     ui.drawerToggle.addEventListener('click',()=>{state.drawerExpanded=!state.drawerExpanded; renderAssetDrawer();}); ui.drawerModes?.addEventListener('click',(event)=>{const button=event.target.closest('[data-drawer-mode]');if(!button)return;state.drawerMode=button.dataset.drawerMode;state.activeAssetCategory='全部';renderAssetDrawer();}); ui.categoryTabs.addEventListener('click',(event)=>{const button=event.target.closest('[data-category]');if(!button)return;state.activeAssetCategory=button.dataset.category;renderAssetDrawer();}); ui.assetRail.addEventListener('click',(event)=>{const floor=event.target.closest('[data-floor-preset]');if(floor){sceneRuntime?.applyFloorPreset(floor.dataset.floorPreset);return;}const wallColor=event.target.closest('[data-wall-color]');if(wallColor){sceneRuntime?.applyWallColor(wallColor.dataset.wallColor);return;}const windowStyle=event.target.closest('[data-window-style]');if(windowStyle){sceneRuntime?.applyWindowStyle(windowStyle.dataset.windowStyle);return;}const asset=event.target.closest('[data-asset-id]');if(asset)sceneRuntime?.beginPlacement(asset.dataset.assetId);});
     let resetViewClickTimer=null;
@@ -812,7 +812,7 @@
     ui.transformConfirm.addEventListener('click',()=>sceneRuntime?.confirmTransform()); ui.transformDelete.addEventListener('click',deleteSelected);
     ui.daylightButton.addEventListener('click',()=>{ if(!state.project||state.project.source?.type==='video_rebuild') return; const next = state.project.daylight === 'night' ? 'day' : 'night'; state.project.daylight = next; ui.daylightButton.textContent = next === 'night' ? '🌙' : '☀'; saveSoon(); tell(next === 'night' ? '已切换到黑夜' : '已切换到白天'); }); ui.realTimeSlider.addEventListener('input',()=>applyRealTimeProgress(ui.realTimeSlider.value));ui.realTimeSlider.addEventListener('change',()=>applyRealTimeProgress(ui.realTimeSlider.value,true)); ui.rotateLeft.addEventListener('click',()=>rotateSelected(-1)); ui.rotateRight.addEventListener('click',()=>rotateSelected(1)); ui.scaleDown.addEventListener('click',()=>scaleSelected(1/1.15)); ui.scaleUp.addEventListener('click',()=>scaleSelected(1.15)); ui.moveSelected.addEventListener('click',()=> sceneRuntime?.beginMove()); ui.deleteSelected.addEventListener('click',deleteSelected);
     ui.editorBack.addEventListener('click',returnToSetup); ui.shareButton.addEventListener('click',openShareSheet); ui.shareSheet.addEventListener('click',(event)=>{ if(event.target.closest('[data-share-close]')){ closeShareSheet(); return; } const target=event.target.closest('[data-share]'); if(target){ closeShareSheet(); tell(`已唤起分享 · ${target.querySelector('b')?.textContent || ''}`); } });
-    document.addEventListener('keydown',(event)=>{if(event.key==='Escape' && state.interaction.mode!=='orbit') exitInteraction();}); window.addEventListener('beforeunload',()=>{if(state.project?.source?.type==='video_rebuild')persistProjectNow();disposeScene();});
+    document.addEventListener('keydown',(event)=>{if(event.key==='Escape' && state.interaction.mode!=='orbit') exitInteraction();}); window.addEventListener('pagehide',()=>{clearTimeout(saveTimer);persistProjectNow();});window.addEventListener('beforeunload',()=>{clearTimeout(saveTimer);persistProjectNow();disposeScene();});
     state.phase='setup';renderTemplates();renderSavedHomes();renderVideoScenes();updatePhases();
     if(new URLSearchParams(location.search).get('focus')==='templates'){requestAnimationFrame(()=>requestAnimationFrame(()=>{document.getElementById('templateBox')?.scrollIntoView({block:'center'});history.replaceState(null,'',location.pathname);}));}
   </script>
