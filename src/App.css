@@ -86,6 +86,7 @@ textarea { font-family: inherit; }
   inset: 0;
   z-index: 100;
   pointer-events: none;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
 }
 .ios-statusbar {
   position: absolute;
@@ -99,32 +100,50 @@ textarea { font-family: inherit; }
   color: #fff;
   font-size: 14px;
   line-height: 17px;
-  font-weight: 800;
+  font-weight: 760;
   text-shadow: 0 1px 4px rgba(0,0,0,.45);
 }
 .iphone-device.ios-status-dark .ios-statusbar {
   color: #17181b;
   text-shadow: none;
 }
-.ios-status-icons { display: flex; align-items: center; gap: 6px; }
-.ios-network { font-size: 11px; font-weight: 900; }
-.ios-signal { display: flex; gap: 2px; align-items: flex-end; height: 12px; }
+.ios-time {
+  height: 17px;
+  font-size: 15px;
+  line-height: 17px;
+  font-weight: 760;
+  transform: translateY(-3px);
+}
+.ios-status-icons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 17px;
+  transform: translateY(-6px);
+}
+.ios-network {
+  height: 17px;
+  font-size: 14px;
+  line-height: 17px;
+  font-weight: 760;
+}
+.ios-signal { display: flex; gap: 2px; align-items: flex-end; height: 13px; }
 .ios-signal i { display: block; width: 3px; border-radius: 2px; background: currentColor; }
-.ios-signal i:nth-child(1) { height: 4px; }
-.ios-signal i:nth-child(2) { height: 7px; }
-.ios-signal i:nth-child(3) { height: 10px; }
+.ios-signal i:nth-child(1) { height: 6px; }
+.ios-signal i:nth-child(2) { height: 9px; }
+.ios-signal i:nth-child(3) { height: 12px; }
 .ios-battery {
   position: relative;
-  width: 22px;
-  height: 11px;
-  border: 1.8px solid currentColor;
+  width: 23px;
+  height: 12px;
+  border: 1.5px solid currentColor;
   border-radius: 3px;
 }
 .ios-battery::before {
   content: '';
   position: absolute;
   inset: 2px;
-  width: 12px;
+  width: 13px;
   border-radius: 1px;
   background: currentColor;
 }
