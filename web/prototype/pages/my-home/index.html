@@ -383,6 +383,8 @@
     const escapeText = (value) => String(value ?? '').replace(/[&<>"']/g,(char)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
     const shortAssetName = (value,limit=7) => { const name=String(value??'');return name.length>limit?`${name.slice(0,limit)}…`:name; };
     const sceneNameKey = (videoId) => `dreamhome_scene_name_${videoId}`;
+    const sceneProjectKey = (videoId) => `dreamhome_video_project_${videoId}_v1`;
+    const sceneBaselineKey = (videoId) => `dreamhome_video_baseline_${videoId}_v1`;
     const displaySceneName = (scene) => localStorage.getItem(sceneNameKey(scene.video_id))?.trim() || scene.title;
     const uid = (prefix) => `${prefix}-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)}`;
     const now = () => new Date().toISOString();
@@ -528,7 +530,8 @@
     }
     const sceneDataCache=new Map();
     const DEFAULT_DEMO_SCENE_IDS=['vid_40734d7f2e6c','vid_91fe552c5f7d'];
-    const DEFAULT_DEMO_SEED_KEY='dreamhome.default-demo-homes.v1';
+    const LEGACY_DEMO_SCENE_IDS=[...DEFAULT_DEMO_SCENE_IDS,'vid_5f32a0ac954a'];
+    const DEFAULT_DEMO_SEED_KEY='dreamhome.default-demo-homes.v2';
     // 联调优先真机后端(127.0.0.1:8000)，后端不可达时回退随包静态 demo 数据，保证本地离线也能预览
     async function fetchSceneResource(apiPath, staticPath) {
       if (USE_LOCAL_BACKEND) {
@@ -557,7 +560,15 @@
     function scheduleVideoScenePreload(scenes){const start=()=>preloadVideoSceneAssets(scenes).catch(()=>{});if('requestIdleCallback'in window)requestIdleCallback(start,{timeout:250});else setTimeout(start,0);}
     async function seedDefaultDemoHomes(scenes){
       if(localStorage.getItem(DEFAULT_DEMO_SEED_KEY))return false;
-      const existingIds=new Set(homeSceneService.loadHomes().filter(home=>home.source?.type==='video_rebuild').map(home=>home.source.videoId));
+      const legacyIds=new Set(LEGACY_DEMO_SCENE_IDS);
+      const preservedHomes=homeSceneService.loadHomes().filter(home=>!legacyIds.has(home.source?.videoId));
+      localStorage.setItem(HOMES_KEY,JSON.stringify({version:2,homes:preservedHomes}));
+      for(const videoId of LEGACY_DEMO_SCENE_IDS){
+        localStorage.removeItem(sceneProjectKey(videoId));
+        localStorage.removeItem(sceneBaselineKey(videoId));
+        localStorage.removeItem(sceneNameKey(videoId));
+      }
+      const existingIds=new Set();
       let added=false;
       for(const scene of scenes){
         if(existingIds.has(scene.video_id))continue;
@@ -596,7 +607,7 @@
         const modelId=modelIdFromPath(item.glb);
         const fallbackModelUrl=staticDemo&&modelId?`${STATIC_DEMO_ROOT}/models/${modelId}.glb`:modelId?`${BACKEND}/api/scenes/model/${modelId}`:new URL(item.glb,BACKEND).href;
         const modelUrl=modelId&&USE_OSS_MODELS?`${OSS_MODEL_ROOT}/${modelId}.glb`:fallbackModelUrl;
-        const sizePrior=sizePriors.get(item.id)||null;
+        const sizePrior=sizePriors.get(item.id)||item.sizePrior||null;
         runtimeAssets.set(item.id,{id:item.id,name:item.name,category:'真实组件',tags:item.tags||[],modelUrl,fallbackModelUrl:modelUrl===fallbackModelUrl?'':fallbackModelUrl,dimensions:sizePrior?[sizePrior.w,sizePrior.h,sizePrior.d]:[item.targetW||.7,item.targetW||.7,item.targetW||.7],sizePrior,mount:item.mount||'floor',rawModel:true});
         const scale=Array.isArray(item.scale)?item.scale:[1,1,1];
         return {id:item.id,homeId:`video-${sceneData.video_id}`,assetId:item.id,roomId:room.id,position:{x:item.pos[0],y:item.pos[1],z:item.pos[2]},rotation:{x:0,y:THREE.MathUtils.degToRad(item.rotYDeg||0),z:0},scale:{x:scale[0],y:scale[1],z:scale[2]},sourceScale:{x:scale[0],y:scale[1],z:scale[2]}};
