@@ -209,6 +209,7 @@
     .plan-wall-line { background:rgba(166,126,59,.68); }.plan-wall-line--exterior { background:#8f6a2c; }
     .upload-box { border-color:rgba(190,155,90,.46); }
     .upload-action { background:rgba(250,241,220,.88); color:#9b7024; }
+    .export-homes-button{align-self:center;margin:-2px auto 12px;padding:8px 15px;border:1px solid rgba(190,155,90,.45);border-radius:999px;background:#fffaf0;color:#86672f;font:700 12px/1 system-ui;cursor:pointer}
     .generation-orbit { background:radial-gradient(circle at 34% 30%,#fff 0 7%,#faefd6 8% 40%,#efd9ad 41% 100%); }
     .generation-orbit::before { border-color:rgba(181,140,70,.42); }
     .progress-track { background:rgba(215,177,105,.2); }.progress-bar { background:linear-gradient(90deg,#eed9a8,#dcac58); }
@@ -250,6 +251,7 @@
           <section class="screen-phase setup-phase" id="setupPhase" aria-labelledby="myHomeTitle">
             <div class="setup-intro"><h2>梦想中的家是什么样的？</h2><p>从户型模板开始，一点一点拼出我的家。</p></div>
             <section class="continue-box" id="continueBox" aria-labelledby="continueTitle" hidden><div class="template-heading"><b id="continueTitle">继续编辑</b></div><div class="home-grid" id="homeGrid" aria-label="已保存的家"></div></section>
+            <button class="export-homes-button" id="exportHomesButton" type="button">下载布局快照</button>
             <section class="template-box" id="templateBox" aria-labelledby="templateTitle"><div class="template-heading"><b id="templateTitle">从收藏户型生成</b></div><div class="template-grid" id="templateGrid" aria-label="选择收藏户型"></div></section>
             <span id="uploadName" hidden></span><input id="drawingInput" type="file" accept="image/png,image/jpeg,image/webp" hidden />
             <p class="setup-error" id="setupError" role="alert"></p>
@@ -438,6 +440,17 @@
       loadProject() { return null; }, saveProject() {}, loadHomes() { return []; }, deleteHome() {}
     };
     const homeSceneService = USE_MOCK_HOME_SERVICE ? MockHomeSceneService : HttpHomeSceneService;
+
+    function downloadHomesSnapshot() {
+      persistProjectNow();
+      const homes = homeSceneService.loadHomes();
+      const blob = new Blob([JSON.stringify({ version: 2, homes }, null, 2)], { type: 'application/json' });
+      const href = URL.createObjectURL(blob), link = document.createElement('a');
+      link.href = href; link.download = 'dreamhome-default-homes.json'; link.click();
+      setTimeout(() => URL.revokeObjectURL(href), 1000);
+      tell(`已导出 ${homes.length} 个房间布局`);
+    }
+    document.getElementById('exportHomesButton')?.addEventListener('click', downloadHomesSnapshot);
 
     // 仅在显式导出地址下，把当前浏览器已保存的全部编辑态打包；普通页面不显示额外按钮。
     if (QUERY.get('exportHomes') === '1') {
