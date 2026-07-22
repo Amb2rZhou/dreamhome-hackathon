@@ -1,3 +1,5 @@
+import { BACKEND_ASSETS } from './library-assets.generated.js';
+
 const FAVORITES_KEY = 'dreamhome.asset-library.v1';
 const USER_ASSETS_KEY = 'dreamhome.user-assets.v1';
 
@@ -8,27 +10,75 @@ export const COMPONENT_FAMILIES = [
   { id: 'furniture', label: '家具类' },
 ];
 
-export const FURNITURE_CATEGORIES = [
-  { id: 'table', label: '桌几' },
-  { id: 'seating', label: '座椅' },
-  { id: 'sofa', label: '沙发' },
-  { id: 'lighting', label: '灯具' },
-  { id: 'decor', label: '装饰' },
-  { id: 'bed', label: '床具' },
-  { id: 'bedding', label: '床品' },
-  { id: 'cabinet', label: '柜体' },
-  { id: 'kitchen', label: '厨具' },
-  { id: 'bathroom', label: '卫浴' },
-  { id: 'storage', label: '收纳' },
-];
+// 家具子类＝后端真实分类（type.category，中文），按数量降序，零映射。
+export const FURNITURE_CATEGORIES = (() => {
+  const counts = new Map();
+  for (const rec of BACKEND_ASSETS) counts.set(rec.type.category, (counts.get(rec.type.category) || 0) + 1);
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([id]) => ({ id, label: id }));
+})();
+
+// 真实分类 → CSS/3D 占位 primitive（真实卡片用照片；primitive 仅用于 3D 占位几何与「我的家」抽屉剪影）
+export const CATEGORY_PRIMITIVE = {
+  灯具: 'lamp', 柜子: 'cabinet', 绿植: 'plant', 桌子: 'table', 单椅: 'chair',
+  装饰: 'plant', 地毯: 'cabinet', 沙发: 'sofa', 家电: 'cabinet', 床: 'bed', 卫浴: 'cabinet',
+};
+// size_missing（142/149 件无真实米制尺寸）时的每类兜底尺寸 [宽,高,深]（米）
+export const CATEGORY_DIMENSIONS = {
+  灯具: [.4, 1.4, .4], 柜子: [1.0, 1.2, .45], 绿植: [.4, .7, .4], 桌子: [1.2, .75, .7], 单椅: [.55, .9, .55],
+  装饰: [.3, .4, .3], 地毯: [1.6, .02, 2.2], 沙发: [1.9, .82, .9], 家电: [.6, 1.0, .6], 床: [1.6, .5, 2.0], 卫浴: [.6, .8, .5],
+};
+// 常见中文色名 → hex（供 3D 占位着色；缺省暖木色）
+const COLOR_HEX = {
+  白色: '#e7e0d3', 米白色: '#e9e0cb', 米白: '#e9e0cb', 米色: '#ddceb0',
+  棕色: '#8d5a3a', 深棕色: '#6b4632', 深褐色: '#5f4230', 黑色: '#3b3833',
+  灰色: '#9a978e', 浅灰色: '#c3c1b8', 浅灰: '#c3c1b8', 银色: '#b9bcc0',
+  绿色: '#7f9677', 浅绿色: '#b3c9a8', 蓝色: '#7f95ad', 浅蓝: '#a9bcca',
+  红色: '#b5654e', 黄色: '#d8b25a', 金色: '#c7a24a', 橙色: '#c98a4a',
+  粉色: '#d8a9a4', 透明: '#d8d4cc', 彩色: '#c0a06a', 浅木色: '#cbb089', 原木色: '#cbb089',
+};
+const DEFAULT_OBJECT_COLOR = '#b98d61';
+const lightenHex = (hex, amount = .3) => {
+  const n = parseInt(hex.slice(1), 16);
+  const mix = (c) => Math.round(c + (255 - c) * amount);
+  return '#' + [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => mix(c).toString(16).padStart(2, '0')).join('');
+};
+const colorForAsset = (rec) => {
+  for (const c of rec.labels?.colors ?? []) if (COLOR_HEX[c]) return COLOR_HEX[c];
+  return DEFAULT_OBJECT_COLOR;
+};
+
+// 后端记录 → 前端资产（适配层；将来接 API 只需把 import 换成 fetch、复用此函数）
+export const adaptBackendAsset = (rec) => {
+  const category = rec.type.category;
+  const known = rec.size_status === 'known' && rec.physical_size_m?.width != null;
+  const color = colorForAsset(rec);
+  const dims = known
+    ? [rec.physical_size_m.width, rec.physical_size_m.height, rec.physical_size_m.depth]
+    : (CATEGORY_DIMENSIONS[category] || [1, .8, .6]);
+  return {
+    id: rec.asset_id, kind: 'furniture', name: rec.name, source: 'platform', sourceType: 'platform',
+    category, subcategory: rec.type.subcategory, primitive: CATEGORY_PRIMITIVE[category] || 'cabinet',
+    color, accent: lightenHex(color, .3),
+    dimensions: dims,
+    // 「我的家」房间放置：真实 GLB 走 rawModel 归一化到 sizePrior（真实米制或分类兜底尺寸），避免原始网格尺度失真
+    rawModel: !!(rec.model_url), sizePrior: { w: dims[0], h: dims[1], d: dims[2] }, mount: 'floor',
+    sizeStatus: rec.size_status, thumbnail: rec.thumbnail, videoId: rec.video_id,
+    modelUrl: rec.model_url || null, frameUrl: rec.frame_url || null,
+    videoUrl: rec.video_url || null, videoSec: rec.representative_sec ?? null,
+    colors: rec.labels?.colors ?? [], materials: rec.labels?.materials ?? [], styles: rec.labels?.styles ?? [],
+  };
+};
 
 const asset = (id, kind, name, options = {}) => ({ id, kind, name, source: 'platform', ...options });
 
 export const COMPONENT_ASSETS = [
-  asset('floorplan-one-one', 'floorplan', '一室一厅', { templateId: 'one-one', thumbnail: 'plan-one', supported: true }),
-  asset('floorplan-two-one', 'floorplan', '两室一厅', { templateId: 'two-one', thumbnail: 'plan-two', supported: true }),
-  asset('floorplan-three-two', 'floorplan', '三室两厅', { templateId: 'three-two', thumbnail: 'plan-three', supported: true }),
-  asset('floorplan-courtyard', 'floorplan', '庭院平层', { templateId: 'courtyard', thumbnail: 'plan-courtyard', supported: false }),
+  // 户型类：改用 Amber 的单间户型模板（横厅/窄长/方形/L形客厅、飘窗/转角卧室），生成即进入拟真单间 + 全套新编辑器。
+  asset('floorplan-wide-living', 'floorplan', '横厅客厅', { templateId: 'wide-living', supported: true, previewImage: '../../assets/scenes/templates/wide-living.png?v=3' }),
+  asset('floorplan-long-living', 'floorplan', '窄长客厅', { templateId: 'long-living', supported: true, previewImage: '../../assets/scenes/templates/long-living.png?v=2' }),
+  asset('floorplan-square-lounge', 'floorplan', '方形会客厅', { templateId: 'square-lounge', supported: true, previewImage: '../../assets/scenes/templates/square-lounge.png?v=2' }),
+  asset('floorplan-l-living', 'floorplan', 'L形客厅', { templateId: 'l-living', supported: true, previewImage: '../../assets/scenes/templates/l-living.png?v=2' }),
+  asset('floorplan-bay-bedroom', 'floorplan', '飘窗卧室', { templateId: 'bay-bedroom', supported: true, previewImage: '../../assets/scenes/templates/bay-bedroom.png?v=2' }),
+  asset('floorplan-corner-bedroom', 'floorplan', '转角卧室', { templateId: 'corner-bedroom', supported: true, previewImage: '../../assets/scenes/templates/corner-bedroom.png?v=2' }),
   asset('floor-oak', 'floor', '原木浅橡', { finish: { color: '#cfae7f', accent: '#ad895b', pattern: 'grain' } }),
   asset('floor-terrazzo', 'floor', '暖白水磨石', { finish: { color: '#ded9cb', accent: '#a9afa5', pattern: 'speckle' } }),
   asset('floor-walnut', 'floor', '胡桃木拼花', { finish: { color: '#835d42', accent: '#b58764', pattern: 'parquet' } }),
@@ -37,48 +87,8 @@ export const COMPONENT_ASSETS = [
   asset('wallpaper-sage', 'wallpaper', '苔藓绿植感', { finish: { color: '#bbcab4', accent: '#7f9677', pattern: 'leaf' } }),
   asset('wallpaper-grid', 'wallpaper', '米灰细格', { finish: { color: '#dfddd5', accent: '#aaa99f', pattern: 'grid' } }),
   asset('wallpaper-rust', 'wallpaper', '砖红手作纹', { finish: { color: '#c6846e', accent: '#9e5f4c', pattern: 'woven' } }),
-  asset('table-round', 'furniture', '圆角餐桌', { category: 'table', primitive: 'table', color: '#c89261', accent: '#8d5a3a', dimensions: [1.4, .74, 1.4], sourceType: 'platform' }),
-  asset('table-low', 'furniture', '云朵茶几', { category: 'table', primitive: 'table', color: '#d7c3a4', accent: '#9d8466', dimensions: [1.2, .42, .72], sourceType: 'platform' }),
-  asset('chair-walnut', 'furniture', '胡桃餐椅', { category: 'seating', primitive: 'chair', color: '#7f5b44', accent: '#c8a682', dimensions: [.52, .95, .56], sourceType: 'platform' }),
-  asset('chair-sage', 'furniture', '鼠尾草单椅', { category: 'seating', primitive: 'chair', color: '#8da38a', accent: '#d5e1d0', dimensions: [.78, .84, .76], sourceType: 'platform' }),
-  asset('sofa-cloud', 'furniture', '云朵三人沙发', { category: 'sofa', primitive: 'sofa', color: '#e2ddd0', accent: '#af9f8e', dimensions: [2.16, .84, .92], sourceType: 'platform' }),
-  asset('sofa-moss', 'furniture', '苔藓模块沙发', { category: 'sofa', primitive: 'sofa', color: '#789070', accent: '#c3d2bd', dimensions: [1.8, .78, .9], sourceType: 'platform' }),
-  asset('lamp-reading', 'furniture', '阅读落地灯', { category: 'lighting', primitive: 'lamp', color: '#d5a25d', accent: '#fff2cf', dimensions: [.38, 1.6, .38], sourceType: 'platform' }),
-  asset('lamp-orbit', 'furniture', '轨道吊灯', { category: 'lighting', primitive: 'lamp', color: '#556257', accent: '#ead6a0', dimensions: [.5, 1.3, .5], sourceType: 'platform' }),
-  asset('plant-moss', 'furniture', '苔藓盆景', { category: 'decor', primitive: 'plant', color: '#637b59', accent: '#cfb58d', dimensions: [.5, .8, .5], sourceType: 'platform' }),
-  asset('vase-clay', 'furniture', '陶土花器', { category: 'decor', primitive: 'plant', color: '#ba7358', accent: '#e1c19b', dimensions: [.36, .66, .36], sourceType: 'platform' }),
-  asset('bed-linen', 'furniture', '亚麻双人床', { category: 'bed', primitive: 'bed', color: '#d7c7b4', accent: '#8c725c', dimensions: [1.8, .52, 2.05], sourceType: 'platform' }),
-  asset('bed-oak', 'furniture', '浅橡单人床', { category: 'bed', primitive: 'bed', color: '#c69c72', accent: '#efe1cb', dimensions: [1.2, .5, 2], sourceType: 'platform' }),
-  asset('bedding-sand', 'furniture', '砂岩床品', { category: 'bedding', primitive: 'bed', color: '#d8c3a6', accent: '#f2e9da', dimensions: [1.7, .28, 2], sourceType: 'platform' }),
-  asset('cabinet-sage', 'furniture', '鼠尾草柜', { category: 'cabinet', primitive: 'cabinet', color: '#83967d', accent: '#d7e1d3', dimensions: [1.5, 1.45, .45], sourceType: 'platform' }),
-  asset('cabinet-oak', 'furniture', '原木电视柜', { category: 'cabinet', primitive: 'cabinet', color: '#ba8f63', accent: '#e2c29a', dimensions: [1.8, .58, .42], sourceType: 'platform' }),
-  asset('kitchen-island', 'furniture', '石材中岛', { category: 'kitchen', primitive: 'cabinet', color: '#bfc0b9', accent: '#7d817a', dimensions: [1.55, .92, .78], sourceType: 'platform' }),
-  asset('kitchen-stool', 'furniture', '吧台高凳', { category: 'kitchen', primitive: 'chair', color: '#a56e4b', accent: '#e3c49c', dimensions: [.45, 1.02, .45], sourceType: 'platform' }),
-  asset('bath-vanity', 'furniture', '悬浮浴室柜', { category: 'bathroom', primitive: 'cabinet', color: '#d9d6ce', accent: '#7e9081', dimensions: [1.1, .82, .46], sourceType: 'platform' }),
-  asset('bath-stool', 'furniture', '浴室边凳', { category: 'bathroom', primitive: 'chair', color: '#9b8d78', accent: '#ede7dc', dimensions: [.48, .52, .34], sourceType: 'platform' }),
-  asset('storage-ladder', 'furniture', '梯形收纳架', { category: 'storage', primitive: 'cabinet', color: '#b9a98e', accent: '#eee4d1', dimensions: [.78, 1.65, .36], sourceType: 'platform' }),
-  asset('storage-basket', 'furniture', '藤编收纳篮', { category: 'storage', primitive: 'plant', color: '#b98c5c', accent: '#e6c99d', dimensions: [.54, .48, .54], sourceType: 'platform' }),
-  ...FURNITURE_CATEGORIES.flatMap((category, categoryIndex) => Array.from({ length: 11 }, (_, itemIndex) => {
-    const names = {
-      table: ['方几', '边桌', '岩板餐桌', '长桌', '折叠桌', '矮圆几', '书桌', '实木桌', '岛台桌', '玻璃边几', '藤编小几'],
-      seating: ['藤编椅', '弧形单椅', '软包餐椅', '低背椅', '靠窗椅', '皮质扶手椅', '折叠椅', '长凳', '阅读椅', '布艺椅', '圆墩'],
-      sofa: ['弧形沙发', '奶油双人沙发', '皮质躺椅', '直排沙发', '木框沙发', '格纹双人沙发', '深绿沙发', '米白单椅', '围合沙发', '软垫长椅', '转角沙发'],
-      lighting: ['纸灯笼吊灯', '玻璃壁灯', '蘑菇台灯', '黄铜吊灯', '线性灯', '贝壳壁灯', '小圆台灯', '方形落地灯', '布罩台灯', '极简吊灯', '烛台壁灯'],
-      decor: ['木雕摆件', '抽象挂画', '枝形花器', '石材托盘', '香薰烛台', '陶瓷盘', '编织挂饰', '岩石书挡', '玻璃器皿', '画框组合', '干枝花器'],
-      bed: ['藤编床', '软包大床', '原木矮床', '四柱床', '储物床', '格栅床', '儿童床', '圆角床', '皮质床', '榻榻米床', '靠窗单床'],
-      bedding: ['条纹床品', '苔藓绿床品', '暖白被褥', '石灰灰床品', '碎花床品', '格纹毯', '针织盖毯', '麻棉枕套', '深蓝床品', '软垫床尾凳', '奶油床幔'],
-      cabinet: ['格栅边柜', '藤编斗柜', '窄玄关柜', '玻璃书柜', '高脚边柜', '木质衣柜', '悬浮隔板', '低矮斗柜', '餐边柜', '转角柜', '滑门柜'],
-      kitchen: ['木质餐边柜', '嵌入式烤箱柜', '不锈钢置物架', '石材水槽柜', '双门冰箱', '开放式层架', '早餐台', '胡桃高柜', '调味收纳架', '原木碗柜', '窄吧台'],
-      bathroom: ['圆镜洗手台', '浴缸边几', '壁挂毛巾架', '石材洗手盆', '淋浴凳', '收纳镜柜', '磨砂置物架', '圆角浴缸', '竹质脏衣篮', '挂墙马桶', '香薰托盘'],
-      storage: ['抽屉收纳柜', '墙面挂架', '藤编收纳筐', '移动边车', '储物长凳', '衣帽架', '透明抽屉盒', '壁挂置物盒', '模块收纳柜', '布艺收纳袋', '窄缝收纳架'],
-    }[category.id];
-    const primitives = ['table', 'chair', 'sofa', 'lamp', 'plant', 'bed', 'cabinet'];
-    const palette = [
-      ['#b98d61', '#e5c89f'], ['#839778', '#d7e2d1'], ['#85705d', '#d9c7ae'], ['#c78368', '#f0d0ae'], ['#75816f', '#e0e8da'], ['#9a7962', '#d7c0a1'],
-    ];
-    const [color, accent] = palette[(categoryIndex + itemIndex) % palette.length];
-    return asset(`${category.id}-catalog-${itemIndex + 1}`, 'furniture', names[itemIndex], { category: category.id, primitive: primitives[(categoryIndex + itemIndex) % primitives.length], color, accent, dimensions: [1, .8, .6], sourceType: 'platform' });
-  })),
+  // 家具类：来自后端真实资产数据集（datasets/available-assets-v1，149 件），经 adaptBackendAsset 适配。
+  ...BACKEND_ASSETS.map(adaptBackendAsset),
 ];
 
 export const ASSET_BY_ID = new Map(COMPONENT_ASSETS.map((item) => [item.id, item]));

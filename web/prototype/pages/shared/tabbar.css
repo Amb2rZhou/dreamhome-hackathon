@@ -5,7 +5,7 @@
 .dh-tabbar.dh-tabbar--main {
   position: absolute; left: 50%; bottom: var(--dh-tabbar-bottom); z-index: var(--dh-tabbar-z);
   transform: translateX(-50%); width: calc(100% - 24px); height: var(--dh-tabbar-height);
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0;
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0;
   padding: 6px 6px 8px; border-radius: 26px;
   background: var(--dh-tabbar-bg); border: var(--dh-card-border); box-shadow: var(--dh-shadow-soft);
   overflow: visible;

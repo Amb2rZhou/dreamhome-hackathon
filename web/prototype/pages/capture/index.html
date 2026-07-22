@@ -13,6 +13,9 @@
     .preview-stage { min-height:100vh; display:grid; place-items:center; padding:28px 18px; box-sizing:border-box; }
     .draw-app { height:calc(100% - 50px); padding:0 16px; display:flex; flex-direction:column; box-sizing:border-box; overflow:hidden; }
     .draw-header { display:grid; place-items:center; min-height:42px; padding-top:3px; }
+    /* 主页面顶栏：状态栏 + 标题栏统一为底部导航同色（白），营造真机 app 顶栏 */
+    .dh-screen.dh-topwhite .dh-statusbar { background: var(--dh-bg-surface); }
+    .dh-screen.dh-topwhite .draw-header { background: var(--dh-bg-surface); margin:0 -16px; padding-left:16px; padding-right:16px; box-shadow:0 2px 6px rgba(175,135,65,.06); }
     .draw-title { margin:0; font-size:16px; letter-spacing:0; font-weight:var(--dh-font-weight-heavy); }
     .draw-sub { margin:1px 0 0; font-size:10px; font-weight:var(--dh-font-weight-semibold); color:var(--dh-fg-muted); }
     .draw-content { flex:1; min-height:0; display:flex; flex-direction:column; padding:10px 0 var(--dh-tabbar-safe-space); overflow:hidden; }
@@ -22,7 +25,8 @@
     /* ---- 阶段 A · 拍照/选图 ---- */
     /* 相框填满可用空间（控件比画一笔少 → 相框更大），生成按钮贴底、与画一笔水平对齐 */
     .photo-wrap { position:relative; flex:1; min-height:0; border:1px solid rgba(117,139,113,.2); border-radius:18px; background:linear-gradient(150deg,#ffffff,#fefaf2); box-shadow:var(--dh-shadow-soft); overflow:hidden; }
-    .photo-empty { position:absolute; inset:0; display:grid; place-items:center; }
+    .photo-empty { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:0 22px; }
+    .photo-hint { margin:0; text-align:center; font-size:12px; line-height:1.65; font-weight:var(--dh-font-weight-semibold); color:var(--dh-fg-muted); }
     .photo-empty.is-hidden { display:none; }
     /* 包公球占位：待生成「包公球拍照」图后替换 src 即可 */
     .photo-mascot { width:96px; height:96px; object-fit:contain; transform-origin:50% 88%; animation:mascot-sway 2.6s ease-in-out infinite; }
@@ -86,12 +90,12 @@
     .object--cabinet{width:39px;height:29px;border-radius:3px}
     .object--plant{width:22px;height:23px;border-radius:45% 55% 38% 62%;background:var(--accent)}.object--plant::before{content:"";position:absolute;left:-7px;top:-8px;width:15px;height:22px;border-radius:50% 0 50% 0;background:var(--object)}
     .result-body { flex:1; min-width:0; text-align:left; }
-    .result-name { width:100%; margin:0; padding:6px 9px; border:1px solid rgba(110,132,107,.24); border-radius:10px; background:rgba(246,250,244,.9); color:var(--dh-fg-primary); font:inherit; font-size:13px; font-weight:var(--dh-font-weight-bold); box-sizing:border-box; }
+    .result-name { width:100%; margin:0; padding:6px 9px; border:1px solid rgba(199,143,42,.28); border-radius:10px; background:rgba(252,246,233,.95); color:var(--dh-fg-primary); font:inherit; font-size:13px; font-weight:var(--dh-font-weight-bold); box-sizing:border-box; }
     .result-meta { margin:6px 0 0 2px; font-size:10px; font-weight:var(--dh-font-weight-semibold); color:var(--dh-fg-muted); }
     .result-actions { display:flex; flex-direction:column; gap:9px; width:100%; max-width:264px; margin-top:14px; }
-    .result-actions .primary-button { margin-top:0; }
-    .link-row { display:flex; gap:9px; }
-    .link-row .secondary-button { flex:1; text-align:center; text-decoration:none; display:grid; place-items:center; }
+    .result-actions .primary-button { margin-top:0; height:44px; box-shadow:none; }
+    .link-row { display:flex; flex-direction:column; gap:9px; }
+    .link-row .secondary-button { width:100%; height:44px; min-height:0; text-align:center; text-decoration:none; display:grid; place-items:center; }
 
     .toast { position:absolute; z-index:40; left:50%; bottom:78px; transform:translateX(-50%) translateY(8px); opacity:0; padding:9px 12px; border-radius:999px; background:rgba(29,36,31,.9); color:white; font-size:11px; font-weight:var(--dh-font-weight-semibold); pointer-events:none; transition:.2s ease; text-align:center; }
     .toast.show { opacity:1; transform:translateX(-50%); }
@@ -102,7 +106,7 @@
 <body>
   <main class="preview-stage">
     <section class="dh-phone-shell" aria-label="DreamHome 拍一张">
-      <div class="dh-screen dh-root">
+      <div class="dh-screen dh-root dh-topwhite">
         <div class="dh-island" aria-hidden="true"></div>
         <div class="dh-statusbar"><span class="status-time">9:41</span><div class="status-icons" aria-hidden="true"><div class="bars"><i></i><i></i><i></i></div><span>5G</span><div class="bat"></div></div></div>
         <div class="draw-app">
@@ -113,10 +117,10 @@
 
             <!-- 阶段 A · 拍照/选图 -->
             <section class="phase is-active" id="capturePhase" aria-label="拍照或选图">
-              <p class="draw-sub" style="text-align:center;margin:0 0 8px;">拍一张喜欢的家具，生成3D组件进入灵感库</p>
               <div class="photo-wrap">
                 <div class="photo-empty" id="photoEmpty">
                   <img class="photo-mascot" src="../../assets/mascot/states/mascot-thinking.png" alt="包公球在等你拍照" />
+                  <p class="photo-hint">拍一张喜欢的家具，<br />生成 3D 组件进入灵感库</p>
                 </div>
                 <img class="photo-preview" id="photoPreview" alt="已选照片" hidden />
                 <button class="photo-reset" id="photoReset" type="button" hidden>重新选择</button>
@@ -159,7 +163,7 @@
               <div class="result-actions">
                 <a class="primary-button" id="toMyHome" href="../my-home/index.html" style="display:grid;place-items:center;text-decoration:none;">去我的家摆放</a>
                 <div class="link-row">
-                  <a class="secondary-button" id="toLibrary" href="../inspiration-library/index.html">查看灵感库</a>
+                  <a class="secondary-button" id="toLibrary" href="../my-favorites/index.html">查看我的收藏</a>
                   <button class="secondary-button" id="captureAgain" type="button">再拍一张</button>
                 </div>
               </div>
@@ -167,7 +171,7 @@
 
           </div>
         </div>
-        <nav class="dh-tabbar dh-tabbar--main" aria-label="主功能导航"><a class="dh-tab" href="../inspiration-library/index.html" aria-label="灵感库"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12 2.6a6.4 6.4 0 0 0-3.9 11.48c.46.36.74.9.82 1.48l.13.94h5.84l.13-.94c.08-.58.36-1.12.82-1.48A6.4 6.4 0 0 0 12 2.6Z"/><rect x="8.7" y="17.4" width="6.6" height="1.9" rx=".95"/><rect x="9.6" y="20" width="4.8" height="1.9" rx=".95"/></svg></span></a><a class="dh-tab dh-tab--active" href="./index.html" aria-label="拍一张" aria-current="page"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8.7 4.6c-.6 0-1.15.32-1.44.84l-.7 1.24H4.6A2.6 2.6 0 0 0 2 9.32v8.28a2.6 2.6 0 0 0 2.6 2.6h14.8a2.6 2.6 0 0 0 2.6-2.6V9.32a2.6 2.6 0 0 0-2.6-2.6h-1.96l-.7-1.24a1.65 1.65 0 0 0-1.44-.84H8.7Zm3.3 5.1a3.55 3.55 0 1 0 0 7.1 3.55 3.55 0 0 0 0-7.1Z"/></svg></span></a><a class="dh-tab" href="../discover/index.html" aria-label="刷一刷"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M6.4 3.2h11.2A3.4 3.4 0 0 1 21 6.6v10.8a3.4 3.4 0 0 1-3.4 3.4H6.4A3.4 3.4 0 0 1 3 17.4V6.6a3.4 3.4 0 0 1 3.4-3.4Zm3.5 5.05c-.5-.3-1.14.06-1.14.65v6.3c0 .59.64.95 1.14.65l5.2-3.15c.48-.29.48-1.01 0-1.3l-5.2-3.15Z"/></svg></span></a><a class="dh-tab" href="../my-home/index.html" aria-label="我的家"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10.7 3.3a2 2 0 0 1 2.6 0l6.8 5.86c.44.38.7.94.7 1.53v7.71a2 2 0 0 1-2 2h-2.8a1 1 0 0 1-1-1v-4.4a1 1 0 0 0-1-1h-2.4a1 1 0 0 0-1 1v4.4a1 1 0 0 1-1 1H6.2a2 2 0 0 1-2-2V10.7c0-.59.26-1.15.7-1.53L10.7 3.3Z"/></svg></span></a></nav>
+        <nav class="dh-tabbar dh-tabbar--main" aria-label="主功能导航"><a class="dh-tab dh-tab--active" href="./index.html" aria-label="拍一张" aria-current="page"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8.7 4.6c-.6 0-1.15.32-1.44.84l-.7 1.24H4.6A2.6 2.6 0 0 0 2 9.32v8.28a2.6 2.6 0 0 0 2.6 2.6h14.8a2.6 2.6 0 0 0 2.6-2.6V9.32a2.6 2.6 0 0 0-2.6-2.6h-1.96l-.7-1.24a1.65 1.65 0 0 0-1.44-.84H8.7Zm3.3 5.1a3.55 3.55 0 1 0 0 7.1 3.55 3.55 0 0 0 0-7.1Z"/></svg></span></a><a class="dh-tab" href="../discover/index.html" aria-label="刷一刷"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M6.4 3.2h11.2A3.4 3.4 0 0 1 21 6.6v10.8a3.4 3.4 0 0 1-3.4 3.4H6.4A3.4 3.4 0 0 1 3 17.4V6.6a3.4 3.4 0 0 1 3.4-3.4Zm3.5 5.05c-.5-.3-1.14.06-1.14.65v6.3c0 .59.64.95 1.14.65l5.2-3.15c.48-.29.48-1.01 0-1.3l-5.2-3.15Z"/></svg></span></a><a class="dh-tab" href="../inspiration-library/index.html" aria-label="灵感库"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12 2.6a6.4 6.4 0 0 0-3.9 11.48c.46.36.74.9.82 1.48l.13.94h5.84l.13-.94c.08-.58.36-1.12.82-1.48A6.4 6.4 0 0 0 12 2.6Z"/><rect x="8.7" y="17.4" width="6.6" height="1.9" rx=".95"/><rect x="9.6" y="20" width="4.8" height="1.9" rx=".95"/></svg></span></a><a class="dh-tab" href="../my-favorites/index.html" aria-label="我的收藏"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7 3.6h10a2.2 2.2 0 0 1 2.2 2.2v13.9c0 .86-.94 1.38-1.66.92L12 17.2l-5.54 3.42c-.72.46-1.66-.06-1.66-.92V5.8A2.2 2.2 0 0 1 7 3.6Z"/></svg></span></a><a class="dh-tab" href="../my-home/index.html" aria-label="我的家"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10.7 3.3a2 2 0 0 1 2.6 0l6.8 5.86c.44.38.7.94.7 1.53v7.71a2 2 0 0 1-2 2h-2.8a1 1 0 0 1-1-1v-4.4a1 1 0 0 0-1-1h-2.4a1 1 0 0 0-1 1v4.4a1 1 0 0 1-1 1H6.2a2 2 0 0 1-2-2V10.7c0-.59.26-1.15.7-1.53L10.7 3.3Z"/></svg></span></a></nav>
         <div class="toast" id="toast" role="status" aria-live="polite"></div>
         <div class="dh-home-indicator" aria-hidden="true"></div>
       </div>
@@ -175,17 +179,7 @@
   </main>
 
   <script type="module">
-    import { FURNITURE_CATEGORIES, addUserAsset, toggleFavorite } from '../shared/asset-library-data.js';
-
-    // 品类 → 3D primitive 映射（与 my-home createAssetGroup / 灵感库 .object--* 对齐）
-    const PRIMITIVE_BY_CATEGORY = {
-      table:'table', seating:'chair', sofa:'sofa', lighting:'lamp', decor:'plant',
-      bed:'bed', bedding:'bed', cabinet:'cabinet', kitchen:'cabinet', bathroom:'cabinet', storage:'cabinet',
-    };
-    const DIMENSIONS_BY_PRIMITIVE = {
-      table:[1.1,.45,1.1], chair:[.55,.9,.55], sofa:[1.9,.82,.9], lamp:[.4,1.5,.4],
-      plant:[.5,.8,.5], bed:[1.8,.5,2], cabinet:[1.4,1.2,.45],
-    };
+    import { FURNITURE_CATEGORIES, CATEGORY_PRIMITIVE, CATEGORY_DIMENSIONS, addUserAsset } from '../shared/asset-library-data.js';
 
     const photoEmpty = document.getElementById('photoEmpty');
     const photoPreview = document.getElementById('photoPreview');
@@ -207,7 +201,8 @@
     const captureAgain = document.getElementById('captureAgain');
     const toLibrary = document.getElementById('toLibrary');
 
-    const state = { categories:['sofa'], photoUrl:null, hasPhoto:false, photoColor:'#9a8163', pollTimer:null, job:null, generatedAssets:[] };
+    const DEFAULT_CATEGORY = FURNITURE_CATEGORIES[0].id; // 默认选中首个真实分类（列表首位、可见即高亮）
+    const state = { categories:[DEFAULT_CATEGORY], photoUrl:null, hasPhoto:false, photoColor:'#9a8163', pollTimer:null, job:null, generatedAssets:[] };
     let toastTimer = null;
     const showToast = (message) => { toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1600); };
     const rgbToHex = (r, g, b) => '#' + [r, g, b].map((c) => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0')).join('');
@@ -305,7 +300,7 @@
     function buildAssets() {
       const seqBase = String(Date.now()).slice(-3);
       return state.categories.map((catId, index) => {
-        const primitive = PRIMITIVE_BY_CATEGORY[catId] || 'cabinet';
+        const primitive = CATEGORY_PRIMITIVE[catId] || 'cabinet';
         const category = FURNITURE_CATEGORIES.find((item) => item.id === catId);
         const color = state.photoColor;
         const accent = lighten(color, .28 + index * .07);
@@ -317,7 +312,7 @@
           primitive,
           color,
           accent,
-          dimensions:DIMENSIONS_BY_PRIMITIVE[primitive] || [1, .8, .6],
+          dimensions:CATEGORY_DIMENSIONS[catId] || [1, .8, .6],
           source:'user',
           sourceType:'capture',
           createdAt:new Date().toISOString(),
@@ -343,7 +338,7 @@
     function finishGeneration() {
       const assets = buildAssets();
       state.generatedAssets = assets;
-      assets.forEach((asset) => { addUserAsset(asset); toggleFavorite(asset.id); }); // 生成即入库 + 自动收藏（闭环）
+      assets.forEach((asset) => { addUserAsset(asset); }); // 生成即入库；addUserAsset 内部已自动收藏（autoCollectOwn），勿再 toggle 否则会取消收藏
       renderResult(assets);
       setPhase('result');
       showToast(assets.length > 1 ? `已生成 ${assets.length} 个组件并加入收藏` : '已生成并加入灵感库收藏');
@@ -365,13 +360,13 @@
       addUserAsset(asset);
     });
 
-    // 前进按钮只负责跳转（已入库）；查看灵感库直达首个组件所属细分标签全部页
+    // 前进按钮只负责跳转（已入库）；查看我的收藏直达首个组件所属细分标签全部页
     generateBtn.addEventListener('click', () => { if (state.hasPhoto) startGeneration(); });
     genBack.addEventListener('click', () => { clearTimeout(state.pollTimer); setPhase('capture'); });
     genRetry.addEventListener('click', startGeneration);
     toLibrary.addEventListener('click', (event) => {
       event.preventDefault();
-      location.href = `../inspiration-library/index.html#catalog=furniture:${state.generatedAssets[0].category}`;
+      location.href = `../my-favorites/index.html#catalog=furniture:${encodeURIComponent(state.generatedAssets[0].category)}`;
     });
     captureAgain.addEventListener('click', () => { resetPhoto(); setPhase('capture'); });
   </script>

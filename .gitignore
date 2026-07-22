@@ -25,6 +25,12 @@ build/
 *.psd
 *.zip
 
+# 例外：灵感库烘焙后的压缩产物（体积已压到可发布，随前端入库）
+!web/prototype/assets/models/
+!web/prototype/assets/models/*.glb
+!web/prototype/assets/videos/
+!web/prototype/assets/videos/*.mp4
+
 # ---- 环境变量 / 密钥 ----
 .env
 .env.*
