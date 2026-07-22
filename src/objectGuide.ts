@@ -22,6 +22,8 @@ const FURNITURE_CLASSES = new Map<number, { label: string; priority: number }>([
 ])
 
 let detectorSessionPromise: Promise<ort.InferenceSession> | null = null
+let preparedDetections: { key: string; detections: GuideDetection[] } | null = null
+let preparingDetections: { key: string; promise: Promise<GuideDetection[]> } | null = null
 
 function getDetectorSession(): Promise<ort.InferenceSession> {
   detectorSessionPromise ??= fetch(MODEL_URL)
@@ -110,14 +112,14 @@ function iou(a: GuideDetection['box'], b: GuideDetection['box']): number {
   return intersection / (a.w * a.h + b.w * b.h - intersection)
 }
 
-export async function detectGuideFurniture(video: HTMLVideoElement): Promise<GuideDetection | null> {
+async function runFurnitureDetector(video: HTMLVideoElement): Promise<GuideDetection[]> {
   const startedAt = performance.now()
   const source = captureDisplayedFrame(video)
   const input = prepareInput(source)
   const session = await getDetectorSession()
   const result = await session.run({ [session.inputNames[0]]: input.tensor })
   const output = result[session.outputNames[0]]
-  if (!output) return null
+  if (!output) return []
   const dims = output.dims.map(Number)
   const data = output.data as Float32Array
   const channelMajor = dims.length === 3 && dims[1] < dims[2]
@@ -168,19 +170,79 @@ export async function detectGuideFurniture(video: HTMLVideoElement): Promise<Gui
     if (kept.every((existing) => iou(existing.box, detection.box) < 0.55)) kept.push(detection)
     if (kept.length >= 6) break
   }
-  const best = kept[0]
-  console.info(`[GuideDetector] ${best ? `${best.label} ${(best.confidence * 100).toFixed(0)}%` : 'no target'} in ${Math.round(performance.now() - startedAt)}ms`)
-  if (!best) return null
-  const padX = Math.min(18, best.box.w * 0.08)
-  const padY = Math.min(18, best.box.h * 0.08)
-  return {
-    box: {
-      x: clamp(best.box.x - padX, 0, source.width - 1),
-      y: clamp(best.box.y - padY, 0, source.height - 1),
-      w: clamp(best.box.w + padX * 2, 1, source.width - Math.max(0, best.box.x - padX)),
-      h: clamp(best.box.h + padY * 2, 1, source.height - Math.max(0, best.box.y - padY)),
-    },
-    label: best.label,
-    confidence: best.confidence,
+  console.info(`[GuideDetector] ${kept.length} furniture candidates in ${Math.round(performance.now() - startedAt)}ms`)
+  return kept.map((detection) => {
+    const padX = Math.min(18, detection.box.w * 0.08)
+    const padY = Math.min(18, detection.box.h * 0.08)
+    return {
+      box: {
+        x: clamp(detection.box.x - padX, 0, source.width - 1),
+        y: clamp(detection.box.y - padY, 0, source.height - 1),
+        w: clamp(detection.box.w + padX * 2, 1, source.width - Math.max(0, detection.box.x - padX)),
+        h: clamp(detection.box.h + padY * 2, 1, source.height - Math.max(0, detection.box.y - padY)),
+      },
+      label: detection.label,
+      confidence: detection.confidence,
+    }
+  })
+}
+
+function detectionFrameKey(video: HTMLVideoElement): string {
+  return `${video.currentSrc}|${video.currentTime.toFixed(3)}|${video.offsetWidth}x${video.offsetHeight}`
+}
+
+async function furnitureDetections(video: HTMLVideoElement): Promise<GuideDetection[]> {
+  const key = detectionFrameKey(video)
+  if (preparedDetections?.key === key) return preparedDetections.detections
+  if (preparingDetections?.key === key) return preparingDetections.promise
+  const promise = runFurnitureDetector(video).then((detections) => {
+    preparedDetections = { key, detections }
+    return detections
+  })
+  preparingDetections = { key, promise }
+  try {
+    return await promise
+  } finally {
+    if (preparingDetections?.promise === promise) preparingDetections = null
   }
+}
+
+export async function prepareFurnitureLabels(video: HTMLVideoElement): Promise<void> {
+  await furnitureDetections(video)
+}
+
+function overlapArea(a: GuideDetection['box'], b: GuideDetection['box']): number {
+  const left = Math.max(a.x, b.x)
+  const top = Math.max(a.y, b.y)
+  const right = Math.min(a.x + a.w, b.x + b.w)
+  const bottom = Math.min(a.y + a.h, b.y + b.h)
+  return Math.max(0, right - left) * Math.max(0, bottom - top)
+}
+
+export async function detectGuideFurniture(
+  video: HTMLVideoElement,
+  targetBox?: GuideDetection['box'],
+): Promise<GuideDetection | null> {
+  const detections = await furnitureDetections(video)
+  if (!targetBox) return detections[0] ?? null
+  const targetArea = Math.max(1, targetBox.w * targetBox.h)
+  const targetCenter = {
+    x: targetBox.x + targetBox.w / 2,
+    y: targetBox.y + targetBox.h / 2,
+  }
+  const ranked = detections.map((detection) => {
+    const overlap = overlapArea(detection.box, targetBox)
+    const detectionArea = Math.max(1, detection.box.w * detection.box.h)
+    const centerInside = targetCenter.x >= detection.box.x
+      && targetCenter.x <= detection.box.x + detection.box.w
+      && targetCenter.y >= detection.box.y
+      && targetCenter.y <= detection.box.y + detection.box.h
+    const score = overlap / targetArea * 1.7
+      + overlap / detectionArea * 1.2
+      + (centerInside ? 0.8 : 0)
+      + detection.confidence * 0.35
+    return { detection, overlap, score }
+  }).filter(({ overlap }) => overlap > targetArea * 0.035)
+    .sort((a, b) => b.score - a.score)
+  return ranked[0]?.detection ?? null
 }

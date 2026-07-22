@@ -4,6 +4,7 @@ import { FEED_VIDEOS, MOCK_OBJECTS, LIBRARY_SEED, CATEGORY_COLOR, CURRENT_BLOGGE
 import { genSticker } from './stickerGen'
 import { captureBbox, captureVideoSelectionUpload, saveTraceToBackend, loadTracesFromBackend, traceImageUrl, type VideoSelectionUpload } from './segmentApi'
 import { prepareEdgeSamFrame, segmentWithEdgeSam, warmupEdgeSam } from './mobileSam'
+import { detectGuideFurniture, prepareFurnitureLabels, warmupFurnitureDetector } from './objectGuide'
 import { falJobToComponent, getFalJob } from './falGenerationApi'
 import { submitVideoSelectionDraft } from './videoSelectionApi'
 import { Mascot, type CollectionMascotMode } from './Mascot'
@@ -71,6 +72,7 @@ type PendingSelectionRequests = Map<string, {
   videoId: string
   time: number
   upload: VideoSelectionUpload
+  labelPromise: Promise<string>
 }>
 
 const isCraftTerminal = (job: CraftJob) => (
@@ -83,6 +85,7 @@ type Action =
   | { type: 'CHANGE_FEED_VIDEO' }
   | { type: 'SWITCH_TOOL'; tool: 'brush' | 'detect' }
   | { type: 'OBJECT_RECOGNIZED'; obj: SelectedObject }
+  | { type: 'UPDATE_OBJECT_LABEL'; id: string; label: string; thumbnail: string }
   | { type: 'UPDATE_SNAPSHOT'; id: string; snapshot: string }
   | { type: 'OBJECT_FAILED' }
   | { type: 'HIDE_FAIL_HINT' }
@@ -211,6 +214,18 @@ function reducer(state: State, action: Action): State {
         selected: [...state.selected, action.obj],
         activeObjectId: null,
         showFailHint: false,
+      }
+    case 'UPDATE_OBJECT_LABEL':
+      return {
+        ...state,
+        selected: state.selected.map((object) => object.id === action.id
+          ? {
+              ...object,
+              items: object.items.length > 0
+                ? [{ ...object.items[0], label: action.label, thumbnail: action.thumbnail }, ...object.items.slice(1)]
+                : [{ label: action.label, thumbnail: action.thumbnail }],
+            }
+          : object),
       }
     case 'UPDATE_SNAPSHOT':
       return {
@@ -622,9 +637,13 @@ function App() {
   }, [awaitingCollectionView])
 
   useEffect(() => {
-    warmupEdgeSam().catch((error) => {
-      console.warn('[EdgeSAM] model warmup failed; session will retry', error)
-    })
+    warmupEdgeSam()
+      .catch((error) => {
+        console.warn('[EdgeSAM] model warmup failed; session will retry', error)
+      })
+      .finally(() => warmupFurnitureDetector().catch((error) => {
+        console.warn('[GuideDetector] model warmup failed; session will retry', error)
+      }))
   }, [])
 
   // traces 持久化到 localStorage
@@ -851,6 +870,9 @@ function App() {
                 setPausedFrame({ videoId: activeFeedVideo.id, time: video.currentTime })
                 void prepareEdgeSamFrame(video).catch((error) => {
                   console.warn('[EdgeSAM] paused frame pre-encode failed', error)
+                })
+                void prepareFurnitureLabels(video).catch((error) => {
+                  console.warn('[GuideDetector] paused frame detection failed', error)
                 })
               }
               setSessionGuideStage((current) => current === 'pause' ? 'recognize' : current)
@@ -1456,11 +1478,12 @@ function SessionLayer({
     const prepare = () => {
       window.requestAnimationFrame(async () => {
         if (cancelled) return
-        try {
-          await prepareEdgeSamFrame(video)
-        } catch (error) {
+        void prepareEdgeSamFrame(video).catch((error) => {
           console.warn('[EdgeSAM] frame preparation failed', error)
-        }
+        })
+        void prepareFurnitureLabels(video).catch((error) => {
+          console.warn('[GuideDetector] frame preparation failed', error)
+        })
       })
     }
     const preparePausedFrame = () => {
@@ -1701,6 +1724,14 @@ function SessionLayer({
       await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()))
       const video = document.querySelector<HTMLVideoElement>('.video')
       const selectionTime = video?.currentTime ?? pausedTime
+      const realtimeLabelPromise = video
+        ? detectGuideFurniture(video, box)
+          .then((detection) => detection?.label || '家具')
+          .catch((error) => {
+            console.warn('[GuideDetector] realtime label failed', error)
+            return '家具'
+          })
+        : Promise.resolve('家具')
       const selectionUploadPromise = video
         ? captureVideoSelectionUpload(video, box, path).catch((error) => {
             console.warn('[selection] unable to prepare original frame', error)
@@ -1713,7 +1744,7 @@ function SessionLayer({
         bboxDataUrl = (await captureBbox(video, box)) ?? ''
       }
       const objId = `obj-${Date.now()}`
-      const recognizedItem = { label: '待分类家具', thumbnail: '✦' }
+      const recognizedItem = { label: '识别中…', thumbnail: '✦' }
       dispatch({
         type: 'ADD_TRACE',
         trace: {
@@ -1761,6 +1792,7 @@ function SessionLayer({
           videoId,
           time: selectionTime,
           upload: selectionUpload,
+          labelPromise: realtimeLabelPromise,
         })
       }
       dispatch({ type: 'OBJECT_RECOGNIZED', obj })
@@ -1777,10 +1809,19 @@ function SessionLayer({
       } else {
         setDragGuideVisible(false)
       }
+      const realtimeLabel = await realtimeLabelPromise
+      const realtimeThumbnail = MOCK_OBJECTS.find((item) => item.label === realtimeLabel)?.thumbnail ?? '✦'
+      dispatch({
+        type: 'UPDATE_OBJECT_LABEL',
+        id: objId,
+        label: realtimeLabel,
+        thumbnail: realtimeThumbnail,
+      })
       dispatch({
         type: 'UPDATE_TRACE',
         id: objId,
         patch: {
+          label: realtimeLabel,
           cutoutDataUrl: cutout,
           inpaintDataUrl: null,
           finalDataUrl: cutout,
@@ -1788,14 +1829,14 @@ function SessionLayer({
         },
       })
       const traceStatus: TraceEntry['status'] = 'done'
-      console.log('[pipeline]', objId, 'edgeSam: ok', 'path:', path.length, 'box:', box)
+      console.log('[pipeline]', objId, 'edgeSam: ok', 'label:', realtimeLabel, 'path:', path.length, 'box:', box)
 
       // 持久化到后端文件系统（成功失败都保存，不受 localStorage 5MB 限制）
       try {
         const saved = await saveTraceToBackend({
           id: objId,
           ts: Date.now(),
-          label: recognizedItem.label,
+          label: realtimeLabel,
           status: traceStatus,
           bboxDataUrl,
           inpaintDataUrl: null,
@@ -1866,8 +1907,24 @@ function SessionLayer({
       onCraftDropped()
     }
 
-    const jobs: CraftJob[] = customObjects.map((obj) => {
-      const initialLabel = obj.items[0]?.label || '待分类家具'
+    const labeledCustomObjects = await Promise.all(customObjects.map(async (obj) => {
+      const pendingLabel = selectionRequests.get(obj.id)?.labelPromise
+      const label = pendingLabel
+        ? await Promise.race([
+            pendingLabel,
+            new Promise<string>((resolve) => window.setTimeout(() => resolve(obj.items[0]?.label || '家具'), 1200)),
+          ])
+        : obj.items[0]?.label || '家具'
+      return {
+        ...obj,
+        items: obj.items.length > 0
+          ? [{ ...obj.items[0], label }, ...obj.items.slice(1)]
+          : [{ label, thumbnail: '✦' }],
+      }
+    }))
+
+    const jobs: CraftJob[] = labeledCustomObjects.map((obj) => {
+      const initialLabel = obj.items[0]?.label || '家具'
       const fallbackCategory = (MOCK_OBJECTS.find((item) => item.label === initialLabel)?.label ?? '其他') as FurnitureCategory
       return {
         id: `craft-${obj.id}-0`,
