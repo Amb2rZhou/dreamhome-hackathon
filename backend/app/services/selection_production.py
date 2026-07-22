@@ -27,10 +27,10 @@ def production_readiness() -> dict[str, Any]:
     blockers = []
     if settings.effective_provider not in ("fal", "selfhost"):
         blockers.append("GEN3D_PROVIDER must resolve to fal or selfhost TRELLIS")
-    if settings.ENHANCE_PROVIDER == "off":
-        blockers.append("ENHANCE_PROVIDER is off")
-    if settings.effective_labels_provider == "mock":
-        blockers.append("LABELS_PROVIDER is not configured")
+    if settings.ENHANCE_PROVIDER != "module":
+        blockers.append("ENHANCE_PROVIDER must be module for DashScope completion")
+    if settings.effective_labels_provider != "dashscope":
+        blockers.append("LABELS_PROVIDER must resolve to dashscope")
     if not settings.DASHSCOPE_API_KEY:
         blockers.append("DASHSCOPE_API_KEY is required for automatic QC gates")
     return {
@@ -68,6 +68,7 @@ async def _produce(
     user_id: str,
     polygon: Optional[list[list[float]]] = None,
     isolation_mode: str = "bbox",
+    completion_path: Optional[list[tuple[int, int]]] = None,
 ) -> None:
     source = {
         "video_id": video_id,
@@ -76,6 +77,7 @@ async def _produce(
         "bbox": bbox,
         "polygon": polygon or [],
         "isolation_mode": isolation_mode,
+        "completion_input": "context_with_polygon_hint",
         "pipeline": "feed-selection-production",
     }
     desc = _description(labels)
@@ -96,29 +98,35 @@ async def _produce(
         job.stage = "completion"
         job.progress = 15
         enhanced_path = workpath(f"selection-{asset_id}-completed", ".png")
-        completed = await enhance_cutout(cutout_path, enhanced_path, category=desc)
+        completed = await enhance_cutout(
+            cutout_path, enhanced_path, category=desc,
+            selection_path=completion_path,
+        )
         if completed == cutout_path or not os.path.exists(completed):
             raise SelectionProductionError("completion: provider did not return a completed reference")
 
         job.stage = "single_object_qc"
         job.progress = 35
-        solo, solo_reason = await check_solo(completed, desc)
+        solo, solo_reason = await check_solo(completed, desc, strict=True)
         if not solo:
             retry_path = workpath(f"selection-{asset_id}-completed-retry", ".png")
             completed = await enhance_cutout(
                 cutout_path,
                 retry_path,
                 category=f"{desc},画面中只保留这一件家具,彻底移除旁边的其他家具和物体",
+                selection_path=completion_path,
             )
             if completed == cutout_path or not os.path.exists(completed):
                 raise SelectionProductionError("single_object_qc: completion retry failed")
-            solo, solo_reason = await check_solo(completed, desc)
+            solo, solo_reason = await check_solo(completed, desc, strict=True)
             if not solo:
                 raise SelectionProductionError(f"single_object_qc: {solo_reason}")
 
         job.stage = "identity_qc"
         job.progress = 50
-        same, identity_reason = await check_consistency(cutout_path, completed)
+        same, identity_reason = await check_consistency(
+            cutout_path, completed, target_name=desc, strict=True,
+        )
         if not same:
             raise SelectionProductionError(f"identity_qc: {identity_reason}")
 
@@ -172,6 +180,7 @@ def start_selection_production(
     cutout_path: str,
     labels: dict[str, Any],
     user_id: str,
+    completion_path: Optional[list[tuple[int, int]]] = None,
 ) -> tuple[str, Job]:
     """登记 canonical asset，并异步运行与批量生产一致的自动质量链。"""
     source = {
@@ -206,6 +215,7 @@ def start_selection_production(
             user_id=user_id,
             polygon=polygon,
             isolation_mode=isolation_mode,
+            completion_path=completion_path,
         )
 
     styles = labels.get("styles") or []

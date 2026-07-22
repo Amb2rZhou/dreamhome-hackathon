@@ -190,9 +190,16 @@ def _normalized_polygon(polygon: list[list[float]]) -> Optional[list[tuple[float
 
 def _save_selection_images(frame_data_uri: Optional[str], frame_bytes: Optional[bytes],
                            bbox: list[float], polygon: list[list[float]]) -> tuple[
-                               str, str, tuple[int, int], str
+                               str, str, str, tuple[int, int], str, list[tuple[int, int]]
                            ]:
-    """Persist the full frame and isolate the selected subject inside its bbox."""
+    """Persist the full frame plus context-rich recognition/completion inputs.
+
+    The browser cutout is a presentation artifact only. Production completion
+    needs the target's surrounding scene to infer category, occlusion and
+    physical structure, so the backend keeps a 2.5x context crop and carries
+    the user's polygon as a selection hint instead of erasing everything
+    outside the lasso.
+    """
     raw = frame_bytes
     if raw is None and frame_data_uri and "," in frame_data_uri:
         try:
@@ -201,11 +208,12 @@ def _save_selection_images(frame_data_uri: Optional[str], frame_bytes: Optional[
             raw = None
 
     frame_path = workpath("select-frame", ".jpg")
-    crop_path = workpath("select-crop", ".jpg")
+    context_path = workpath("select-context", ".jpg")
+    recognition_path = workpath("select-recognition", ".jpg")
     if raw:
         try:
             from io import BytesIO
-            from PIL import Image, ImageDraw, ImageFilter
+            from PIL import Image, ImageDraw
             img = Image.open(BytesIO(raw)).convert("RGB")
             width, height = img.size
             x, y, w, h = _validate_bbox(bbox)
@@ -214,22 +222,39 @@ def _save_selection_images(frame_data_uri: Optional[str], frame_bytes: Optional[
             right = max(left + 1, min(width, round((x + w) * width)))
             bottom = max(top + 1, min(height, round((y + h) * height)))
             img.save(frame_path, format="JPEG", quality=92, optimize=True)
-            crop = img.crop((left, top, right, bottom))
             safe_polygon = _normalized_polygon(polygon)
-            isolation_mode = "bbox"
+            pad_x = (right - left) * 0.75
+            pad_y = (bottom - top) * 0.75
+            context_left = max(0, round(left - pad_x))
+            context_top = max(0, round(top - pad_y))
+            context_right = min(width, round(right + pad_x))
+            context_bottom = min(height, round(bottom + pad_y))
+            context = img.crop((context_left, context_top, context_right, context_bottom))
+            context.save(context_path, format="JPEG", quality=92, optimize=True)
+
+            local_points: list[tuple[int, int]] = []
+            isolation_mode = "bbox_context"
+            recognition = context.copy()
+            draw = ImageDraw.Draw(recognition)
+            line_width = max(2, round(min(recognition.size) * 0.008))
             if safe_polygon:
                 local_points = [
-                    (point_x * width - left, point_y * height - top)
+                    (round(point_x * width - context_left),
+                     round(point_y * height - context_top))
                     for point_x, point_y in safe_polygon
                 ]
-                mask = Image.new("L", crop.size, 0)
-                ImageDraw.Draw(mask).polygon(local_points, fill=255)
-                mask = mask.filter(ImageFilter.GaussianBlur(radius=1.0))
-                neutral = Image.new("RGB", crop.size, (245, 245, 242))
-                crop = Image.composite(crop, neutral, mask)
-                isolation_mode = "polygon"
-            crop.save(crop_path, format="JPEG", quality=92, optimize=True)
-            return frame_path, crop_path, (width, height), isolation_mode
+                draw.line(local_points + [local_points[0]], fill=(255, 0, 0),
+                          width=line_width, joint="curve")
+                isolation_mode = "polygon_context"
+            else:
+                draw.rectangle(
+                    [left - context_left, top - context_top,
+                     right - context_left, bottom - context_top],
+                    outline=(255, 0, 0), width=line_width,
+                )
+            recognition.save(recognition_path, format="JPEG", quality=90, optimize=True)
+            return (frame_path, context_path, recognition_path, (width, height),
+                    isolation_mode, local_points)
         except HTTPException:
             raise
         except Exception as exc:
@@ -239,26 +264,36 @@ def _save_selection_images(frame_data_uri: Optional[str], frame_bytes: Optional[
     # while multipart callers above always require a real full frame.
     with open(frame_path, "wb") as file:
         file.write(_PLACEHOLDER_PNG)
-    with open(crop_path, "wb") as file:
+    with open(context_path, "wb") as file:
         file.write(_PLACEHOLDER_PNG)
-    return frame_path, crop_path, (1, 1), "placeholder"
+    with open(recognition_path, "wb") as file:
+        file.write(_PLACEHOLDER_PNG)
+    return frame_path, context_path, recognition_path, (1, 1), "placeholder", []
 
 
 @router.post("/{video_id}/select", response_model=SelectResponse)
 async def select(video_id: str, request: Request):
-    """圈选：原始完整帧 + 选择几何 → polygon 主体隔离 → 标签/同款候选。"""
-    if not db.get_video(video_id):
-        raise HTTPException(404, "video not found")
+    """圈选：原始完整帧 + 选择几何 → 上下文识别 → 同款候选。"""
     req, frame_bytes = await _parse_select_request(request)
+    has_source_frame = frame_bytes is not None or bool(req.frame_data_uri)
+    if not db.get_video(video_id):
+        if not has_source_frame:
+            raise HTTPException(404, "video not found")
+        # 刷一刷可能使用尚未进入离线索引的公开视频。完整帧已随请求到达时，
+        # 可以安全登记为 interactive source，后续资产仍保留该 video_id 溯源。
+        db.insert_video(video_id=video_id, title="刷一刷圈选",
+                        status="unindexed", index_source="interactive")
     req.bbox = _validate_bbox(req.bbox)
-    frame_path, source_crop, frame_size, isolation_mode = _save_selection_images(
+    (frame_path, source_context, recognition_context, frame_size,
+     isolation_mode, completion_path) = _save_selection_images(
         req.frame_data_uri, frame_bytes, req.bbox, req.polygon,
     )
     if req.frame_width is not None and req.frame_width != frame_size[0]:
         raise HTTPException(422, "frame_width does not match uploaded frame")
     if req.frame_height is not None and req.frame_height != frame_size[1]:
         raise HTTPException(422, "frame_height does not match uploaded frame")
-    labels = await extract_labels(source_crop, category_hint=req.category_hint)
+    labels = await extract_labels(recognition_context, category_hint=req.category_hint,
+                                  framed=True)
     cands = []
     for c in matching.match_candidates(labels):
         asset = db.get_asset(c["asset_id"])
@@ -268,9 +303,12 @@ async def select(video_id: str, request: Request):
     _SELECTS[sid] = {"video_id": video_id, "t": req.t, "bbox": req.bbox,
                      "polygon": req.polygon, "labels": labels,
                      "frame": frame_path, "frame_size": frame_size,
-                     "source_crop": source_crop, "isolation_mode": isolation_mode,
+                     "source_crop": source_context,
+                     "recognition_context": recognition_context,
+                     "completion_path": completion_path,
+                     "isolation_mode": isolation_mode,
                      "track_id": req.track_id,
-                     "has_source_frame": frame_bytes is not None or bool(req.frame_data_uri),
+                     "has_source_frame": has_source_frame,
                      "created": time.time()}
     return SelectResponse(select_id=sid, labels=labels, candidates=cands)
 
@@ -290,7 +328,7 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
         raise HTTPException(404, "asset not found")
     if req.quality_mode == "production" and not sel.get("has_source_frame"):
         raise HTTPException(422, "production mode requires a valid full frame in /select")
-    if req.quality_mode == "production" and sel.get("isolation_mode") != "polygon":
+    if req.quality_mode == "production" and sel.get("isolation_mode") != "polygon_context":
         raise HTTPException(422, "production mode requires a valid polygon selection")
     if req.quality_mode == "production":
         readiness = production_readiness()
@@ -325,6 +363,7 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
             cutout_path=sel["source_crop"],
             labels=sel["labels"],
             user_id=req.user_id,
+            completion_path=sel.get("completion_path") or [],
         )
         return SelectConfirmResponse(
             asset_id=asset_id,

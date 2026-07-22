@@ -48,9 +48,17 @@ export class VideoSelectionError extends Error {
 }
 
 async function responseJson<T>(response: Response): Promise<T> {
-  const payload = await response.json().catch(() => ({})) as { detail?: string; error?: string }
+  const payload = await response.json().catch(() => ({})) as {
+    detail?: string | { message?: string; capability?: { blockers?: string[] } }
+    error?: string
+  }
   if (!response.ok) {
-    throw new VideoSelectionError(payload.detail || payload.error || `圈选服务请求失败 (${response.status})`, response.status)
+    const detail = typeof payload.detail === 'string'
+      ? payload.detail
+      : [payload.detail?.message, ...(payload.detail?.capability?.blockers || [])]
+        .filter(Boolean)
+        .join('：')
+    throw new VideoSelectionError(detail || payload.error || `圈选服务请求失败 (${response.status})`, response.status)
   }
   return payload as T
 }
@@ -126,7 +134,7 @@ export async function confirmVideoSelection(input: {
       select_id: input.selectId,
       use_asset_id: input.useAssetId || null,
       generate_new: input.generateNew ?? false,
-      quality_mode: input.qualityMode || 'fast',
+      quality_mode: input.qualityMode || 'production',
     }),
   })
   return responseJson<VideoSelectConfirmResponse>(response)

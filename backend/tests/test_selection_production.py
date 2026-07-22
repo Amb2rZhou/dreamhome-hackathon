@@ -18,15 +18,18 @@ class SelectionProductionTests(unittest.IsolatedAsyncioTestCase):
             with open(cutout, "wb") as image:
                 image.write(b"source-image")
 
-            async def fake_enhance(source, output, category=""):
+            async def fake_enhance(source, output, category="", selection_path=None):
                 with open(source, "rb") as src, open(output, "wb") as dst:
                     dst.write(src.read())
                 return output
 
-            async def fake_solo(path, description):
+            async def fake_solo(path, description, strict=False):
+                self.assertTrue(strict)
                 return True, "ok"
 
-            async def fake_identity(source, completed):
+            async def fake_identity(source, completed, target_name="", strict=False):
+                self.assertTrue(strict)
+                self.assertEqual(target_name, "双人沙发(沙发)")
                 return True, "ok"
 
             async def fake_gen3d(path):
@@ -89,7 +92,7 @@ class SelectionProductionTests(unittest.IsolatedAsyncioTestCase):
                 image.write(b"source-image")
             job = Job(job_id="job-2", kind="video", status=JobStatus.running)
 
-            async def no_completion(source, output, category=""):
+            async def no_completion(source, output, category="", selection_path=None):
                 return source
 
             with (

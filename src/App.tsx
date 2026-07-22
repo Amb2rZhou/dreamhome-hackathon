@@ -6,7 +6,7 @@ import { captureBbox, captureVideoSelectionUpload, saveTraceToBackend, loadTrace
 import { prepareEdgeSamFrame, segmentWithEdgeSam, warmupEdgeSam } from './mobileSam'
 import { detectGuideFurniture, prepareFurnitureLabels, warmupFurnitureDetector } from './objectGuide'
 import { falJobToComponent, getFalJob } from './falGenerationApi'
-import { submitVideoSelectionDraft } from './videoSelectionApi'
+import { confirmVideoSelection, submitVideoSelection } from './videoSelectionApi'
 import { Mascot, type CollectionMascotMode } from './Mascot'
 import { WorkshopDetail } from './WorkshopDetail'
 import { FrameAssetsDrawer } from './FrameAssetsDrawer'
@@ -725,24 +725,31 @@ function App() {
               ? selectionRequestsRef.current.get(craft.sourceSelectionId)
               : null
             if (!pendingSelection) throw new Error('原始帧和圈选已丢失，请保持页面打开后重试')
-            const submitted = await submitVideoSelectionDraft({
+            const selected = await submitVideoSelection({
               videoId: pendingSelection.videoId,
               time: pendingSelection.time,
               upload: pendingSelection.upload,
-              prompt: craft.name === '待分类家具' ? '单件家具' : craft.name,
+              categoryHint: craft.name === '待分类家具' ? '' : craft.name,
             })
-            if (!submitted.job_id) throw new Error('后端未返回 3D 任务')
+            const submitted = await confirmVideoSelection({
+              videoId: pendingSelection.videoId,
+              selectId: selected.select_id,
+              generateNew: true,
+              qualityMode: 'production',
+            })
+            if (!submitted.job_id) throw new Error('正式生产后端未返回 3D 任务')
             if (cancelled) return
+            const productionName = selected.labels.sub || selected.labels.category || craft.name
             dispatch({
               type: 'CRAFT_BACKEND_SUBMITTED',
               id: craft.id,
               backendJobId: submitted.job_id,
-              name: craft.name,
+              name: productionName,
               category: craft.category,
             })
           } catch (error) {
             if (cancelled) return
-            console.warn('[selection] production submission unavailable; preserving selection', error)
+            console.warn('[selection] production pipeline unavailable; preserving selection', error)
             dispatch({
               type: 'CRAFT_WAITING',
               id: craft.id,

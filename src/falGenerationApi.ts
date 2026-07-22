@@ -12,7 +12,7 @@ export interface FalSubmitResponse {
 export interface FalJobResponse {
   status: 'queued' | 'running' | 'succeeded' | 'failed'
   progress?: number
-  provider?: 'fal'
+  provider?: 'fal' | 'selfhost'
   model_url?: string | null
   thumbnail_url?: string | null
   error?: string | null

@@ -25,9 +25,10 @@ class VideoSelectMultipartTests(unittest.TestCase):
         def fake_workpath(prefix: str, suffix: str) -> str:
             return str(Path(self.temp_dir.name) / f"{prefix}-{next(self.counter)}{suffix}")
 
-        async def fake_labels(path: str, category_hint: str = "") -> dict:
+        async def fake_labels(path: str, category_hint: str = "", framed: bool = False) -> dict:
             with Image.open(path) as crop:
-                self.assertEqual(crop.size, (40, 40))
+                self.assertEqual(crop.size, (90, 80))
+            self.assertTrue(framed)
             return {"category": category_hint or "其他", "sub": "茶壶"}
 
         self.patches = [
@@ -49,7 +50,7 @@ class VideoSelectMultipartTests(unittest.TestCase):
             active_patch.stop()
         self.temp_dir.cleanup()
 
-    def test_persists_full_frame_and_isolates_polygon_inside_bbox(self):
+    def test_persists_full_frame_and_keeps_context_around_polygon(self):
         response = self.client.post(
             "/api/videos/vid_test/select",
             data={
@@ -69,14 +70,16 @@ class VideoSelectMultipartTests(unittest.TestCase):
         selection = videos._SELECTS[payload["select_id"]]
         self.assertEqual(selection["frame_size"], (100, 80))
         self.assertEqual(selection["polygon"], [[0.2, 0.25], [0.4, 0.25], [0.4, 0.75], [0.2, 0.75]])
-        self.assertEqual(selection["isolation_mode"], "polygon")
+        self.assertEqual(selection["isolation_mode"], "polygon_context")
+        self.assertGreaterEqual(len(selection["completion_path"]), 3)
         with Image.open(selection["frame"]) as frame:
             self.assertEqual(frame.size, (100, 80))
         with Image.open(selection["source_crop"]).convert("RGB") as crop:
-            subject = crop.getpixel((5, 20))
-            excluded = crop.getpixel((35, 20))
-            self.assertLess(subject[0], 210)
-            self.assertGreater(excluded[0], 235)
+            self.assertEqual(crop.size, (90, 80))
+            # Pixels outside the lasso remain scene context; they are no longer
+            # replaced with a neutral background before completion.
+            context_pixel = crop.getpixel((80, 20))
+            self.assertLess(context_pixel[0], 210)
 
     def test_production_rejects_bbox_only_selection(self):
         selection_response = self.client.post(
