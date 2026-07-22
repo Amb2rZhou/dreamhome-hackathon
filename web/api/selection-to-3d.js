@@ -62,10 +62,13 @@ async function isolateSelection(frameDataUrl, bboxValue, polygonValue) {
   );
   const alpha = await sharp(maskSvg).greyscale().blur(1).png().toBuffer();
   const subject = await sharp(crop).joinChannel(alpha).png().toBuffer();
-  const isolated = await sharp({
+  const composited = await sharp({
     create: { width, height, channels: 3, background: { r: 245, g: 245, b: 242 } },
   })
     .composite([{ input: subject }])
+    .png()
+    .toBuffer();
+  const isolated = await sharp(composited)
     .resize({ width: 1024, height: 1024, fit: "inside", withoutEnlargement: true })
     .jpeg({ quality: 90, mozjpeg: true })
     .toBuffer();
