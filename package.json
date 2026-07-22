@@ -6,11 +6,12 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "oxlint src",
+    "lint": "oxlint",
     "preview": "vite preview"
   },
   "dependencies": {
     "@types/three": "^0.185.1",
+    "onnxruntime-web": "^1.27.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "three": "^0.185.1"
@@ -21,7 +22,6 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
     "oxlint": "^1.71.0",
-    "puppeteer-core": "^25.3.0",
     "typescript": "~6.0.2",
     "vite": "^8.1.1"
   }

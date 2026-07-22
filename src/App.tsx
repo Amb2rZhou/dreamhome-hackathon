@@ -1,18 +1,32 @@
-import { useReducer, useRef, useEffect, useState } from 'react'
+import { useReducer, useRef, useEffect, useMemo, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { VIDEO_SRC, MOCK_OBJECTS, LIBRARY_SEED, CATEGORY_COLOR, BLOGGER_HOME_PACK, CURRENT_BLOGGER, type FeedState, type SelectedObject, type LibraryComponent, type FurnitureCategory, type MascotState, type CraftJob, type CraftBatch, type TraceEntry } from './types'
+import { FEED_VIDEOS, MOCK_OBJECTS, LIBRARY_SEED, CATEGORY_COLOR, CURRENT_BLOGGER, type FeedVideo, type FeedState, type SelectedObject, type LibraryComponent, type FurnitureCategory, type MascotState, type CraftJob, type CraftBatch, type TraceEntry } from './types'
 import { genSticker } from './stickerGen'
-import { segmentCutout, coverTransform, applyPathMask, inpaint, captureBbox, dataUrlToBlob, saveTraceToBackend, loadTracesFromBackend, traceImageUrl } from './segmentApi'
-import { Library } from './Library'
-import { Assemble } from './Assemble'
-import { LayoutPicker } from './LayoutPicker'
-import { Profile } from './Profile'
-import { HomeGrabSheet } from './HomeGrabSheet'
-import { HomePreview } from './HomePreview'
-import { Mascot } from './Mascot'
-import { CraftResult } from './CraftResult'
-import type { RoomLayout } from './roomLayouts'
-import { DEFAULT_LAYOUTS } from './roomLayouts'
+import { captureBbox, saveTraceToBackend, loadTracesFromBackend, traceImageUrl } from './segmentApi'
+import { prepareEdgeSamFrame, segmentWithEdgeSam, warmupEdgeSam } from './mobileSam'
+import { falJobToComponent, getFalJob, submitFalGeneration } from './falGenerationApi'
+import { Mascot, type CollectionMascotMode } from './Mascot'
+import { WorkshopDetail } from './WorkshopDetail'
+import { FrameAssetsDrawer } from './FrameAssetsDrawer'
+import { FurnitureAssetThumbnail } from './FurnitureAssetThumbnail'
+import { workshopFromAppState } from './workshopModel'
+import { assetsForVideoFrame, defaultAssetFrame } from './availableAssets.generated'
+import {
+  CommentIcon,
+  CreateIcon,
+  FriendsIcon,
+  HeartIcon as DouyinHeartIcon,
+  HomeIcon,
+  MeIcon,
+  MenuIcon,
+  MessageIcon,
+  MusicIcon,
+  SearchIcon,
+  ShareIcon,
+  StarIcon,
+  UserIcon,
+} from './DouyinIcons'
+import { clientPointInElement } from './screenSpace'
 import './App.css'
 
 interface State {
@@ -23,25 +37,40 @@ interface State {
   showFailHint: boolean
   videoPlaying: boolean
   library: LibraryComponent[]
-  layout: RoomLayout | null
-  layoutSource: string
-  showHomeGrab: boolean
   toast: string | null
-  newlyAddedIds: string[]
   mascot: MascotState
   craftQueue: CraftJob[]
   currentCraft: CraftJob | null
   batches: CraftBatch[]
   showCraftResult: boolean
+  showCollectionDetail: boolean
+  activeWorkshopBatchId: string | null
   craftStartTip: boolean
+  craftStartTipShown: boolean
   orderingCount: number
   traces: TraceEntry[]
   showTrace: boolean
 }
 
+interface GuideRect {
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
+interface GuideTarget {
+  box: GuideRect
+  outlinePath: string
+  label: string
+}
+
+type SessionGuideStage = 'idle' | 'pause' | 'recognize' | 'drag' | 'progress' | 'waiting' | 'complete' | 'done'
+
 type Action =
   | { type: 'PAUSE' }
   | { type: 'RESUME' }
+  | { type: 'CHANGE_FEED_VIDEO' }
   | { type: 'SWITCH_TOOL'; tool: 'brush' | 'detect' }
   | { type: 'OBJECT_RECOGNIZED'; obj: SelectedObject }
   | { type: 'UPDATE_SNAPSHOT'; id: string; snapshot: string }
@@ -54,31 +83,28 @@ type Action =
   | { type: 'CONFIRM_DISCARD' }
   | { type: 'CANCEL_DISCARD' }
   | { type: 'CLOSE_PREVIEW' }
-  | { type: 'GO_LIBRARY' }
-  | { type: 'GO_ASSEMBLE' }
-  | { type: 'DELETE_LIBRARY'; id: string }
-  | { type: 'ADD_LIBRARY'; component: LibraryComponent }
-  | { type: 'SET_LAYOUT'; layout: RoomLayout; source: string }
-  | { type: 'REPICK_LAYOUT' }
-  | { type: 'SHOW_HOME_GRAB' }
-  | { type: 'HIDE_HOME_GRAB' }
   | { type: 'SHOW_TOAST'; msg: string }
   | { type: 'HIDE_TOAST' }
-  | { type: 'CLEAR_NEW' }
-  | { type: 'GO_PROFILE' }
-  | { type: 'GRAB_HOME_ALL' }
-  | { type: 'GRAB_HOME_ITEMS' }
-  | { type: 'START_CRAFT_BATCH'; jobs: CraftJob[] }
+  | {
+      type: 'START_CRAFT_BATCH'
+      jobs: CraftJob[]
+      publicComponents?: LibraryComponent[]
+      sourceFrame: { videoId: string; time: number }
+    }
   | { type: 'CRAFT_ORDERING_DONE'; id: string }
   | { type: 'HIDE_CRAFT_START_TIP' }
   | { type: 'SHOW_ORDERING'; count: number }
   | { type: 'HIDE_ORDERING' }
   | { type: 'CRAFT_DONE'; id: string; component: LibraryComponent }
+  | { type: 'CRAFT_PROGRESS'; id: string; progress: number; stage?: string }
+  | { type: 'CRAFT_FAILED'; id: string; error: string; stage?: string }
   | { type: 'SHOW_CRAFT_RESULT' }
   | { type: 'HIDE_CRAFT_RESULT' }
   | { type: 'CRAFT_CONFIRM_STORE' }
   | { type: 'CRAFT_DISCARD' }
   | { type: 'CLEAR_CRAFT_DONE_BUBBLE' }
+  | { type: 'SHOW_COLLECTION_DETAIL'; batchId?: string }
+  | { type: 'HIDE_COLLECTION_DETAIL' }
   | { type: 'ADD_TRACE'; trace: TraceEntry }
   | { type: 'UPDATE_TRACE'; id: string; patch: Partial<TraceEntry> }
   | { type: 'CLEAR_TRACES' }
@@ -95,16 +121,15 @@ const initialState: State = {
   showFailHint: false,
   videoPlaying: true,
   library: LIBRARY_SEED,
-  layout: null,
-  layoutSource: '',
-  showHomeGrab: false,
   toast: null,
-  newlyAddedIds: [],
   mascot: 'sleeping',
   craftQueue: [],
   currentCraft: null,
   showCraftResult: false,
+  showCollectionDetail: false,
+  activeWorkshopBatchId: null,
   craftStartTip: false,
+  craftStartTipShown: false,
   batches: [],
   orderingCount: 0,
   traces: loadTraces(),
@@ -155,7 +180,19 @@ function reducer(state: State, action: Action): State {
     case 'PAUSE':
       return { ...state, phase: 'session', videoPlaying: false, selected: [], activeObjectId: null, showFailHint: false }
     case 'RESUME':
-      return { ...state, phase: 'browse', videoPlaying: true, selected: [], activeObjectId: null, showFailHint: false }
+      return { ...state, phase: 'browse', videoPlaying: true, selected: [], activeObjectId: null, showFailHint: false, showCollectionDetail: false }
+    case 'CHANGE_FEED_VIDEO':
+      return {
+        ...state,
+        phase: 'browse',
+        videoPlaying: true,
+        selected: [],
+        activeObjectId: null,
+        showFailHint: false,
+        showCollectionDetail: false,
+        showCraftResult: false,
+        toast: null,
+      }
     case 'SWITCH_TOOL':
       return { ...state, tool: action.tool }
     case 'OBJECT_RECOGNIZED':
@@ -208,60 +245,39 @@ function reducer(state: State, action: Action): State {
       }
     case 'CLOSE_PREVIEW':
       return { ...state, phase: 'session' }
-    case 'GO_LIBRARY':
-      return { ...state, phase: 'library' }
-    case 'GO_ASSEMBLE':
-      return { ...state, phase: 'assemble' }
-    case 'DELETE_LIBRARY':
-      return { ...state, library: state.library.filter((c) => c.id !== action.id) }
-    case 'ADD_LIBRARY':
-      return { ...state, library: [action.component, ...state.library] }
-    case 'SET_LAYOUT':
-      return { ...state, layout: action.layout, layoutSource: action.source }
-    case 'REPICK_LAYOUT':
-      return { ...state, layout: null }
-    case 'SHOW_HOME_GRAB':
-      return { ...state, showHomeGrab: true }
-    case 'HIDE_HOME_GRAB':
-      return { ...state, showHomeGrab: false }
     case 'SHOW_TOAST':
       return { ...state, toast: action.msg }
     case 'HIDE_TOAST':
       return { ...state, toast: null }
-    case 'GO_PROFILE':
-      return { ...state, phase: 'profile' }
-    case 'GRAB_HOME_ALL': {
-      const layout = DEFAULT_LAYOUTS.find((l) => l.id === CURRENT_BLOGGER.homeLayoutId) ?? DEFAULT_LAYOUTS[0]
-      return {
-        ...state,
-        showHomeGrab: false,
-        library: [...BLOGGER_HOME_PACK, ...state.library],
-        layout,
-        layoutSource: `博主同款 · ${CURRENT_BLOGGER.homeName}`,
-        phase: 'assemble',
-        toast: '已保存整个小家，去组装看看',
-      }
-    }
-    case 'GRAB_HOME_ITEMS':
-      return {
-        ...state,
-        showHomeGrab: false,
-        library: [...BLOGGER_HOME_PACK, ...state.library],
-        newlyAddedIds: BLOGGER_HOME_PACK.map((c) => c.id),
-        phase: 'library',
-        toast: '已保存至素材库',
-      }
-    case 'CLEAR_NEW':
-      return { ...state, newlyAddedIds: [] }
     case 'START_CRAFT_BATCH': {
-      const batch: CraftBatch = { id: `batch-${Date.now()}`, jobs: action.jobs.map((j) => ({ ...j, status: 'ordering' as const })), notified: false, dismissed: false }
-      if (action.jobs.length === 0) return state
+      const publicComponents = action.publicComponents ?? []
+      const batch: CraftBatch = {
+        id: `batch-${Date.now()}`,
+        jobs: action.jobs.map((j) => ({ ...j, status: 'ordering' as const })),
+        publicComponents,
+        createdAt: Date.now(),
+        sourceFrame: action.sourceFrame,
+        notified: false,
+        dismissed: false,
+      }
+      if (action.jobs.length === 0) {
+        if (publicComponents.length === 0) return state
+        return {
+          ...state,
+          batches: [...state.batches, batch],
+          library: [...publicComponents, ...state.library],
+          mascot: state.currentCraft ? 'working' : 'happy',
+        }
+      }
       if (state.currentCraft) {
         return {
           ...state,
           craftQueue: [...state.craftQueue, ...action.jobs.map((j) => ({ ...j, status: 'ordering' as const }))],
           batches: [...state.batches, batch],
-          toast: '包公球还在打造上一批，新的一批已排队',
+          library: [...publicComponents, ...state.library],
+          toast: state.craftQueue.length % 2 === 0
+            ? '收到！这批我先收进工具袋，新的家具会接着排队开工～'
+            : '收到啦！前面还有几件正在加工，这批马上排上～',
         }
       }
       const first = { ...action.jobs[0], status: 'ordering' as const }
@@ -271,12 +287,36 @@ function reducer(state: State, action: Action): State {
         currentCraft: first,
         craftQueue: [...state.craftQueue, ...rest],
         batches: [...state.batches, batch],
+        library: [...publicComponents, ...state.library],
         mascot: 'working',
+        craftStartTipShown: false,
       }
     }
     case 'CRAFT_ORDERING_DONE': {
       if (state.currentCraft?.id !== action.id) return state
-      return { ...state, currentCraft: { ...state.currentCraft, status: 'crafting' }, mascot: 'working', craftStartTip: true }
+      return {
+        ...state,
+        currentCraft: { ...state.currentCraft, status: 'crafting' },
+        batches: state.batches.map((batch) => ({
+          ...batch,
+          jobs: batch.jobs.map((job) => job.id === action.id ? { ...job, status: 'crafting' } : job),
+        })),
+        mascot: 'working',
+        craftStartTip: !state.craftStartTipShown,
+        craftStartTipShown: true,
+      }
+    }
+    case 'CRAFT_PROGRESS': {
+      if (state.currentCraft?.id !== action.id) return state
+      const patch = { progress: action.progress, stage: action.stage }
+      return {
+        ...state,
+        currentCraft: { ...state.currentCraft, ...patch },
+        batches: state.batches.map((batch) => ({
+          ...batch,
+          jobs: batch.jobs.map((job) => job.id === action.id ? { ...job, ...patch } : job),
+        })),
+      }
     }
     case 'HIDE_CRAFT_START_TIP':
       return { ...state, craftStartTip: false }
@@ -293,15 +333,59 @@ function reducer(state: State, action: Action): State {
       }))
       const next = state.craftQueue[0] ?? null
       const restQueue = state.craftQueue.slice(1)
-      const batchDone = batches.find((b) => b.jobs.every((j) => j.status === 'done') && !b.notified)
+      const batchDone = batches.find((b) => (
+        b.jobs.some((j) => j.id === doneJob.id)
+        && b.jobs.every((j) => j.status === 'done' || j.status === 'failed')
+        && !b.notified
+      ))
       const batchJustDone = !!batchDone
-      const notifiedBatches = batchJustDone ? batches.map((b) => (b.id === batchDone!.id ? { ...b, notified: true } : b)) : batches
+      const notifiedBatches = batchJustDone
+        ? batches.map((b) => (b.id === batchDone!.id ? { ...b, notified: true, notifiedAt: Date.now() } : b))
+        : batches
       return {
         ...state,
         currentCraft: next ? { ...next, status: 'ordering' } : null,
         craftQueue: restQueue,
         batches: notifiedBatches,
+        library: [action.component, ...state.library],
         mascot: batchJustDone ? 'happy' : (next ? 'working' : 'sleeping'),
+        craftStartTip: false,
+        craftStartTipShown: next ? state.craftStartTipShown : false,
+      }
+    }
+    case 'CRAFT_FAILED': {
+      if (state.currentCraft?.id !== action.id) return state
+      const failedJob: CraftJob = {
+        ...state.currentCraft,
+        status: 'failed',
+        error: action.error,
+        stage: action.stage,
+      }
+      const batches = state.batches.map((batch) => ({
+        ...batch,
+        jobs: batch.jobs.map((job) => job.id === failedJob.id ? failedJob : job),
+      }))
+      const next = state.craftQueue[0] ?? null
+      const restQueue = state.craftQueue.slice(1)
+      const terminal = (job: CraftJob) => job.status === 'done' || job.status === 'failed'
+      const terminalBatch = batches.find((batch) => (
+        batch.jobs.some((job) => job.id === failedJob.id)
+        && batch.jobs.every(terminal)
+        && !batch.notified
+      ))
+      return {
+        ...state,
+        currentCraft: next ? { ...next, status: 'ordering' } : null,
+        craftQueue: restQueue,
+        batches: terminalBatch
+          ? batches.map((batch) => batch.id === terminalBatch.id
+            ? { ...batch, notified: true, notifiedAt: Date.now() }
+            : batch)
+          : batches,
+        mascot: terminalBatch ? 'happy' : (next ? 'working' : 'sleeping'),
+        toast: '这件家具暂时没加工好，换个更完整的角度再试试。',
+        craftStartTip: false,
+        craftStartTipShown: next ? state.craftStartTipShown : false,
       }
     }
     case 'SHOW_CRAFT_RESULT':
@@ -309,9 +393,8 @@ function reducer(state: State, action: Action): State {
     case 'HIDE_CRAFT_RESULT':
       return { ...state, showCraftResult: false }
     case 'CRAFT_CONFIRM_STORE': {
-      const doneBatch = state.batches.find((b) => b.jobs.every((j) => j.status === 'done') && !b.dismissed)
+      const doneBatch = state.batches.find((b) => b.jobs.every((j) => j.status === 'done' || j.status === 'failed') && !b.dismissed)
       if (!doneBatch) return { ...state, showCraftResult: false }
-      const added = doneBatch.jobs.map((j) => j.resultComponent!).filter(Boolean)
       const remainingBatches = state.batches.filter((b) => b.id !== doneBatch.id)
       const hasMore = !!state.currentCraft || state.craftQueue.length > 0
       return {
@@ -319,13 +402,11 @@ function reducer(state: State, action: Action): State {
         showCraftResult: false,
         batches: remainingBatches,
         mascot: hasMore ? 'working' : 'sleeping',
-        library: [...added, ...state.library],
-        newlyAddedIds: added.map((c) => c.id),
-        phase: 'library',
+        phase: 'browse',
       }
     }
     case 'CRAFT_DISCARD': {
-      const doneBatch = state.batches.find((b) => b.jobs.every((j) => j.status === 'done') && !b.dismissed)
+      const doneBatch = state.batches.find((b) => b.jobs.every((j) => j.status === 'done' || j.status === 'failed') && !b.dismissed)
       if (!doneBatch) return { ...state, showCraftResult: false }
       const remainingBatches = state.batches.filter((b) => b.id !== doneBatch.id)
       const hasMore = !!state.currentCraft || state.craftQueue.length > 0
@@ -338,11 +419,37 @@ function reducer(state: State, action: Action): State {
     }
     case 'CLEAR_CRAFT_DONE_BUBBLE': {
       const batches = state.batches.map((b) => {
-        if (b.jobs.every((j) => j.status === 'done') && !b.dismissed) return { ...b, dismissed: true }
+        if (b.jobs.every((j) => j.status === 'done' || j.status === 'failed') && !b.dismissed) return { ...b, dismissed: true }
         return b
       })
       return { ...state, batches, mascot: (state.currentCraft || state.craftQueue.length > 0) ? 'working' : 'sleeping' }
     }
+    case 'SHOW_COLLECTION_DETAIL': {
+      const requestedBatch = action.batchId
+        ? state.batches.find((batch) => batch.id === action.batchId)
+        : null
+      const completedBatch = [...state.batches].reverse().find((batch) => (
+        !batch.dismissed
+        && batch.jobs.length > 0
+        && batch.jobs.every((job) => job.status === 'done' || job.status === 'failed')
+      ))
+      const targetBatch = requestedBatch ?? completedBatch ?? state.batches[state.batches.length - 1] ?? null
+      const targetIsTerminal = !!targetBatch
+        && targetBatch.jobs.length > 0
+        && targetBatch.jobs.every((job) => job.status === 'done' || job.status === 'failed')
+      const batches = targetBatch && targetIsTerminal
+        ? state.batches.map((batch) => batch.id === targetBatch.id ? { ...batch, dismissed: true } : batch)
+        : state.batches
+      return {
+        ...state,
+        batches,
+        showCollectionDetail: true,
+        activeWorkshopBatchId: targetBatch?.id ?? null,
+        mascot: (state.currentCraft || state.craftQueue.length > 0) ? 'working' : 'sleeping',
+      }
+    }
+    case 'HIDE_COLLECTION_DETAIL':
+      return { ...state, showCollectionDetail: false, activeWorkshopBatchId: null }
     case 'ADD_TRACE':
       return { ...state, traces: [action.trace, ...state.traces] }
     case 'UPDATE_TRACE':
@@ -371,39 +478,81 @@ function reducer(state: State, action: Action): State {
   }
 }
 
-const MOCK_ADD_NAMES: Record<FurnitureCategory, string[]> = {
-  '沙发': ['奶油风布艺沙发', '深灰科技布沙发'],
-  '茶几': ['岩板方茶几', '藤编圆茶几'],
-  '吊灯': ['纸艺球形吊灯', '极简长杆吊灯'],
-  '绿植': ['龟背竹落地', '多肉组合盆栽'],
-  '装饰画': ['极简色块装饰画', '风景摄影挂画'],
-  '地毯': ['黄麻编织地毯', '奶咖纯色地毯'],
-}
-
-let mockAddSeq = 0
-function mockAdd(channel: '线下拍照' | '手绘生成'): LibraryComponent {
-  const cats = Object.keys(MOCK_ADD_NAMES) as FurnitureCategory[]
-  const cat = cats[mockAddSeq % cats.length]
-  mockAddSeq += 1
-  const names = MOCK_ADD_NAMES[cat]
-  const name = names[mockAddSeq % names.length]
-  const color = CATEGORY_COLOR[cat] ?? '#8d6e63'
-  return {
-    id: `mock-${Date.now()}-${mockAddSeq}`,
-    category: cat,
-    name,
-    source: `来自${channel} · 刚刚（预生成）`,
-    size: '待识别尺寸',
-    styleTags: [channel, '预生成'],
-    thumbnail: MOCK_OBJECTS.find((m) => m.label === cat)?.thumbnail ?? '🪑',
-    color,
-    sticker: genSticker(cat, color, mockAddSeq),
-  }
-}
-
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState)
+  const [favoriteAssetIds, setFavoriteAssetIds] = useState<string[]>(() => {
+    try {
+      const stored = window.localStorage.getItem('dreamhome-favorite-assets')
+      const parsed = stored ? JSON.parse(stored) : []
+      return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : []
+    } catch {
+      return []
+    }
+  })
+  const [feedIndex, setFeedIndex] = useState(0)
+  const [pausedFrame, setPausedFrame] = useState(() => ({
+    videoId: FEED_VIDEOS[0].id,
+    time: defaultAssetFrame(FEED_VIDEOS[0].id),
+  }))
+  const [collectionMascotMode, setCollectionMascotMode] = useState<CollectionMascotMode>('none')
+  // 教学只由冷启动气泡的“开始逛逛”启动；普通暂停不会擅自拉起新手引导。
+  const [sessionGuideStage, setSessionGuideStage] = useState<SessionGuideStage>('idle')
   const videoRef = useRef<HTMLVideoElement>(null)
+  const feedTouchStartY = useRef<number | null>(null)
+  const suppressPause = useRef(false)
+  const wheelLocked = useRef(false)
+  const activeFeedVideo = FEED_VIDEOS[feedIndex]
+  const activeFrameAssets = useMemo(
+    () => assetsForVideoFrame(pausedFrame.videoId, pausedFrame.time),
+    [pausedFrame],
+  )
+  useEffect(() => {
+    const preloads = activeFrameAssets.map((component) => {
+      const image = new Image()
+      image.decoding = 'async'
+      image.src = component.completedImageUrl ?? component.sticker
+      return image
+    })
+    return () => preloads.forEach((image) => { image.src = '' })
+  }, [activeFrameAssets])
+  const latestBatch = state.batches[state.batches.length - 1] ?? null
+  const latestBatchCount = latestBatch ? latestBatch.jobs.length : 0
+  const liveWorkshopData = useMemo(() => workshopFromAppState({
+    batches: state.batches,
+    blogger: CURRENT_BLOGGER,
+    sharedHomeFurniture: [],
+  }), [state.batches])
+  // 调试 URL 也不再注入模拟/实时识别资产。
+  // 没有用户主动圈选形成的批次时，小工坊必须保持空白态。
+  const workshopData = liveWorkshopData
+  const awaitingCollectionView = state.batches.some((batch) => (
+    !batch.dismissed
+    && batch.jobs.length > 0
+    && batch.jobs.every((job) => job.status === 'done' || job.status === 'failed')
+  ))
+  const iosStatusDark = state.showTrace
+  const iosHomeDark = iosStatusDark || state.showCollectionDetail || state.showCraftResult || state.phase === 'preview'
+  const toggleFavoriteAsset = useCallback((id: string) => {
+    setFavoriteAssetIds((current) => current.includes(id)
+      ? current.filter((candidate) => candidate !== id)
+      : [...current, id])
+  }, [])
+  useEffect(() => {
+    window.localStorage.setItem('dreamhome-favorite-assets', JSON.stringify(favoriteAssetIds))
+  }, [favoriteAssetIds])
+
+  useEffect(() => {
+    if (!awaitingCollectionView) return
+    setSessionGuideStage((current) => (
+      current === 'progress' || current === 'waiting' ? 'complete' : current
+    ))
+  }, [awaitingCollectionView])
+
+  useEffect(() => {
+    warmupEdgeSam().catch((error) => {
+      console.warn('[EdgeSAM] model warmup failed; session will retry', error)
+    })
+  }, [])
 
   // traces 持久化到 localStorage
   useEffect(() => {
@@ -437,7 +586,28 @@ function App() {
     } else {
       v.pause()
     }
-  }, [state.videoPlaying])
+  }, [state.videoPlaying, feedIndex])
+
+  useEffect(() => {
+    const next = FEED_VIDEOS[(feedIndex + 1) % FEED_VIDEOS.length]
+    const preload = document.createElement('video')
+    preload.preload = 'metadata'
+    preload.src = next.src
+    return () => {
+      preload.removeAttribute('src')
+      preload.load()
+    }
+  }, [feedIndex])
+
+  const changeFeedVideo = (direction: 1 | -1) => {
+    if (state.phase !== 'browse' || state.showCollectionDetail || state.showCraftResult || state.showTrace) return
+    const nextIndex = (feedIndex + direction + FEED_VIDEOS.length) % FEED_VIDEOS.length
+    const nextVideo = FEED_VIDEOS[nextIndex]
+    setFeedIndex(nextIndex)
+    setPausedFrame({ videoId: nextVideo.id, time: defaultAssetFrame(nextVideo.id) })
+    setCollectionMascotMode('none')
+    dispatch({ type: 'CHANGE_FEED_VIDEO' })
+  }
 
   const craft = state.currentCraft
   useEffect(() => {
@@ -447,6 +617,49 @@ function App() {
       return () => clearTimeout(t)
     }
     if (craft.status === 'crafting') {
+      if (craft.backendMode === 'fal' && craft.backendJobId) {
+        let cancelled = false
+        let timer = 0
+        const poll = async () => {
+          try {
+            const job = await getFalJob(craft.backendJobId!)
+            if (cancelled) return
+            dispatch({ type: 'CRAFT_PROGRESS', id: craft.id, progress: job.progress ?? 0, stage: 'generate_3d' })
+            if (job.status === 'succeeded') {
+              dispatch({
+                type: 'CRAFT_DONE',
+                id: craft.id,
+                component: falJobToComponent(job, {
+                  id: craft.id,
+                  name: craft.name,
+                  category: craft.category,
+                  snapshot: craft.snapshot,
+                }),
+              })
+              return
+            }
+            if (job.status === 'failed') {
+              dispatch({
+                type: 'CRAFT_FAILED',
+                id: craft.id,
+                error: job.error || 'FAL generation failed',
+                stage: 'generate_3d',
+              })
+              return
+            }
+            timer = window.setTimeout(poll, 1600)
+          } catch (error) {
+            if (cancelled) return
+            timer = window.setTimeout(poll, 2400)
+            console.warn('[DreamHome API] job polling failed; retrying', error)
+          }
+        }
+        void poll()
+        return () => {
+          cancelled = true
+          window.clearTimeout(timer)
+        }
+      }
       const t = setTimeout(() => {
         const comp: LibraryComponent = {
           id: `crafted-${craft.id}`,
@@ -460,79 +673,120 @@ function App() {
           sticker: craft.snapshot || genSticker(craft.category, craft.color, 99),
         }
         dispatch({ type: 'CRAFT_DONE', id: craft.id, component: comp })
-      }, 4500)
+      }, 15_000)
       return () => clearTimeout(t)
     }
   }, [craft])
 
   return (
-    <div className="phone">
-      <div className="screen">
+    <div
+      className={`iphone-device ${iosStatusDark ? 'ios-status-dark' : ''} ${iosHomeDark ? 'ios-home-dark' : ''}`}
+      aria-label="DreamHome iPhone 16 preview"
+    >
+      <span className="iphone-side-btn iphone-side-btn--action" aria-hidden="true" />
+      <span className="iphone-side-btn iphone-side-btn--volume" aria-hidden="true" />
+      <span className="iphone-side-btn iphone-side-btn--power" aria-hidden="true" />
+      <div className="phone-viewport">
+        <div className="phone">
+          <div
+            className="screen"
+            onWheel={(event) => {
+              if (Math.abs(event.deltaY) < 32 || wheelLocked.current) return
+              wheelLocked.current = true
+              changeFeedVideo(event.deltaY > 0 ? 1 : -1)
+              window.setTimeout(() => { wheelLocked.current = false }, 420)
+            }}
+            onTouchStart={(event) => {
+              feedTouchStartY.current = state.phase === 'browse' ? event.changedTouches[0]?.clientY ?? null : null
+            }}
+            onTouchEnd={(event) => {
+              const startY = feedTouchStartY.current
+              feedTouchStartY.current = null
+              if (startY === null) return
+              const endY = event.changedTouches[0]?.clientY ?? startY
+              const deltaY = startY - endY
+              if (Math.abs(deltaY) < 56) return
+              suppressPause.current = true
+              changeFeedVideo(deltaY > 0 ? 1 : -1)
+              window.setTimeout(() => { suppressPause.current = false }, 320)
+            }}
+          >
         <video
+          key={activeFeedVideo.id}
           ref={videoRef}
-          src={VIDEO_SRC}
-          className="video"
+          src={activeFeedVideo.src}
+          className="video feed-video-enter"
           loop
           muted
           playsInline
           autoPlay
+          preload="auto"
         />
 
         {state.phase === 'browse' && (
           <BrowseLayer
-            onPause={() => dispatch({ type: 'PAUSE' })}
-            onGetHome={() => dispatch({ type: 'SHOW_HOME_GRAB' })}
-            onOpenProfile={() => dispatch({ type: 'GO_PROFILE' })}
+            video={activeFeedVideo}
+            onPause={() => {
+              if (suppressPause.current) return
+              const video = videoRef.current
+              if (video) {
+                video.pause()
+                setPausedFrame({ videoId: activeFeedVideo.id, time: video.currentTime })
+                void prepareEdgeSamFrame(video).catch((error) => {
+                  console.warn('[EdgeSAM] paused frame pre-encode failed', error)
+                })
+              }
+              setSessionGuideStage((current) => current === 'pause' ? 'recognize' : current)
+              dispatch({ type: 'PAUSE' })
+            }}
           />
         )}
 
-        {state.showHomeGrab && (
-          <HomeGrabSheet
-            onGrabAll={() => dispatch({ type: 'GRAB_HOME_ALL' })}
-            onGrabItems={() => dispatch({ type: 'GRAB_HOME_ITEMS' })}
-            onClose={() => dispatch({ type: 'HIDE_HOME_GRAB' })}
-          />
-        )}
-
-        {state.phase === 'profile' && (
-          <Profile
-            onClose={() => dispatch({ type: 'RESUME' })}
-            onEnterHome={() => dispatch({ type: 'GRAB_HOME_ALL' })}
-          />
-        )}
+        {state.phase === 'browse' && sessionGuideStage === 'pause' && <PauseGuideOverlay />}
 
         {state.toast && (
-          <Toast msg={state.toast} onDone={() => dispatch({ type: 'HIDE_TOAST' })} />
+          <ToastLifetime msg={state.toast} onDone={() => dispatch({ type: 'HIDE_TOAST' })} />
         )}
 
         {state.orderingCount > 0 && <OrderingOverlay count={state.orderingCount} />}
 
         <Mascot
           state={state.mascot}
-          doneBatch={state.batches.find((b) => b.jobs.every((j) => j.status === 'done') && !b.dismissed) ?? null}
+          awaitingCollectionView={awaitingCollectionView}
           craftStartTip={state.craftStartTip}
-          onTapBubble={() => dispatch({ type: 'SHOW_CRAFT_RESULT' })}
-          onDismissBubble={() => dispatch({ type: 'CLEAR_CRAFT_DONE_BUBBLE' })}
+          busy={!!state.currentCraft || state.craftQueue.length > 0}
+          taskCount={latestBatchCount}
+          collectionMode={state.phase === 'session' ? collectionMascotMode : 'none'}
+          guideMode={state.phase === 'session'
+            ? (state.selected.length > 0 && collectionMascotMode === 'none' ? 'drag' : null)
+            : null}
+          progressGuideActive={sessionGuideStage === 'progress'}
+          notice={state.toast ?? (state.showFailHint ? '这件家具还没完整露出来，换一帧或圈近一点再试试。' : null)}
+          onOpenCollection={() => dispatch({ type: 'SHOW_COLLECTION_DETAIL' })}
+          onBeginOnboarding={() => setSessionGuideStage('pause')}
+          onProgressGuideOpened={() => setSessionGuideStage('waiting')}
+          onCompletionGuideOpened={() => setSessionGuideStage('done')}
           onDismissStartTip={() => dispatch({ type: 'HIDE_CRAFT_START_TIP' })}
         />
 
-        {state.showCraftResult && (() => {
-          const doneBatch = state.batches.find((b) => b.jobs.every((j) => j.status === 'done') && !b.dismissed)
-          if (!doneBatch) return null
-          const components = doneBatch.jobs.map((j) => j.resultComponent!).filter(Boolean)
-          return (
-            <CraftResult
-              components={components}
-              onStore={() => dispatch({ type: 'CRAFT_CONFIRM_STORE' })}
-              onClose={() => dispatch({ type: 'HIDE_CRAFT_RESULT' })}
-            />
-          )
-        })()}
+        {sessionGuideStage === 'progress' && <ProgressGuideOverlay />}
 
         {state.phase === 'session' && (
           <SessionLayer
             state={state}
             dispatch={dispatch}
+            sourceFrame={pausedFrame}
+            frameAssets={activeFrameAssets}
+            favoriteAssetIds={favoriteAssetIds}
+            onToggleFavoriteAsset={toggleFavoriteAsset}
+            onMascotModeChange={setCollectionMascotMode}
+            showRecognizeGuide={sessionGuideStage === 'recognize'}
+            onRecognizeGuideShown={() => {
+              setSessionGuideStage((current) => current === 'recognize' ? 'drag' : current)
+            }}
+            showDragGuide={sessionGuideStage === 'drag'}
+            onDragGuideShown={() => {}}
+            onCraftDropped={() => setSessionGuideStage('progress')}
           />
         )}
 
@@ -548,11 +802,13 @@ function App() {
           <PreviewLayer
             selected={state.selected}
             onClose={() => dispatch({ type: 'CLOSE_PREVIEW' })}
-            onGoLibrary={() => dispatch({ type: 'GO_LIBRARY' })}
             onStartCraft={(objs) => {
-              const jobs: CraftJob[] = objs.map((obj) => {
+              // 小工坊只接收用户主动圈选后生成的加工任务；
+              // 暂停帧里的实时识别资产不再自动导入。
+              const publicComponents: LibraryComponent[] = []
+              const jobs: CraftJob[] = objs.filter((obj) => obj.source === 'custom').map((obj) => {
                 const it = obj.items[0]
-                const category = (MOCK_OBJECTS.find((m) => m.label === it.label)?.label ?? '沙发') as FurnitureCategory
+                const category = (MOCK_OBJECTS.find((m) => m.label === it.label)?.label ?? '其他') as FurnitureCategory
                 const color = CATEGORY_COLOR[category] ?? '#8d6e63'
                 return {
                   id: `craft-${obj.id}`,
@@ -566,42 +822,19 @@ function App() {
               dispatch({ type: 'SHOW_ORDERING', count: jobs.length })
               setTimeout(() => {
                 dispatch({ type: 'HIDE_ORDERING' })
-                dispatch({ type: 'START_CRAFT_BATCH', jobs })
+                dispatch({ type: 'START_CRAFT_BATCH', jobs, publicComponents, sourceFrame: pausedFrame })
               }, 6000)
             }}
             crafting={!!state.currentCraft}
           />
         )}
 
-        {state.phase === 'library' && (
-          <Library
-            components={state.library}
-            newlyAddedIds={state.newlyAddedIds}
-            onClose={() => dispatch({ type: 'RESUME' })}
-            onDelete={(id) => dispatch({ type: 'DELETE_LIBRARY', id })}
-            onGoAssemble={() => dispatch({ type: 'GO_ASSEMBLE' })}
-            onAddFromVideo={() => dispatch({ type: 'RESUME' })}
-            onAddFromPhoto={() => dispatch({ type: 'ADD_LIBRARY', component: mockAdd('线下拍照') })}
-            onAddFromSketch={() => dispatch({ type: 'ADD_LIBRARY', component: mockAdd('手绘生成') })}
-            onClearNew={() => dispatch({ type: 'CLEAR_NEW' })}
-            onTraceBack={() => dispatch({ type: 'RESUME' })}
-          />
-        )}
-
-        {state.phase === 'assemble' && !state.layout && (
-          <LayoutPicker
-            onPick={(layout, source) => dispatch({ type: 'SET_LAYOUT', layout, source })}
-            onClose={() => dispatch({ type: 'GO_LIBRARY' })}
-          />
-        )}
-
-        {state.phase === 'assemble' && state.layout && (
-          <Assemble
-            components={state.library}
-            layout={state.layout}
-            layoutSource={state.layoutSource}
-            onClose={() => dispatch({ type: 'GO_LIBRARY' })}
-            onRepickLayout={() => dispatch({ type: 'REPICK_LAYOUT' })}
+        {state.showCollectionDetail && (
+          <WorkshopDetail
+            data={workshopData}
+            favoriteIds={favoriteAssetIds}
+            onToggleFavorite={toggleFavoriteAsset}
+            onClose={() => dispatch({ type: 'HIDE_COLLECTION_DETAIL' })}
           />
         )}
 
@@ -619,116 +852,509 @@ function App() {
             onImport={(entries) => dispatch({ type: 'IMPORT_TRACES', entries })}
           />
         )}
+          </div>
+        </div>
+        <IOSChrome />
       </div>
     </div>
   )
 }
 
-function Toast({ msg, onDone }: { msg: string; onDone: () => void }) {
+function IOSChrome() {
+  return (
+    <div className="ios-chrome" aria-hidden="true">
+      <div className="ios-statusbar">
+        <span className="ios-time">9:41</span>
+        <span className="ios-status-icons">
+          <span className="ios-signal"><i /><i /><i /></span>
+          <span className="ios-network">5G</span>
+          <span className="ios-battery" />
+        </span>
+      </div>
+      <div className="ios-dynamic-island" />
+      <div className="ios-home-indicator" />
+    </div>
+  )
+}
+
+function ToastLifetime({ msg, onDone }: { msg: string; onDone: () => void }) {
   useEffect(() => {
     const t = setTimeout(onDone, 2200)
     return () => clearTimeout(t)
   }, [msg, onDone])
-  return (
-    <div className="toast-root">
-      <div className="toast-box">
-        <span className="toast-check">✓</span>
-        <span className="toast-msg">{msg}</span>
-      </div>
-    </div>
-  )
+  return null
 }
 
 function SocialBar({ dimmed = false }: { dimmed?: boolean }) {
   return (
     <div className={`social-bar ${dimmed ? 'dimmed' : ''}`}>
-      <div className="avatar-wrap">
-        <div className="avatar" />
-        <button className="follow-plus">+</button>
-      </div>
-      <button className="social-btn">
-        <span className="social-emoji">❤️</span>
+      <button className="avatar-wrap" aria-label="作者头像">
+        <span className="avatar"><UserIcon /></span>
+        <span className="follow-plus">+</span>
+      </button>
+      <button className="social-btn" aria-label="点赞 12.3万">
+        <DouyinHeartIcon className="social-icon social-icon-heart" />
         <span className="social-count">12.3w</span>
       </button>
-      <button className="social-btn">
-        <span className="social-emoji">💬</span>
+      <button className="social-btn" aria-label="评论 856">
+        <CommentIcon className="social-icon" />
         <span className="social-count">856</span>
       </button>
-      <button className="social-btn">
-        <span className="social-emoji">⭐</span>
+      <button className="social-btn" aria-label="收藏 2.1万">
+        <StarIcon className="social-icon" />
         <span className="social-count">2.1w</span>
       </button>
-      <button className="social-btn">
-        <span className="social-emoji">↗️</span>
+      <button className="social-btn" aria-label="分享">
+        <ShareIcon className="social-icon social-icon-share" />
         <span className="social-count">分享</span>
       </button>
       <div className="music-disc">
-        <div className="disc-inner" />
+        <span className="disc-inner"><MusicIcon /></span>
       </div>
     </div>
   )
 }
 
-function BottomInfo({ onGetHome, onOpenProfile }: { onGetHome: () => void; onOpenProfile: () => void }) {
+function BottomInfo({ video }: { video: FeedVideo }) {
+  const showDefaultTopics = !video.captionBadge && !video.captionAction
+
   return (
     <div className="bottom-info">
-      <button className="home-entry" onClick={onGetHome}>
-        <div className="home-entry-text">
-          <div className="home-entry-title">获取博主同款小家</div>
-          <div className="home-entry-sub">含奶油风一居小家，{BLOGGER_HOME_PACK.length}件软装</div>
-        </div>
-        <div className="home-entry-preview">
-          <HomePreview components={BLOGGER_HOME_PACK} layoutId={CURRENT_BLOGGER.homeLayoutId} fillContainer />
-        </div>
-      </button>
-      <div className="author" onClick={onOpenProfile}>@{CURRENT_BLOGGER.name}</div>
+      <div className="author-line">
+        <span className="author">{video.author}</span>
+        {video.authorBadge && <span className="author-badge">{video.authorBadge}</span>}
+        {video.publishedAt && <span className="published-at">· {video.publishedAt}</span>}
+      </div>
       <div className="caption">
-        这个北欧风客厅太治愈了，每一处软装都想抄回家 🛋️✨
-        <span className="topic"> #家居灵感</span>
-        <span className="topic"> #客厅装修</span>
-        <span className="topic"> #软装搭配</span>
+        {video.captionBadge && <span className="caption-badge">{video.captionBadge}</span>}
+        {video.caption}
+        {video.captionAction && <span className="caption-action"> {video.captionAction}</span>}
+        {showDefaultTopics && (
+          <>
+            <span className="topic"> #家居灵感</span>
+            <span className="topic"> #客厅装修</span>
+            <span className="topic"> #软装搭配</span>
+          </>
+        )}
       </div>
       <div className="music">
-        <span className="music-note">🎵</span>
-        <span className="music-text">原声 - home_vibes · 北欧治愈系居家BGM</span>
+        <MusicIcon className="music-note" />
+        <span className="music-text">{video.music}</span>
       </div>
     </div>
   )
 }
 
-function BrowseLayer({ onPause, onGetHome, onOpenProfile }: { onPause: () => void; onGetHome: () => void; onOpenProfile: () => void }) {
+function DouyinBottomNav() {
+  return (
+    <nav className="douyin-bottom-nav" aria-label="抖音底部导航">
+      <button className="douyin-nav-item is-active" aria-current="page">
+        <HomeIcon />
+        <span>首页</span>
+      </button>
+      <button className="douyin-nav-item">
+        <FriendsIcon />
+        <span>朋友</span>
+      </button>
+      <button className="douyin-nav-create" aria-label="发布作品">
+        <CreateIcon />
+      </button>
+      <button className="douyin-nav-item douyin-nav-message">
+        <MessageIcon />
+        <span>消息</span>
+        <em>99+</em>
+      </button>
+      <button className="douyin-nav-item">
+        <MeIcon />
+        <span>我</span>
+      </button>
+    </nav>
+  )
+}
+
+function BrowseLayer({ video, onPause }: { video: FeedVideo; onPause: () => void }) {
   return (
     <>
       <div className="top-tabs">
-        <button className="top-search">🔍</button>
-        <div className="tabs-center">
+        <button className="top-menu" aria-label="打开菜单"><MenuIcon /></button>
+        <div className="tabs-center" aria-label="视频频道">
+          <span className="tab">同城</span>
+          <span className="tab">直播</span>
+          <span className="tab">团购</span>
           <span className="tab">关注</span>
+          <span className="tab">商城</span>
           <span className="tab active">推荐</span>
         </div>
-        <button className="top-camera">📡</button>
+        <button className="top-search" aria-label="搜索"><SearchIcon /></button>
       </div>
       <div className="tap-area" onClick={onPause} />
       <SocialBar />
-      <BottomInfo onGetHome={onGetHome} onOpenProfile={onOpenProfile} />
+      <BottomInfo video={video} />
+      <DouyinBottomNav />
     </>
+  )
+}
+
+function PauseGuideOverlay() {
+  return (
+    <div className="pause-guide" aria-live="polite">
+      <div className="pause-guide-card">
+        <div className="pause-guide-copy">
+          <strong>刷到心动的家居，记得先暂停画面</strong>
+          <span>轻点画面暂停，把这份家居灵感留下来。</span>
+        </div>
+        <img
+          className="pause-guide-mascot"
+          src="/mascot-motion/guide-pointer-v1.png"
+          alt="包工球提示轻点画面"
+        />
+      </div>
+      <div className="pause-guide-gesture" aria-hidden="true">
+        <span className="pause-guide-tap-ring" />
+        <GuideHandIcon className="pause-guide-hand" />
+      </div>
+    </div>
+  )
+}
+
+function ProgressGuideOverlay() {
+  return (
+    <>
+      <div className="progress-guide-shade" aria-hidden="true" />
+      <div className="progress-guide-card" aria-live="polite">
+        <strong>随时来看看做到哪一步</strong>
+        <span>轻点右下角的包工球就能看进度。看完继续刷就好，做好了它会来提醒你～</span>
+      </div>
+    </>
+  )
+}
+
+type SessionGuideMode = 'recognize' | 'drag'
+
+function GuideHandIcon({
+  className,
+  style,
+}: {
+  className: string
+  style?: React.CSSProperties
+}) {
+  return (
+    <svg className={className} style={style} viewBox="0 0 64 64" aria-hidden="true">
+      <path
+        d="M44.5 58.2c-7.7 4.4-17.2 2.3-22.4-4.3L10.6 40.5c-2.2-2.8-1.6-6.8 1.2-8.8 2.7-2 6.5-1.4 8.5 1.2l4.9 6.1V13.2c0-4.2 3-7.2 6.9-7.2s6.9 3 6.9 7.2v17.1l2.4-6.4c1.3-3.5 4.8-5.4 8.1-4.1 3.1 1.2 4.6 4.6 3.4 7.8l-1.6 4.1c2.4-2.4 6.1-2.5 8.5-.2 2.5 2.3 2.6 6.1.3 8.7l-2.6 2.9c2.5-1.2 5.6-.3 7.1 2.1 1.7 2.7.9 6.2-1.8 8.1l-10.5 7.3c-2.2 1.5-5 1.4-7.8-2.4Z"
+        fill="white"
+        stroke="rgba(18,22,28,0.2)"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function SessionGuideOverlay({
+  mode,
+  focusBox,
+  guideTarget,
+}: {
+  mode: SessionGuideMode
+  focusBox: GuideRect | null
+  guideTarget: GuideTarget | null
+}) {
+  const [metrics, setMetrics] = useState({
+    width: 393,
+    height: 852,
+    mascot: { x: 305, y: 560, w: 80, h: 80 },
+  })
+
+  useEffect(() => {
+    const updateMetrics = () => {
+      const screen = document.querySelector<HTMLElement>('.screen')
+      if (!screen) return
+      const screenRect = screen.getBoundingClientRect()
+      const localWidth = screen.clientWidth || 393
+      const localHeight = screen.clientHeight || 852
+      const scaleX = screenRect.width / localWidth
+      const scaleY = screenRect.height / localHeight
+      const toLocalRect = (rect: DOMRect | undefined, fallback: GuideRect): GuideRect => rect
+        ? {
+            x: (rect.left - screenRect.left) / scaleX,
+            y: (rect.top - screenRect.top) / scaleY,
+            w: rect.width / scaleX,
+            h: rect.height / scaleY,
+          }
+        : fallback
+      const mascotRect = document.querySelector<HTMLElement>('.mascot-root')?.getBoundingClientRect()
+      setMetrics({
+        width: localWidth,
+        height: localHeight,
+        mascot: toLocalRect(mascotRect, { x: localWidth - 88, y: localHeight - 292, w: 80, h: 80 }),
+      })
+    }
+    const frame = window.requestAnimationFrame(updateMetrics)
+    window.addEventListener('resize', updateMetrics)
+    window.addEventListener('pointerup', updateMetrics)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.removeEventListener('resize', updateMetrics)
+      window.removeEventListener('pointerup', updateMetrics)
+    }
+  }, [mode, focusBox?.x, focusBox?.y, focusBox?.w, focusBox?.h, guideTarget?.box.x, guideTarget?.box.y, guideTarget?.box.w, guideTarget?.box.h])
+
+  const recognizeFocus: GuideRect = guideTarget?.box ?? {
+    x: metrics.width * 0.18,
+    y: metrics.height * 0.3,
+    w: metrics.width * 0.64,
+    h: metrics.height * 0.24,
+  }
+  const dragFocus = focusBox ? (() => {
+    const width = Math.min(metrics.width - 24, focusBox.w + 24)
+    const height = Math.min(metrics.height - 108, focusBox.h + 24)
+    return {
+      x: Math.min(metrics.width - width - 12, Math.max(12, focusBox.x - 12)),
+      y: Math.min(metrics.height - height - 24, Math.max(84, focusBox.y - 12)),
+      w: width,
+      h: height,
+    }
+  })() : null
+  const focus = mode === 'drag' && dragFocus ? dragFocus : recognizeFocus
+  const mascotCenter = {
+    x: metrics.mascot.x + metrics.mascot.w / 2,
+    y: metrics.mascot.y + metrics.mascot.h / 2,
+  }
+  const focusCenter = {
+    x: focus.x + focus.w / 2,
+    y: focus.y + focus.h / 2,
+  }
+  const dragDelta = {
+    x: mascotCenter.x - focusCenter.x,
+    y: mascotCenter.y - focusCenter.y,
+  }
+  const recognizeTargetPath = guideTarget?.outlinePath ?? ''
+  const gestureCenter = {
+    x: metrics.width * 0.5,
+    y: Math.min(metrics.height - 210, Math.max(300, metrics.height * 0.52)),
+  }
+  const gestureRadius = {
+    x: Math.min(112, metrics.width * 0.29),
+    y: Math.min(82, metrics.height * 0.105),
+  }
+  const recognizeGesturePath = [
+    `M ${gestureCenter.x} ${gestureCenter.y - gestureRadius.y}`,
+    `C ${gestureCenter.x + gestureRadius.x * 0.72} ${gestureCenter.y - gestureRadius.y}, ${gestureCenter.x + gestureRadius.x} ${gestureCenter.y - gestureRadius.y * 0.45}, ${gestureCenter.x + gestureRadius.x} ${gestureCenter.y}`,
+    `C ${gestureCenter.x + gestureRadius.x} ${gestureCenter.y + gestureRadius.y * 0.62}, ${gestureCenter.x + gestureRadius.x * 0.58} ${gestureCenter.y + gestureRadius.y}, ${gestureCenter.x} ${gestureCenter.y + gestureRadius.y}`,
+    `C ${gestureCenter.x - gestureRadius.x * 0.68} ${gestureCenter.y + gestureRadius.y}, ${gestureCenter.x - gestureRadius.x} ${gestureCenter.y + gestureRadius.y * 0.42}, ${gestureCenter.x - gestureRadius.x} ${gestureCenter.y}`,
+    `C ${gestureCenter.x - gestureRadius.x} ${gestureCenter.y - gestureRadius.y * 0.6}, ${gestureCenter.x - gestureRadius.x * 0.62} ${gestureCenter.y - gestureRadius.y}, ${gestureCenter.x} ${gestureCenter.y - gestureRadius.y}`,
+  ].join(' ')
+  const dragPath = [
+    `M ${focusCenter.x} ${focusCenter.y}`,
+    `C ${focusCenter.x + dragDelta.x * 0.3} ${focusCenter.y + Math.min(58, dragDelta.y * 0.16)}, ${mascotCenter.x - dragDelta.x * 0.18} ${mascotCenter.y - Math.max(42, dragDelta.y * 0.22)}, ${mascotCenter.x} ${mascotCenter.y}`,
+  ].join(' ')
+  const promptTop = mode === 'recognize'
+    ? 86
+    : focus.y < 190
+      ? Math.min(metrics.height - 154, focus.y + focus.h + 18)
+      : Math.max(102, focus.y - 78)
+
+  return (
+    <div
+      className={`session-guide session-guide--${mode}`}
+      aria-live="polite"
+    >
+      <svg className="session-guide-shade" viewBox={`0 0 ${metrics.width} ${metrics.height}`} preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <mask id={`session-guide-mask-${mode}`} maskUnits="userSpaceOnUse" x="0" y="0" width={metrics.width} height={metrics.height}>
+            <rect width={metrics.width} height={metrics.height} fill="white" />
+            {mode === 'recognize' && recognizeTargetPath && <path d={recognizeTargetPath} fill="black" />}
+            {mode === 'drag' && (
+              <>
+                <rect x={focus.x} y={focus.y} width={focus.w} height={focus.h} rx="18" fill="black" />
+                <circle cx={mascotCenter.x} cy={mascotCenter.y} r={Math.max(metrics.mascot.w, metrics.mascot.h) * 0.64} fill="black" />
+              </>
+            )}
+          </mask>
+        </defs>
+        <rect
+          width={metrics.width}
+          height={metrics.height}
+          fill={mode === 'recognize' ? 'rgba(8, 12, 16, 0.76)' : 'rgba(8, 12, 16, 0.68)'}
+          mask={`url(#session-guide-mask-${mode})`}
+        />
+      </svg>
+
+      <div className="session-guide-prompt" style={{ top: promptTop }}>
+        <div className="session-guide-copy session-guide-copy--with-mascot">
+          <div className="session-guide-copy-text">
+            <strong>{mode === 'recognize'
+              ? '圈选想留下的家居'
+              : '把选中的家具交给包工球'}</strong>
+            <span>{mode === 'recognize'
+              ? '沿着任意家具外沿画一圈，松手后自动识别'
+              : '长按任意已选区域，再拖进右下角的小推车'}</span>
+          </div>
+        </div>
+        <img
+          className={`session-guide-card-mascot ${mode === 'drag' ? 'session-guide-card-mascot--pointer' : ''}`}
+          src={mode === 'recognize'
+            ? '/mascot-motion/guide-checklist-v1.png'
+            : '/mascot-motion/guide-pointer-v1.png'}
+          alt={mode === 'recognize' ? '包工球拿着检查清单' : '包工球拿着教棍提示拖拽'}
+        />
+      </div>
+
+      {mode === 'recognize' && recognizeGesturePath && (
+        <>
+          <svg className="session-guide-trace-layer" viewBox={`0 0 ${metrics.width} ${metrics.height}`} preserveAspectRatio="none" aria-hidden="true">
+            <path className="session-guide-trace session-guide-trace--circle" d={recognizeGesturePath} pathLength="1" />
+          </svg>
+          <GuideHandIcon
+            className="session-guide-hand session-guide-hand--circle"
+            style={{ offsetPath: `path('${recognizeGesturePath}')` }}
+          />
+        </>
+      )}
+
+      {mode === 'drag' && (
+        <>
+          <div
+            className="session-guide-cart-ring"
+            style={{
+              left: mascotCenter.x - Math.max(metrics.mascot.w, metrics.mascot.h) * 0.66,
+              top: mascotCenter.y - Math.max(metrics.mascot.w, metrics.mascot.h) * 0.66,
+              width: Math.max(metrics.mascot.w, metrics.mascot.h) * 1.32,
+              height: Math.max(metrics.mascot.w, metrics.mascot.h) * 1.32,
+            }}
+            aria-hidden="true"
+          />
+          <span
+            className="session-guide-hold-ring"
+            style={{ left: focusCenter.x - 20, top: focusCenter.y - 20 }}
+            aria-hidden="true"
+          />
+          <svg className="session-guide-trace-layer" viewBox={`0 0 ${metrics.width} ${metrics.height}`} preserveAspectRatio="none" aria-hidden="true">
+            <path className="session-guide-trace session-guide-trace--drag" d={dragPath} pathLength="1" />
+          </svg>
+          <GuideHandIcon
+            className="session-guide-hand session-guide-hand--drag"
+            style={{ offsetPath: `path('${dragPath}')` }}
+          />
+        </>
+      )}
+    </div>
   )
 }
 
 function SessionLayer({
   state,
   dispatch,
+  sourceFrame,
+  frameAssets,
+  favoriteAssetIds,
+  onToggleFavoriteAsset,
+  onMascotModeChange,
+  showRecognizeGuide,
+  onRecognizeGuideShown,
+  showDragGuide,
+  onDragGuideShown,
+  onCraftDropped,
 }: {
   state: State
   dispatch: React.Dispatch<Action>
+  sourceFrame: { videoId: string; time: number }
+  frameAssets: LibraryComponent[]
+  favoriteAssetIds: string[]
+  onToggleFavoriteAsset: (id: string) => void
+  onMascotModeChange: (mode: CollectionMascotMode) => void
+  showRecognizeGuide: boolean
+  onRecognizeGuideShown: () => void
+  showDragGuide: boolean
+  onDragGuideShown: () => void
+  onCraftDropped: () => void
 }) {
   const drawingRef = useRef(false)
   const movedRef = useRef(false)
+  const recognizingRef = useRef(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const penTipRef = useRef<HTMLDivElement>(null)
   const lastPointRef = useRef<{ x: number; y: number } | null>(null)
   const bboxRef = useRef<{ minX: number; minY: number; maxX: number; maxY: number } | null>(null)
   const pathRef = useRef<{ x: number; y: number }[]>([])
-  const [scanning, setScanning] = useState(false)
+  const holdTimerRef = useRef<number | null>(null)
+  const pressRef = useRef<{
+    pointerId: number
+    startX: number
+    startY: number
+    objectId: string
+  } | null>(null)
+  const gestureModeRef = useRef<'idle' | 'drawing' | 'pickup'>('idle')
+  const cutoutHitMasksRef = useRef(new Map<string, {
+    width: number
+    height: number
+    alpha: Uint8ClampedArray
+  }>())
+  const [pickup, setPickup] = useState<{
+    phase: 'idle' | 'pressing' | 'dragging' | 'dropping' | 'returning'
+    x: number
+    y: number
+    hovering: boolean
+  }>({ phase: 'idle', x: 0, y: 0, hovering: false })
+  const [isRecognizing, setIsRecognizing] = useState(false)
+  const [frameAssetsOpen, setFrameAssetsOpen] = useState(false)
+  const [recognizeGuideVisible, setRecognizeGuideVisible] = useState(showRecognizeGuide)
+  const recognizeGuideShownRef = useRef(false)
+  const [dragGuideVisible, setDragGuideVisible] = useState(false)
+  const showDragGuideRef = useRef(showDragGuide)
+  const onDragGuideShownRef = useRef(onDragGuideShown)
+
+  useEffect(() => {
+    showDragGuideRef.current = showDragGuide
+    onDragGuideShownRef.current = onDragGuideShown
+  }, [onDragGuideShown, showDragGuide])
+
+  const selectedCount = state.selected.reduce((sum, obj) => sum + obj.items.length, 0)
+  const collectionCount = selectedCount + frameAssets.length
+  const sessionGuideMode: SessionGuideMode | null = pickup.phase === 'idle'
+    ? selectedCount === 0
+      ? (recognizeGuideVisible ? 'recognize' : null)
+      : (dragGuideVisible ? 'drag' : null)
+    : null
+
+  useEffect(() => {
+    onMascotModeChange('none')
+    return () => onMascotModeChange('none')
+  }, [onMascotModeChange])
+
+  useEffect(() => {
+    if (!recognizeGuideVisible || recognizeGuideShownRef.current) return
+    recognizeGuideShownRef.current = true
+    onRecognizeGuideShown()
+  }, [onRecognizeGuideShown, recognizeGuideVisible])
+
+  useEffect(() => {
+    const video = document.querySelector<HTMLVideoElement>('.video')
+    if (!video) return
+    let cancelled = false
+    const prepare = () => {
+      window.requestAnimationFrame(async () => {
+        if (cancelled) return
+        try {
+          await prepareEdgeSamFrame(video)
+        } catch (error) {
+          console.warn('[EdgeSAM] frame preparation failed', error)
+        }
+      })
+    }
+    const preparePausedFrame = () => {
+      if (video.paused) prepare()
+      else video.addEventListener('pause', prepare, { once: true })
+    }
+    if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) preparePausedFrame()
+    else video.addEventListener('loadeddata', preparePausedFrame, { once: true })
+    return () => {
+      cancelled = true
+      video.removeEventListener('loadeddata', preparePausedFrame)
+      video.removeEventListener('pause', prepare)
+    }
+  }, [])
 
   const drawStrokeTo = (x: number, y: number) => {
     const canvas = canvasRef.current
@@ -774,8 +1400,124 @@ function SessionLayer({
   const getCanvasPos = (clientX: number, clientY: number) => {
     const screen = document.querySelector<HTMLElement>('.screen')
     if (!screen) return null
-    const rect = screen.getBoundingClientRect()
-    return { x: clientX - rect.left, y: clientY - rect.top }
+    return clientPointInElement(screen, clientX, clientY)
+  }
+
+  const cacheCutoutHitMask = (objectId: string, image: HTMLImageElement) => {
+    if (!image.complete || image.naturalWidth === 0 || image.naturalHeight === 0) return
+    const canvas = document.createElement('canvas')
+    canvas.width = image.naturalWidth
+    canvas.height = image.naturalHeight
+    const context = canvas.getContext('2d', { willReadFrequently: true })
+    if (!context) return
+    context.drawImage(image, 0, 0)
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data
+    const alpha = new Uint8ClampedArray(canvas.width * canvas.height)
+    for (let sourceIndex = 3, targetIndex = 0; sourceIndex < pixels.length; sourceIndex += 4, targetIndex += 1) {
+      alpha[targetIndex] = pixels[sourceIndex]
+    }
+    cutoutHitMasksRef.current.set(objectId, {
+      width: canvas.width,
+      height: canvas.height,
+      alpha,
+    })
+  }
+
+  const hitTestCutout = (point: { x: number; y: number }) => {
+    for (let index = state.selected.length - 1; index >= 0; index -= 1) {
+      const object = state.selected[index]
+      const { box } = object
+      if (
+        point.x < box.x
+        || point.x > box.x + box.w
+        || point.y < box.y
+        || point.y > box.y + box.h
+      ) continue
+      const mask = cutoutHitMasksRef.current.get(object.id)
+      if (!mask || box.w <= 0 || box.h <= 0) continue
+      const maskX = Math.min(mask.width - 1, Math.max(0, Math.floor(((point.x - box.x) / box.w) * mask.width)))
+      const maskY = Math.min(mask.height - 1, Math.max(0, Math.floor(((point.y - box.y) / box.h) * mask.height)))
+      if (mask.alpha[maskY * mask.width + maskX] >= 32) return object
+    }
+    return null
+  }
+
+  const clearHoldTimer = () => {
+    if (holdTimerRef.current !== null) {
+      window.clearTimeout(holdTimerRef.current)
+      holdTimerRef.current = null
+    }
+  }
+
+  const isInsideCart = (clientX: number, clientY: number) => {
+    const rect = document.querySelector<HTMLElement>('.mascot-root')?.getBoundingClientRect()
+    if (!rect) return false
+    const centerX = rect.left + rect.width / 2
+    const centerY = rect.top + rect.height / 2
+    const attractionRadius = Math.max(rect.width, rect.height) * 1.35
+    return Math.hypot(clientX - centerX, clientY - centerY) <= attractionRadius
+  }
+
+  const beginPickup = (e: React.PointerEvent, object: SelectedObject) => {
+    if (selectedCount === 0) return
+    const point = getCanvasPos(e.clientX, e.clientY)
+    if (!point) return
+    setDragGuideVisible(false)
+    e.preventDefault()
+    e.stopPropagation()
+    clearHoldTimer()
+    movedRef.current = false
+    pressRef.current = {
+      pointerId: e.pointerId,
+      startX: point.x,
+      startY: point.y,
+      objectId: object.id,
+    }
+    dispatch({ type: 'SELECT_OBJECT', id: object.id })
+    setPickup({ phase: 'pressing', x: point.x, y: point.y, hovering: false })
+    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    holdTimerRef.current = window.setTimeout(() => {
+      if (!pressRef.current) return
+      drawingRef.current = false
+      movedRef.current = false
+      pathRef.current = []
+      bboxRef.current = null
+      const canvas = canvasRef.current
+      const context = canvas?.getContext('2d')
+      if (canvas && context) context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+      setPickup((current) => ({ ...current, phase: 'dragging' }))
+      onMascotModeChange('collecting')
+      holdTimerRef.current = null
+    }, 360)
+  }
+
+  const movePickup = (e: React.PointerEvent) => {
+    const press = pressRef.current
+    if (!press || press.pointerId !== e.pointerId) return
+    const point = getCanvasPos(e.clientX, e.clientY)
+    if (!point) return
+    e.preventDefault()
+    e.stopPropagation()
+    if (pickup.phase === 'pressing') {
+      const distance = Math.hypot(point.x - press.startX, point.y - press.startY)
+      if (distance > 10) {
+        clearHoldTimer()
+        pressRef.current = null
+        gestureModeRef.current = 'idle'
+        setPickup({ phase: 'idle', x: 0, y: 0, hovering: false })
+        onMascotModeChange('none')
+      }
+      return
+    }
+    if (pickup.phase !== 'dragging') return
+    const hovering = isInsideCart(e.clientX, e.clientY)
+    setPickup({
+      phase: 'dragging',
+      x: point.x,
+      y: point.y,
+      hovering,
+    })
+    onMascotModeChange(hovering ? 'ready' : 'collecting')
   }
 
   const updatePenTip = (p: { x: number; y: number } | null) => {
@@ -790,7 +1532,7 @@ function SessionLayer({
   }
 
   useEffect(() => {
-    const onMove = (e: MouseEvent) => {
+    const onMove = (e: MouseEvent | PointerEvent) => {
       const p = getCanvasPos(e.clientX, e.clientY)
       updatePenTip(p)
       if (!drawingRef.current) return
@@ -806,8 +1548,9 @@ function SessionLayer({
       if (!drawingRef.current) return
       drawingRef.current = false
       lastPointRef.current = null
-      clearCanvas()
+      updatePenTip(null)
       if (!movedRef.current) {
+        clearCanvas()
         dispatch({ type: 'OBJECT_FAILED' })
         setTimeout(() => dispatch({ type: 'HIDE_FAIL_HINT' }), 2000)
         return
@@ -815,11 +1558,14 @@ function SessionLayer({
       const b = bboxRef.current
       bboxRef.current = null
       if (!b || b.maxX - b.minX < 8 || b.maxY - b.minY < 8) {
+        clearCanvas()
         dispatch({ type: 'OBJECT_FAILED' })
         setTimeout(() => dispatch({ type: 'HIDE_FAIL_HINT' }), 2000)
         return
       }
-      const pad = 12
+      // Give EdgeSAM room to recover object parts just outside an imperfect
+      // lasso (vase bases, table legs) without expanding the visible gesture.
+      const pad = 20
       const box = {
         x: Math.max(0, b.minX - pad),
         y: Math.max(0, b.minY - pad),
@@ -828,28 +1574,23 @@ function SessionLayer({
       }
       const path = pathRef.current
       pathRef.current = []
+      recognizingRef.current = true
+      setIsRecognizing(true)
+      // Keep the user's original circle on screen and let React paint its
+      // breathing state before the decoder/post-processing starts.
+      await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()))
       const video = document.querySelector<HTMLVideoElement>('.video')
-      // bbox 截图（带背景）—— 同时作为即时占位 snapshot 和 pipeline 输入
+      // bbox 截图只作为 pipeline 输入；不会再伪装成“已识别家具”。
       let bboxDataUrl = ''
       if (video && path.length > 2) {
         bboxDataUrl = (await captureBbox(video, box)) ?? ''
       }
-      const snapshot = bboxDataUrl
-      const area = box.w * box.h
-      const count = area > 22000 ? 3 : area > 10000 ? 2 : 1
-      const offset = state.selected.reduce((n, o) => n + o.items.length, 0)
-      const items = Array.from({ length: count }, (_, i) => MOCK_OBJECTS[(offset + i) % MOCK_OBJECTS.length])
-      const obj: SelectedObject = {
-        id: `obj-${Date.now()}`,
-        box,
-        items,
-        snapshot,
-      }
-      dispatch({ type: 'OBJECT_RECOGNIZED', obj })
+      const objId = `obj-${Date.now()}`
+      const recognizedItem = { label: '待分类家具', thumbnail: '✦' }
       dispatch({
         type: 'ADD_TRACE',
         trace: {
-          id: obj.id,
+          id: objId,
           ts: Date.now(),
           path: path.map((p) => ({ x: p.x - box.x, y: p.y - box.y })),
           bbox: box,
@@ -857,47 +1598,71 @@ function SessionLayer({
           inpaintDataUrl: null,
           cutoutDataUrl: null,
           finalDataUrl: null,
-          label: items[0]?.label ?? '未知',
+          label: recognizedItem.label,
           status: 'pending',
         },
       })
-
-      // pipeline：bbox截图(带背景) → wan2.7 单步提取(去背景+去遮挡+补全) → 最终透明家具
-      const bboxBlob = bboxDataUrl ? dataUrlToBlob(bboxDataUrl) : null
-      let inpainted: string | null = null
-      let traceStatus: TraceEntry['status'] = 'failed'
-      if (!bboxBlob) {
-        dispatch({ type: 'UPDATE_TRACE', id: obj.id, patch: { status: 'failed' } })
-      } else {
-        // 单步：直接给 wan2.7 带场景的 bbox 原图 + path 高亮，提取完整家具
-        inpainted = await inpaint(bboxBlob, box, path)
-        traceStatus = inpainted ? 'done' : 'failed'
-        dispatch({
-          type: 'UPDATE_TRACE',
-          id: obj.id,
-          patch: {
-            inpaintDataUrl: inpainted,
-            finalDataUrl: inpainted,
-            status: traceStatus,
-          },
-        })
-
-        console.log('[pipeline]', obj.id, 'inpaint:', inpainted ? 'ok' : 'fail', 'path:', path.length, 'box:', box)
-        if (inpainted) {
-          dispatch({ type: 'UPDATE_SNAPSHOT', id: obj.id, snapshot: inpainted })
-        }
+      // 唯一识别链路：浏览器端 EdgeSAM。不会调用万相、remove.bg 或后端补全。
+      const edgeSamResult = video
+        ? await segmentWithEdgeSam(video, path, box).catch((error) => {
+            console.warn('[EdgeSAM] cutout failed', error)
+            return null
+          })
+        : null
+      const cutout = edgeSamResult?.dataUrl ?? null
+      if (!cutout) {
+        recognizingRef.current = false
+        setIsRecognizing(false)
+        clearCanvas()
+        dispatch({ type: 'UPDATE_TRACE', id: objId, patch: { status: 'failed' } })
+        dispatch({ type: 'OBJECT_FAILED' })
+        setTimeout(() => dispatch({ type: 'HIDE_FAIL_HINT' }), 2000)
+        return
       }
+
+      const obj: SelectedObject = {
+        id: objId,
+        box: edgeSamResult?.box ?? box,
+        items: [recognizedItem],
+        snapshot: cutout,
+        source: 'custom',
+      }
+      dispatch({ type: 'OBJECT_RECOGNIZED', obj })
+      // The sticker pops in first; retire the hand-drawn loop on the following
+      // frame so the two visuals feel like one continuous transformation.
+      window.requestAnimationFrame(() => {
+        recognizingRef.current = false
+        setIsRecognizing(false)
+        clearCanvas()
+      })
+      if (showDragGuideRef.current) {
+        setDragGuideVisible(true)
+        onDragGuideShownRef.current()
+      } else {
+        setDragGuideVisible(false)
+      }
+      dispatch({
+        type: 'UPDATE_TRACE',
+        id: objId,
+        patch: {
+          cutoutDataUrl: cutout,
+          inpaintDataUrl: null,
+          finalDataUrl: cutout,
+          status: 'done',
+        },
+      })
+      const traceStatus: TraceEntry['status'] = 'done'
+      console.log('[pipeline]', objId, 'edgeSam: ok', 'path:', path.length, 'box:', box)
 
       // 持久化到后端文件系统（成功失败都保存，不受 localStorage 5MB 限制）
       try {
         const saved = await saveTraceToBackend({
-          id: obj.id,
+          id: objId,
           ts: Date.now(),
-          label: items[0]?.label ?? '未知',
+          label: recognizedItem.label,
           status: traceStatus,
           bboxDataUrl,
-          inpaintDataUrl: inpainted,
-          finalDataUrl: inpainted,
+          inpaintDataUrl: null,
         })
         console.log('[pipeline] backend save:', saved ? 'ok' : 'fail')
       } catch (e) {
@@ -913,18 +1678,25 @@ function SessionLayer({
     }
     document.addEventListener('mousemove', onMove)
     document.addEventListener('mouseup', onUp)
+    document.addEventListener('pointermove', onMove)
+    document.addEventListener('pointerup', onUp)
+    document.addEventListener('pointercancel', onUp)
     document.addEventListener('touchmove', onTouchMove, { passive: false })
     document.addEventListener('touchend', onUp)
     return () => {
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
+      document.removeEventListener('pointermove', onMove)
+      document.removeEventListener('pointerup', onUp)
+      document.removeEventListener('pointercancel', onUp)
       document.removeEventListener('touchmove', onTouchMove)
       document.removeEventListener('touchend', onUp)
     }
   }, [state.selected.length])
 
   const startDraw = (e: React.PointerEvent) => {
-    if (scanning) return
+    if (recognizingRef.current) return
+    setRecognizeGuideVisible(false)
     const canvas = canvasRef.current
     if (canvas) {
       const dpr = window.devicePixelRatio || 1
@@ -944,143 +1716,172 @@ function SessionLayer({
     if (p) drawStrokeTo(p.x, p.y)
   }
 
-  const handleCraft = () => {
+  const handleCraft = async () => {
     if (state.selected.length === 0) return
-    const jobs: CraftJob[] = state.selected.map((obj) => {
-      const it = obj.items[0]
-      const category = (MOCK_OBJECTS.find((m) => m.label === it.label)?.label ?? '沙发') as FurnitureCategory
-      const color = CATEGORY_COLOR[category] ?? '#8d6e63'
-      return {
-        id: `craft-${obj.id}`,
-        name: it.label,
-        category,
-        snapshot: obj.snapshot,
-        color,
-        status: 'ordering' as const,
-      }
-    })
+    const selectedObjects = [...state.selected]
+    // 实时帧识别结果只辅助圈选，不自动进入小工坊。
+    // 小工坊的数据源始终是用户明确圈选并提交的对象。
+    const publicComponents: LibraryComponent[] = []
+    const customObjects = selectedObjects.filter((obj) => obj.source === 'custom')
+    onMascotModeChange('none')
     dispatch({ type: 'STORE' })
-    dispatch({ type: 'SHOW_ORDERING', count: jobs.length })
-    setTimeout(() => {
-      dispatch({ type: 'HIDE_ORDERING' })
-      dispatch({ type: 'START_CRAFT_BATCH', jobs })
-    }, 6000)
-  }
+    if (customObjects.length > 0) {
+      dispatch({ type: 'SHOW_ORDERING', count: customObjects.length })
+      onCraftDropped()
+    }
 
-  const makeContour = (label: string, w: number, h: number): { x: number; y: number }[] => {
-    const jitter = (v: number, r: number) => v + (Math.random() - 0.5) * 2 * r
-    const poly = (pts: [number, number][]) => pts.map(([nx, ny]) => ({ x: jitter(nx * w, w * 0.02), y: jitter(ny * h, h * 0.02) }))
-    switch (label) {
-      case '沙发':
-        return poly([[0.04, 0.30], [0.12, 0.12], [0.30, 0.05], [0.70, 0.05], [0.88, 0.12], [0.96, 0.30], [0.98, 0.62], [0.92, 0.95], [0.08, 0.95], [0.02, 0.62]])
-      case '茶几':
-        return poly([[0.08, 0.22], [0.20, 0.10], [0.80, 0.10], [0.92, 0.22], [0.96, 0.50], [0.88, 0.90], [0.12, 0.90], [0.04, 0.50]])
-      case '吊灯':
-        return poly([[0.42, 0.04], [0.58, 0.04], [0.66, 0.10], [0.90, 0.42], [0.96, 0.62], [0.80, 0.74], [0.20, 0.74], [0.04, 0.62], [0.10, 0.42], [0.34, 0.10]])
-      case '绿植':
-        return poly([[0.30, 0.04], [0.50, 0.02], [0.70, 0.04], [0.92, 0.20], [0.98, 0.40], [0.86, 0.55], [0.62, 0.60], [0.66, 0.80], [0.70, 0.96], [0.30, 0.96], [0.34, 0.80], [0.38, 0.60], [0.14, 0.55], [0.02, 0.40], [0.08, 0.20]])
-      case '装饰画':
-        return poly([[0.04, 0.06], [0.96, 0.04], [0.98, 0.94], [0.02, 0.96]])
-      case '地毯':
-        return poly([[0.06, 0.30], [0.16, 0.12], [0.84, 0.12], [0.94, 0.30], [0.98, 0.70], [0.90, 0.92], [0.10, 0.92], [0.02, 0.70]])
-      default:
-        return poly([[0.08, 0.08], [0.92, 0.08], [0.94, 0.92], [0.06, 0.94]])
+    let fallbackUsed = false
+    const jobs: CraftJob[] = await Promise.all(customObjects.map(async (obj) => {
+      const initialLabel = obj.items[0]?.label || '待分类家具'
+      const fallbackCategory = (MOCK_OBJECTS.find((item) => item.label === initialLabel)?.label ?? '其他') as FurnitureCategory
+      const fallbackJob: CraftJob = {
+        id: `craft-${obj.id}-0`,
+        name: initialLabel,
+        category: fallbackCategory,
+        snapshot: obj.snapshot,
+        color: CATEGORY_COLOR[fallbackCategory],
+        status: 'ordering',
+        backendMode: 'local-fallback',
+      }
+      try {
+        const submitted = await submitFalGeneration(obj.snapshot, initialLabel)
+        return {
+          ...fallbackJob,
+          backendMode: 'fal',
+          backendJobId: submitted.job_id,
+        }
+      } catch (error) {
+        fallbackUsed = true
+        console.warn('[FAL] submit unavailable; using local demo job', error)
+        return fallbackJob
+      }
+    }))
+
+    dispatch({ type: 'HIDE_ORDERING' })
+    dispatch({ type: 'START_CRAFT_BATCH', jobs, publicComponents, sourceFrame })
+    if (fallbackUsed) {
+      dispatch({ type: 'SHOW_TOAST', msg: '3D 服务暂时未连接，已保留本地演示结果。' })
     }
   }
 
-  const clipSnapshot = (box: { x: number; y: number; w: number; h: number }, contour: { x: number; y: number }[]): string => {
-    const video = document.querySelector<HTMLVideoElement>('.video')
-    if (!video) return ''
-    const t = coverTransform(video)
-    const sx = (box.x - t.offsetX) / t.scale
-    const sy = (box.y - t.offsetY) / t.scale
-    const sw = box.w / t.scale
-    const sh = box.h / t.scale
-    const tmp = document.createElement('canvas')
-    tmp.width = box.w
-    tmp.height = box.h
-    const tctx = tmp.getContext('2d')
-    if (!tctx) return ''
-    tctx.save()
-    tctx.beginPath()
-    contour.forEach((p, i) => (i === 0 ? tctx.moveTo(p.x, p.y) : tctx.lineTo(p.x, p.y)))
-    tctx.closePath()
-    tctx.clip()
-    tctx.drawImage(video, sx, sy, sw, sh, 0, 0, box.w, box.h)
-    tctx.restore()
-    return tmp.toDataURL('image/png')
-  }
-
-  const handleDetect = async () => {
-    if (scanning) return
-    setScanning(true)
-    const video = document.querySelector<HTMLVideoElement>('.video')
-    const base = Date.now()
-    const spots = [
-      { x: 30, y: 90, w: 110, h: 90 },
-      { x: 180, y: 150, w: 100, h: 95 },
-      { x: 80, y: 300, w: 120, h: 110 },
-    ]
-    const objs: SelectedObject[] = spots.map((s, i) => {
-      const idx = (state.selected.length + i) % MOCK_OBJECTS.length
-      const mock = MOCK_OBJECTS[idx]
-      const contour = makeContour(mock.label, s.w, s.h)
-      return {
-        id: `obj-${base}-${i}`,
-        box: s,
-        items: [{ label: mock.label, thumbnail: mock.thumbnail }],
-        snapshot: clipSnapshot(s, contour),
+  const endPickup = (e: React.PointerEvent) => {
+    const press = pressRef.current
+    if (!press || press.pointerId !== e.pointerId) return
+    e.preventDefault()
+    e.stopPropagation()
+    clearHoldTimer()
+    pressRef.current = null
+    if (pickup.phase === 'dragging') {
+      if (pickup.hovering) {
+        setPickup((current) => ({ ...current, phase: 'dropping' }))
+        onMascotModeChange('receiving')
+        window.setTimeout(() => { void handleCraft() }, 360)
+      } else {
+        setPickup((current) => ({ ...current, phase: 'returning', hovering: false }))
+        onMascotModeChange('none')
+        dispatch({ type: 'SHOW_TOAST', msg: '重新试试，再靠近一点就能放进来！' })
+        window.setTimeout(() => {
+          setPickup({ phase: 'idle', x: 0, y: 0, hovering: false })
+        }, 240)
       }
-    })
-    objs.forEach((obj) => dispatch({ type: 'OBJECT_RECOGNIZED', obj }))
-    setScanning(false)
+      return
+    }
 
-    await Promise.all(objs.map(async (obj, idx) => {
-      const s = spots[idx]
-      const contour = makeContour(obj.items[0].label, s.w, s.h)
-      if (!video) return
-      const bboxDataUrl = await captureBbox(video, s)
-      if (!bboxDataUrl) return
-      const bboxBlob = dataUrlToBlob(bboxDataUrl)
-      if (!bboxBlob) return
-      const inpainted = await inpaint(bboxBlob, s)
-      const sourceBlob = inpainted ? dataUrlToBlob(inpainted)! : bboxBlob
-      const cutout = await segmentCutout(sourceBlob)
-      if (!cutout) return
-      const screenPath = contour.map((c) => ({ x: c.x + s.x, y: c.y + s.y }))
-      try {
-        const masked = await applyPathMask(cutout, screenPath, s)
-        dispatch({ type: 'UPDATE_SNAPSHOT', id: obj.id, snapshot: masked })
-      } catch {
-        dispatch({ type: 'UPDATE_SNAPSHOT', id: obj.id, snapshot: cutout })
-      }
-    }))
+    // Pickup only begins on an opaque sticker pixel. A quick tap therefore
+    // selects the exact cutout it started on, never its transparent rectangle.
+    if (!movedRef.current) {
+      drawingRef.current = false
+      pathRef.current = []
+      bboxRef.current = null
+      const canvas = canvasRef.current
+      const context = canvas?.getContext('2d')
+      if (canvas && context) context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+      dispatch({ type: 'SELECT_OBJECT', id: press.objectId })
+    }
+    setPickup({ phase: 'idle', x: 0, y: 0, hovering: false })
+    onMascotModeChange('none')
   }
 
   return (
     <>
+      {sessionGuideMode && (
+        <SessionGuideOverlay
+          mode={sessionGuideMode}
+          focusBox={state.selected[0]?.box ?? null}
+          guideTarget={null}
+        />
+      )}
+
       <button className="top-play" onClick={() => dispatch({ type: 'RESUME' })}>
         ✕
       </button>
 
-      <button
-        className="trace-entry-btn"
-        onClick={() => dispatch({ type: 'SHOW_TRACE' })}
-      >
-        留痕 {state.traces.length}
-      </button>
+      {frameAssets.length > 0 && (
+        <button
+          type="button"
+          className="frame-assets-batch"
+          aria-label={`查看本次发现的 ${frameAssets.length} 件现成家具`}
+          aria-haspopup="dialog"
+          onClick={() => setFrameAssetsOpen(true)}
+        >
+          <img className="frame-assets-mascot" src="/mascot-discovery-banner.png" alt="" />
+          <svg className="frame-assets-sparkle" viewBox="0 0 42 42" aria-hidden="true">
+            <path d="M14 2c1.2 7.1 4.1 10 11.2 11.2C18.1 14.4 15.2 17.3 14 24.4 12.8 17.3 9.9 14.4 2.8 13.2 9.9 12 12.8 9.1 14 2Z" />
+            <path d="M31.5 4.5c.7 4.2 2.5 6 6.7 6.7-4.2.7-6 2.5-6.7 6.7-.7-4.2-2.5-6-6.7-6.7 4.2-.7 6-2.5 6.7-6.7Z" />
+          </svg>
+          <div className="frame-assets-copy">
+            <strong>本次发现 {frameAssets.length} 件现成家具</strong>
+            <span>点开看看这批灵感，稍后一起收进灵感库</span>
+          </div>
+          <div className="frame-assets-thumbs" aria-hidden="true">
+            {frameAssets.slice(0, 4).map((component) => (
+              <span key={component.id}><FurnitureAssetThumbnail component={component} /></span>
+            ))}
+            {frameAssets.length > 4 && <b>+{frameAssets.length - 4}</b>}
+          </div>
+          <span className="frame-assets-chevron" aria-hidden="true">›</span>
+        </button>
+      )}
+
+      {frameAssetsOpen && (
+        <FrameAssetsDrawer
+          assets={frameAssets}
+          favoriteIds={favoriteAssetIds}
+          onFavorite={onToggleFavoriteAsset}
+          onClose={() => setFrameAssetsOpen(false)}
+        />
+      )}
 
       <canvas
         ref={canvasRef}
-        className="draw-canvas"
+        className={`draw-canvas ${isRecognizing ? 'is-recognizing' : ''}`}
       />
 
-      {scanning && <div className="scan-overlay" />}
-
       <div
-        className="draw-layer"
-        onPointerDown={startDraw}
-        onPointerMove={(e) => updatePenTip(getCanvasPos(e.clientX, e.clientY))}
+        className={`draw-layer ${isRecognizing ? 'is-recognizing' : ''}`}
+        onPointerDown={(event) => {
+          const point = getCanvasPos(event.clientX, event.clientY)
+          const hit = point ? hitTestCutout(point) : null
+          if (hit) {
+            gestureModeRef.current = 'pickup'
+            beginPickup(event, hit)
+          } else {
+            gestureModeRef.current = 'drawing'
+            startDraw(event)
+          }
+        }}
+        onPointerMove={(event) => {
+          updatePenTip(getCanvasPos(event.clientX, event.clientY))
+          if (gestureModeRef.current === 'pickup') movePickup(event)
+        }}
+        onPointerUp={(event) => {
+          if (gestureModeRef.current === 'pickup') endPickup(event)
+          gestureModeRef.current = 'idle'
+        }}
+        onPointerCancel={(event) => {
+          if (gestureModeRef.current === 'pickup') endPickup(event)
+          gestureModeRef.current = 'idle'
+        }}
         onPointerLeave={() => updatePenTip(null)}
       />
 
@@ -1088,26 +1889,20 @@ function SessionLayer({
 
       <div
         className="object-layer"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            dispatch({ type: 'SELECT_OBJECT', id: null })
-          }
-        }}
       >
         {state.selected.map((obj) => (
           <div
             key={obj.id}
             className={`obj-card ${state.activeObjectId === obj.id ? 'active' : ''}`}
-            style={{ left: obj.box.x, top: obj.box.y, width: obj.box.w }}
-            onClick={(e) => {
-              e.stopPropagation()
-              dispatch({ type: 'SELECT_OBJECT', id: obj.id })
-            }}
+            style={{ left: obj.box.x, top: obj.box.y, width: obj.box.w, height: obj.box.h }}
           >
-            <div className="obj-card-img" style={{ backgroundImage: `url(${obj.snapshot})`, height: obj.box.h }} />
-            <div className="obj-card-label">
-              {obj.items.map((it) => `${it.thumbnail} ${it.label}`).join(' · ')}
-            </div>
+            <img
+              className="obj-card-cutout"
+              src={obj.snapshot}
+              alt="已抠出的家具"
+              draggable={false}
+              onLoad={(event) => cacheCutoutHitMask(obj.id, event.currentTarget)}
+            />
             {state.activeObjectId === obj.id && (
               <button
                 className="obj-x"
@@ -1129,31 +1924,31 @@ function SessionLayer({
         ))}
       </div>
 
-      {state.showFailHint && (
-        <div className="fail-hint">没识别到，重试一下</div>
+      {pickup.phase === 'pressing' && (
+        <div
+          className="pickup-hold-ring"
+          style={{ transform: `translate3d(${pickup.x - 19}px, ${pickup.y - 19}px, 0)` }}
+          aria-hidden="true"
+        />
       )}
 
-      <div className="collect-bar">
-        <div className="hint-text">
-          <span className="gesture-icon">✍️</span>
-          圈选或点识别全部，收集心动的家居
-        </div>
-        <div className="collect-row">
-          <button className="detect-chip" onClick={handleDetect}>
-            识别全部
-          </button>
-          <div className="store-group">
-            <span className="counter-pill">已摘 {state.selected.length}</span>
-            <button
-              className="store-btn"
-              disabled={state.selected.length === 0}
-              onClick={handleCraft}
-            >
-              去打造 →
-            </button>
+      {pickup.phase !== 'idle' && pickup.phase !== 'pressing' && (
+        <div
+          className={`pickup-card pickup-card--${pickup.phase} ${pickup.hovering ? 'is-hovering' : ''}`}
+          style={{ transform: `translate3d(${pickup.x - 28}px, ${pickup.y - 74}px, 0)` }}
+          aria-label={`拖动 ${collectionCount} 件家具`}
+        >
+          <div className="pickup-card-visual">
+            <span className="pickup-card-sheet pickup-card-sheet--back" />
+            <span className="pickup-card-sheet pickup-card-sheet--middle" />
+            <span className="pickup-card-sheet pickup-card-sheet--front">
+              <b>{collectionCount > 9 ? '9+' : collectionCount}</b>
+              <i className="pickup-card-dots"><em /><em /><em /></i>
+            </span>
           </div>
         </div>
-      </div>
+      )}
+
     </>
   )
 }
@@ -1184,13 +1979,11 @@ function ConfirmLayer({
 function PreviewLayer({
   selected,
   onClose,
-  onGoLibrary,
   onStartCraft,
   crafting,
 }: {
   selected: SelectedObject[]
   onClose: () => void
-  onGoLibrary: () => void
   onStartCraft: (objs: SelectedObject[]) => void
   crafting: boolean
 }) {
@@ -1214,9 +2007,6 @@ function PreviewLayer({
         ))}
       </div>
       <div className="preview-actions">
-        <button className="lib-btn" onClick={onGoLibrary}>
-          素材库
-        </button>
         <button
           className="craft-btn-main"
           disabled={crafting}
@@ -1270,7 +2060,6 @@ function TracePanel({
   standalone?: boolean
 }) {
   const [zoom, setZoom] = useState<{ src: string; cap: string } | null>(null)
-  const [stats, setStats] = useState<{ total: number; ok: number; failed: number; cost: number } | null>(null)
   // 后端历史 trace（图片存文件系统，不受 localStorage 限制）
   const [backendTraces, setBackendTraces] = useState<{
     id: string
@@ -1279,18 +2068,7 @@ function TracePanel({
     status: string
     has_bbox: boolean
     has_inpaint: boolean
-    has_final: boolean
   }[]>([])
-
-  const fetchStats = async () => {
-    try {
-      const res = await fetch('http://localhost:8001/api/stats')
-      const data = await res.json()
-      setStats(data.summary)
-    } catch {
-      /* 后端没起时静默 */
-    }
-  }
 
   // 从后端加载历史 trace 列表
   const fetchBackendTraces = async () => {
@@ -1309,10 +2087,8 @@ function TracePanel({
   }
 
   useEffect(() => {
-    fetchStats()
     fetchBackendTraces()
     const t = setInterval(() => {
-      fetchStats()
       fetchBackendTraces()
     }, 3000)
     return () => clearInterval(t)
@@ -1359,9 +2135,7 @@ function TracePanel({
             <rect x="0" y="0" width="${w}" height="${h}" fill="rgba(255,122,61,0.06)" stroke="#ff7a3d" stroke-width="3"/>
           </svg>`)}
           ${cell('bbox 原图', imgOr(t.bboxDataUrl))}
-          ${cell('补全产物', imgOr(t.inpaintDataUrl))}
-          ${cell('抠图产物', imgOr(t.cutoutDataUrl))}
-          ${cell('最终产物', imgOr(t.finalDataUrl))}
+          ${cell('EdgeSAM 抠图', imgOr(t.cutoutDataUrl))}
         </div>
       </div>`
     }).join('')
@@ -1379,7 +2153,7 @@ function TracePanel({
       .status.done { background:#e0f2f1; color:#00796b; }
       .status.failed { background:#ffebee; color:#c62828; }
       .status.pending { background:#fff8e1; color:#f57f17; }
-      .grid { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; }
+      .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
       .cell { background:#faf9f6; border-radius:10px; padding:8px; }
       .cap { font-size:11px; color:#999; margin-bottom:6px; text-align:center; }
       .cell svg, .cell img { width:100%; height:130px; object-fit:contain; display:block; background:
@@ -1427,15 +2201,6 @@ function TracePanel({
           <button className="trace-act close" onClick={onClose}>✕</button>
         </div>
       </div>
-      {stats && (
-        <div className="trace-stats">
-          <span className="trace-stat-item">AI 调用 <b>{stats.total}</b> 次</span>
-          <span className="trace-stat-item ok">成功 <b>{stats.ok}</b></span>
-          <span className="trace-stat-item fail">失败 <b>{stats.failed}</b></span>
-          <span className="trace-stat-item cost">预估成本 <b>¥{stats.cost.toFixed(2)}</b></span>
-          <span className="trace-stat-hint">（成本为估算，以百炼控制台为准，每 3s 自动刷新）</span>
-        </div>
-      )}
       <div className="trace-list">
         {traces.length === 0 && <div className="trace-empty">还没有留痕记录，圈选一个试试</div>}
         {traces.map((t, i) => {
@@ -1465,9 +2230,7 @@ function TracePanel({
                   </svg>
                 </div>
                 <Zoomable src={t.bboxDataUrl || null} cap="bbox 原图" failed={t.status === 'failed'} />
-                <Zoomable src={t.inpaintDataUrl} cap="补全产物" failed={t.status === 'failed'} />
-                <Zoomable src={t.cutoutDataUrl} cap="抠图产物" failed={t.status === 'failed'} />
-                <Zoomable src={t.finalDataUrl} cap="最终产物" failed={t.status === 'failed'} />
+                <Zoomable src={t.cutoutDataUrl} cap="EdgeSAM 抠图" failed={t.status === 'failed'} />
               </div>
             </div>
           )
@@ -1494,9 +2257,7 @@ function TracePanel({
                   <div className="trace-cell-empty">历史无框</div>
                 </div>
                 <Zoomable src={t.has_bbox ? traceImageUrl(t.id, 'bbox') : null} cap="bbox 原图" failed={t.status === 'failed'} />
-                <Zoomable src={t.has_inpaint ? traceImageUrl(t.id, 'inpaint') : null} cap="补全产物" failed={t.status === 'failed'} />
-                <Zoomable src={null} cap="抠图产物" failed={true} />
-                <Zoomable src={t.has_final ? traceImageUrl(t.id, 'final') : null} cap="最终产物" failed={t.status === 'failed'} />
+                <Zoomable src={t.has_inpaint ? traceImageUrl(t.id, 'inpaint') : null} cap="识别产物" failed={t.status === 'failed'} />
               </div>
             </div>
           )
