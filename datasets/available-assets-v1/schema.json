@@ -29,13 +29,40 @@
       "type": "string",
       "minLength": 1
     },
+    "source": {
+      "type": "object",
+      "required": [
+        "type",
+        "label",
+        "url"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "offline_photo"
+          ]
+        },
+        "label": {
+          "const": "线下拍照生成"
+        },
+        "url": {
+          "type": "null"
+        }
+      }
+    },
     "video_id": {
-      "type": "string",
-      "minLength": 1
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "appearances": {
       "type": "array",
-      "minItems": 1,
       "items": {
         "type": "object",
         "required": [
@@ -141,9 +168,77 @@
       ],
       "properties": {
         "verdict": {
-          "const": "pass"
+          "enum": [
+            "pass",
+            "not_required"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "reviewed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "source"
+        ],
+        "properties": {
+          "source": {
+            "properties": {
+              "type": {
+                "const": "offline_photo"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "video_id": {
+            "type": "null"
+          },
+          "appearances": {
+            "maxItems": 0
+          },
+          "review": {
+            "properties": {
+              "verdict": {
+                "const": "not_required"
+              },
+              "reviewed_at": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "video_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "appearances": {
+            "minItems": 1
+          },
+          "review": {
+            "properties": {
+              "verdict": {
+                "const": "pass"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

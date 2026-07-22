@@ -1,21 +1,22 @@
 {
   "schema_version": 1,
   "dataset_id": "available-assets-v1",
-  "generated_at": "2026-07-22T02:13:00.716941+00:00",
+  "generated_at": "2026-07-22T17:09:23.098449+00:00",
   "completeness_policy": {
     "status": "ready",
-    "human_review": "pass",
+    "human_review": "pass for video assets; not required for offline_photo assets",
     "physical_size_m": "included when known; null dimensions plus size_status=missing otherwise",
-    "video_id": "required",
-    "appearance_interval": "at least one interval with end_sec > start_sec",
+    "video_id": "required for video assets; null for offline_photo assets",
+    "appearance_interval": "at least one non-zero interval for video assets; empty for offline_photo assets",
     "completed_input": "required local file with SHA-256",
     "model_3d": "required local GLB with SHA-256",
     "geometry": "required parsed GLB metadata",
-    "track_ids_exposed": false
+    "track_ids_exposed": false,
+    "source_provenance": "offline_photo assets use source.type=offline_photo and label=线下拍照生成"
   },
-  "asset_count": 149,
+  "asset_count": 169,
   "size_known_count": 7,
-  "size_missing_count": 142,
+  "size_missing_count": 162,
   "video_count": 8,
   "assets": [
     {
@@ -59,6 +60,15 @@
       "video_id": "vid_5c7efd168eb7",
       "size_status": "missing",
       "record": "assets/ast_066a09702c58/asset.json"
+    },
+    {
+      "asset_id": "ast_06c83d58cb62",
+      "name": "胡桃木双层宠物窝边几",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_06c83d58cb62/asset.json"
     },
     {
       "asset_id": "ast_07ad0c3cef0c",
@@ -166,6 +176,15 @@
       "record": "assets/ast_22cf0d15bedd/asset.json"
     },
     {
+      "asset_id": "ast_23dd1b781087",
+      "name": "白色立式空调",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_23dd1b781087/asset.json"
+    },
+    {
       "asset_id": "ast_251c115561c7",
       "name": "花艺摆件",
       "video_id": "vid_182cbf77954d",
@@ -271,6 +290,15 @@
       "record": "assets/ast_3ae34f96cd4e/asset.json"
     },
     {
+      "asset_id": "ast_3d31fe60ee00",
+      "name": "奶油白人体工学办公椅",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_3d31fe60ee00/asset.json"
+    },
+    {
       "asset_id": "ast_3db63d01c4b9",
       "name": "盆栽植物",
       "video_id": "vid_182cbf77954d",
@@ -318,6 +346,15 @@
       "video_id": "vid_40734d7f2e6c",
       "size_status": "known",
       "record": "assets/ast_45226bd63340/asset.json"
+    },
+    {
+      "asset_id": "ast_47005d5bb062",
+      "name": "美式深色实木双联书柜",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_47005d5bb062/asset.json"
     },
     {
       "asset_id": "ast_47483320f59c",
@@ -390,6 +427,15 @@
       "record": "assets/ast_5229f072c636/asset.json"
     },
     {
+      "asset_id": "ast_526f65606601",
+      "name": "绿色软包波浪高靠背木床",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_526f65606601/asset.json"
+    },
+    {
       "asset_id": "ast_55361e0c8415",
       "name": "盆栽植物",
       "video_id": "vid_91fe552c5f7d",
@@ -416,6 +462,15 @@
       "video_id": "vid_5c7efd168eb7",
       "size_status": "missing",
       "record": "assets/ast_5994f5b4f77c/asset.json"
+    },
+    {
+      "asset_id": "ast_5b04b8b73171",
+      "name": "三层矩形吸顶灯",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_5b04b8b73171/asset.json"
     },
     {
       "asset_id": "ast_5b314219acf0",
@@ -537,11 +592,29 @@
       "record": "assets/ast_7a6844fdf7e6/asset.json"
     },
     {
+      "asset_id": "ast_7a8fbee4cbc2",
+      "name": "美式深色实木高柱床架",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_7a8fbee4cbc2/asset.json"
+    },
+    {
       "asset_id": "ast_7ad385273d1f",
       "name": "台灯",
       "video_id": "vid_5c7efd168eb7",
       "size_status": "missing",
       "record": "assets/ast_7ad385273d1f/asset.json"
+    },
+    {
+      "asset_id": "ast_7b10d7d4bdb6",
+      "name": "米白色布艺多人沙发",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_7b10d7d4bdb6/asset.json"
     },
     {
       "asset_id": "ast_7bbac9ee11d9",
@@ -586,6 +659,15 @@
       "record": "assets/ast_877b640e3d3c/asset.json"
     },
     {
+      "asset_id": "ast_88ceb53354e6",
+      "name": "深灰色狗形布艺儿童椅",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_88ceb53354e6/asset.json"
+    },
+    {
       "asset_id": "ast_8926f9413f29",
       "name": "床头桌",
       "video_id": "vid_40734d7f2e6c",
@@ -598,6 +680,15 @@
       "video_id": "vid_b75d95dc92a7",
       "size_status": "missing",
       "record": "assets/ast_8a6c621c6f5f/asset.json"
+    },
+    {
+      "asset_id": "ast_8aa72b6f028f",
+      "name": "原木色电视柜",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_8aa72b6f028f/asset.json"
     },
     {
       "asset_id": "ast_8ac797d254fe",
@@ -635,6 +726,15 @@
       "record": "assets/ast_95dd6f2a9f1a/asset.json"
     },
     {
+      "asset_id": "ast_97854ca2b58d",
+      "name": "现代一体式餐边柜",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_97854ca2b58d/asset.json"
+    },
+    {
       "asset_id": "ast_980f1a89dee5",
       "name": "洗衣机",
       "video_id": "vid_58a7a1504281",
@@ -656,6 +756,15 @@
       "record": "assets/ast_9afc1e9adbda/asset.json"
     },
     {
+      "asset_id": "ast_9b81d305c7aa",
+      "name": "米白色大地毯",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_9b81d305c7aa/asset.json"
+    },
+    {
       "asset_id": "ast_9c5579b81c97",
       "name": "吧台",
       "video_id": "vid_182cbf77954d",
@@ -668,6 +777,15 @@
       "video_id": "vid_5c7efd168eb7",
       "size_status": "missing",
       "record": "assets/ast_9c86b997e241/asset.json"
+    },
+    {
+      "asset_id": "ast_9d3dc36f80d6",
+      "name": "米白色花朵坐垫",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_9d3dc36f80d6/asset.json"
     },
     {
       "asset_id": "ast_9e221dde2c78",
@@ -724,6 +842,15 @@
       "video_id": "vid_182cbf77954d",
       "size_status": "missing",
       "record": "assets/ast_a7316084fd9c/asset.json"
+    },
+    {
+      "asset_id": "ast_ad67a8cd1fbf",
+      "name": "木质扶手软垫淋浴椅",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_ad67a8cd1fbf/asset.json"
     },
     {
       "asset_id": "ast_ae6d83d34fba",
@@ -796,6 +923,15 @@
       "record": "assets/ast_bca29a5798f3/asset.json"
     },
     {
+      "asset_id": "ast_be92a6195a80",
+      "name": "现代悬空一体式餐边柜",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_be92a6195a80/asset.json"
+    },
+    {
       "asset_id": "ast_c2313401d014",
       "name": "户外木椅",
       "video_id": "vid_5c7efd168eb7",
@@ -822,6 +958,15 @@
       "video_id": "vid_605df2fff231",
       "size_status": "missing",
       "record": "assets/ast_c708e898e8ab/asset.json"
+    },
+    {
+      "asset_id": "ast_cab487441837",
+      "name": "黑色平板电视",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_cab487441837/asset.json"
     },
     {
       "asset_id": "ast_cb57b5ec3ecf",
@@ -871,6 +1016,15 @@
       "video_id": "vid_58a7a1504281",
       "size_status": "missing",
       "record": "assets/ast_d51bc4042307/asset.json"
+    },
+    {
+      "asset_id": "ast_d5fa083d4fb4",
+      "name": "圆形双层木质藤编茶几",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_d5fa083d4fb4/asset.json"
     },
     {
       "asset_id": "ast_d60dbc13017f",
@@ -936,6 +1090,15 @@
       "record": "assets/ast_dd77d67b65bc/asset.json"
     },
     {
+      "asset_id": "ast_ddf364c7834d",
+      "name": "小型木质猫爬架",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_ddf364c7834d/asset.json"
+    },
+    {
       "asset_id": "ast_dec6af78617b",
       "name": "壁灯",
       "video_id": "vid_b75d95dc92a7",
@@ -985,6 +1148,15 @@
       "record": "assets/ast_ed2d44e09f94/asset.json"
     },
     {
+      "asset_id": "ast_ed6a1e7e7d4f",
+      "name": "弯曲木条休闲椅",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_ed6a1e7e7d4f/asset.json"
+    },
+    {
       "asset_id": "ast_edf646ab154c",
       "name": "盆栽植物",
       "video_id": "vid_5c7efd168eb7",
@@ -1025,6 +1197,15 @@
       "video_id": "vid_182cbf77954d",
       "size_status": "missing",
       "record": "assets/ast_f2d29b396fcd/asset.json"
+    },
+    {
+      "asset_id": "ast_f2ff866b688a",
+      "name": "原木色高书柜",
+      "source_type": "offline_photo",
+      "source_label": "线下拍照生成",
+      "video_id": null,
+      "size_status": "missing",
+      "record": "assets/ast_f2ff866b688a/asset.json"
     },
     {
       "asset_id": "ast_f4ad4e548d88",
@@ -1151,5 +1332,9 @@
         "sha256": "47ebaa592a1aeef1d7365e2d73e93fd054fc6d51a4145b5e0a4b1fbf5d5a8487"
       }
     }
-  ]
+  ],
+  "source_counts": {
+    "video": 149,
+    "offline_photo": 20
+  }
 }

@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_9d3dc36f80d6",
+  "source": {
+    "type": "offline_photo",
+    "label": "线下拍照生成",
+    "url": null
+  },
+  "video_id": null,
+  "appearances": [],
+  "name": "米白色花朵坐垫",
+  "space": "",
+  "type": {
+    "category": "装饰",
+    "subcategory": "靠垫"
+  },
+  "labels": {
+    "category": "装饰",
+    "sub": "靠垫",
+    "colors": [
+      "米白色"
+    ],
+    "materials": [
+      "布艺"
+    ],
+    "styles": [
+      "现代",
+      "奶油风"
+    ],
+    "features": [
+      "花朵形状",
+      "花瓣状设计",
+      "柔软填充"
+    ],
+    "size_class": "小",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.4980303645133972,
+      -0.0962800458073616,
+      -0.5001223683357239
+    ],
+    "bounds_max": [
+      0.5001495480537415,
+      0.030186748132109642,
+      0.5000218749046326
+    ],
+    "dimensions_model_unit": [
+      0.9981799125671387,
+      0.12646679393947124,
+      1.0001442432403564
+    ],
+    "center": [
+      0.0010595917701721191,
+      -0.03304664883762598,
+      -5.02467155456543e-05
+    ],
+    "vertex_count": 6688,
+    "triangle_count": 10578,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.0010595917701721191,
+        -0.03304664883762598,
+        -5.02467155456543e-05
+      ],
+      "dimensions": [
+        0.9981799125671387,
+        0.12646679393947124,
+        1.0001442432403564
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.0962800458073616,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-22T16:54:35.049872+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_9d3dc36f80d6/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 113276,
+      "sha256": "e5c92af03c3401cb3c5afc1eaaa8a0ea2d9d7cf8e2901236743ab1eddd595150",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_9d3dc36f80d6/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 49844,
+      "sha256": "68fdfc9f81e7c1cb960dfbc679627a97dcb9fa4e35a71375f47b2a7556b40109"
+    },
+    "completed_input": {
+      "path": "assets/ast_9d3dc36f80d6/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1430538,
+      "sha256": "0906ce0d822749bab385e52728a7af84d93cf83c41f30ffeaaf5fb02ee43cac0",
+      "width_px": 872,
+      "height_px": 1201
+    },
+    "model_3d": {
+      "path": "assets/ast_9d3dc36f80d6/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1520788,
+      "sha256": "138d9773eefc6174e07ce58ca74df2339c51bbc356b5dcb9a7b4956b94f2ac80"
+    }
+  },
+  "review": {
+    "verdict": "not_required",
+    "reason": "C 端线下拍照生成资产，不需要人工审核",
+    "reviewed_at": null
+  },
+  "created_by": "annotation",
+  "created_at": "2026-07-22T15:22:41.169751+00:00"
+}

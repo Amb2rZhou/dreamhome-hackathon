@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_8aa72b6f028f",
+  "source": {
+    "type": "offline_photo",
+    "label": "线下拍照生成",
+    "url": null
+  },
+  "video_id": null,
+  "appearances": [],
+  "name": "原木色电视柜",
+  "space": "",
+  "type": {
+    "category": "柜子",
+    "subcategory": "电视柜"
+  },
+  "labels": {
+    "category": "柜子",
+    "sub": "电视柜",
+    "colors": [
+      "浅木色",
+      "棕色"
+    ],
+    "materials": [
+      "实木"
+    ],
+    "styles": [
+      "现代",
+      "北欧"
+    ],
+    "features": [
+      "带抽屉",
+      "细腿",
+      "中部镂空格栅",
+      "对称设计",
+      "简洁线条"
+    ],
+    "size_class": "大",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.5002977252006531,
+      -0.15005084872245789,
+      -0.13309113681316376
+    ],
+    "bounds_max": [
+      0.5002718567848206,
+      0.14617879688739777,
+      0.12746313214302063
+    ],
+    "dimensions_model_unit": [
+      1.0005695819854736,
+      0.29622964560985565,
+      0.2605542689561844
+    ],
+    "center": [
+      -1.2934207916259766e-05,
+      -0.0019360259175300598,
+      -0.0028140023350715637
+    ],
+    "vertex_count": 3870,
+    "triangle_count": 5664,
+    "collision": {
+      "type": "box",
+      "center": [
+        -1.2934207916259766e-05,
+        -0.0019360259175300598,
+        -0.0028140023350715637
+      ],
+      "dimensions": [
+        1.0005695819854736,
+        0.29622964560985565,
+        0.2605542689561844
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.15005084872245789,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-22T16:54:28.250962+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_8aa72b6f028f/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 155890,
+      "sha256": "ee5b5333116849545b78ee8086f428fc8ee86ff83f38c15f121e1f27f0defa3d",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_8aa72b6f028f/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 70104,
+      "sha256": "6777cb44efe5148d40bbfe2bf701a34251d030ebdb1263280c9772b88c72d8cc"
+    },
+    "completed_input": {
+      "path": "assets/ast_8aa72b6f028f/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1231550,
+      "sha256": "99a5773bb047780cd587521de8a316760f875a24655e2bc271c2e9fa23ba2581",
+      "width_px": 786,
+      "height_px": 1332
+    },
+    "model_3d": {
+      "path": "assets/ast_8aa72b6f028f/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1307008,
+      "sha256": "a89a650aad88ba6bb16215c6b8bb88d9538881c3ce0dcb7811d30036bcde48ca"
+    }
+  },
+  "review": {
+    "verdict": "not_required",
+    "reason": "C 端线下拍照生成资产，不需要人工审核",
+    "reviewed_at": null
+  },
+  "created_by": "annotation",
+  "created_at": "2026-07-22T15:21:59.451381+00:00"
+}

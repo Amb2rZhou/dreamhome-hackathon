@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_526f65606601",
+  "source": {
+    "type": "offline_photo",
+    "label": "线下拍照生成",
+    "url": null
+  },
+  "video_id": null,
+  "appearances": [],
+  "name": "绿色软包波浪高靠背木床",
+  "space": "",
+  "type": {
+    "category": "床",
+    "subcategory": "双人床"
+  },
+  "labels": {
+    "category": "床",
+    "sub": "双人床",
+    "colors": [
+      "绿色",
+      "白色",
+      "原木色"
+    ],
+    "materials": [
+      "布艺",
+      "实木"
+    ],
+    "styles": [
+      "北欧",
+      "现代"
+    ],
+    "features": [
+      "波浪形床头",
+      "低矮床架",
+      "带抽屉床体",
+      "软包靠背",
+      "细腿设计"
+    ],
+    "size_class": "大",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.5003589987754822,
+      -0.30772480368614197,
+      -0.4884966015815735
+    ],
+    "bounds_max": [
+      0.5006489753723145,
+      0.3027905225753784,
+      0.4996182322502136
+    ],
+    "dimensions_model_unit": [
+      1.0010079741477966,
+      0.6105153262615204,
+      0.9881148338317871
+    ],
+    "center": [
+      0.0001449882984161377,
+      -0.002467140555381775,
+      0.005560815334320068
+    ],
+    "vertex_count": 27942,
+    "triangle_count": 39739,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.0001449882984161377,
+        -0.002467140555381775,
+        0.005560815334320068
+      ],
+      "dimensions": [
+        1.0010079741477966,
+        0.6105153262615204,
+        0.9881148338317871
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.30772480368614197,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-22T16:55:58.836460+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_526f65606601/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 88673,
+      "sha256": "c21143e1d12dd0813e1434e327040225cdfeae161f24ad0fb89b20da299a0297",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_526f65606601/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 43721,
+      "sha256": "253523ee4045d83985968ca35848a02b67d91e7667995d7d4b7b3cd02630f54f"
+    },
+    "completed_input": {
+      "path": "assets/ast_526f65606601/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1396992,
+      "sha256": "5aceb48910d0af2f28e3fd5572409d03c5fc5fc2a426314af22e04e55e50c5bb",
+      "width_px": 891,
+      "height_px": 1175
+    },
+    "model_3d": {
+      "path": "assets/ast_526f65606601/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 2286592,
+      "sha256": "95a325eda0942baa014347114147e4d3e90b30d671f52cbff83ec321786adae1"
+    }
+  },
+  "review": {
+    "verdict": "not_required",
+    "reason": "C 端线下拍照生成资产，不需要人工审核",
+    "reviewed_at": null
+  },
+  "created_by": "annotation",
+  "created_at": "2026-07-22T16:30:16.888945+00:00"
+}

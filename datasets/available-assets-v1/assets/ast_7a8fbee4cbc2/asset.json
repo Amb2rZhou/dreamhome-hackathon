@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_7a8fbee4cbc2",
+  "source": {
+    "type": "offline_photo",
+    "label": "线下拍照生成",
+    "url": null
+  },
+  "video_id": null,
+  "appearances": [],
+  "name": "美式深色实木高柱床架",
+  "space": "",
+  "type": {
+    "category": "床",
+    "subcategory": "双人床"
+  },
+  "labels": {
+    "category": "床",
+    "sub": "双人床",
+    "colors": [
+      "棕色",
+      "白色",
+      "米色"
+    ],
+    "materials": [
+      "实木",
+      "布艺"
+    ],
+    "styles": [
+      "复古"
+    ],
+    "features": [
+      "高床头",
+      "雕花立柱",
+      "弧形床头",
+      "带床尾板",
+      "铺有花纹床品"
+    ],
+    "size_class": "大",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.4226698577404022,
+      -0.3413151204586029,
+      -0.4994105398654938
+    ],
+    "bounds_max": [
+      0.42041125893592834,
+      0.3254409730434418,
+      0.49790287017822266
+    ],
+    "dimensions_model_unit": [
+      0.8430811166763306,
+      0.6667560935020447,
+      0.9973134100437164
+    ],
+    "center": [
+      -0.0011292994022369385,
+      -0.007937073707580566,
+      -0.0007538348436355591
+    ],
+    "vertex_count": 6346,
+    "triangle_count": 9174,
+    "collision": {
+      "type": "box",
+      "center": [
+        -0.0011292994022369385,
+        -0.007937073707580566,
+        -0.0007538348436355591
+      ],
+      "dimensions": [
+        0.8430811166763306,
+        0.6667560935020447,
+        0.9973134100437164
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.3413151204586029,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-22T16:55:54.218261+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_7a8fbee4cbc2/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 147643,
+      "sha256": "3ac74c2b52c72035e8e9507d031da35ee962441c368f2103fb06c38ef3b93071",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_7a8fbee4cbc2/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 79213,
+      "sha256": "d56ca8afa090be9344e036bbc561a02ae778c08bc7be5c47feff675c0740f583"
+    },
+    "completed_input": {
+      "path": "assets/ast_7a8fbee4cbc2/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1419679,
+      "sha256": "9a6e7dfce16e62b66fdf35ca45b638491f3deb564672c9e49ccd22407b7900bd",
+      "width_px": 1143,
+      "height_px": 915
+    },
+    "model_3d": {
+      "path": "assets/ast_7a8fbee4cbc2/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1473264,
+      "sha256": "63bd060a1b6acda1a5b2f5360c44f7c1951240209393bad8035a424997fe9a4a"
+    }
+  },
+  "review": {
+    "verdict": "not_required",
+    "reason": "C 端线下拍照生成资产，不需要人工审核",
+    "reviewed_at": null
+  },
+  "created_by": "annotation",
+  "created_at": "2026-07-22T16:29:29.658839+00:00"
+}

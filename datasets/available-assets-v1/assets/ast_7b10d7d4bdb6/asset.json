@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_7b10d7d4bdb6",
+  "source": {
+    "type": "offline_photo",
+    "label": "线下拍照生成",
+    "url": null
+  },
+  "video_id": null,
+  "appearances": [],
+  "name": "米白色布艺多人沙发",
+  "space": "",
+  "type": {
+    "category": "沙发",
+    "subcategory": "三人沙发"
+  },
+  "labels": {
+    "category": "沙发",
+    "sub": "三人沙发",
+    "colors": [
+      "米色"
+    ],
+    "materials": [
+      "布艺"
+    ],
+    "styles": [
+      "现代",
+      "奶油风"
+    ],
+    "features": [
+      "簇绒",
+      "带靠垫",
+      "直角扶手",
+      "低矮设计"
+    ],
+    "size_class": "大",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.4999845027923584,
+      -0.15123653411865234,
+      -0.1821601390838623
+    ],
+    "bounds_max": [
+      0.4997272491455078,
+      0.1532837450504303,
+      0.188063845038414
+    ],
+    "dimensions_model_unit": [
+      0.9997117519378662,
+      0.30452027916908264,
+      0.3702239841222763
+    ],
+    "center": [
+      -0.00012862682342529297,
+      0.001023605465888977,
+      0.0029518529772758484
+    ],
+    "vertex_count": 5998,
+    "triangle_count": 8840,
+    "collision": {
+      "type": "box",
+      "center": [
+        -0.00012862682342529297,
+        0.001023605465888977,
+        0.0029518529772758484
+      ],
+      "dimensions": [
+        0.9997117519378662,
+        0.30452027916908264,
+        0.3702239841222763
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.15123653411865234,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-22T16:54:03.991273+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_7b10d7d4bdb6/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 158175,
+      "sha256": "334b7787951f5d4d2b042f97b97e4472b644783d572c87accd6d4ef34c2aaabb",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_7b10d7d4bdb6/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 57697,
+      "sha256": "caf3e142cbc1e1764d5e09de1ea55fefccab3c33001b1afea8547b56de368c56"
+    },
+    "completed_input": {
+      "path": "assets/ast_7b10d7d4bdb6/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1359875,
+      "sha256": "56d3cb528809ea7d8d90658f2ca5cd962a6924e722cf0916c68894ba60bb563e",
+      "width_px": 768,
+      "height_px": 1455
+    },
+    "model_3d": {
+      "path": "assets/ast_7b10d7d4bdb6/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1344232,
+      "sha256": "0180ffa48397103c0827ab459c10b70d62d707048f8b65bf33d6c7f1334f5e38"
+    }
+  },
+  "review": {
+    "verdict": "not_required",
+    "reason": "C 端线下拍照生成资产，不需要人工审核",
+    "reviewed_at": null
+  },
+  "created_by": "annotation",
+  "created_at": "2026-07-22T15:19:36.665406+00:00"
+}

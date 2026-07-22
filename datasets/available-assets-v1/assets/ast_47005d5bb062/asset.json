@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_47005d5bb062",
+  "source": {
+    "type": "offline_photo",
+    "label": "线下拍照生成",
+    "url": null
+  },
+  "video_id": null,
+  "appearances": [],
+  "name": "美式深色实木双联书柜",
+  "space": "",
+  "type": {
+    "category": "柜子",
+    "subcategory": "书柜"
+  },
+  "labels": {
+    "category": "柜子",
+    "sub": "书柜",
+    "colors": [
+      "深棕色"
+    ],
+    "materials": [
+      "实木"
+    ],
+    "styles": [
+      "复古"
+    ],
+    "features": [
+      "带抽屉",
+      "多层隔板",
+      "金属拉手",
+      "对称设计",
+      "顶部装饰空间"
+    ],
+    "size_class": "大",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.5004444718360901,
+      -0.5003182291984558,
+      -0.11259257793426514
+    ],
+    "bounds_max": [
+      0.5003665685653687,
+      0.5004065632820129,
+      0.10144904255867004
+    ],
+    "dimensions_model_unit": [
+      1.0008110404014587,
+      1.0007247924804688,
+      0.21404162049293518
+    ],
+    "center": [
+      -3.8951635360717773e-05,
+      4.416704177856445e-05,
+      -0.005571767687797546
+    ],
+    "vertex_count": 11657,
+    "triangle_count": 19727,
+    "collision": {
+      "type": "box",
+      "center": [
+        -3.8951635360717773e-05,
+        4.416704177856445e-05,
+        -0.005571767687797546
+      ],
+      "dimensions": [
+        1.0008110404014587,
+        1.0007247924804688,
+        0.21404162049293518
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.5003182291984558,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-22T16:54:51.796616+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_47005d5bb062/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 112538,
+      "sha256": "2f9a978dc6df7495c48c6030ae9f76ec162e16b8f178b4ed53aaaa9c3c24299d",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_47005d5bb062/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 70693,
+      "sha256": "5a27df79fb733f7b26442ef86da5164e8567f599fb9c9af317ca2644b9a778d2"
+    },
+    "completed_input": {
+      "path": "assets/ast_47005d5bb062/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1398966,
+      "sha256": "0858626f4c87da5dceca8d8c042c667869b66d690dafb4531dd162ee1e4ca44e",
+      "width_px": 968,
+      "height_px": 1081
+    },
+    "model_3d": {
+      "path": "assets/ast_47005d5bb062/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1541832,
+      "sha256": "afa3f6f5590114f5944231e163c4dde9225b9e2280b4074b7967d068c2a91bcc"
+    }
+  },
+  "review": {
+    "verdict": "not_required",
+    "reason": "C 端线下拍照生成资产，不需要人工审核",
+    "reviewed_at": null
+  },
+  "created_by": "annotation",
+  "created_at": "2026-07-22T16:25:58.869763+00:00"
+}

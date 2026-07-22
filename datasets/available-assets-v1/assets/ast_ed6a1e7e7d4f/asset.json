@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_ed6a1e7e7d4f",
+  "source": {
+    "type": "offline_photo",
+    "label": "线下拍照生成",
+    "url": null
+  },
+  "video_id": null,
+  "appearances": [],
+  "name": "弯曲木条休闲椅",
+  "space": "",
+  "type": {
+    "category": "单椅",
+    "subcategory": "休闲椅"
+  },
+  "labels": {
+    "category": "单椅",
+    "sub": "休闲椅",
+    "colors": [
+      "棕色"
+    ],
+    "materials": [
+      "实木"
+    ],
+    "styles": [
+      "现代",
+      "北欧"
+    ],
+    "features": [
+      "条状靠背",
+      "弧形椅面",
+      "木质框架",
+      "无扶手",
+      "细腿"
+    ],
+    "size_class": "中",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.48265790939331055,
+      -0.2969050109386444,
+      -0.2118483930826187
+    ],
+    "bounds_max": [
+      0.483085960149765,
+      0.29398077726364136,
+      0.19241073727607727
+    ],
+    "dimensions_model_unit": [
+      0.9657438695430756,
+      0.5908857882022858,
+      0.404259130358696
+    ],
+    "center": [
+      0.0002140253782272339,
+      -0.0014621168375015259,
+      -0.009718827903270721
+    ],
+    "vertex_count": 15647,
+    "triangle_count": 16967,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.0002140253782272339,
+        -0.0014621168375015259,
+        -0.009718827903270721
+      ],
+      "dimensions": [
+        0.9657438695430756,
+        0.5908857882022858,
+        0.404259130358696
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.2969050109386444,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-22T16:55:40.791599+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_ed6a1e7e7d4f/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 58242,
+      "sha256": "8fd99a2f949d1c0cb279c342c26b637088aa46c00bdeee1b4f3d95ad5c3b70d5",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_ed6a1e7e7d4f/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 35719,
+      "sha256": "c9b41b37e2a2ca91d50a5577987e8867e6b29e1692f41bfab3b1b929a157cbe2"
+    },
+    "completed_input": {
+      "path": "assets/ast_ed6a1e7e7d4f/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1394876,
+      "sha256": "9780c3f605e43de32da6a35f24d202a6b1428e4786400c9744b8de664e9cfcaa",
+      "width_px": 908,
+      "height_px": 1153
+    },
+    "model_3d": {
+      "path": "assets/ast_ed6a1e7e7d4f/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 2013748,
+      "sha256": "15017fd5901da2c4aeec6cdbcb969b64dc1aec7d75ea0d1c3ca23697f6c1e1fb"
+    }
+  },
+  "review": {
+    "verdict": "not_required",
+    "reason": "C 端线下拍照生成资产，不需要人工审核",
+    "reviewed_at": null
+  },
+  "created_by": "annotation",
+  "created_at": "2026-07-22T16:27:17.927499+00:00"
+}
