@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "batch": "qc_direct_3d_2026-07-22",
+  "failed": 3,
+  "items": [
+    {
+      "asset_id": "ast_4fd1300eef86",
+      "name": "餐桌",
+      "category": "桌子",
+      "verdict": "fail",
+      "reason": "",
+      "video_id": "vid_58a7a1504281",
+      "representative_sec": 8.5,
+      "segments": [
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 3.5,
+          "t_end": 9.5,
+          "representative_t": 8.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 30.5,
+          "t_end": 32.5,
+          "representative_t": 31.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 32.5,
+          "t_end": 34.0,
+          "representative_t": 33.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 45.5,
+          "t_end": 48.5,
+          "representative_t": 47.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 49.0,
+          "t_end": 56.5,
+          "representative_t": 56.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 80.5,
+          "t_end": 81.0,
+          "representative_t": 80.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 81.0,
+          "t_end": 81.5,
+          "representative_t": 81.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 81.5,
+          "t_end": 82.0,
+          "representative_t": 82.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 82.0,
+          "t_end": 82.5,
+          "representative_t": 82.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 84.5,
+          "t_end": 85.0,
+          "representative_t": 84.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 85.5,
+          "t_end": 86.0,
+          "representative_t": 86.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 86.5,
+          "t_end": 87.5,
+          "representative_t": 86.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 94.5,
+          "t_end": 96.5,
+          "representative_t": 94.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 144.0,
+          "t_end": 145.0,
+          "representative_t": 145.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 144.5,
+          "t_end": 145.5,
+          "representative_t": 145.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 145.0,
+          "t_end": 146.0,
+          "representative_t": 146.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 145.5,
+          "t_end": 146.5,
+          "representative_t": 145.5
+        }
+      ],
+      "model_path": "/storage/models/96c7f3d5f8ba48c680d830b86ce96517.glb",
+      "model_sha256": "a151481c774e272ef67790497cf6c5a3ea96c489cdb6d7429273e5c7c26b4d62",
+      "dimensions": [
+        0.9989169836044312,
+        0.3594248294830322,
+        0.4957709014415741
+      ],
+      "vertex_count": 5477,
+      "triangle_count": 8570,
+      "generated_at": "2026-07-22T12:59:50.051379+00:00",
+      "reviewed_at": "2026-07-22T13:03:25.650405+00:00"
+    },
+    {
+      "asset_id": "ast_a4807b023418",
+      "name": "镜子",
+      "category": "装饰",
+      "verdict": "fail",
+      "reason": "",
+      "video_id": "vid_182cbf77954d",
+      "representative_sec": 39.5,
+      "segments": [
+        {
+          "video_id": "vid_182cbf77954d",
+          "t_start": 37.0,
+          "t_end": 39.5,
+          "representative_t": 39.5
+        }
+      ],
+      "model_path": "/storage/models/3b7e3e5a53fa48c5824f533bb3722ff9.glb",
+      "model_sha256": "ce6cf85284c33a8169f0c6fdbba25ee65f3bfcb85d6d57417b7a4325f1a6d49a",
+      "dimensions": [
+        0.6606636047363281,
+        1.0006324350833893,
+        0.3634183555841446
+      ],
+      "vertex_count": 16434,
+      "triangle_count": 27366,
+      "generated_at": "2026-07-22T12:38:48.443237+00:00",
+      "reviewed_at": "2026-07-22T12:49:13.135616+00:00"
+    },
+    {
+      "asset_id": "ast_cfaa5917ba1e",
+      "name": "柜子",
+      "category": "柜子",
+      "verdict": "fail",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 47.0,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 46.5,
+          "t_end": 47.0,
+          "representative_t": 47.0
+        }
+      ],
+      "model_path": "/storage/models/d7feee6a73064f3c95c1fa6357063f7d.glb",
+      "model_sha256": "b5b8d7f4a94a0b14da8fefa268eed6470cd62fdcd5ed8711f73bab984a62b959",
+      "dimensions": [
+        1.0007638931274414,
+        0.9320001006126404,
+        0.35800081491470337
+      ],
+      "vertex_count": 18136,
+      "triangle_count": 27966,
+      "generated_at": "2026-07-22T12:51:31.685732+00:00",
+      "reviewed_at": "2026-07-22T13:07:05.615868+00:00"
+    }
+  ]
+}
