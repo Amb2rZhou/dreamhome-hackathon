@@ -47,7 +47,6 @@ interface State {
   showCollectionDetail: boolean
   craftStartTip: boolean
   craftStartTipShown: boolean
-  orderingCount: number
   traces: TraceEntry[]
   showTrace: boolean
 }
@@ -94,8 +93,6 @@ type Action =
   | { type: 'START_CRAFT_BATCH'; jobs: CraftJob[]; publicComponents?: LibraryComponent[] }
   | { type: 'CRAFT_ORDERING_DONE'; id: string }
   | { type: 'HIDE_CRAFT_START_TIP' }
-  | { type: 'SHOW_ORDERING'; count: number }
-  | { type: 'HIDE_ORDERING' }
   | { type: 'CRAFT_DONE'; id: string; component: LibraryComponent }
   | { type: 'CRAFT_PROGRESS'; id: string; progress: number; stage?: string }
   | { type: 'CRAFT_FAILED'; id: string; error: string; stage?: string }
@@ -131,7 +128,6 @@ const initialState: State = {
   craftStartTip: false,
   craftStartTipShown: false,
   batches: [],
-  orderingCount: 0,
   traces: loadTraces(),
   showTrace: window.location.hash === '#/trace',
 }
@@ -319,10 +315,6 @@ function reducer(state: State, action: Action): State {
     }
     case 'HIDE_CRAFT_START_TIP':
       return { ...state, craftStartTip: false }
-    case 'SHOW_ORDERING':
-      return { ...state, orderingCount: action.count }
-    case 'HIDE_ORDERING':
-      return { ...state, orderingCount: 0 }
     case 'CRAFT_DONE': {
       if (state.currentCraft?.id !== action.id) return state
       const doneJob: CraftJob = { ...state.currentCraft, status: 'done', resultComponent: action.component }
@@ -764,8 +756,6 @@ function App() {
           <ToastLifetime msg={state.toast} onDone={() => dispatch({ type: 'HIDE_TOAST' })} />
         )}
 
-        {state.orderingCount > 0 && <OrderingOverlay count={state.orderingCount} />}
-
         <Mascot
           state={state.mascot}
           awaitingCollectionView={awaitingCollectionView}
@@ -837,11 +827,8 @@ function App() {
                   status: 'ordering' as const,
                 }
               })
-              dispatch({ type: 'SHOW_ORDERING', count: jobs.length })
-              setTimeout(() => {
-                dispatch({ type: 'HIDE_ORDERING' })
-                dispatch({ type: 'START_CRAFT_BATCH', jobs, publicComponents })
-              }, 6000)
+              dispatch({ type: 'SHOW_TOAST', msg: '已收到，正在创建 3D 任务…' })
+              dispatch({ type: 'START_CRAFT_BATCH', jobs, publicComponents })
             }}
             crafting={!!state.currentCraft}
           />
@@ -1769,7 +1756,7 @@ function SessionLayer({
     onMascotModeChange('none')
     dispatch({ type: 'STORE' })
     if (customObjects.length > 0) {
-      dispatch({ type: 'SHOW_ORDERING', count: customObjects.length })
+      dispatch({ type: 'SHOW_TOAST', msg: '已收到，正在创建 3D 任务…' })
       onCraftDropped()
     }
 
@@ -1840,7 +1827,6 @@ function SessionLayer({
       }
     }))
 
-    dispatch({ type: 'HIDE_ORDERING' })
     dispatch({ type: 'START_CRAFT_BATCH', jobs, publicComponents })
   }
 
@@ -2094,23 +2080,6 @@ function PreviewLayer({
         >
           去打造 →
         </button>
-      </div>
-    </div>
-  )
-}
-
-function OrderingOverlay({ count }: { count: number }) {
-  return (
-    <div className="ordering-overlay">
-      <div className="ordering-box">
-        <div className="ordering-stage">
-          <img className="ordering-mascot" src="/mascot-thinking.png" alt="" />
-        </div>
-        <div className="ordering-text-main">包公球接单中…</div>
-        <div className="ordering-text-sub">正在确认 {count} 件家具的打造任务</div>
-        <div className="ordering-progress">
-          <div className="ordering-progress-bar" />
-        </div>
       </div>
     </div>
   )
