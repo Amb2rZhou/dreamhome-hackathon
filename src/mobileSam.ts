@@ -25,7 +25,7 @@ export type EdgeSamResult = {
 
 const MODEL_LONG_SIDE = 1024
 const FRAME_RENDER_SCALE = 2
-const STICKER_RENDER_SCALE = 1.5
+const STICKER_RENDER_SCALE = 1
 const ENCODER_URL = '/models/edge_sam_3x_encoder.onnx'
 const DECODER_URL = '/models/edge_sam_3x_decoder.onnx'
 const PIXEL_MEAN = [123.675, 116.28, 103.53] as const
@@ -253,6 +253,12 @@ function pointInPolygon(point: Point, path: Point[]): boolean {
     if (crosses) inside = !inside
   }
   return inside
+}
+
+function simplifyPathForScoring(path: Point[], maxPoints = 56): Point[] {
+  if (path.length <= maxPoints) return path
+  const step = path.length / maxPoints
+  return Array.from({ length: maxPoints }, (_, index) => path[Math.floor(index * step)])
 }
 
 function rasterizePolygonMask(path: Point[], box: Box, width: number, height: number): Uint8Array {
@@ -887,7 +893,7 @@ function renderCutout(
   const borderRadius = 3.94 * STICKER_RENDER_SCALE
   // Dense radial sampling makes the expanded outline a continuous ribbon
   // instead of a chain of offset silhouettes with visible scallops.
-  const outlineSamples = 36
+  const outlineSamples = 24
   for (let index = 0; index < outlineSamples; index++) {
     const angle = index / outlineSamples * Math.PI * 2
     const offsetX = Math.cos(angle) * borderRadius
@@ -1268,7 +1274,9 @@ export async function segmentWithEdgeSam(
     ...boundaryPromptSets.slice(0, 1),
   ]
   const negativePrompts = buildNegativePrompts(path, box)
+  const scoringPath = simplifyPathForScoring(path)
   const decodedSets: DecodedSet[] = []
+  let rankedCandidates: ReturnType<typeof rankCandidates> | null = null
   for (let promptSetIndex = 0; promptSetIndex < positivePromptSets.length; promptSetIndex++) {
     const positivePrompts = positivePromptSets[promptSetIndex]
     const decoded = await decodeCandidates(
@@ -1280,13 +1288,16 @@ export async function segmentWithEdgeSam(
     // The centre prompt is normally sufficient. Only pay for the boundary
     // decoder when all centre candidates fail the same quality gates used by
     // the final selector.
-    if (
-      promptSetIndex === 0
-      && rankCandidates(decodedSets, frame, box, renderBox, path).some(({ metrics }) => isPlausibleCandidate(metrics))
-    ) break
+    if (promptSetIndex === 0) {
+      const centreRanked = rankCandidates(decodedSets, frame, box, renderBox, scoringPath)
+      if (centreRanked.some(({ metrics }) => isPlausibleCandidate(metrics))) {
+        rankedCandidates = centreRanked
+        break
+      }
+    }
   }
   const decodedAt = performance.now()
-  const rankedCandidates = rankCandidates(decodedSets, frame, box, renderBox, path)
+  rankedCandidates ??= rankCandidates(decodedSets, frame, box, renderBox, scoringPath)
 
   // Never surface an obviously wrong mask just because it ranked first among
   // weak candidates. Try the next plausible candidate; if none is clean enough
