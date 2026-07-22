@@ -182,6 +182,7 @@ const CAT_MAP = { '沙发':'sofa', '单椅':'seating', '床':'bed', '桌子':'ta
 const PRIM_MAP = { sofa:'sofa', seating:'chair', bed:'bed', table:'table', cabinet:'cabinet',
                    lighting:'lamp', decor:'plant', bathroom:'cabinet' };
 export async function syncBackendAssets() {
+  if (!['127.0.0.1','localhost'].includes(location.hostname)) return 0;
   try {
     const r = await fetch(`${BACKEND}/api/assets?exclude_special=true`);
     if (!r.ok) return 0;

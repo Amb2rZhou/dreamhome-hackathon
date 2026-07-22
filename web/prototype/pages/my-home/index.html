@@ -366,6 +366,8 @@
     const uid = (prefix) => `${prefix}-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)}`;
     const now = () => new Date().toISOString();
     const BACKEND = 'http://127.0.0.1:8000';
+    const STATIC_DEMO_ROOT = '../../assets/demo-backend';
+    const USE_LOCAL_BACKEND = ['127.0.0.1','localhost'].includes(location.hostname);
     const normalizeHomeProject = (project) => project && project.id ? {...project, daylight: project.daylight || 'day', placements:Array.isArray(project.placements)?project.placements:[], finishes:{floorAssetId:null,wallpaperAssetId:null,...project.finishes}} : null;
     function tell(message) { ui.liveRegion.textContent = message; ui.toast.textContent = message; ui.toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => ui.toast.classList.remove('show'), 1800); }
     function saveSoon() { if (state.project?.source?.type === 'video_rebuild') { ui.editorHomeMeta.textContent='本次体验中的调整'; return; } state.dirty = true; clearTimeout(saveTimer); saveTimer = setTimeout(() => { if (state.project) { homeSceneService.saveProject(state.project); state.dirty = false; ui.editorHomeMeta.textContent = '3D 布局已保存'; } }, 360); ui.editorHomeMeta.textContent = '正在保存布局'; }
@@ -465,7 +467,7 @@
     async function renderVideoScenes() {
       ui.homeGrid.querySelectorAll('[data-video-scene]').forEach(card=>card.remove());
       try {
-        const response=await fetch(`${BACKEND}/api/scenes`);
+        const response=await fetch(USE_LOCAL_BACKEND?`${BACKEND}/api/scenes`:`${STATIC_DEMO_ROOT}/scenes/index.json`);
         if(!response.ok) throw new Error('场景列表读取失败');
         const scenes=await response.json();
         ui.homeGrid.insertAdjacentHTML('beforeend',scenes.map((scene)=>{const name=escapeText(displaySceneName(scene)),videoId=escapeText(scene.video_id);return `<button class="video-scene-card" data-video-scene="${videoId}" data-scene-title="${name}" aria-label="继续编辑 ${name}"><span class="video-scene-card__plan" aria-hidden="true"><img src="../../assets/scenes/${videoId}.jpg?v=2" alt="" loading="lazy" /></span><b>${name}</b></button>`;}).join(''));
@@ -478,14 +480,14 @@
       const back = win.wall === 'back' || win.wall === 'balcony';
       return {id:win.id,roomId:room.id,edge:back?'north':'east',occupied:true,width:win.width,height:win.height,position:{x:back?win.center:room.width/2-.04,y:win.sill+win.height/2,z:back?-room.depth/2+.04:win.center,rotationY:back?0:Math.PI/2}};
     }
-    function projectFromVideoScene(sceneData,assetRecords=[]) {
+    function projectFromVideoScene(sceneData,assetRecords=[],staticDemo=false) {
       runtimeAssets.clear();
       const sizePriors=new Map(assetRecords.filter(asset=>asset.size_prior).map(asset=>[asset.asset_id,asset.size_prior]));
       const room={id:'room-real',name:'真实场景',label:'真实场景',type:'bedroom',zone:'private',x:0,z:0,width:sceneData.room.w,depth:sceneData.room.d};
       const walls=[wall('real-n','x',-sceneData.room.d/2,-sceneData.room.w/2,sceneData.room.w/2,'exterior'),wall('real-s','x',sceneData.room.d/2,-sceneData.room.w/2,sceneData.room.w/2,'exterior'),wall('real-w','z',-sceneData.room.w/2,-sceneData.room.d/2,sceneData.room.d/2,'exterior'),wall('real-e','z',sceneData.room.w/2,-sceneData.room.d/2,sceneData.room.d/2,'exterior')];
       const placements=sceneData.items.map((item)=>{
         const modelId=(item.glb.match(/([0-9a-f]{32})\.glb$/)||[])[1];
-        const modelUrl=modelId?`${BACKEND}/api/scenes/model/${modelId}`:new URL(item.glb,BACKEND).href;
+        const modelUrl=staticDemo&&modelId?`${STATIC_DEMO_ROOT}/models/${modelId}.glb`:modelId?`${BACKEND}/api/scenes/model/${modelId}`:new URL(item.glb,BACKEND).href;
         const sizePrior=sizePriors.get(item.id)||null;
         runtimeAssets.set(item.id,{id:item.id,name:item.name,category:'真实组件',modelUrl,dimensions:sizePrior?[sizePrior.w,sizePrior.h,sizePrior.d]:[item.targetW||.7,item.targetW||.7,item.targetW||.7],sizePrior,mount:item.mount||'floor',rawModel:true});
         const scale=Array.isArray(item.scale)?item.scale:[1,1,1];
@@ -497,10 +499,10 @@
       disposeScene();
       state.phase='submitting'; updatePhases(); updateGeneration('queued',18);
       try {
-        const [response,assetsResponse]=await Promise.all([fetch(`${BACKEND}/api/scenes/${encodeURIComponent(videoId)}`),fetch(`${BACKEND}/api/assets?include_all_status=true`)]);
+        const [response,assetsResponse]=await Promise.all([fetch(USE_LOCAL_BACKEND?`${BACKEND}/api/scenes/${encodeURIComponent(videoId)}`:`${STATIC_DEMO_ROOT}/scenes/${encodeURIComponent(videoId)}.json`),USE_LOCAL_BACKEND?fetch(`${BACKEND}/api/assets?include_all_status=true`):Promise.resolve(null)]);
         if(!response.ok) throw new Error('真实场景读取失败');
-        const assets=assetsResponse.ok?await assetsResponse.json():[];
-        state.project=projectFromVideoScene(await response.json(),assets);
+        const assets=assetsResponse?.ok?await assetsResponse.json():[];
+        state.project=projectFromVideoScene(await response.json(),assets,!USE_LOCAL_BACKEND);
         state.selectedRoomId=null; state.selectedPlacementId=null; state.phase='editor';
         updatePhases(); initEditor(); tell(`${title}已载入`);
       } catch(error) { state.phase='setup'; updatePhases(); tell(error.message); }
