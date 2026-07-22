@@ -396,7 +396,9 @@
     const STATIC_DEMO_ROOT = '../../assets/demo-backend';
     const QUERY = new URLSearchParams(location.search);
     const MODEL_ROOT_OVERRIDE = QUERY.get('modelRoot')?.trim();
-    const STATIC_MODEL_ROOT = `${STATIC_DEMO_ROOT}/models-v1`;
+    // 桌面演示优先使用高清原始模型；models-v1 仅保留为可选的轻量资源，不再默认加载。
+    const STATIC_MODEL_ROOT = `${STATIC_DEMO_ROOT}/models`;
+    const STATIC_FALLBACK_MODEL_ROOT = `${STATIC_DEMO_ROOT}/models-v1`;
     const OSS_MODEL_ROOT = MODEL_ROOT_OVERRIDE || window.DREAMHOME_OSS_MODEL_ROOT || STATIC_MODEL_ROOT;
     const SUPPORTS_WEBP = (()=>{try{return document.createElement('canvas').toDataURL('image/webp').startsWith('data:image/webp');}catch{return false;}})();
     const USE_OSS_MODELS = SUPPORTS_WEBP && Boolean(OSS_MODEL_ROOT);
@@ -608,7 +610,7 @@
       const walls=[wall('real-n','x',-sceneData.room.d/2,-sceneData.room.w/2,sceneData.room.w/2,'exterior'),wall('real-s','x',sceneData.room.d/2,-sceneData.room.w/2,sceneData.room.w/2,'exterior'),wall('real-w','z',-sceneData.room.w/2,-sceneData.room.d/2,sceneData.room.d/2,'exterior'),wall('real-e','z',sceneData.room.w/2,-sceneData.room.d/2,sceneData.room.d/2,'exterior')];
       const placements=sceneData.items.map((item)=>{
         const modelId=modelIdFromPath(item.glb);
-        const fallbackModelUrl=staticDemo&&modelId?`${STATIC_DEMO_ROOT}/models/${modelId}.glb`:modelId?`${BACKEND}/api/scenes/model/${modelId}`:new URL(item.glb,BACKEND).href;
+        const fallbackModelUrl=staticDemo&&modelId?`${STATIC_FALLBACK_MODEL_ROOT}/${modelId}.glb`:modelId?`${BACKEND}/api/scenes/model/${modelId}`:new URL(item.glb,BACKEND).href;
         const modelUrl=modelId&&USE_OSS_MODELS?`${OSS_MODEL_ROOT}/${modelId}.glb`:fallbackModelUrl;
         const sizePrior=sizePriors.get(item.id)||item.sizePrior||null;
         runtimeAssets.set(item.id,{id:item.id,name:item.name,category:'真实组件',tags:item.tags||[],modelUrl,fallbackModelUrl:modelUrl===fallbackModelUrl?'':fallbackModelUrl,dimensions:sizePrior?[sizePrior.w,sizePrior.h,sizePrior.d]:[item.targetW||.7,item.targetW||.7,item.targetW||.7],sizePrior,mount:item.mount||'floor',rawModel:true});

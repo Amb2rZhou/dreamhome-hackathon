@@ -2,6 +2,8 @@ import { BACKEND_ASSETS } from './library-assets.generated.js';
 
 const FAVORITES_KEY = 'dreamhome.asset-library.v1';
 const USER_ASSETS_KEY = 'dreamhome.user-assets.v1';
+// 产品演示的首次打开收藏。当前用户已明确选择的快照会写入这里；浏览器后续操作仍覆盖本地状态。
+export const DEFAULT_FAVORITE_IDS = [];
 
 export const COMPONENT_FAMILIES = [
   { id: 'floorplan', label: '户型类' },
@@ -167,8 +169,9 @@ export function getAsset(id) {
 
 export function getFavorites() {
   try {
-    const stored = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '{}');
-    const ids = Array.isArray(stored.ids) ? stored.ids : [];
+    const raw = localStorage.getItem(FAVORITES_KEY);
+    const stored = raw ? JSON.parse(raw) : null;
+    const ids = Array.isArray(stored?.ids) ? stored.ids : DEFAULT_FAVORITE_IDS;
     const userIds = new Set(getUserAssets().map((item) => item.id));
     return new Set(ids.filter((id) => ASSET_BY_ID.has(id) || userIds.has(id)));
   } catch {
