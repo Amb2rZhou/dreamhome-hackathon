@@ -1,0 +1,1199 @@
+{
+  "reviewed": 149,
+  "passed": 128,
+  "failed": 21,
+  "results": [
+    {
+      "asset_id": "ast_002889f330aa",
+      "name": "悬挂绿植",
+      "category": "绿植",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:26:56.426Z"
+    },
+    {
+      "asset_id": "ast_00e00df1bfeb",
+      "name": "办公椅",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:27:10.875Z"
+    },
+    {
+      "asset_id": "ast_047e5f3f4bbc",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:27:24.693Z"
+    },
+    {
+      "asset_id": "ast_0594b3591b5a",
+      "name": "挂饰",
+      "category": "装饰",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:14:36.431Z"
+    },
+    {
+      "asset_id": "ast_066240429d81",
+      "name": "盆栽植物",
+      "category": "绿植",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:28:37.842Z"
+    },
+    {
+      "asset_id": "ast_066a09702c58",
+      "name": "挂画",
+      "category": "装饰",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:28:41.626Z"
+    },
+    {
+      "asset_id": "ast_07ad0c3cef0c",
+      "name": "凳子",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:28:46.826Z"
+    },
+    {
+      "asset_id": "ast_09f5ed9678b1",
+      "name": "挂画",
+      "category": "装饰",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:29:16.058Z"
+    },
+    {
+      "asset_id": "ast_0a006f1f3c2d",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:29:33.292Z"
+    },
+    {
+      "asset_id": "ast_0b091395b9c2",
+      "name": "盆栽",
+      "category": "绿植",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:29:41.675Z"
+    },
+    {
+      "asset_id": "ast_0c40e643ff23",
+      "name": "边柜",
+      "category": "柜子",
+      "verdict": "fail",
+      "reason": "源视频帧识别到 视频右侧边缘 镜子里面的边柜了，而非 视频中央的边柜，导致柜子抽屉样式不统一，且缺了一块。",
+      "reviewed_at": "2026-07-22T09:32:06.658Z"
+    },
+    {
+      "asset_id": "ast_0dfe071baec6",
+      "name": "洗衣机",
+      "category": "家电",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:32:23.308Z"
+    },
+    {
+      "asset_id": "ast_108a3cf096de",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:32:31.492Z"
+    },
+    {
+      "asset_id": "ast_12910011860f",
+      "name": "盆栽植物",
+      "category": "绿植",
+      "verdict": "fail",
+      "reason": "盆栽植物，盆破损了。其他ok",
+      "reviewed_at": "2026-07-22T09:32:59.768Z"
+    },
+    {
+      "asset_id": "ast_12e8c8bee10d",
+      "name": "悬挂绿植",
+      "category": "绿植",
+      "verdict": "fail",
+      "reason": "悬挂绿植，缺了绿植的吊盆。",
+      "reviewed_at": "2026-07-22T09:35:16.753Z"
+    },
+    {
+      "asset_id": "ast_1d5625a52638",
+      "name": "边柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:35:20.121Z"
+    },
+    {
+      "asset_id": "ast_1ddb5e7e233c",
+      "name": "储物床",
+      "category": "床",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:35:27.954Z"
+    },
+    {
+      "asset_id": "ast_200d07a11612",
+      "name": "边柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:35:57.606Z"
+    },
+    {
+      "asset_id": "ast_2044e3063585",
+      "name": "餐桌",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:35:59.821Z"
+    },
+    {
+      "asset_id": "ast_22654404df94",
+      "name": "茶几",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:36:02.222Z"
+    },
+    {
+      "asset_id": "ast_22cf0d15bedd",
+      "name": "双人床",
+      "category": "床",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:36:10.924Z"
+    },
+    {
+      "asset_id": "ast_251c115561c7",
+      "name": "花艺摆件",
+      "category": "装饰",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:36:16.888Z"
+    },
+    {
+      "asset_id": "ast_255fdfcd9c44",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:36:35.554Z"
+    },
+    {
+      "asset_id": "ast_26add72bff83",
+      "name": "盆栽植物",
+      "category": "绿植",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:36:38.288Z"
+    },
+    {
+      "asset_id": "ast_279a3b8e3809",
+      "name": "电视柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:36:40.505Z"
+    },
+    {
+      "asset_id": "ast_2baa861742c3",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:36:42.770Z"
+    },
+    {
+      "asset_id": "ast_2c9b8fa14140",
+      "name": "落地扇",
+      "category": "家电",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:37:35.203Z"
+    },
+    {
+      "asset_id": "ast_2e0f65b42cfc",
+      "name": "电视",
+      "category": "家电",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:37:39.753Z"
+    },
+    {
+      "asset_id": "ast_2e37968e66b8",
+      "name": "编织地毯",
+      "category": "地毯",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:37:44.772Z"
+    },
+    {
+      "asset_id": "ast_3141d754dd57",
+      "name": "波斯地毯",
+      "category": "地毯",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:37:50.536Z"
+    },
+    {
+      "asset_id": "ast_314af305efe6",
+      "name": "边柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:37:57.554Z"
+    },
+    {
+      "asset_id": "ast_31c15251a859",
+      "name": "干花摆件",
+      "category": "绿植",
+      "verdict": "fail",
+      "reason": "摆件中的 树枝 部分出现 不连贯 的情况。",
+      "reviewed_at": "2026-07-22T09:38:55.936Z"
+    },
+    {
+      "asset_id": "ast_3323727dd208",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "fail",
+      "reason": "吊灯 少了 连接灯泡的那根线",
+      "reviewed_at": "2026-07-22T09:39:16.918Z"
+    },
+    {
+      "asset_id": "ast_365d3a551e24",
+      "name": "餐椅",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:39:19.752Z"
+    },
+    {
+      "asset_id": "ast_390a0d12583c",
+      "name": "扶手椅",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:39:23.271Z"
+    },
+    {
+      "asset_id": "ast_3ae34f96cd4e",
+      "name": "盆栽植物",
+      "category": "绿植",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:39:25.571Z"
+    },
+    {
+      "asset_id": "ast_3db63d01c4b9",
+      "name": "盆栽植物",
+      "category": "绿植",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:39:42.752Z"
+    },
+    {
+      "asset_id": "ast_3ff4abe05c99",
+      "name": "边柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:39:51.869Z"
+    },
+    {
+      "asset_id": "ast_40ae0466aba8",
+      "name": "三人沙发",
+      "category": "沙发",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:39:55.687Z"
+    },
+    {
+      "asset_id": "ast_42a4923c5286",
+      "name": "盆栽植物",
+      "category": "绿植",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:40:09.819Z"
+    },
+    {
+      "asset_id": "ast_43bc7ba471cf",
+      "name": "储物床",
+      "category": "床",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:40:13.055Z"
+    },
+    {
+      "asset_id": "ast_4455b63b1e0b",
+      "name": "玻璃罩摆件",
+      "category": "装饰",
+      "verdict": "fail",
+      "reason": "源视频帧 并没有 这个元素。",
+      "reviewed_at": "2026-07-22T09:40:42.865Z"
+    },
+    {
+      "asset_id": "ast_45226bd63340",
+      "name": "音乐盒",
+      "category": "装饰",
+      "verdict": "fail",
+      "reason": "音乐盒 顶部 颜色只渲染了一半",
+      "reviewed_at": "2026-07-22T09:41:40.015Z"
+    },
+    {
+      "asset_id": "ast_47483320f59c",
+      "name": "洗衣机",
+      "category": "家电",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:41:53.416Z"
+    },
+    {
+      "asset_id": "ast_486bad7aa5ab",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:42:07.616Z"
+    },
+    {
+      "asset_id": "ast_49b16f2d03ab",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:42:27.967Z"
+    },
+    {
+      "asset_id": "ast_4a6964d61395",
+      "name": "编织地毯",
+      "category": "地毯",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:42:31.083Z"
+    },
+    {
+      "asset_id": "ast_4aec4a8b4da8",
+      "name": "盆栽植物",
+      "category": "绿植",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:42:34.116Z"
+    },
+    {
+      "asset_id": "ast_4bdfae0538e5",
+      "name": "长方形地毯",
+      "category": "地毯",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:42:36.349Z"
+    },
+    {
+      "asset_id": "ast_4d362c616d1d",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "fail",
+      "reason": "吊灯 中间的四个支架，缺了4个灯泡，没渲染出来。",
+      "reviewed_at": "2026-07-22T09:44:52.526Z"
+    },
+    {
+      "asset_id": "ast_4e1531addf4a",
+      "name": "花瓶",
+      "category": "装饰",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:44:55.782Z"
+    },
+    {
+      "asset_id": "ast_4fb74f9d26fa",
+      "name": "吧台椅",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:44:57.699Z"
+    },
+    {
+      "asset_id": "ast_5229f072c636",
+      "name": "卡通图案地毯",
+      "category": "地毯",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:45:00.150Z"
+    },
+    {
+      "asset_id": "ast_55361e0c8415",
+      "name": "盆栽植物",
+      "category": "绿植",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:45:07.298Z"
+    },
+    {
+      "asset_id": "ast_55d33aa2ab71",
+      "name": "长方形地毯",
+      "category": "地毯",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:45:35.881Z"
+    },
+    {
+      "asset_id": "ast_57daabd937d2",
+      "name": "休闲椅",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:45:38.532Z"
+    },
+    {
+      "asset_id": "ast_5994f5b4f77c",
+      "name": "盆栽植物",
+      "category": "绿植",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:45:44.086Z"
+    },
+    {
+      "asset_id": "ast_5b314219acf0",
+      "name": "三人沙发",
+      "category": "沙发",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:45:46.315Z"
+    },
+    {
+      "asset_id": "ast_5b54d74d8192",
+      "name": "花瓶",
+      "category": "装饰",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:45:47.999Z"
+    },
+    {
+      "asset_id": "ast_5fc414eee7e8",
+      "name": "餐椅",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:45:50.116Z"
+    },
+    {
+      "asset_id": "ast_62a36eb63689",
+      "name": "台灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:45:52.232Z"
+    },
+    {
+      "asset_id": "ast_655a4e7f4daf",
+      "name": "落地灯",
+      "category": "灯具",
+      "verdict": "fail",
+      "reason": "落地灯 灯罩应该在灯架顶端，而不是像现状这样 在灯架的中间；落地灯 底座不应该是四个脚，而应该是 圆盘状那种比较稳的底座。",
+      "reviewed_at": "2026-07-22T09:47:31.257Z"
+    },
+    {
+      "asset_id": "ast_670765d4c8c6",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:47:35.880Z"
+    },
+    {
+      "asset_id": "ast_676a5967fa8b",
+      "name": "实木椅",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:47:38.168Z"
+    },
+    {
+      "asset_id": "ast_694e0fa76046",
+      "name": "盆栽植物",
+      "category": "绿植",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:47:45.882Z"
+    },
+    {
+      "asset_id": "ast_696c30f84af4",
+      "name": "格子柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:56:13.446Z"
+    },
+    {
+      "asset_id": "ast_6e40e3458f09",
+      "name": "边柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:56:15.832Z"
+    },
+    {
+      "asset_id": "ast_705b70b74c7b",
+      "name": "台灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:56:18.464Z"
+    },
+    {
+      "asset_id": "ast_717c98fe0e21",
+      "name": "餐椅",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:56:25.563Z"
+    },
+    {
+      "asset_id": "ast_74f8f8b7a284",
+      "name": "壁灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:56:33.430Z"
+    },
+    {
+      "asset_id": "ast_778c2ec0480d",
+      "name": "三人沙发",
+      "category": "沙发",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:56:36.081Z"
+    },
+    {
+      "asset_id": "ast_794404a15cd8",
+      "name": "边几",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:56:38.831Z"
+    },
+    {
+      "asset_id": "ast_79d7df1565e0",
+      "name": "插花摆件",
+      "category": "装饰",
+      "verdict": "fail",
+      "reason": "摆件，枝桠有断点，有的地方没连起来",
+      "reviewed_at": "2026-07-22T09:58:43.035Z"
+    },
+    {
+      "asset_id": "ast_7a6844fdf7e6",
+      "name": "餐桌",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:58:46.964Z"
+    },
+    {
+      "asset_id": "ast_7ad385273d1f",
+      "name": "台灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:58:51.034Z"
+    },
+    {
+      "asset_id": "ast_7bbac9ee11d9",
+      "name": "壁灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:58:56.780Z"
+    },
+    {
+      "asset_id": "ast_7d1a1127850a",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "fail",
+      "reason": "吊灯 没有灯泡。",
+      "reviewed_at": "2026-07-22T09:59:16.172Z"
+    },
+    {
+      "asset_id": "ast_7d4063c26a78",
+      "name": "台灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:59:21.897Z"
+    },
+    {
+      "asset_id": "ast_8016d7db99e3",
+      "name": "盆栽植物",
+      "category": "绿植",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:59:33.283Z"
+    },
+    {
+      "asset_id": "ast_829e24c0efb7",
+      "name": "盆栽植物",
+      "category": "绿植",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:59:37.914Z"
+    },
+    {
+      "asset_id": "ast_877b640e3d3c",
+      "name": "长方形地毯",
+      "category": "地毯",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T09:59:40.113Z"
+    },
+    {
+      "asset_id": "ast_8926f9413f29",
+      "name": "床头桌",
+      "category": "桌子",
+      "verdict": "fail",
+      "reason": "床头桌，应该没有底部那个白色的毯子形状东西，也没有桌角旁边的白色浮状物",
+      "reviewed_at": "2026-07-22T10:00:36.109Z"
+    },
+    {
+      "asset_id": "ast_8a6c621c6f5f",
+      "name": "边柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:00:49.331Z"
+    },
+    {
+      "asset_id": "ast_8ac797d254fe",
+      "name": "餐椅",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:00:51.713Z"
+    },
+    {
+      "asset_id": "ast_8b053762e304",
+      "name": "三人沙发",
+      "category": "沙发",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:00:54.233Z"
+    },
+    {
+      "asset_id": "ast_924f98656f6a",
+      "name": "画框",
+      "category": "装饰",
+      "verdict": "fail",
+      "reason": "画框，有点过于像长方体，而不是原本的扁扁的画框。且 画框没有画。",
+      "reviewed_at": "2026-07-22T10:02:34.929Z"
+    },
+    {
+      "asset_id": "ast_95c2097ced78",
+      "name": "长凳",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:02:42.713Z"
+    },
+    {
+      "asset_id": "ast_95dd6f2a9f1a",
+      "name": "边柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:02:49.783Z"
+    },
+    {
+      "asset_id": "ast_980f1a89dee5",
+      "name": "洗衣机",
+      "category": "家电",
+      "verdict": "fail",
+      "reason": "洗衣机 原来有两个（上方烘干机，下方洗衣机），现在只变成一个。且洗衣机背面有破损。理论上来说，背面应该没有样式。",
+      "reviewed_at": "2026-07-22T10:04:11.778Z"
+    },
+    {
+      "asset_id": "ast_9aa4c4becf13",
+      "name": "吧台",
+      "category": "桌子",
+      "verdict": "fail",
+      "reason": "吧台的外立面有奇怪的 枝状物",
+      "reviewed_at": "2026-07-22T10:04:50.180Z"
+    },
+    {
+      "asset_id": "ast_9afc1e9adbda",
+      "name": "餐椅",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:04:54.097Z"
+    },
+    {
+      "asset_id": "ast_9c5579b81c97",
+      "name": "吧台",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:04:56.013Z"
+    },
+    {
+      "asset_id": "ast_9c86b997e241",
+      "name": "台灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:05:09.595Z"
+    },
+    {
+      "asset_id": "ast_9e221dde2c78",
+      "name": "餐桌",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:05:14.314Z"
+    },
+    {
+      "asset_id": "ast_9f12a8edc4d5",
+      "name": "三人沙发",
+      "category": "沙发",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:05:16.613Z"
+    },
+    {
+      "asset_id": "ast_a1018a9c3c29",
+      "name": "三人沙发",
+      "category": "沙发",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:05:19.778Z"
+    },
+    {
+      "asset_id": "ast_a188c23c1ff7",
+      "name": "双人床",
+      "category": "床",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:05:21.864Z"
+    },
+    {
+      "asset_id": "ast_a1a4c88b4f00",
+      "name": "边柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:05:24.061Z"
+    },
+    {
+      "asset_id": "ast_a4807b023418",
+      "name": "镜子",
+      "category": "装饰",
+      "verdict": "fail",
+      "reason": "名称 应该写错了吧，这个原视频里面看上去像是 屏风",
+      "reviewed_at": "2026-07-22T10:06:17.355Z"
+    },
+    {
+      "asset_id": "ast_a50c067b4bee",
+      "name": "茶几",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:06:23.345Z"
+    },
+    {
+      "asset_id": "ast_a7316084fd9c",
+      "name": "盆栽植物",
+      "category": "绿植",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:06:30.380Z"
+    },
+    {
+      "asset_id": "ast_ae6d83d34fba",
+      "name": "茶几",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:06:32.779Z"
+    },
+    {
+      "asset_id": "ast_b0bed2f4384e",
+      "name": "台灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:06:37.896Z"
+    },
+    {
+      "asset_id": "ast_b30865a2f123",
+      "name": "边柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:06:48.845Z"
+    },
+    {
+      "asset_id": "ast_b3479a4b5400",
+      "name": "边柜",
+      "category": "柜子",
+      "verdict": "fail",
+      "reason": "边柜 上面的摆件 出现漂浮状，很奇怪",
+      "reviewed_at": "2026-07-22T10:07:41.591Z"
+    },
+    {
+      "asset_id": "ast_b590657ab045",
+      "name": "电视",
+      "category": "家电",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:07:45.028Z"
+    },
+    {
+      "asset_id": "ast_b7f81d8b8dcd",
+      "name": "边几",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:07:47.394Z"
+    },
+    {
+      "asset_id": "ast_b80193251739",
+      "name": "书桌",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:07:49.327Z"
+    },
+    {
+      "asset_id": "ast_b80f4e4a387b",
+      "name": "门垫",
+      "category": "地毯",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:07:51.560Z"
+    },
+    {
+      "asset_id": "ast_b914f61b3e04",
+      "name": "餐椅",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:07:57.160Z"
+    },
+    {
+      "asset_id": "ast_bca29a5798f3",
+      "name": "圆形地毯",
+      "category": "地毯",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:07:59.396Z"
+    },
+    {
+      "asset_id": "ast_c2313401d014",
+      "name": "户外木椅",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:08:04.645Z"
+    },
+    {
+      "asset_id": "ast_c26b4f2fe8b3",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "fail",
+      "reason": "吊灯 没有灯主体啊",
+      "reviewed_at": "2026-07-22T10:08:38.846Z"
+    },
+    {
+      "asset_id": "ast_c5ab118e8f8d",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "fail",
+      "reason": "没有灯泡",
+      "reviewed_at": "2026-07-22T10:08:48.764Z"
+    },
+    {
+      "asset_id": "ast_c708e898e8ab",
+      "name": "干花摆件",
+      "category": "装饰",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:08:59.409Z"
+    },
+    {
+      "asset_id": "ast_cb57b5ec3ecf",
+      "name": "餐椅",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:09:54.643Z"
+    },
+    {
+      "asset_id": "ast_ccc6f7405f39",
+      "name": "双人床",
+      "category": "床",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:09:56.762Z"
+    },
+    {
+      "asset_id": "ast_cd8aec2bdb05",
+      "name": "镜子",
+      "category": "卫浴",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:10:01.409Z"
+    },
+    {
+      "asset_id": "ast_ceea9d7f3729",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "fail",
+      "reason": "吊灯 没有连接灯主体的线",
+      "reviewed_at": "2026-07-22T10:10:14.108Z"
+    },
+    {
+      "asset_id": "ast_cef97bc30bd9",
+      "name": "餐桌",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:10:19.309Z"
+    },
+    {
+      "asset_id": "ast_d1831cd30c87",
+      "name": "边柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:10:28.642Z"
+    },
+    {
+      "asset_id": "ast_d51bc4042307",
+      "name": "台灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:10:36.042Z"
+    },
+    {
+      "asset_id": "ast_d60dbc13017f",
+      "name": "台灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:10:47.010Z"
+    },
+    {
+      "asset_id": "ast_d6becd14a3ca",
+      "name": "长桌",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:11:32.327Z"
+    },
+    {
+      "asset_id": "ast_d723e8bfe067",
+      "name": "藤编椅",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:10:59.961Z"
+    },
+    {
+      "asset_id": "ast_d83b2f2061bc",
+      "name": "休闲椅",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:11:02.359Z"
+    },
+    {
+      "asset_id": "ast_d8f0d7606d01",
+      "name": "三人沙发",
+      "category": "沙发",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:11:04.409Z"
+    },
+    {
+      "asset_id": "ast_da645619b597",
+      "name": "落地扇",
+      "category": "家电",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:11:06.541Z"
+    },
+    {
+      "asset_id": "ast_db99f8bdf507",
+      "name": "圆桌",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:11:36.177Z"
+    },
+    {
+      "asset_id": "ast_dcd3feda0d96",
+      "name": "双人床",
+      "category": "床",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:11:37.926Z"
+    },
+    {
+      "asset_id": "ast_dd77d67b65bc",
+      "name": "餐椅",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:11:39.544Z"
+    },
+    {
+      "asset_id": "ast_dec6af78617b",
+      "name": "壁灯",
+      "category": "灯具",
+      "verdict": "fail",
+      "reason": "壁灯，灯的壁座与灯主体之间有漂浮状物，很奇怪",
+      "reviewed_at": "2026-07-22T10:12:20.483Z"
+    },
+    {
+      "asset_id": "ast_e68deb64781e",
+      "name": "三人沙发",
+      "category": "沙发",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:12:23.699Z"
+    },
+    {
+      "asset_id": "ast_e7dddcb4b337",
+      "name": "衣柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:12:34.364Z"
+    },
+    {
+      "asset_id": "ast_e85d108fbd22",
+      "name": "床头柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:12:36.964Z"
+    },
+    {
+      "asset_id": "ast_e8e7b81eba5c",
+      "name": "三人沙发",
+      "category": "沙发",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:12:40.196Z"
+    },
+    {
+      "asset_id": "ast_ec839451b7ac",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:12:42.180Z"
+    },
+    {
+      "asset_id": "ast_ed2d44e09f94",
+      "name": "壁柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:12:49.114Z"
+    },
+    {
+      "asset_id": "ast_edf646ab154c",
+      "name": "盆栽植物",
+      "category": "绿植",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:12:51.633Z"
+    },
+    {
+      "asset_id": "ast_eea00f986e60",
+      "name": "电视柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:12:53.996Z"
+    },
+    {
+      "asset_id": "ast_f07062218262",
+      "name": "长方形地毯",
+      "category": "地毯",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:12:55.813Z"
+    },
+    {
+      "asset_id": "ast_f080e5f7a1a8",
+      "name": "吸顶灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:12:57.415Z"
+    },
+    {
+      "asset_id": "ast_f090666d70fe",
+      "name": "坐垫",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:13:17.046Z"
+    },
+    {
+      "asset_id": "ast_f2d29b396fcd",
+      "name": "储物凳",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:13:20.146Z"
+    },
+    {
+      "asset_id": "ast_f4ad4e548d88",
+      "name": "边柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:13:26.415Z"
+    },
+    {
+      "asset_id": "ast_fa4fe463a624",
+      "name": "边柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:14:14.615Z"
+    },
+    {
+      "asset_id": "ast_fba5d6140749",
+      "name": "双人床",
+      "category": "床",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:13:49.899Z"
+    },
+    {
+      "asset_id": "ast_fc4d08db170e",
+      "name": "吸顶灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:14:08.929Z"
+    },
+    {
+      "asset_id": "ast_ff3bb7d4a5ec",
+      "name": "落地扇",
+      "category": "家电",
+      "verdict": "pass",
+      "reason": "",
+      "reviewed_at": "2026-07-22T10:14:04.363Z"
+    }
+  ]
+}
