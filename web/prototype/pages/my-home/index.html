@@ -527,6 +527,8 @@
       enterProjectEditor(home);
     }
     const sceneDataCache=new Map();
+    const DEFAULT_DEMO_SCENE_IDS=['vid_40734d7f2e6c','vid_91fe552c5f7d'];
+    const DEFAULT_DEMO_SEED_KEY='dreamhome.default-demo-homes.v1';
     // 联调优先真机后端(127.0.0.1:8000)，后端不可达时回退随包静态 demo 数据，保证本地离线也能预览
     async function fetchSceneResource(apiPath, staticPath) {
       if (USE_LOCAL_BACKEND) {
@@ -553,10 +555,27 @@
       document.documentElement.dataset.preloadMs=String(Math.round(performance.now()-startedAt));
     }
     function scheduleVideoScenePreload(scenes){const start=()=>preloadVideoSceneAssets(scenes).catch(()=>{});if('requestIdleCallback'in window)requestIdleCallback(start,{timeout:250});else setTimeout(start,0);}
+    async function seedDefaultDemoHomes(scenes){
+      if(localStorage.getItem(DEFAULT_DEMO_SEED_KEY))return false;
+      const existingIds=new Set(homeSceneService.loadHomes().filter(home=>home.source?.type==='video_rebuild').map(home=>home.source.videoId));
+      let added=false;
+      for(const scene of scenes){
+        if(existingIds.has(scene.video_id))continue;
+        const sceneData=await loadVideoSceneData(scene.video_id);
+        const project=projectFromVideoScene(sceneData,[],true);
+        homeSceneService.saveProject(project);
+        existingIds.add(scene.video_id);
+        added=true;
+      }
+      localStorage.setItem(DEFAULT_DEMO_SEED_KEY,'1');
+      return added;
+    }
     async function renderVideoScenes() {
       ui.homeGrid.querySelectorAll('[data-video-scene]').forEach(card=>card.remove());
       try {
-        const scenes=await fetchSceneResource('/api/scenes','/scenes/index.json'),savedVideoIds=new Set(homeSceneService.loadHomes().filter(home=>home.source?.type==='video_rebuild').map(home=>home.source.videoId));
+        const allScenes=await fetchSceneResource('/api/scenes','/scenes/index.json'),scenes=DEFAULT_DEMO_SCENE_IDS.map(id=>allScenes.find(scene=>scene.video_id===id)).filter(Boolean);
+        if(await seedDefaultDemoHomes(scenes))renderSavedHomes();
+        const savedVideoIds=new Set(homeSceneService.loadHomes().filter(home=>home.source?.type==='video_rebuild').map(home=>home.source.videoId));
         ui.homeGrid.insertAdjacentHTML('beforeend',scenes.filter(scene=>!savedVideoIds.has(scene.video_id)).map((scene)=>{const name=escapeText(displaySceneName(scene)),videoId=escapeText(scene.video_id);return `<button class="video-scene-card" data-video-scene="${videoId}" data-scene-title="${name}" aria-label="开始编辑 ${name}"><span class="video-scene-card__plan" aria-hidden="true"><img src="../../assets/scenes/${videoId}.jpg?v=2" alt="" loading="lazy" /></span><b>${name}</b></button>`;}).join(''));
         updateContinueGrid();
         scheduleVideoScenePreload(scenes);
