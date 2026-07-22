@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "dataset_id": "available-assets-v1",
+  "generated_at": "2026-07-22T02:03:47.120205+00:00",
+  "completeness_policy": {
+    "status": "ready",
+    "human_review": "pass",
+    "physical_size_m": "required",
+    "video_id": "required",
+    "appearance_interval": "at least one interval with end_sec > start_sec",
+    "completed_input": "required local file with SHA-256",
+    "model_3d": "required local GLB with SHA-256",
+    "geometry": "required parsed GLB metadata",
+    "track_ids_exposed": false
+  },
+  "asset_count": 7,
+  "video_count": 1,
+  "assets": [
+    {
+      "asset_id": "ast_00e00df1bfeb",
+      "name": "办公椅",
+      "video_id": "vid_40734d7f2e6c",
+      "record": "assets/ast_00e00df1bfeb/asset.json"
+    },
+    {
+      "asset_id": "ast_09f5ed9678b1",
+      "name": "挂画",
+      "video_id": "vid_40734d7f2e6c",
+      "record": "assets/ast_09f5ed9678b1/asset.json"
+    },
+    {
+      "asset_id": "ast_45226bd63340",
+      "name": "音乐盒",
+      "video_id": "vid_40734d7f2e6c",
+      "record": "assets/ast_45226bd63340/asset.json"
+    },
+    {
+      "asset_id": "ast_8926f9413f29",
+      "name": "床头桌",
+      "video_id": "vid_40734d7f2e6c",
+      "record": "assets/ast_8926f9413f29/asset.json"
+    },
+    {
+      "asset_id": "ast_b80193251739",
+      "name": "书桌",
+      "video_id": "vid_40734d7f2e6c",
+      "record": "assets/ast_b80193251739/asset.json"
+    },
+    {
+      "asset_id": "ast_b80f4e4a387b",
+      "name": "门垫",
+      "video_id": "vid_40734d7f2e6c",
+      "record": "assets/ast_b80f4e4a387b/asset.json"
+    },
+    {
+      "asset_id": "ast_ccc6f7405f39",
+      "name": "双人床",
+      "video_id": "vid_40734d7f2e6c",
+      "record": "assets/ast_ccc6f7405f39/asset.json"
+    }
+  ],
+  "videos": [
+    {
+      "video_id": "vid_40734d7f2e6c",
+      "title": "4ce22f239827.mp4",
+      "duration_sec": 12.13,
+      "media": {
+        "path": "videos/vid_40734d7f2e6c/source.mp4",
+        "mime_type": "video/mp4",
+        "bytes": 1459908,
+        "sha256": "bc027c081d46a14682790e6c15c4c196b8db159e900f0f7ec5444cd3c909138b"
+      }
+    }
+  ]
+}

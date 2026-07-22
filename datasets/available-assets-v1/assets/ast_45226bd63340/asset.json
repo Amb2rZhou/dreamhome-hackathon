@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_45226bd63340",
+  "video_id": "vid_40734d7f2e6c",
+  "appearances": [
+    {
+      "start_sec": 6.0,
+      "end_sec": 8.0,
+      "representative_sec": 7.0
+    }
+  ],
+  "name": "音乐盒",
+  "space": "",
+  "type": {
+    "category": "装饰",
+    "subcategory": "音乐盒"
+  },
+  "labels": {
+    "category": "装饰",
+    "sub": "音乐盒",
+    "colors": [
+      "彩色",
+      "白色",
+      "浅蓝"
+    ],
+    "materials": [
+      "塑料",
+      "金属",
+      "布艺"
+    ],
+    "styles": [
+      "可爱风",
+      "卡通风"
+    ],
+    "features": [
+      "旋转吊饰",
+      "伞形顶盖",
+      "悬挂玩偶",
+      "带底座",
+      "发光"
+    ],
+    "size_class": "小",
+    "complete": true,
+    "mount": "surface"
+  },
+  "physical_size_m": {
+    "width": 0.299,
+    "height": 0.312,
+    "depth": 0.3
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.2688891589641571,
+      -0.24401859939098358,
+      -0.26752233505249023
+    ],
+    "bounds_max": [
+      0.2645341753959656,
+      0.3119491636753082,
+      0.26706817746162415
+    ],
+    "dimensions_model_unit": [
+      0.5334233343601227,
+      0.5559677630662918,
+      0.5345905125141144
+    ],
+    "center": [
+      -0.002177491784095764,
+      0.03396528214216232,
+      -0.00022707879543304443
+    ],
+    "vertex_count": 11134,
+    "triangle_count": 14718,
+    "collision": {
+      "type": "box",
+      "center": [
+        -0.002177491784095764,
+        0.03396528214216232,
+        -0.00022707879543304443
+      ],
+      "dimensions": [
+        0.5334233343601227,
+        0.5559677630662918,
+        0.5345905125141144
+      ]
+    },
+    "anchor": {
+      "surface": "surface",
+      "point": [
+        0,
+        -0.24401859939098358,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.160696+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_45226bd63340/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 18854,
+      "sha256": "10be86f661fb5644de8956e970b03288dd2dd43643a7e12d3d31ec61b8d3f27f"
+    },
+    "source_crop": {
+      "path": "assets/ast_45226bd63340/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 9567,
+      "sha256": "0c7e2a66ff208dfd27f1846a3e84feca10ad099882e8a22dffc0acd09b191b6f"
+    },
+    "completed_input": {
+      "path": "assets/ast_45226bd63340/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1439564,
+      "sha256": "e15539fe9faa29630a3f8af233b32cb621ba6b03e0b8705b1f9b29c7070dc526",
+      "width_px": 871,
+      "height_px": 1202
+    },
+    "model_3d": {
+      "path": "assets/ast_45226bd63340/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1665132,
+      "sha256": "a66a8db0c49e68e4f64a05ccfd8b75c15dc6eead14050f964c9075401a90fe4e"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T12:25:58.293503+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-20T18:47:43.216004+00:00"
+}
