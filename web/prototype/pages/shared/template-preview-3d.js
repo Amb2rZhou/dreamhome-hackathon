@@ -3,9 +3,10 @@ import * as THREE from 'three';
 const SPECS = {
   'wide-living': { width:9, depth:5.5, shape:'rect', windows:['back-floor'] },
   'long-living': { width:5, depth:9, shape:'rect', windows:['back','left'] },
-  'square-lounge': { width:6.5, depth:6.5, shape:'rect', windows:['back','left'] },
+  'square-lounge': { width:8, depth:7, shape:'rect', windows:['back-large','left-large'] },
   'l-living': { width:8, depth:7, shape:'l', windows:['back-large'] },
-  'bay-bedroom': { width:6, depth:5, shape:'rect', windows:['back-bay'] },
+  'bay-bedroom': { width:4.2, depth:6.15, shape:'rect', windows:['back-bay'] },
+  'standard-bedroom': { width:4.2, depth:5.2, shape:'rect', windows:['back'] },
   'corner-bedroom': { width:7, depth:5, shape:'rect', windows:['back','left'] },
 };
 
