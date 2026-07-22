@@ -43,9 +43,9 @@
     display: block !important;
     width: 100%;
     height: 100vh;
-    height: 100dvh;
+    height: 100svh;
     min-height: 100vh !important;
-    min-height: 100dvh !important;
+    min-height: 100svh !important;
     padding: 0 !important;
     overflow: hidden;
   }
@@ -53,7 +53,7 @@
   .dh-phone-shell {
     width: 100vw;
     height: 100vh;
-    height: 100dvh;
+    height: 100svh;
     padding: 0;
     border-radius: 0;
     background: transparent;
@@ -90,5 +90,14 @@
   .dh-root.is-editor .asset-drawer,
   .dh-root.is-editor.is-real-scene .asset-drawer {
     bottom: max(8px, env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* 从主屏幕启动后没有 Safari 工具栏，可以安全使用完整动态视口。 */
+@media (max-width: 767px) and (display-mode: standalone) {
+  .preview-stage,
+  .dh-phone-shell {
+    height: 100dvh;
+    min-height: 100dvh !important;
   }
 }

@@ -4,7 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="theme-color" content="#fdf8ef" />
+  <link rel="manifest" href="../../manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="../../assets/mascot/mascot-ui.png" />
+  <script type="module" src="../shared/pwa-register.js"></script>
   <title>DreamHome · 我的家</title>
   <link rel="stylesheet" href="./dreamhome-d-system.css" />
   <style>
@@ -60,6 +64,7 @@
     .template-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
     .template-empty { position:relative; grid-column: 1 / -1; min-height: 96px; margin: 0; display:grid; grid-template-columns:48px minmax(0,1fr); align-items:center; column-gap:7px; padding:8px 8px 34px; color: var(--dh-fg-secondary); font-size: 11px; line-height:1.25; text-align:left; }
     .template-empty > span { min-width:0; white-space:nowrap; }
+    .template-empty.is-image-missing { grid-template-columns:minmax(0,1fr); }
     .template-empty img { width:48px; height:48px; object-fit:contain; transform-origin:50% 85%; animation:mascot-idle-sway 2.1s ease-in-out infinite; }
     .browse-floorplans { position:absolute; right:7px; bottom:5px; display:inline-flex; align-items:center; justify-content:center; min-height:26px; padding:0 12px; border:0; border-radius:999px; background:#dbead7; color:var(--dh-color-sage-800); font:inherit; font-size:10px; font-weight:var(--dh-font-weight-heavy); line-height:1; text-decoration:none; box-shadow:none; }.browse-floorplans:focus-visible { outline:2px solid var(--dh-color-sage-500); outline-offset:2px; }
     @keyframes mascot-idle-sway { 0%,100% { transform:rotate(-2deg) translateX(-1px); } 50% { transform:rotate(2deg) translateX(1px); } }
@@ -234,7 +239,7 @@
             <p class="setup-error" id="setupError" role="alert"></p>
             <button class="primary-button" id="generateButton">生成我的家</button>
           </section>
-          <section class="screen-phase generation-phase" id="generationPhase" aria-live="polite"><div class="generation-media" id="generationMascotStage" data-status="queued"><img class="generation-fallback" src="../../assets/mascot/mascot-idle.png" alt="" aria-hidden="true"><video id="genVideo" class="generation-video" src="../../assets/mascot/motion/assembly-loading.webm" autoplay muted loop playsinline aria-label="包公球正在生成 3D 户型"></video></div><h2 id="generationTitle">正在准备空间</h2><p id="generationCopy">正在读取你的户型信息</p><div class="progress-track"><div class="progress-bar" id="progressBar"></div></div><div class="generation-actions"><button class="secondary-button" id="backToSetup">返回选择</button><button class="secondary-button" id="retryButton" hidden>重新生成</button></div></section>
+          <section class="screen-phase generation-phase" id="generationPhase" aria-live="polite"><div class="generation-media" id="generationMascotStage" data-status="queued"><img class="generation-fallback" src="../../assets/mascot/mascot-ui.png" alt="" aria-hidden="true"><video id="genVideo" class="generation-video" src="../../assets/mascot/motion/assembly-loading.webm" autoplay muted loop playsinline aria-label="包公球正在生成 3D 户型"></video></div><h2 id="generationTitle">正在准备空间</h2><p id="generationCopy">正在读取你的户型信息</p><div class="progress-track"><div class="progress-bar" id="progressBar"></div></div><div class="generation-actions"><button class="secondary-button" id="backToSetup">返回选择</button><button class="secondary-button" id="retryButton" hidden>重新生成</button></div></section>
           <section class="screen-phase editor-phase" id="editorPhase" aria-label="我的家 3D 场景">
             <div class="scene-host" id="sceneHost" aria-label="可交互的三维户型"></div>
             <header class="editor-topbar"><div class="editor-lead"><button class="scene-button" id="editorBack" aria-label="返回我的家">‹</button><div class="editor-title"><input id="editorHomeName" value="我的家" maxlength="20" aria-label="给我的家起个名字" /><span id="editorHomeMeta">3D 布局已保存</span></div></div><div class="editor-tools"><button class="scene-button" id="daylightButton" aria-label="切换白天 / 黑夜">☀</button><button class="scene-button" id="resetViewButton" aria-label="单击回默认视角，双击看正上方">⌘</button><button class="scene-button" id="shareButton" aria-label="分享我的家">⤴</button></div></header>
@@ -439,7 +444,7 @@
     function renderTemplates() {
       const templates=getFavoriteTemplates().slice(0,5);
       const cards=templates.map((asset)=>{ const template=TEMPLATES.find((item)=>item.id===asset.templateId); return `<button class="template-card ${state.selectedTemplateId === template.id ? 'is-selected' : ''}" data-template-id="${template.id}" aria-pressed="${state.selectedTemplateId === template.id}"><span class="home-card__preview" aria-label="${template.name}真实 3D 渲染预览"><canvas data-template-preview="${template.id}"></canvas></span><b>${asset.name}</b></button>`; }).join('');
-      const empty='<div class="template-empty"><img src="../../assets/mascot/mascot-idle.png" alt="" aria-hidden="true"><span>当前暂无收藏可用的户型哦～</span><a class="browse-floorplans" href="../inspiration-library/index.html?from=myhome#catalog=floorplan">去浏览</a></div>';
+      const empty='<div class="template-empty"><img src="../../assets/mascot/mascot-ui.png" alt="" aria-hidden="true" onerror="this.closest(\'.template-empty\')?.classList.add(\'is-image-missing\');this.remove()"><span>当前暂无收藏可用的户型哦～</span><a class="browse-floorplans" href="../inspiration-library/index.html?from=myhome#catalog=floorplan">去浏览</a></div>';
       disposeTemplatePreviews(ui.templateGrid);ui.templateGrid.innerHTML=templates.length ? cards : empty;
       renderTemplatePreviews(ui.templateGrid);
     }

@@ -1,0 +1,20 @@
+{
+  "name": "DreamHome 梦想之家",
+  "short_name": "DreamHome",
+  "id": "./pages/my-home/index.html",
+  "start_url": "./pages/my-home/index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "portrait",
+  "background_color": "#fdf8ef",
+  "theme_color": "#fdf8ef",
+  "icons": [
+    {
+      "src": "./assets/mascot/mascot-ui.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
