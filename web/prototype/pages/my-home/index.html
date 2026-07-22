@@ -413,7 +413,10 @@
           legacyVideoKeys.forEach((key)=>{const legacyVideo=JSON.parse(localStorage.getItem(key)||'null');const migrated=normalizeHomeProject(legacyVideo);if(migrated&&!homes.some((home)=>home.id===migrated.id))homes.push(migrated);if(migrated)localStorage.removeItem(key);});
           const legacy = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
           if (legacy?.project) { const migrated = normalizeHomeProject(legacy.project); if (migrated && !homes.some((home) => home.id === migrated.id)) homes = [migrated, ...homes]; localStorage.removeItem(STORAGE_KEY); localStorage.setItem(HOMES_KEY, JSON.stringify({version:1, homes})); }
-          homes=homes.map(normalizeHomeProject).filter(Boolean).sort((a,b)=>String(b.updatedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.createdAt||'')));
+          homes=homes.map(normalizeHomeProject).filter(Boolean);
+          // 2026-07 前端合并曾遗漏长厅场景，并把它临时显示成默认“客厅”；恢复原项目名但保留用户自行设置的其他名称。
+          homes.forEach((home)=>{if(home.source?.videoId==='vid_91fe552c5f7d'&&['客厅','客厅(奶油风)','客厅（奶油风）'].includes(home.name)){home.name='48平长厅公寓';localStorage.setItem(sceneNameKey(home.source.videoId),home.name);}});
+          homes.sort((a,b)=>String(b.updatedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.createdAt||'')));
           localStorage.setItem(HOMES_KEY, JSON.stringify({version:2, homes}));
           return homes;
         } catch { return []; }
