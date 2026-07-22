@@ -1,5 +1,6 @@
 import type { FurnitureCategory, LibraryComponent } from './types'
 import { CATEGORY_COLOR } from './types'
+import { dreamHomeApiUrl } from './dreamHomeApi'
 
 export interface FalSubmitResponse {
   job_id: string
@@ -31,7 +32,7 @@ async function requestJson<T>(path: string, init?: RequestInit, timeoutMs = 65_0
   const controller = new AbortController()
   const timer = window.setTimeout(() => controller.abort(), timeoutMs)
   try {
-    const response = await fetch(path, {
+    const response = await fetch(dreamHomeApiUrl(path), {
       ...init,
       headers: {
         ...(init?.body ? { 'Content-Type': 'application/json' } : {}),

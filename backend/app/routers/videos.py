@@ -3,11 +3,12 @@
 判定"有没有人圈过"= 查 track 标注(确定性)；标签匹配只出建议给用户确认。
 """
 import base64
+import json
 import time
 import uuid
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 from .. import db, matching
@@ -123,33 +124,107 @@ async def detect(video_id: str, req: DetectRequest):
                           provider="mock" if not req.frame_data_uri else "auto")
 
 
-def _save_cutout(frame_data_uri: Optional[str], bbox: list) -> str:
-    """截帧裁出圈选区域；无截帧/无 PIL 时落占位图，保证链路不断。"""
-    path = workpath("select", ".png")
-    if frame_data_uri and "," in frame_data_uri:
+def _validate_bbox(bbox: list[float]) -> list[float]:
+    if len(bbox) != 4:
+        raise HTTPException(422, "bbox must contain normalized x, y, width, height")
+    x, y, w, h = (float(value) for value in bbox)
+    if w <= 0 or h <= 0 or x < 0 or y < 0 or x + w > 1.0001 or y + h > 1.0001:
+        raise HTTPException(422, "bbox must be inside normalized frame coordinates")
+    return [max(0.0, x), max(0.0, y), min(1.0 - x, w), min(1.0 - y, h)]
+
+
+async def _parse_select_request(request: Request) -> tuple[SelectRequest, Optional[bytes]]:
+    """Accept the legacy JSON contract and the preferred multipart frame upload."""
+    content_type = request.headers.get("content-type", "")
+    if content_type.startswith("multipart/form-data"):
+        form = await request.form()
+        frame = form.get("frame")
+        if frame is None or not hasattr(frame, "read"):
+            for value in form.values():
+                if hasattr(value, "close"):
+                    await value.close()
+            raise HTTPException(422, "multipart selection requires frame JPEG")
+        try:
+            frame_bytes = await frame.read()
+            req = SelectRequest(
+                t=float(form.get("t", "0")),
+                bbox=json.loads(str(form.get("bbox", "[]"))),
+                polygon=json.loads(str(form.get("polygon", "[]"))),
+                frame_width=int(str(form.get("frame_width"))) if form.get("frame_width") else None,
+                frame_height=int(str(form.get("frame_height"))) if form.get("frame_height") else None,
+                category_hint=str(form.get("category_hint", "")),
+                track_id=str(form.get("track_id")) if form.get("track_id") else None,
+            )
+        except (TypeError, ValueError, json.JSONDecodeError) as exc:
+            raise HTTPException(422, f"invalid multipart selection: {exc}") from exc
+        finally:
+            if hasattr(frame, "close"):
+                await frame.close()
+        if not frame_bytes:
+            raise HTTPException(422, "uploaded frame is empty")
+        return req, frame_bytes
+
+    try:
+        return SelectRequest.model_validate(await request.json()), None
+    except Exception as exc:
+        raise HTTPException(422, f"invalid selection payload: {exc}") from exc
+
+
+def _save_selection_images(frame_data_uri: Optional[str], frame_bytes: Optional[bytes],
+                           bbox: list[float]) -> tuple[str, str, tuple[int, int]]:
+    """Persist the untouched RGB frame and derive a bbox crop for labels/generation."""
+    raw = frame_bytes
+    if raw is None and frame_data_uri and "," in frame_data_uri:
         try:
             raw = base64.b64decode(frame_data_uri.split(",", 1)[1])
+        except Exception:
+            raw = None
+
+    frame_path = workpath("select-frame", ".jpg")
+    crop_path = workpath("select-crop", ".jpg")
+    if raw:
+        try:
             from io import BytesIO
             from PIL import Image
             img = Image.open(BytesIO(raw)).convert("RGB")
-            W, H = img.size
-            x, y, w, h = bbox
-            img.crop((int(x * W), int(y * H), int((x + w) * W), int((y + h) * H))).save(path)
-            return path
-        except Exception:
-            pass
-    with open(path, "wb") as f:
-        f.write(_PLACEHOLDER_PNG)
-    return path
+            width, height = img.size
+            x, y, w, h = _validate_bbox(bbox)
+            left = max(0, min(width - 1, round(x * width)))
+            top = max(0, min(height - 1, round(y * height)))
+            right = max(left + 1, min(width, round((x + w) * width)))
+            bottom = max(top + 1, min(height, round((y + h) * height)))
+            img.save(frame_path, format="JPEG", quality=92, optimize=True)
+            img.crop((left, top, right, bottom)).save(crop_path, format="JPEG", quality=92, optimize=True)
+            return frame_path, crop_path, (width, height)
+        except HTTPException:
+            raise
+        except Exception as exc:
+            raise HTTPException(422, f"invalid uploaded frame: {exc}") from exc
+
+    # Legacy JSON callers may omit a frame. Keep their old placeholder behavior,
+    # while multipart callers above always require a real full frame.
+    with open(frame_path, "wb") as file:
+        file.write(_PLACEHOLDER_PNG)
+    with open(crop_path, "wb") as file:
+        file.write(_PLACEHOLDER_PNG)
+    return frame_path, crop_path, (1, 1)
 
 
 @router.post("/{video_id}/select", response_model=SelectResponse)
-async def select(video_id: str, req: SelectRequest):
-    """圈选：抠图 → 提标签(与入库同一 schema) → 库内标签匹配 → 返候选给用户确认。"""
+async def select(video_id: str, request: Request):
+    """圈选：原始完整帧 + 选择几何 → 原图裁切 → 标签/同款候选。"""
     if not db.get_video(video_id):
         raise HTTPException(404, "video not found")
-    cutout = _save_cutout(req.frame_data_uri, req.bbox)
-    labels = await extract_labels(cutout, category_hint=req.category_hint)
+    req, frame_bytes = await _parse_select_request(request)
+    req.bbox = _validate_bbox(req.bbox)
+    frame_path, source_crop, frame_size = _save_selection_images(
+        req.frame_data_uri, frame_bytes, req.bbox,
+    )
+    if req.frame_width is not None and req.frame_width != frame_size[0]:
+        raise HTTPException(422, "frame_width does not match uploaded frame")
+    if req.frame_height is not None and req.frame_height != frame_size[1]:
+        raise HTTPException(422, "frame_height does not match uploaded frame")
+    labels = await extract_labels(source_crop, category_hint=req.category_hint)
     cands = []
     for c in matching.match_candidates(labels):
         asset = db.get_asset(c["asset_id"])
@@ -157,7 +232,9 @@ async def select(video_id: str, req: SelectRequest):
             cands.append(MatchCandidate(asset=asset, score=c["score"], reason=c["reason"]))
     sid = uuid.uuid4().hex
     _SELECTS[sid] = {"video_id": video_id, "t": req.t, "bbox": req.bbox,
-                     "labels": labels, "cutout": cutout, "track_id": req.track_id,
+                     "polygon": req.polygon, "labels": labels,
+                     "frame": frame_path, "frame_size": frame_size,
+                     "source_crop": source_crop, "track_id": req.track_id,
                      "created": time.time()}
     return SelectResponse(select_id=sid, labels=labels, candidates=cands)
 
@@ -184,7 +261,7 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
     if not req.generate_new:
         raise HTTPException(400, "either use_asset_id or generate_new=true")
 
-    job = create_job("video", sel["cutout"], meta={"category": sel["labels"].get("category")})
+    job = create_job("video", sel["source_crop"], meta={"category": sel["labels"].get("category")})
     asset_id = db.insert_asset(
         name=sel["labels"].get("sub") or sel["labels"].get("category", "新资产"),
         labels=sel["labels"], thumb_url="",

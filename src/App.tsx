@@ -2,9 +2,10 @@ import { useReducer, useRef, useEffect, useMemo, useState, useCallback } from 'r
 import { createPortal } from 'react-dom'
 import { FEED_VIDEOS, MOCK_OBJECTS, LIBRARY_SEED, CATEGORY_COLOR, CURRENT_BLOGGER, type FeedVideo, type FeedState, type SelectedObject, type LibraryComponent, type FurnitureCategory, type MascotState, type CraftJob, type CraftBatch, type TraceEntry } from './types'
 import { genSticker } from './stickerGen'
-import { captureBbox, saveTraceToBackend, loadTracesFromBackend, traceImageUrl } from './segmentApi'
+import { captureBbox, captureVideoSelectionUpload, saveTraceToBackend, loadTracesFromBackend, traceImageUrl } from './segmentApi'
 import { prepareEdgeSamFrame, segmentWithEdgeSam, warmupEdgeSam } from './mobileSam'
-import { falJobToComponent, getFalJob, submitFalGeneration } from './falGenerationApi'
+import { falJobToComponent, getFalJob } from './falGenerationApi'
+import { confirmVideoSelection, submitVideoSelection, type VideoSelectResponse } from './videoSelectionApi'
 import { Mascot, type CollectionMascotMode } from './Mascot'
 import { WorkshopDetail } from './WorkshopDetail'
 import { FrameAssetsDrawer } from './FrameAssetsDrawer'
@@ -65,6 +66,11 @@ interface GuideTarget {
 }
 
 type SessionGuideStage = 'idle' | 'pause' | 'recognize' | 'drag' | 'progress' | 'waiting' | 'complete' | 'done'
+
+type PendingSelectionRequests = Map<string, {
+  videoId: string
+  request: Promise<VideoSelectResponse>
+}>
 
 type Action =
   | { type: 'PAUSE' }
@@ -475,6 +481,7 @@ function App() {
   // 教学只由冷启动气泡的“开始逛逛”启动；普通暂停不会擅自拉起新手引导。
   const [sessionGuideStage, setSessionGuideStage] = useState<SessionGuideStage>('idle')
   const videoRef = useRef<HTMLVideoElement>(null)
+  const selectionRequestsRef = useRef<PendingSelectionRequests>(new Map())
   const feedTouchStartY = useRef<number | null>(null)
   const suppressPause = useRef(false)
   const wheelLocked = useRef(false)
@@ -760,6 +767,9 @@ function App() {
           <SessionLayer
             state={state}
             dispatch={dispatch}
+            videoId={activeFeedVideo.id}
+            pausedTime={pausedFrame.time}
+            selectionRequests={selectionRequestsRef.current}
             frameAssets={activeFrameAssets}
             favoriteAssetIds={favoriteAssetIds}
             onToggleFavoriteAsset={toggleFavoriteAsset}
@@ -1230,6 +1240,9 @@ function SessionGuideOverlay({
 function SessionLayer({
   state,
   dispatch,
+  videoId,
+  pausedTime,
+  selectionRequests,
   frameAssets,
   favoriteAssetIds,
   onToggleFavoriteAsset,
@@ -1242,6 +1255,9 @@ function SessionLayer({
 }: {
   state: State
   dispatch: React.Dispatch<Action>
+  videoId: string
+  pausedTime: number
+  selectionRequests: PendingSelectionRequests
   frameAssets: LibraryComponent[]
   favoriteAssetIds: string[]
   onToggleFavoriteAsset: (id: string) => void
@@ -1562,6 +1578,13 @@ function SessionLayer({
       // breathing state before the decoder/post-processing starts.
       await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()))
       const video = document.querySelector<HTMLVideoElement>('.video')
+      const selectionTime = video?.currentTime ?? pausedTime
+      const selectionUploadPromise = video
+        ? captureVideoSelectionUpload(video, box, path).catch((error) => {
+            console.warn('[selection] unable to prepare original frame', error)
+            return null
+          })
+        : Promise.resolve(null)
       // bbox 截图只作为 pipeline 输入；不会再伪装成“已识别家具”。
       let bboxDataUrl = ''
       if (video && path.length > 2) {
@@ -1608,6 +1631,19 @@ function SessionLayer({
         items: [recognizedItem],
         snapshot: cutout,
         source: 'custom',
+      }
+      const selectionUpload = await selectionUploadPromise
+      if (selectionUpload) {
+        // Start recognition while the user is still dragging the sticker toward
+        // the mascot. The browser-SAM cutout remains presentation-only.
+        selectionRequests.set(objId, {
+          videoId,
+          request: submitVideoSelection({
+            videoId,
+            time: selectionTime,
+            upload: selectionUpload,
+          }),
+        })
       }
       dispatch({ type: 'OBJECT_RECOGNIZED', obj })
       // The sticker pops in first; retire the hand-drawn loop on the following
@@ -1674,7 +1710,7 @@ function SessionLayer({
       document.removeEventListener('touchmove', onTouchMove)
       document.removeEventListener('touchend', onUp)
     }
-  }, [state.selected.length])
+  }, [state.selected.length, pausedTime, videoId, selectionRequests, dispatch])
 
   const startDraw = (e: React.PointerEvent) => {
     if (recognizingRef.current) return
@@ -1726,15 +1762,32 @@ function SessionLayer({
         backendMode: 'local-fallback',
       }
       try {
-        const submitted = await submitFalGeneration(obj.snapshot, initialLabel)
+        const pendingSelection = selectionRequests.get(obj.id)
+        if (!pendingSelection) throw new Error('原始帧圈选尚未准备好')
+        const selection = await pendingSelection.request
+        const submitted = await confirmVideoSelection({
+          videoId: pendingSelection.videoId,
+          selectId: selection.select_id,
+          generateNew: true,
+        })
+        if (!submitted.job_id) throw new Error('后端未返回 3D 任务')
+        const recognizedLabel = selection.labels.sub || selection.labels.category || initialLabel
+        const recognizedCategory = (
+          MOCK_OBJECTS.find((item) => item.label === selection.labels.category)?.label ?? fallbackCategory
+        ) as FurnitureCategory
+        selectionRequests.delete(obj.id)
         return {
           ...fallbackJob,
+          name: recognizedLabel,
+          category: recognizedCategory,
+          color: CATEGORY_COLOR[recognizedCategory],
           backendMode: 'fal',
           backendJobId: submitted.job_id,
         }
       } catch (error) {
+        selectionRequests.delete(obj.id)
         fallbackUsed = true
-        console.warn('[FAL] submit unavailable; using local demo job', error)
+        console.warn('[selection] backend unavailable; using local demo job', error)
         return fallbackJob
       }
     }))

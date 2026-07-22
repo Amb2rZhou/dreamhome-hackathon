@@ -91,6 +91,9 @@ class SelectRequest(BaseModel):
     t: float
     bbox: List[float]
     frame_data_uri: Optional[str] = None   # 前端截帧(dataURI)；不传则服务端尝试从视频抽帧
+    polygon: List[List[float]] = Field(default_factory=list)  # 原始帧归一化手绘圈；仅作选择意图
+    frame_width: Optional[int] = None
+    frame_height: Optional[int] = None
     category_hint: str = ""                # 检测框的品类(前端从 detect 结果透传)
     track_id: Optional[str] = None         # 圈的是 detect 返回的框时透传，复用该 track 不新建
 

@@ -119,6 +119,70 @@ export function screenToVideo(box: { x: number; y: number; w: number; h: number 
   }
 }
 
+export interface VideoSelectionUpload {
+  frame: Blob
+  frameWidth: number
+  frameHeight: number
+  bbox: [number, number, number, number]
+  polygon: Array<[number, number]>
+}
+
+const clamp01 = (value: number) => Math.max(0, Math.min(1, value))
+
+// Prepare the backend selection artifact from untouched source pixels. The
+// browser SAM cutout is deliberately not involved in this upload.
+export function captureVideoSelectionUpload(
+  video: HTMLVideoElement,
+  box: { x: number; y: number; w: number; h: number },
+  path: Array<{ x: number; y: number }>,
+): Promise<VideoSelectionUpload> {
+  return new Promise((resolve, reject) => {
+    const frameWidth = video.videoWidth
+    const frameHeight = video.videoHeight
+    if (!frameWidth || !frameHeight) {
+      reject(new Error('视频原始帧尚未就绪'))
+      return
+    }
+
+    const transform = coverTransform(video)
+    const sourceBox = screenToVideo(box, transform)
+    const left = clamp01(sourceBox.x / frameWidth)
+    const top = clamp01(sourceBox.y / frameHeight)
+    const right = clamp01((sourceBox.x + sourceBox.w) / frameWidth)
+    const bottom = clamp01((sourceBox.y + sourceBox.h) / frameHeight)
+    const bbox: [number, number, number, number] = [
+      left,
+      top,
+      Math.max(1 / frameWidth, right - left),
+      Math.max(1 / frameHeight, bottom - top),
+    ]
+    bbox[2] = Math.min(1 - bbox[0], bbox[2])
+    bbox[3] = Math.min(1 - bbox[1], bbox[3])
+
+    const polygon = path.map((point): [number, number] => [
+      clamp01(((point.x - transform.offsetX) / transform.scale) / frameWidth),
+      clamp01(((point.y - transform.offsetY) / transform.scale) / frameHeight),
+    ])
+
+    const canvas = document.createElement('canvas')
+    canvas.width = frameWidth
+    canvas.height = frameHeight
+    const context = canvas.getContext('2d')
+    if (!context) {
+      reject(new Error('无法读取视频原始帧'))
+      return
+    }
+    context.drawImage(video, 0, 0, frameWidth, frameHeight)
+    canvas.toBlob((frame) => {
+      if (!frame) {
+        reject(new Error('无法压缩视频原始帧'))
+        return
+      }
+      resolve({ frame, frameWidth, frameHeight, bbox, polygon })
+    }, 'image/jpeg', 0.84)
+  })
+}
+
 export function applyPathMask(
   imageDataUrl: string,
   path: { x: number; y: number }[],
