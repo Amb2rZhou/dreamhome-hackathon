@@ -49,13 +49,13 @@ class VideoSelectMultipartTests(unittest.TestCase):
             active_patch.stop()
         self.temp_dir.cleanup()
 
-    def test_persists_full_frame_and_uses_bbox_crop(self):
+    def test_persists_full_frame_and_isolates_polygon_inside_bbox(self):
         response = self.client.post(
             "/api/videos/vid_test/select",
             data={
                 "t": "12.5",
                 "bbox": "[0.2, 0.25, 0.4, 0.5]",
-                "polygon": "[[0.2, 0.25], [0.6, 0.25], [0.6, 0.75]]",
+                "polygon": "[[0.2, 0.25], [0.4, 0.25], [0.4, 0.75], [0.2, 0.75]]",
                 "frame_width": "100",
                 "frame_height": "80",
                 "category_hint": "其他",
@@ -68,9 +68,39 @@ class VideoSelectMultipartTests(unittest.TestCase):
         self.assertEqual(payload["labels"]["sub"], "茶壶")
         selection = videos._SELECTS[payload["select_id"]]
         self.assertEqual(selection["frame_size"], (100, 80))
-        self.assertEqual(selection["polygon"], [[0.2, 0.25], [0.6, 0.25], [0.6, 0.75]])
+        self.assertEqual(selection["polygon"], [[0.2, 0.25], [0.4, 0.25], [0.4, 0.75], [0.2, 0.75]])
+        self.assertEqual(selection["isolation_mode"], "polygon")
         with Image.open(selection["frame"]) as frame:
             self.assertEqual(frame.size, (100, 80))
+        with Image.open(selection["source_crop"]).convert("RGB") as crop:
+            subject = crop.getpixel((5, 20))
+            excluded = crop.getpixel((35, 20))
+            self.assertLess(subject[0], 210)
+            self.assertGreater(excluded[0], 235)
+
+    def test_production_rejects_bbox_only_selection(self):
+        selection_response = self.client.post(
+            "/api/videos/vid_test/select",
+            data={
+                "t": "2",
+                "bbox": "[0.2, 0.25, 0.4, 0.5]",
+                "frame_width": "100",
+                "frame_height": "80",
+            },
+            files={"frame": ("frame.jpg", _jpeg(), "image/jpeg")},
+        )
+        self.assertEqual(selection_response.status_code, 200, selection_response.text)
+
+        confirm_response = self.client.post(
+            "/api/videos/vid_test/select/confirm",
+            json={
+                "select_id": selection_response.json()["select_id"],
+                "generate_new": True,
+                "quality_mode": "production",
+            },
+        )
+        self.assertEqual(confirm_response.status_code, 422, confirm_response.text)
+        self.assertIn("polygon", confirm_response.text)
 
     def test_rejects_multipart_without_full_frame(self):
         response = self.client.post(

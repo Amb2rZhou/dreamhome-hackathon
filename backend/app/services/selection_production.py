@@ -5,7 +5,7 @@
 """
 import os
 import shutil
-from typing import Any
+from typing import Any, Optional
 
 from pipeline.run import SKIP_GEN_CATEGORIES, cut_quality_ok, gen3d
 
@@ -66,12 +66,16 @@ async def _produce(
     cutout_path: str,
     labels: dict[str, Any],
     user_id: str,
+    polygon: Optional[list[list[float]]] = None,
+    isolation_mode: str = "bbox",
 ) -> None:
     source = {
         "video_id": video_id,
         "track_id": track_id,
         "t_best": t,
         "bbox": bbox,
+        "polygon": polygon or [],
+        "isolation_mode": isolation_mode,
         "pipeline": "feed-selection-production",
     }
     desc = _description(labels)
@@ -163,6 +167,8 @@ def start_selection_production(
     track_id: str,
     t: float,
     bbox: list[float],
+    polygon: list[list[float]],
+    isolation_mode: str,
     cutout_path: str,
     labels: dict[str, Any],
     user_id: str,
@@ -173,6 +179,8 @@ def start_selection_production(
         "track_id": track_id,
         "t_best": t,
         "bbox": bbox,
+        "polygon": polygon,
+        "isolation_mode": isolation_mode,
         "pipeline": "feed-selection-production",
         "pipeline_status": "queued",
     }
@@ -196,6 +204,8 @@ def start_selection_production(
             cutout_path=cutout_path,
             labels=labels,
             user_id=user_id,
+            polygon=polygon,
+            isolation_mode=isolation_mode,
         )
 
     styles = labels.get("styles") or []

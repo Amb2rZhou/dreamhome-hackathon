@@ -16,6 +16,8 @@ export interface FalJobResponse {
   model_url?: string | null
   thumbnail_url?: string | null
   error?: string | null
+  quality_mode?: 'fast' | 'production' | null
+  library_attached?: boolean
 }
 
 export class FalApiError extends Error {
@@ -97,14 +99,19 @@ export function falJobToComponent(job: FalJobResponse, fallback: {
 }): LibraryComponent {
   const color = CATEGORY_COLOR[fallback.category]
   const thumbnail = job.thumbnail_url || fallback.snapshot
+  const isProduction = job.quality_mode === 'production'
   return {
     id: `fal-${fallback.id}`,
     category: fallback.category,
     name: fallback.name,
-    source: '圈选生成 · FAL TRELLIS',
-    sourceDescription: '由包工球生成并加入素材库',
+    source: isProduction ? '正式生成 · DreamHome' : '快速草稿 · TRELLIS',
+    sourceDescription: isProduction
+      ? (job.library_attached ? '已通过正式质量门并加入素材库' : '已通过正式质量门，尚未加入素材库')
+      : '单图快速生成的原始 3D，尚未通过正式质量门',
     size: '待识别尺寸',
-    styleTags: ['FAL', 'TRELLIS', '完整 3D'],
+    styleTags: isProduction
+      ? ['DreamHome', '正式 3D', job.library_attached ? '已入库' : '未入库']
+      : ['TRELLIS', '快速草稿', '未入库'],
     thumbnail,
     color,
     sticker: thumbnail,

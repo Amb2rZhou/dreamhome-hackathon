@@ -2,9 +2,9 @@ import { useReducer, useRef, useEffect, useMemo, useState, useCallback } from 'r
 import { createPortal } from 'react-dom'
 import { FEED_VIDEOS, MOCK_OBJECTS, LIBRARY_SEED, CATEGORY_COLOR, CURRENT_BLOGGER, type FeedVideo, type FeedState, type SelectedObject, type LibraryComponent, type FurnitureCategory, type MascotState, type CraftJob, type CraftBatch, type TraceEntry } from './types'
 import { genSticker } from './stickerGen'
-import { captureBbox, captureVideoSelectionUpload, sourceCropDataUrl, saveTraceToBackend, loadTracesFromBackend, traceImageUrl, type VideoSelectionUpload } from './segmentApi'
+import { captureBbox, captureVideoSelectionUpload, saveTraceToBackend, loadTracesFromBackend, traceImageUrl, type VideoSelectionUpload } from './segmentApi'
 import { prepareEdgeSamFrame, segmentWithEdgeSam, warmupEdgeSam } from './mobileSam'
-import { falJobToComponent, getFalJob, submitFalGeneration } from './falGenerationApi'
+import { falJobToComponent, getFalJob } from './falGenerationApi'
 import { confirmVideoSelection, submitVideoSelection, type VideoSelectResponse } from './videoSelectionApi'
 import { Mascot, type CollectionMascotMode } from './Mascot'
 import { WorkshopDetail } from './WorkshopDetail'
@@ -1779,33 +1779,17 @@ function SessionLayer({
         let submitted: { job_id?: string | null }
         let recognizedLabel = initialLabel
         let recognizedCategory = fallbackCategory
-        if (selection) {
-          recognizedLabel = selection.labels.sub || selection.labels.category || initialLabel
-          recognizedCategory = (
-            MOCK_OBJECTS.find((item) => item.label === selection.labels.category)?.label ?? fallbackCategory
-          ) as FurnitureCategory
-          try {
-            submitted = await confirmVideoSelection({
-              videoId: pendingSelection.videoId,
-              selectId: selection.select_id,
-              generateNew: true,
-              qualityMode: 'production',
-            })
-          } catch (error) {
-            console.warn('[selection] production route unavailable; using raw TRELLIS route', error)
-            submitted = await submitFalGeneration(
-              await sourceCropDataUrl(pendingSelection.upload),
-              recognizedLabel,
-            )
-          }
-        } else {
-          // Vercel's raw TRELLIS route receives an RGB crop from the complete
-          // source frame. It never receives the browser-SAM mask/cutout.
-          submitted = await submitFalGeneration(
-            await sourceCropDataUrl(pendingSelection.upload),
-            initialLabel,
-          )
-        }
+        if (!selection) throw new Error('完整 3D 服务暂时不可用，请稍后重试')
+        recognizedLabel = selection.labels.sub || selection.labels.category || initialLabel
+        recognizedCategory = (
+          MOCK_OBJECTS.find((item) => item.label === selection.labels.category)?.label ?? fallbackCategory
+        ) as FurnitureCategory
+        submitted = await confirmVideoSelection({
+          videoId: pendingSelection.videoId,
+          selectId: selection.select_id,
+          generateNew: true,
+          qualityMode: 'production',
+        })
         if (!submitted.job_id) throw new Error('后端未返回 3D 任务')
         selectionRequests.delete(obj.id)
         return {
