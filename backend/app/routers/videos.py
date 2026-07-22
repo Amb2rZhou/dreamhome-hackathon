@@ -17,6 +17,7 @@ from ..schemas_lib import (DetectBox, DetectResponse, MatchCandidate, SelectConf
                            VideoIndex, VideoOut)
 from ..services.detect import detect_frame
 from ..services.labels import extract_labels
+from ..services.selection_production import production_readiness, start_selection_production
 from ..store import create_job
 from ..utils import workpath
 
@@ -235,16 +236,33 @@ async def select(video_id: str, request: Request):
                      "polygon": req.polygon, "labels": labels,
                      "frame": frame_path, "frame_size": frame_size,
                      "source_crop": source_crop, "track_id": req.track_id,
+                     "has_source_frame": frame_bytes is not None or bool(req.frame_data_uri),
                      "created": time.time()}
     return SelectResponse(select_id=sid, labels=labels, candidates=cands)
 
 
 @router.post("/{video_id}/select/confirm", response_model=SelectConfirmResponse)
 async def select_confirm(video_id: str, req: SelectConfirmRequest):
-    """确认圈选结果：挂现有资产(不重新生成)，或生成新资产。"""
-    sel = _SELECTS.pop(req.select_id, None)
+    """确认圈选结果：复用同款，或选择 fast/production 生成新资产。"""
+    sel = _SELECTS.get(req.select_id)
     if not sel or sel["video_id"] != video_id:
         raise HTTPException(404, "select session not found (expired?)")
+
+    if req.use_asset_id and req.generate_new:
+        raise HTTPException(400, "use_asset_id and generate_new are mutually exclusive")
+    if req.quality_mode == "production" and not req.generate_new:
+        raise HTTPException(400, "quality_mode=production requires generate_new=true")
+    if req.use_asset_id and not db.get_asset(req.use_asset_id):
+        raise HTTPException(404, "asset not found")
+    if req.quality_mode == "production" and not sel.get("has_source_frame"):
+        raise HTTPException(422, "production mode requires a valid frame_data_uri in /select")
+    if req.quality_mode == "production":
+        readiness = production_readiness()
+        if not readiness["ready"]:
+            raise HTTPException(503, {"message": "production pipeline is not ready",
+                                      "capability": readiness})
+
+    _SELECTS.pop(req.select_id, None)
 
     track_id = sel.get("track_id") if sel.get("track_id") and db.get_track(sel["track_id"]) else None
     if not track_id:
@@ -253,13 +271,30 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
                                    t_start=sel["t"], t_end=sel["t"], best_frame_t=sel["t"])
 
     if req.use_asset_id:
-        if not db.get_asset(req.use_asset_id):
-            raise HTTPException(404, "asset not found")
         db.bind_track_asset(track_id, req.use_asset_id)
-        return SelectConfirmResponse(asset_id=req.use_asset_id, track_id=track_id)
+        return SelectConfirmResponse(asset_id=req.use_asset_id, track_id=track_id,
+                                     quality_mode="reuse")
 
     if not req.generate_new:
         raise HTTPException(400, "either use_asset_id or generate_new=true")
+
+    if req.quality_mode == "production":
+        asset_id, job = start_selection_production(
+            video_id=video_id,
+            track_id=track_id,
+            t=sel["t"],
+            bbox=sel["bbox"],
+            cutout_path=sel["source_crop"],
+            labels=sel["labels"],
+            user_id=req.user_id,
+        )
+        return SelectConfirmResponse(
+            asset_id=asset_id,
+            job_id=job.job_id,
+            track_id=track_id,
+            quality_mode="production",
+            library_attached=False,
+        )
 
     job = create_job("video", sel["source_crop"], meta={"category": sel["labels"].get("category")})
     asset_id = db.insert_asset(
@@ -269,4 +304,5 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
         status="generating", job_id=job.job_id, created_by="user",
     )
     db.bind_track_asset(track_id, asset_id)
-    return SelectConfirmResponse(asset_id=asset_id, job_id=job.job_id, track_id=track_id)
+    return SelectConfirmResponse(asset_id=asset_id, job_id=job.job_id, track_id=track_id,
+                                 quality_mode="fast")

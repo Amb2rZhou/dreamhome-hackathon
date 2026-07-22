@@ -2,7 +2,7 @@
 
 bbox 一律归一化 [x, y, w, h]，原点左上。
 """
-from typing import List, Optional, Union
+from typing import List, Literal, Optional, Union
 from pydantic import BaseModel, Field
 
 
@@ -114,12 +114,16 @@ class SelectConfirmRequest(BaseModel):
     select_id: str
     use_asset_id: Optional[str] = None  # 确认同款：挂现有资产，不重新生成
     generate_new: bool = False          # 生成新资产
+    quality_mode: Literal["fast", "production"] = "fast"
+    user_id: str = "demo"               # production 成功后自动加入该用户素材库
 
 
 class SelectConfirmResponse(BaseModel):
     asset_id: Optional[str] = None
     job_id: Optional[str] = None        # generate_new 时轮询 /api/jobs/{id}
     track_id: str = ""
+    quality_mode: Literal["reuse", "fast", "production"] = "reuse"
+    library_attached: bool = False
 
 
 class LibraryAddRequest(BaseModel):
