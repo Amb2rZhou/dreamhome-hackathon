@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_a188c23c1ff7",
+  "video_id": "vid_58a7a1504281",
+  "appearances": [
+    {
+      "start_sec": 23.0,
+      "end_sec": 23.5,
+      "representative_sec": 23.5
+    },
+    {
+      "start_sec": 102.0,
+      "end_sec": 112.5,
+      "representative_sec": 103.5
+    },
+    {
+      "start_sec": 114.5,
+      "end_sec": 121.0,
+      "representative_sec": 119.0
+    },
+    {
+      "start_sec": 130.0,
+      "end_sec": 137.5,
+      "representative_sec": 135.0
+    }
+  ],
+  "name": "双人床",
+  "space": "",
+  "type": {
+    "category": "床",
+    "subcategory": "双人床"
+  },
+  "labels": {
+    "category": "床",
+    "sub": "双人床",
+    "colors": [
+      "浅绿色",
+      "黑色",
+      "白色"
+    ],
+    "materials": [
+      "布艺",
+      "皮革",
+      "实木"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "软包床头",
+      "带抽屉床架",
+      "绗缝床品",
+      "简约设计",
+      "高床箱"
+    ],
+    "size_class": "大",
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.3930835425853729,
+      -0.21166622638702393,
+      -0.500591516494751
+    ],
+    "bounds_max": [
+      0.39610692858695984,
+      0.21176867187023163,
+      0.5008466839790344
+    ],
+    "dimensions_model_unit": [
+      0.7891904711723328,
+      0.42343489825725555,
+      1.0014382004737854
+    ],
+    "center": [
+      0.001511693000793457,
+      5.122274160385132e-05,
+      0.00012758374214172363
+    ],
+    "vertex_count": 12247,
+    "triangle_count": 18797,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.001511693000793457,
+        5.122274160385132e-05,
+        0.00012758374214172363
+      ],
+      "dimensions": [
+        0.7891904711723328,
+        0.42343489825725555,
+        1.0014382004737854
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.21166622638702393,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.206087+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_a188c23c1ff7/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 127348,
+      "sha256": "378b4996d1b5fc415c94f3dfdbab4438cdcf6dbd88601e5807167edd60e2027f",
+      "role": "representative_video_frame"
+    },
+    "source_crop": {
+      "path": "assets/ast_a188c23c1ff7/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 28798,
+      "sha256": "aa856c4a0e42a6708a1eed1f844b0de8c7a863e3d1db290ac46c731ea3320513"
+    },
+    "completed_input": {
+      "path": "assets/ast_a188c23c1ff7/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1346709,
+      "sha256": "6d67a37a8461a27216b580fc6e5433b403d6a890869f53ee4a210dae51e4f843",
+      "width_px": 1001,
+      "height_px": 1047
+    },
+    "model_3d": {
+      "path": "assets/ast_a188c23c1ff7/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1557572,
+      "sha256": "2e96ec48e2592628fff6577c34fac4a8b085920c8cf39986c2d532ff84e665f0"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T14:41:36.518347+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-17T16:19:13.091005+00:00"
+}

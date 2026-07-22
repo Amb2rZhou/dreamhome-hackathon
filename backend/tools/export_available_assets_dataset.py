@@ -1,9 +1,10 @@
-"""Export the strict, frontend-available asset dataset from the local SQLite store.
+"""Export the frontend-available asset dataset from the local SQLite store.
 
-An asset is exported only when it is ready, human-approved, has a real-world
-size prior, a non-zero video appearance interval, a local completed input, a
-local GLB, and parsed geometry metadata. The export intentionally omits track
-IDs; frontend consumers only receive video time intervals.
+An asset is exported when it is ready, human-approved, has a non-zero video
+appearance interval, a local completed input, a local GLB, and parsed geometry
+metadata. Real-world size is exported when known and explicitly marked missing
+otherwise. The export intentionally omits track IDs; frontend consumers only
+receive video time intervals.
 """
 from __future__ import annotations
 
@@ -64,13 +65,40 @@ def copy_media(source: Path, destination: Path, dataset_root: Path,
     return result
 
 
-def source_context_files(storage: Path, video_id: str, input_name: str) -> tuple[Path, Path]:
+def source_context_files(storage: Path, video_id: str, input_name: str,
+                         representative_sec: float) -> tuple[Path, Path, str]:
     match = re.search(r"_(\d+)r?2?\.(?:jpg|jpeg|png)$", input_name, re.IGNORECASE)
     if not match:
         raise ValueError(f"cannot map input name to pipeline context: {input_name}")
     index = match.group(1)
-    base = storage / "pipeline" / video_id
-    return base / f"ctx_{index}.jpg", base / f"cut_{index}.jpg"
+    input_video_id = input_name.rsplit("_", 1)[0]
+    bases = [storage / "pipeline" / video_id]
+    if input_video_id != video_id:
+        bases.append(storage / "pipeline" / input_video_id)
+    context = next(
+        (base / f"ctx_{index}.jpg" for base in bases if (base / f"ctx_{index}.jpg").is_file()),
+        None,
+    )
+    crop = next(
+        (base / f"cut_{index}.jpg" for base in bases if (base / f"cut_{index}.jpg").is_file()),
+        None,
+    )
+    context_role = "recognition_context"
+    if context is None:
+        keyframes = list((storage / "pipeline" / video_id).glob("kf_*.jpg"))
+
+        def frame_time(path: Path) -> float:
+            try:
+                return float(path.stem.split("_", 1)[1])
+            except (ValueError, IndexError):
+                return float("inf")
+
+        if keyframes:
+            context = min(keyframes, key=lambda item: abs(frame_time(item) - representative_sec))
+            context_role = "representative_video_frame"
+    if context is None or crop is None:
+        raise ValueError(f"missing source context/crop for {video_id} index {index}")
+    return context, crop, context_role
 
 
 def export(db_path: Path, storage: Path, output: Path) -> None:
@@ -91,7 +119,6 @@ def export(db_path: Path, storage: Path, output: Path) -> None:
              JOIN asset_reviews r USING(asset_id)
              JOIN asset_geometry g USING(asset_id)
             WHERE a.status='ready' AND r.verdict='pass'
-              AND a.size_prior_json IS NOT NULL
               AND EXISTS (
                 SELECT 1 FROM asset_video_segments s
                  WHERE s.asset_id=a.asset_id AND s.t_end>s.t_start
@@ -160,9 +187,9 @@ def export(db_path: Path, storage: Path, output: Path) -> None:
         if not input_file or not model_file:
             raise ValueError(f"{asset_id}: local completed input or GLB missing")
 
-        context_file, crop_file = source_context_files(storage, video_id, input_file.name)
-        if not context_file.is_file() or not crop_file.is_file():
-            raise ValueError(f"{asset_id}: source context/crop missing")
+        context_file, crop_file, context_role = source_context_files(
+            storage, video_id, input_file.name, float(source.get("t_best") or 0)
+        )
 
         asset_dir = assets_dir / asset_id
         media = {
@@ -174,8 +201,10 @@ def export(db_path: Path, storage: Path, output: Path) -> None:
             ),
             "model_3d": copy_media(model_file, asset_dir / "model.glb", output),
         }
+        media["context"]["role"] = context_role
         labels = parse_json(row["labels_json"], {})
         size = parse_json(row["size_prior_json"], {})
+        size_status = "known" if size else "missing"
         asset = {
             "schema_version": 1,
             "availability": "available",
@@ -196,6 +225,7 @@ def export(db_path: Path, storage: Path, output: Path) -> None:
                 "subcategory": labels.get("sub", ""),
             },
             "labels": labels,
+            "size_status": size_status,
             "physical_size_m": {
                 "width": size.get("w"),
                 "height": size.get("h"),
@@ -236,7 +266,7 @@ def export(db_path: Path, storage: Path, output: Path) -> None:
         "completeness_policy": {
             "status": "ready",
             "human_review": "pass",
-            "physical_size_m": "required",
+            "physical_size_m": "included when known; null dimensions plus size_status=missing otherwise",
             "video_id": "required",
             "appearance_interval": "at least one interval with end_sec > start_sec",
             "completed_input": "required local file with SHA-256",
@@ -245,12 +275,15 @@ def export(db_path: Path, storage: Path, output: Path) -> None:
             "track_ids_exposed": False,
         },
         "asset_count": len(exported_assets),
+        "size_known_count": sum(item["size_status"] == "known" for item in exported_assets),
+        "size_missing_count": sum(item["size_status"] == "missing" for item in exported_assets),
         "video_count": len(exported_videos),
         "assets": [
             {
                 "asset_id": item["asset_id"],
                 "name": item["name"],
                 "video_id": item["video_id"],
+                "size_status": item["size_status"],
                 "record": f"assets/{item['asset_id']}/asset.json",
             }
             for item in exported_assets
@@ -263,10 +296,10 @@ def export(db_path: Path, storage: Path, output: Path) -> None:
 
     readme = """# Available Assets v1
 
-这是从后端资产库导出的严格完整数据集。只包含同时满足以下条件的资产：
+这是从后端资产库导出的前端可用数据集。包含同时满足以下条件的资产：
 
 - 状态为 `ready`，且人工审核为 `pass`
-- 有真实尺寸（米）
+- 真实尺寸已知时保存米制长宽高；未知时明确标为 `size_status: missing`
 - 有视频 ID，以及至少一个非零的开始—结束出现区间
 - 有识别上下文、原始裁切、补全后的 3D 输入图和本地 GLB
 - GLB 已解析出包围盒、顶点/三角形数、碰撞盒和放置锚点
@@ -276,7 +309,7 @@ def export(db_path: Path, storage: Path, output: Path) -> None:
 
 - `manifest.json`：数据集入口和完整性标准
 - `assets/<asset_id>/asset.json`：单件资产的全部结构化字段
-- `assets/<asset_id>/context.jpg`：资产在原视频中的识别上下文
+- `assets/<asset_id>/context.jpg`：资产在原视频中的识别上下文；旧资产没有红框图时使用代表帧
 - `assets/<asset_id>/source_crop.jpg`：补全前的原始裁切
 - `assets/<asset_id>/completed_input.*`：实际送入 3D 的完整输入图
 - `assets/<asset_id>/model.glb`：3D 模型
@@ -295,7 +328,7 @@ def export(db_path: Path, storage: Path, output: Path) -> None:
         "type": "object",
         "required": [
             "schema_version", "availability", "asset_id", "video_id", "appearances",
-            "name", "type", "labels", "physical_size_m", "geometry", "media", "review",
+            "name", "type", "labels", "size_status", "physical_size_m", "geometry", "media", "review",
         ],
         "properties": {
             "schema_version": {"const": 1},
@@ -323,12 +356,13 @@ def export(db_path: Path, storage: Path, output: Path) -> None:
                 },
             },
             "labels": {"type": "object"},
+            "size_status": {"enum": ["known", "missing"]},
             "physical_size_m": {
                 "type": "object", "required": ["width", "height", "depth"],
                 "properties": {
-                    "width": {"type": "number", "exclusiveMinimum": 0},
-                    "height": {"type": "number", "exclusiveMinimum": 0},
-                    "depth": {"type": "number", "exclusiveMinimum": 0},
+                    "width": {"type": ["number", "null"], "exclusiveMinimum": 0},
+                    "height": {"type": ["number", "null"], "exclusiveMinimum": 0},
+                    "depth": {"type": ["number", "null"], "exclusiveMinimum": 0},
                 },
             },
             "geometry": {"type": "object"},

@@ -44,6 +44,7 @@
     "complete": true,
     "mount": "surface"
   },
+  "size_status": "known",
   "physical_size_m": {
     "width": 0.299,
     "height": 0.312,
@@ -102,7 +103,8 @@
       "path": "assets/ast_45226bd63340/context.jpg",
       "mime_type": "image/jpeg",
       "bytes": 18854,
-      "sha256": "10be86f661fb5644de8956e970b03288dd2dd43643a7e12d3d31ec61b8d3f27f"
+      "sha256": "10be86f661fb5644de8956e970b03288dd2dd43643a7e12d3d31ec61b8d3f27f",
+      "role": "recognition_context"
     },
     "source_crop": {
       "path": "assets/ast_45226bd63340/source_crop.jpg",

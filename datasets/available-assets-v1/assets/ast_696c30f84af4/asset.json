@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_696c30f84af4",
+  "video_id": "vid_5c7efd168eb7",
+  "appearances": [
+    {
+      "start_sec": 51.5,
+      "end_sec": 54.5,
+      "representative_sec": 54.0
+    }
+  ],
+  "name": "格子柜",
+  "space": "",
+  "type": {
+    "category": "柜子",
+    "subcategory": "格子柜"
+  },
+  "labels": {
+    "category": "柜子",
+    "sub": "格子柜",
+    "colors": [
+      "棕色"
+    ],
+    "materials": [
+      "实木"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "分格设计",
+      "壁挂式",
+      "带延伸搁板"
+    ],
+    "size_class": "中"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.5007138848304749,
+      -0.3976161777973175,
+      -0.12952840328216553
+    ],
+    "bounds_max": [
+      0.5005511045455933,
+      0.3980691134929657,
+      0.12950754165649414
+    ],
+    "dimensions_model_unit": [
+      1.0012649893760681,
+      0.7956852912902832,
+      0.25903594493865967
+    ],
+    "center": [
+      -8.13901424407959e-05,
+      0.00022646784782409668,
+      -1.043081283569336e-05
+    ],
+    "vertex_count": 15188,
+    "triangle_count": 24882,
+    "collision": {
+      "type": "box",
+      "center": [
+        -8.13901424407959e-05,
+        0.00022646784782409668,
+        -1.043081283569336e-05
+      ],
+      "dimensions": [
+        1.0012649893760681,
+        0.7956852912902832,
+        0.25903594493865967
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.3976161777973175,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.226022+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_696c30f84af4/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 126427,
+      "sha256": "a1175bd21b2ff5434fa82847e31d2149f4b1c4ba6a82f8b9236bfcadbf4fd5f4",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_696c30f84af4/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 46605,
+      "sha256": "968b38d3ab6c7892a0722469d2895a5a8264f88bf63feff85ba1f4c498fce000"
+    },
+    "completed_input": {
+      "path": "assets/ast_696c30f84af4/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 5315207,
+      "sha256": "0797093db40126e527f67684a2c76e3ee6adf3dbf431dea451bdeeef3aa7d6f2",
+      "width_px": 2214,
+      "height_px": 1893
+    },
+    "model_3d": {
+      "path": "assets/ast_696c30f84af4/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1694096,
+      "sha256": "17a649d58874cf0ca1c2583d913afcd1ede48dd1bc2387f66817238dfa8526b1"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T15:47:03.902363+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-16T17:13:01.069571+00:00"
+}

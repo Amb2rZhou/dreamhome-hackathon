@@ -40,6 +40,7 @@
     "complete": true,
     "mount": "floor"
   },
+  "size_status": "known",
   "physical_size_m": {
     "width": 2.359,
     "height": 0.785,
@@ -98,7 +99,8 @@
       "path": "assets/ast_ccc6f7405f39/context.jpg",
       "mime_type": "image/jpeg",
       "bytes": 108005,
-      "sha256": "775e7f57398bb7f707c71a1638104326da389c88860407ebd628b792c90be748"
+      "sha256": "775e7f57398bb7f707c71a1638104326da389c88860407ebd628b792c90be748",
+      "role": "recognition_context"
     },
     "source_crop": {
       "path": "assets/ast_ccc6f7405f39/source_crop.jpg",

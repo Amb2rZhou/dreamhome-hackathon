@@ -12,6 +12,7 @@
     "name",
     "type",
     "labels",
+    "size_status",
     "physical_size_m",
     "geometry",
     "media",
@@ -82,6 +83,12 @@
     "labels": {
       "type": "object"
     },
+    "size_status": {
+      "enum": [
+        "known",
+        "missing"
+      ]
+    },
     "physical_size_m": {
       "type": "object",
       "required": [
@@ -91,15 +98,24 @@
       ],
       "properties": {
         "width": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "exclusiveMinimum": 0
         },
         "height": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "exclusiveMinimum": 0
         },
         "depth": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "exclusiveMinimum": 0
         }
       }

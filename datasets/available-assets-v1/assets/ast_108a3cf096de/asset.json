@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_108a3cf096de",
+  "video_id": "vid_605df2fff231",
+  "appearances": [
+    {
+      "start_sec": 27.5,
+      "end_sec": 35.5,
+      "representative_sec": 35.5
+    }
+  ],
+  "name": "吊灯",
+  "space": "",
+  "type": {
+    "category": "灯具",
+    "subcategory": "吊灯"
+  },
+  "labels": {
+    "category": "灯具",
+    "sub": "吊灯",
+    "colors": [
+      "黑色",
+      "白色"
+    ],
+    "materials": [
+      "金属",
+      "塑料"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "锥形灯罩",
+      "单头悬挂",
+      "简约设计"
+    ],
+    "size_class": "中",
+    "complete": true,
+    "mount": "ceiling"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.3187575340270996,
+      -0.5013825297355652,
+      -0.318827748298645
+    ],
+    "bounds_max": [
+      0.31872421503067017,
+      0.5000832080841064,
+      0.3192127048969269
+    ],
+    "dimensions_model_unit": [
+      0.6374817490577698,
+      1.0014657378196716,
+      0.6380404531955719
+    ],
+    "center": [
+      -1.665949821472168e-05,
+      -0.0006496608257293701,
+      0.00019247829914093018
+    ],
+    "vertex_count": 4336,
+    "triangle_count": 7450,
+    "collision": {
+      "type": "box",
+      "center": [
+        -1.665949821472168e-05,
+        -0.0006496608257293701,
+        0.00019247829914093018
+      ],
+      "dimensions": [
+        0.6374817490577698,
+        1.0014657378196716,
+        0.6380404531955719
+      ]
+    },
+    "anchor": {
+      "surface": "ceiling",
+      "point": [
+        0,
+        0.5000832080841064,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.188369+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_108a3cf096de/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 42195,
+      "sha256": "ce45cbaab6807e727f43d216f8ec51cba4f8021a2ffd7b2c8f8b218fbc1e8efd",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_108a3cf096de/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 15320,
+      "sha256": "1dcc8a7357519cea3bf5379f1694c15a96f700903788d81a9a6e21699195e8e7"
+    },
+    "completed_input": {
+      "path": "assets/ast_108a3cf096de/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1362763,
+      "sha256": "42476b8695b90f83ccba18462dcff6936c4c1828b96266da54cb380612ffb312",
+      "width_px": 827,
+      "height_px": 1266
+    },
+    "model_3d": {
+      "path": "assets/ast_108a3cf096de/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1221440,
+      "sha256": "8b97486c6234232b6eb45814e50009e7241e0eb1cce6960d44a919bd7965acc1"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T14:38:41.367372+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-19T15:37:55.772947+00:00"
+}

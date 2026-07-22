@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_f2d29b396fcd",
+  "video_id": "vid_182cbf77954d",
+  "appearances": [
+    {
+      "start_sec": 1.5,
+      "end_sec": 5.5,
+      "representative_sec": 3.0
+    }
+  ],
+  "name": "储物凳",
+  "space": "",
+  "type": {
+    "category": "柜子",
+    "subcategory": "储物凳"
+  },
+  "labels": {
+    "category": "柜子",
+    "sub": "储物凳",
+    "colors": [
+      "棕色",
+      "米白色"
+    ],
+    "materials": [
+      "实木",
+      "布艺"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "带抽屉",
+      "软垫坐面",
+      "靠墙放置"
+    ],
+    "size_class": "中",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.5002166032791138,
+      -0.16839544475078583,
+      -0.12674351036548615
+    ],
+    "bounds_max": [
+      0.500671923160553,
+      0.16040390729904175,
+      0.12744140625
+    ],
+    "dimensions_model_unit": [
+      1.0008885264396667,
+      0.3287993520498276,
+      0.25418491661548615
+    ],
+    "center": [
+      0.0002276599407196045,
+      -0.00399576872587204,
+      0.0003489479422569275
+    ],
+    "vertex_count": 6916,
+    "triangle_count": 11742,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.0002276599407196045,
+        -0.00399576872587204,
+        0.0003489479422569275
+      ],
+      "dimensions": [
+        1.0008885264396667,
+        0.3287993520498276,
+        0.25418491661548615
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.16839544475078583,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.167947+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_f2d29b396fcd/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 28950,
+      "sha256": "7545f2e361bd1b9e92bde6b686ada3b601b274c8e9d112436bc2737d7e35f6a6",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_f2d29b396fcd/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 12324,
+      "sha256": "823615d0d28ca9a654d8ce523466d1e60246e7dc7cc32590c1217ebda0822123"
+    },
+    "completed_input": {
+      "path": "assets/ast_f2d29b396fcd/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1436955,
+      "sha256": "1842ebda3e21e5deba6c492344656787fe891da4a654519580d98f2d4f697266",
+      "width_px": 781,
+      "height_px": 1340
+    },
+    "model_3d": {
+      "path": "assets/ast_f2d29b396fcd/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1140676,
+      "sha256": "00334cc81132ec1bdfac7fc0c8ba8a027ec9e6155ec665060a77e175e3b09b33"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T12:26:08.877251+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-20T18:20:37.031850+00:00"
+}

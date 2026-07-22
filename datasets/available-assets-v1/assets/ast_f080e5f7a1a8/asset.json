@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_f080e5f7a1a8",
+  "video_id": "vid_58a7a1504281",
+  "appearances": [
+    {
+      "start_sec": 50.5,
+      "end_sec": 51.0,
+      "representative_sec": 51.0
+    }
+  ],
+  "name": "吸顶灯",
+  "space": "",
+  "type": {
+    "category": "灯具",
+    "subcategory": "吸顶灯"
+  },
+  "labels": {
+    "category": "灯具",
+    "sub": "吸顶灯",
+    "colors": [
+      "白色",
+      "黑色"
+    ],
+    "materials": [
+      "金属",
+      "塑料"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "方形",
+      "嵌入式",
+      "多光源"
+    ],
+    "size_class": "小",
+    "mount": "ceiling"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.16839657723903656,
+      -0.13111303746700287,
+      -0.168920636177063
+    ],
+    "bounds_max": [
+      0.16803275048732758,
+      0.13816651701927185,
+      0.16905689239501953
+    ],
+    "dimensions_model_unit": [
+      0.33642932772636414,
+      0.2692795544862747,
+      0.3379775285720825
+    ],
+    "center": [
+      -0.0001819133758544922,
+      0.003526739776134491,
+      6.812810897827148e-05
+    ],
+    "vertex_count": 3348,
+    "triangle_count": 6096,
+    "collision": {
+      "type": "box",
+      "center": [
+        -0.0001819133758544922,
+        0.003526739776134491,
+        6.812810897827148e-05
+      ],
+      "dimensions": [
+        0.33642932772636414,
+        0.2692795544862747,
+        0.3379775285720825
+      ]
+    },
+    "anchor": {
+      "surface": "ceiling",
+      "point": [
+        0,
+        0.13816651701927185,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.195601+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_f080e5f7a1a8/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 126415,
+      "sha256": "b3671754983db0bdb04610e0c63a177160818ef52f3cf9775c6e547753bad708",
+      "role": "representative_video_frame"
+    },
+    "source_crop": {
+      "path": "assets/ast_f080e5f7a1a8/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 12515,
+      "sha256": "78b081d71eb5fcb12ea3cc154dd6d19d50b52c600de5b763077debffb0601105"
+    },
+    "completed_input": {
+      "path": "assets/ast_f080e5f7a1a8/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1242328,
+      "sha256": "4b7cdc890d600180506bd49296a6a56332959e58fbf1fcde365f37a0ff8dfcad",
+      "width_px": 877,
+      "height_px": 1195
+    },
+    "model_3d": {
+      "path": "assets/ast_f080e5f7a1a8/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 996420,
+      "sha256": "0912cb655f662cb84e28614fcacdaa96453a180e6f089fa0ca487ee2c2449a6d"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T14:40:45.618446+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-17T16:45:41.331390+00:00"
+}

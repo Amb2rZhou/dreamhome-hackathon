@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_2e0f65b42cfc",
+  "video_id": "vid_58a7a1504281",
+  "appearances": [
+    {
+      "start_sec": 45.0,
+      "end_sec": 47.5,
+      "representative_sec": 45.5
+    },
+    {
+      "start_sec": 58.0,
+      "end_sec": 61.5,
+      "representative_sec": 60.5
+    },
+    {
+      "start_sec": 63.0,
+      "end_sec": 63.5,
+      "representative_sec": 63.0
+    },
+    {
+      "start_sec": 82.0,
+      "end_sec": 85.5,
+      "representative_sec": 84.0
+    }
+  ],
+  "name": "电视",
+  "space": "",
+  "type": {
+    "category": "家电",
+    "subcategory": "电视"
+  },
+  "labels": {
+    "category": "家电",
+    "sub": "电视",
+    "colors": [
+      "黑色"
+    ],
+    "materials": [
+      "玻璃",
+      "金属"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "壁挂式",
+      "超薄边框",
+      "大屏幕"
+    ],
+    "size_class": "大",
+    "mount": "wall"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.5006064176559448,
+      -0.28427180647850037,
+      -0.08639411628246307
+    ],
+    "bounds_max": [
+      0.5006021857261658,
+      0.2844346761703491,
+      0.08630996197462082
+    ],
+    "dimensions_model_unit": [
+      1.0012086033821106,
+      0.5687064826488495,
+      0.1727040782570839
+    ],
+    "center": [
+      -2.115964889526367e-06,
+      8.143484592437744e-05,
+      -4.207715392112732e-05
+    ],
+    "vertex_count": 7214,
+    "triangle_count": 11459,
+    "collision": {
+      "type": "box",
+      "center": [
+        -2.115964889526367e-06,
+        8.143484592437744e-05,
+        -4.207715392112732e-05
+      ],
+      "dimensions": [
+        1.0012086033821106,
+        0.5687064826488495,
+        0.1727040782570839
+      ]
+    },
+    "anchor": {
+      "surface": "wall",
+      "point": [
+        0,
+        8.143484592437744e-05,
+        -0.08639411628246307
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.204233+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_2e0f65b42cfc/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 113992,
+      "sha256": "cce7f0c504a73d03729369a435d7cb7ac171cf070f4a3ce4aaf0efe4ece6fc72",
+      "role": "representative_video_frame"
+    },
+    "source_crop": {
+      "path": "assets/ast_2e0f65b42cfc/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 26004,
+      "sha256": "c5d24cb20127bdf25a0bc57d002163b714a7a953915b809a7bdc58595d97fcd4"
+    },
+    "completed_input": {
+      "path": "assets/ast_2e0f65b42cfc/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1386859,
+      "sha256": "f6296838ebc9729b8790abfe267d766250a85d13913f6e78ce2474ae185b3ddd",
+      "width_px": 812,
+      "height_px": 1290
+    },
+    "model_3d": {
+      "path": "assets/ast_2e0f65b42cfc/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1183292,
+      "sha256": "88fb55b107488578213efad42f4e7bea6352ea8f52f839c4e8344c32959e59e6"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T14:41:30.901487+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-17T16:23:42.796864+00:00"
+}
