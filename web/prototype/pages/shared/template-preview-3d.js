@@ -6,8 +6,7 @@ const SPECS = {
   'square-lounge': { width:8, depth:7, shape:'rect', windows:['back-large','left-large'] },
   'l-living': { width:8, depth:7, shape:'l', windows:['back-large'] },
   'bay-bedroom': { width:4.2, depth:6.15, shape:'rect', windows:['back-bay'] },
-  'standard-bedroom': { width:4.2, depth:5.2, shape:'rect', windows:['back'] },
-  'corner-bedroom': { width:7, depth:5, shape:'rect', windows:['back','left'] },
+  'standard-bedroom': { width:5, depth:5, shape:'rect', windows:['back'], furnished:'bed' },
 };
 
 const active = new WeakMap();
@@ -127,6 +126,10 @@ export async function renderTemplatePreview(canvas, templateId) {
   addBox(group,[.24,.12,spec.depth],[-spec.width/2+.05,h-.06,0],trimMat);
   const materials={view:viewMat,frame:frameMat,cushion:cushionMat,windowViews:[]};
   spec.windows.forEach((entry)=>{const [side,kind='standard']=entry.split('-');addWindow(group,side,spec,materials,kind);});
+  if(spec.furnished==='bed'){
+    const bed=new THREE.Group(),wood=new THREE.MeshStandardMaterial({color:'#8c725c',roughness:.72}),linen=new THREE.MeshStandardMaterial({color:'#e8ded0',roughness:.92});
+    addBox(bed,[1.8,.28,2.05],[0,.2,0],wood);addBox(bed,[1.68,.18,1.78],[0,.43,-.05],linen);addBox(bed,[1.8,.62,.12],[0,.42,.97],wood);bed.position.set(.65,0,.35);bed.castShadow=true;group.add(bed);
+  }
   const ground=new THREE.Mesh(new THREE.PlaneGeometry(40,40),new THREE.ShadowMaterial({color:'#765f48',opacity:.13}));ground.rotation.x=-Math.PI/2;ground.position.y=-.13;ground.receiveShadow=true;scene.add(ground);
   const draw=()=>{renderer.render(scene,camera);if(!runtime.cancelled)canvas.style.backgroundImage=`url("${renderCanvas.toDataURL('image/webp',.86)}")`;};draw();
   let cleaned=false;const cleanup=()=>{if(cleaned)return;cleaned=true;scene.traverse((object)=>{if(object.isMesh){object.geometry?.dispose();if(Array.isArray(object.material))object.material.forEach(material=>material?.dispose());else object.material?.dispose();}});renderer.dispose();renderer.forceContextLoss?.();};
