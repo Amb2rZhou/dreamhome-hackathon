@@ -5,3 +5,4 @@ __pycache__/
 storage/*
 !storage/libraries/
 !storage/scenes/
+!storage/qc/
