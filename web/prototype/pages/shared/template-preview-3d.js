@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 const SPECS = {
   'wide-living': { width:9, depth:5.5, shape:'rect', windows:['back-floor'] },
-  'long-living': { width:5, depth:9, shape:'rect', windows:['back','left'] },
+  'long-living': { width:5, depth:9, shape:'rect', windows:['back-floor','left'] },
   'square-lounge': { width:8, depth:7, shape:'rect', windows:['back-large','left-large'] },
   'l-living': { width:8, depth:7, shape:'l', windows:['back-large'] },
   'bay-bedroom': { width:4.2, depth:6.15, shape:'rect', windows:['back-bay'] },
@@ -120,8 +120,9 @@ export async function renderTemplatePreview(canvas, templateId) {
   const cushionMat=new THREE.MeshStandardMaterial({color:'#eee6d8',roughness:.88});
   const floor=createFloor(spec,floorMat);floor.receiveShadow=true;group.add(floor);
   const h=2.8,t=.13;
-  addBox(group,[spec.width,h,t],[0,h/2,-spec.depth/2],wallMat);
-  addBox(group,[t,h,spec.depth],[-spec.width/2,h/2,0],wallMat);
+  const addWallWithOpening=(side,span)=>{const entry=spec.windows.find(item=>item.split('-')[0]===side);if(!entry){addBox(group,side==='back'?[span,h,t]:[t,h,span],side==='back'?[0,h/2,-spec.depth/2]:[-spec.width/2,h/2,0],wallMat);return;}const kind=entry.split('-')[1]||'standard',floorWindow=kind==='floor',bayWindow=kind==='bay',largeWindow=kind==='large',openingWidth=floorWindow?Math.min(5.7,spec.width*.72):largeWindow?Math.min(3.8,spec.width*.55):Math.min(2.45,spec.width*.42),openingHeight=floorWindow?2.48:largeWindow?2.08:1.55,sill=floorWindow ? .08 : largeWindow ? .38 : bayWindow ? .7 : .82,top=sill+openingHeight,sideWidth=(span-openingWidth)/2,box=(length,height,y,offset)=>addBox(group,side==='back'?[length,height,t]:[t,height,length],side==='back'?[offset,y,-spec.depth/2]:[-spec.width/2,y,offset],wallMat);if(sideWidth>0){box(sideWidth,h,h/2,-(openingWidth+sideWidth)/2);box(sideWidth,h,h/2,(openingWidth+sideWidth)/2);}if(sill>0)box(openingWidth,sill,sill/2,0);if(top<h)box(openingWidth,h-top,(h+top)/2,0);};
+  addWallWithOpening('back',spec.width);
+  addWallWithOpening('left',spec.depth);
   addBox(group,[spec.width,.12,.24],[0,h-.06,-spec.depth/2+.05],trimMat);
   addBox(group,[.24,.12,spec.depth],[-spec.width/2+.05,h-.06,0],trimMat);
   const materials={view:viewMat,frame:frameMat,cushion:cushionMat,windowViews:[]};
