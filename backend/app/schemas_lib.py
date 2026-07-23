@@ -118,6 +118,7 @@ class SelectConfirmRequest(BaseModel):
     select_id: str
     use_asset_id: Optional[str] = None  # 确认同款：挂现有资产，不重新生成
     generate_new: bool = False          # 生成新资产
+    reject_matched_asset: bool = False  # 用户已看过候选并明确否决，允许重新生成
     quality_mode: Literal["fast", "production"] = "fast"
     user_id: str = ""                   # 有明确用户身份时才自动加入素材库
 

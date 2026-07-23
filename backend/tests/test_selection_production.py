@@ -127,6 +127,7 @@ class SelectionProductionTests(unittest.IsolatedAsyncioTestCase):
         request = SelectConfirmRequest(select_id="sel-1", generate_new=True)
         self.assertEqual(request.quality_mode, "fast")
         self.assertEqual(request.user_id, "")
+        self.assertFalse(request.reject_matched_asset)
 
 
 if __name__ == "__main__":

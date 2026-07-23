@@ -1,4 +1,5 @@
 import unittest
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from fastapi import FastAPI
@@ -87,6 +88,59 @@ class SelectionReuseTests(unittest.TestCase):
                 json={"select_id": "sel", "use_asset_id": "ast_existing"},
             )
         self.assertEqual(response.status_code, 409, response.text)
+
+    def test_user_can_reject_exact_match_and_start_new_production(self):
+        videos._SELECTS["sel-reject"] = {
+            "video_id": "vid_test",
+            "t": 3.0,
+            "bbox": [0.1, 0.1, 0.5, 0.5],
+            "polygon": [[0.1, 0.1], [0.6, 0.1], [0.6, 0.6], [0.1, 0.6]],
+            "labels": READY_ASSET["labels"],
+            "track_id": "trk_existing",
+            "exact_asset_id": "ast_existing",
+            "recognition_context": "/tmp/recognition.jpg",
+            "source_crop": "/tmp/context.jpg",
+            "completion_path": [(1, 1), (2, 1), (2, 2)],
+            "isolation_mode": "polygon_context",
+            "category_hint": "沙发",
+            "has_source_frame": True,
+        }
+        refreshed_labels = {
+            "category": "柜子",
+            "sub": "电视柜",
+            "colors": ["原木色"],
+            "materials": ["实木"],
+            "styles": ["现代"],
+        }
+        labels = AsyncMock(return_value=refreshed_labels)
+        track = {"track_id": "trk_existing", "video_id": "vid_test",
+                 "asset_id": "ast_existing"}
+        with (
+            patch.object(videos.db, "get_track", return_value=track),
+            patch.object(videos, "extract_labels", labels),
+            patch.object(videos, "production_readiness", return_value={"ready": True}),
+            patch.object(
+                videos,
+                "start_selection_production",
+                return_value=("ast_new", SimpleNamespace(job_id="job_new")),
+            ) as start,
+        ):
+            response = self.client.post(
+                "/api/videos/vid_test/select/confirm",
+                json={
+                    "select_id": "sel-reject",
+                    "generate_new": True,
+                    "reject_matched_asset": True,
+                    "quality_mode": "production",
+                },
+            )
+
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["asset_id"], "ast_new")
+        self.assertEqual(response.json()["job_id"], "job_new")
+        self.assertEqual(response.json()["quality_mode"], "production")
+        labels.assert_awaited_once()
+        self.assertEqual(start.call_args.kwargs["labels"], refreshed_labels)
 
 
 if __name__ == "__main__":

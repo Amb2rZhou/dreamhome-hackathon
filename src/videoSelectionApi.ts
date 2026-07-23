@@ -141,6 +141,7 @@ export async function confirmVideoSelection(input: {
   selectId: string
   useAssetId?: string
   generateNew?: boolean
+  rejectMatchedAsset?: boolean
   qualityMode?: 'fast' | 'production'
 }): Promise<VideoSelectConfirmResponse> {
   const response = await fetch(dreamHomeApiUrl(`/api/videos/${encodeURIComponent(input.videoId)}/select/confirm`), {
@@ -150,6 +151,7 @@ export async function confirmVideoSelection(input: {
       select_id: input.selectId,
       use_asset_id: input.useAssetId || null,
       generate_new: input.generateNew ?? false,
+      reject_matched_asset: input.rejectMatchedAsset ?? false,
       quality_mode: input.qualityMode || 'production',
     }),
   })

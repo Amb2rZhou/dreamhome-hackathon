@@ -813,6 +813,7 @@ function App() {
               videoId: pendingSelection.videoId,
               selectId: selected.select_id,
               generateNew: true,
+              rejectMatchedAsset: Boolean(candidate),
               qualityMode: 'production',
             })
             if (!submitted.job_id) throw new Error('正式生产后端未返回 3D 任务')

@@ -293,6 +293,14 @@ async def select(video_id: str, request: Request):
     exact = find_exact_asset(video_id, req.t, req.bbox, req.track_id)
     if exact:
         asset = exact["asset"]
+        (frame_path, source_context, recognition_context, frame_size,
+         isolation_mode, completion_path) = _save_selection_images(
+            req.frame_data_uri, frame_bytes, req.bbox, req.polygon,
+        )
+        if req.frame_width is not None and req.frame_width != frame_size[0]:
+            raise HTTPException(422, "frame_width does not match uploaded frame")
+        if req.frame_height is not None and req.frame_height != frame_size[1]:
+            raise HTTPException(422, "frame_height does not match uploaded frame")
         reason = "当前轨迹已有 3D" if exact["source"] == "track" else "当前圈选已生成 3D"
         candidate = MatchCandidate(asset=asset, score=1.0, reason=reason)
         sid = uuid.uuid4().hex
@@ -304,6 +312,13 @@ async def select(video_id: str, request: Request):
             "labels": asset.get("labels") or {},
             "track_id": exact.get("track_id"),
             "exact_asset_id": asset["asset_id"],
+            "frame": frame_path,
+            "frame_size": frame_size,
+            "source_crop": source_context,
+            "recognition_context": recognition_context,
+            "completion_path": completion_path,
+            "isolation_mode": isolation_mode,
+            "category_hint": req.category_hint,
             "has_source_frame": has_source_frame,
             "created": time.time(),
         }
@@ -359,9 +374,11 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
 
     if req.use_asset_id and req.generate_new:
         raise HTTPException(400, "use_asset_id and generate_new are mutually exclusive")
+    if req.reject_matched_asset and not req.generate_new:
+        raise HTTPException(400, "reject_matched_asset requires generate_new=true")
 
     exact_asset_id = sel.get("exact_asset_id")
-    if exact_asset_id:
+    if exact_asset_id and not req.reject_matched_asset:
         exact_asset = db.get_asset(exact_asset_id)
         if not exact_asset or exact_asset.get("status") != "ready":
             raise HTTPException(409, "previously matched asset is no longer ready; select again")
@@ -384,6 +401,19 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
                 track_id=track_id,
                 quality_mode="reuse",
             )
+    elif exact_asset_id and req.reject_matched_asset:
+        # The user inspected the matched GLB and explicitly said it is not the
+        # selected object. Re-label the current frame instead of inheriting the
+        # rejected asset's metadata, then run the full production quality path.
+        try:
+            sel["labels"] = await extract_labels(
+                sel.get("recognition_context"),
+                category_hint=sel.get("category_hint") or "",
+                framed=True,
+                strict=True,
+            )
+        except RuntimeError as exc:
+            raise HTTPException(503, f"production labels unavailable: {exc}") from exc
     if req.quality_mode == "production" and not req.generate_new:
         raise HTTPException(400, "quality_mode=production requires generate_new=true")
     if req.use_asset_id:

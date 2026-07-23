@@ -54,6 +54,8 @@ uvicorn app.main:app --reload --port 8000
 
 Feed 联调用完整生产链时，在 `/select/confirm` 传
 `{"generate_new":true,"quality_mode":"production","user_id":"..."}`；成功资产会自动加入该用户素材库。
+如果用户已经查看候选 3D 并明确选择“不是同款，重新生成”，再额外传
+`"reject_matched_asset":true`。只有这个显式否决能覆盖同轨迹的精确复用保护。
 完整请求、状态和错误契约见 [`docs/feed-selection-api.md`](../docs/feed-selection-api.md)。
 
 ## 结构
