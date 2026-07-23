@@ -7,6 +7,9 @@ import { prepareEdgeSamFrame, segmentWithEdgeSam, warmupEdgeSam } from './mobile
 import { detectGuideFurniture, prepareFurnitureLabels, warmupFurnitureDetector } from './objectGuide'
 import { falJobToComponent, getFalJob } from './falGenerationApi'
 import { confirmVideoSelection, submitVideoSelection } from './videoSelectionApi'
+import type { SelectionMatchCandidate } from './videoSelectionApi'
+import { AssetReuseDialog } from './AssetReuseDialog'
+import { labelsToCategory, reusableAssetToComponent } from './assetReuse'
 import { Mascot, type CollectionMascotMode } from './Mascot'
 import { WorkshopDetail } from './WorkshopDetail'
 import { FrameAssetsDrawer } from './FrameAssetsDrawer'
@@ -588,6 +591,8 @@ function App() {
     time: defaultAssetFrame(FEED_VIDEOS[0].id),
   }))
   const [collectionMascotMode, setCollectionMascotMode] = useState<CollectionMascotMode>('none')
+  const [reuseCandidate, setReuseCandidate] = useState<SelectionMatchCandidate | null>(null)
+  const reuseDecisionRef = useRef<((reuse: boolean) => void) | null>(null)
   // 教学只由冷启动气泡的“开始逛逛”启动；普通暂停不会擅自拉起新手引导。
   const [sessionGuideStage, setSessionGuideStage] = useState<SessionGuideStage>('idle')
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -705,6 +710,26 @@ function App() {
     dispatch({ type: 'CHANGE_FEED_VIDEO' })
   }
 
+  const requestReuseDecision = useCallback((candidate: SelectionMatchCandidate) => (
+    new Promise<boolean>((resolve) => {
+      reuseDecisionRef.current?.(false)
+      reuseDecisionRef.current = resolve
+      setReuseCandidate(candidate)
+    })
+  ), [])
+
+  const finishReuseDecision = useCallback((reuse: boolean) => {
+    const resolve = reuseDecisionRef.current
+    reuseDecisionRef.current = null
+    setReuseCandidate(null)
+    resolve?.(reuse)
+  }, [])
+
+  useEffect(() => () => {
+    reuseDecisionRef.current?.(false)
+    reuseDecisionRef.current = null
+  }, [])
+
   const craft = state.currentCraft
   useEffect(() => {
     if (!craft) return
@@ -737,6 +762,28 @@ function App() {
               upload,
               categoryHint: craft.name === '待分类家具' ? '' : craft.name,
             })
+            const candidate = selected.exact_match ?? selected.candidates[0]
+            const shouldReuse = candidate
+              ? !!selected.exact_match || await requestReuseDecision(candidate)
+              : false
+            if (cancelled) return
+            if (candidate && shouldReuse) {
+              const reused = await confirmVideoSelection({
+                videoId: pendingSelection.videoId,
+                selectId: selected.select_id,
+                useAssetId: candidate.asset.asset_id,
+                generateNew: false,
+              })
+              if (!reused.asset_id) throw new Error('同款资产复用失败，请稍后重试')
+              if (cancelled) return
+              dispatch({
+                type: 'CRAFT_DONE',
+                id: craft.id,
+                component: reusableAssetToComponent(candidate.asset, craft.snapshot),
+              })
+              dispatch({ type: 'SHOW_TOAST', msg: '找到已有同款 3D，已直接复用，没有重复生成。' })
+              return
+            }
             const submitted = await confirmVideoSelection({
               videoId: pendingSelection.videoId,
               selectId: selected.select_id,
@@ -746,12 +793,13 @@ function App() {
             if (!submitted.job_id) throw new Error('正式生产后端未返回 3D 任务')
             if (cancelled) return
             const productionName = selected.labels.sub || selected.labels.category || craft.name
+            const productionCategory = labelsToCategory(selected.labels)
             dispatch({
               type: 'CRAFT_BACKEND_SUBMITTED',
               id: craft.id,
               backendJobId: submitted.job_id,
               name: productionName,
-              category: craft.category,
+              category: productionCategory,
             })
           } catch (error) {
             if (cancelled) return
@@ -825,7 +873,7 @@ function App() {
       }, 15_000)
       return () => clearTimeout(t)
     }
-  }, [craft])
+  }, [craft, requestReuseDecision])
 
   return (
     <div
@@ -898,6 +946,14 @@ function App() {
 
         {state.toast && (
           <ToastLifetime msg={state.toast} onDone={() => dispatch({ type: 'HIDE_TOAST' })} />
+        )}
+
+        {reuseCandidate && (
+          <AssetReuseDialog
+            candidate={reuseCandidate}
+            onReuse={() => finishReuseDecision(true)}
+            onGenerate={() => finishReuseDecision(false)}
+          />
         )}
 
         <Mascot
@@ -1467,7 +1523,10 @@ function SessionLayer({
   }, [onDragGuideShown, showDragGuide])
 
   const selectedCount = state.selected.reduce((sum, obj) => sum + obj.items.length, 0)
-  const collectionCount = selectedCount + frameAssets.length
+  // The pickup card represents the user's explicit submission. Furniture
+  // discovered automatically in the paused frame stays browse-only and must
+  // not inflate this count.
+  const collectionCount = selectedCount
   const sessionGuideMode: SessionGuideMode | null = pickup.phase === 'idle'
     ? selectedCount === 0
       ? (recognizeGuideVisible ? 'recognize' : null)

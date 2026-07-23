@@ -10,14 +10,30 @@ export interface SelectionLabels {
   features?: string[]
 }
 
+export interface ReusableAsset {
+  asset_id: string
+  name?: string
+  glb_url?: string
+  thumb_url?: string
+  labels?: SelectionLabels
+  source?: {
+    video_id?: string
+    track_id?: string | null
+    t_best?: number
+  }
+}
+
+export interface SelectionMatchCandidate {
+  asset: ReusableAsset
+  score: number
+  reason?: string
+}
+
 export interface VideoSelectResponse {
   select_id: string
   labels: SelectionLabels
-  candidates: Array<{
-    asset: { asset_id: string; name?: string }
-    score: number
-    reason?: string
-  }>
+  candidates: SelectionMatchCandidate[]
+  exact_match?: SelectionMatchCandidate | null
 }
 
 export interface VideoSelectConfirmResponse {
