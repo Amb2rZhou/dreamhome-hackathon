@@ -27,6 +27,10 @@
     .photo-wrap { position:relative; flex:1; min-height:0; border:1px solid rgba(117,139,113,.2); border-radius:18px; background:linear-gradient(150deg,#ffffff,#fefaf2); box-shadow:var(--dh-shadow-soft); overflow:hidden; }
     .photo-empty { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:0 22px; }
     .photo-hint { margin:0; text-align:center; font-size:12px; line-height:1.65; font-weight:var(--dh-font-weight-semibold); color:var(--dh-fg-muted); }
+    /* 拍摄小贴士：直接提升单图重建成图率（腿/底座露出、背景干净），是"漏结构"最高性价比的解 */
+    .photo-tips { margin:2px 0 0; padding:0; list-style:none; display:flex; flex-direction:column; gap:7px; width:100%; max-width:236px; }
+    .photo-tips li { display:flex; align-items:flex-start; gap:7px; text-align:left; font-size:11px; line-height:1.45; font-weight:var(--dh-font-weight-semibold); color:var(--dh-fg-muted); }
+    .photo-tips li svg { flex:0 0 auto; width:14px; height:14px; margin-top:1px; color:var(--dh-color-sage-600); }
     .photo-empty.is-hidden { display:none; }
     /* 包公球占位：待生成「包公球拍照」图后替换 src 即可 */
     .photo-mascot { width:96px; height:96px; object-fit:contain; transform-origin:50% 88%; animation:mascot-sway 2.6s ease-in-out infinite; }
@@ -82,6 +86,8 @@
     .result-item { display:flex; align-items:center; gap:11px; padding:9px; border:1px solid rgba(117,139,113,.2); border-radius:16px; background:rgba(255,255,255,.92); box-shadow:var(--dh-shadow-soft); }
     .result-visual { position:relative; width:66px; height:66px; flex:none; border:1px solid var(--dh-border-soft); border-radius:12px; background:linear-gradient(145deg,#f7edda,#fffdf6); overflow:hidden; }
     .result-visual .object { position:absolute; left:50%; bottom:11px; transform:translateX(-50%) scale(.92); transform-origin:bottom center; background:var(--object); box-shadow:inset 0 8px rgba(255,255,255,.18); }
+    /* 渲染出的组件缩略图(对齐平台资产:透明底、组件本身) */
+    .result-visual img.result-thumb { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; padding:4px; box-sizing:border-box; }
     .object--sofa{width:47px;height:22px;border-radius:12px 12px 5px 5px}.object--sofa::before{content:"";position:absolute;left:9px;top:-12px;width:29px;height:16px;border-radius:9px 9px 3px 3px;background:var(--accent)}
     .object--chair{width:25px;height:23px;border-radius:7px 7px 4px 4px}.object--chair::before{content:"";position:absolute;left:4px;top:-14px;width:17px;height:18px;border-radius:7px 7px 2px 2px;background:var(--accent)}
     .object--table{width:42px;height:15px;border-radius:50%;bottom:24px}.object--table::before{content:"";position:absolute;left:19px;top:12px;width:4px;height:20px;background:var(--accent)}
@@ -120,7 +126,12 @@
               <div class="photo-wrap">
                 <div class="photo-empty" id="photoEmpty">
                   <img class="photo-mascot" src="../../assets/mascot/states/mascot-thinking.png" alt="包公球在等你拍照" />
-                  <p class="photo-hint">拍一张喜欢的家具，<br />生成 3D 组件进入灵感库</p>
+                  <p class="photo-hint">拍一张喜欢的家具，生成 3D 组件</p>
+                  <ul class="photo-tips" aria-label="拍摄小贴士">
+                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>平视或略俯 45°</span></li>
+                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>整件家具入框</span></li>
+                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>背景干净，主体居中，光线均匀</span></li>
+                  </ul>
                 </div>
                 <img class="photo-preview" id="photoPreview" alt="已选照片" hidden />
                 <button class="photo-reset" id="photoReset" type="button" hidden>重新选择</button>
@@ -178,6 +189,9 @@
     </section>
   </main>
 
+  <!-- 本地 vendor 的 model-viewer：结果页实时 3D 预览 + 离屏渲染组件缩略图（对齐平台 512² 透明渲染）。
+       小程序侧用 xr-frame 承载，此为设计规格。fal 的 GLB 无 Draco/KTX2，纯 PNG 贴图，完全离线可用。 -->
+  <script type="module" src="../../assets/vendor/model-viewer.min.js"></script>
   <script type="module">
     import { FURNITURE_CATEGORIES, CATEGORY_PRIMITIVE, CATEGORY_DIMENSIONS, addUserAsset } from '../shared/asset-library-data.js';
 
@@ -200,9 +214,10 @@
     const resultList = document.getElementById('resultList');
     const captureAgain = document.getElementById('captureAgain');
     const toLibrary = document.getElementById('toLibrary');
+    const toMyHome = document.getElementById('toMyHome');
 
     const DEFAULT_CATEGORY = FURNITURE_CATEGORIES[0].id; // 默认选中首个真实分类（列表首位、可见即高亮）
-    const state = { categories:[DEFAULT_CATEGORY], photoUrl:null, hasPhoto:false, photoColor:'#9a8163', pollTimer:null, job:null, generatedAssets:[] };
+    const state = { categories:[DEFAULT_CATEGORY], photoUrl:null, photoFile:null, hasPhoto:false, photoColor:'#9a8163', pollTimer:null, job:null, mock:false, generatedAssets:[] };
     let toastTimer = null;
     const showToast = (message) => { toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1600); };
     const rgbToHex = (r, g, b) => '#' + [r, g, b].map((c) => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0')).join('');
@@ -230,6 +245,7 @@
     function onPhotoChosen(file) {
       if (!file) return;
       if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
+      state.photoFile = file; // 留住原始 File，供上传后端（objectURL 不能当上传体）
       state.photoUrl = URL.createObjectURL(file);
       const img = new Image();
       img.onload = () => { state.photoColor = extractPhotoColor(img); };
@@ -243,7 +259,7 @@
     }
     function resetPhoto() {
       if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
-      state.photoUrl = null; state.hasPhoto = false;
+      state.photoUrl = null; state.hasPhoto = false; state.photoFile = null;
       photoPreview.hidden = true; photoPreview.removeAttribute('src');
       photoEmpty.classList.remove('is-hidden');
       photoReset.hidden = true;
@@ -268,9 +284,32 @@
 
     function setPhase(name) { Object.entries(phases).forEach(([key, el]) => el.classList.toggle('is-active', key === name)); }
 
-    // ---- Mock 生成任务服务（与画一笔一致的降级策略）----
+    // ---- 拍照 → 3D：后端异步 job（POST /api/photo-to-3d → 轮询 /api/jobs/{id}）----
+    // 本机预览连本地后端；部署后把 API_BASE 换成公网域名。后端不可达时自动降级为本地占位生成，页面仍可演示。
+    // 小程序侧：fetch→tt.request，FormData 上传→tt.uploadFile，本段为设计规格。
+    const API_BASE = (location.hostname === '127.0.0.1' || location.hostname === 'localhost') ? 'http://127.0.0.1:8000' : '';
+    // 后端 status(queued/running/succeeded/failed) → 本页 UI 态(queued/processing/ready/failed)
+    const STATUS_MAP = { queued:'queued', running:'processing', succeeded:'ready', failed:'failed' };
+    const categoryLabel = (id) => (FURNITURE_CATEGORIES.find((c) => c.id === id) || {}).label || id;
+
+    async function submitPhoto() {
+      const fd = new FormData();
+      fd.append('file', state.photoFile, state.photoFile.name || 'photo.jpg');
+      fd.append('texture', 'true');
+      fd.append('meta', JSON.stringify({ category: categoryLabel(state.categories[0]) })); // 品类作识别提示
+      const res = await fetch(`${API_BASE}/api/photo-to-3d`, { method:'POST', body: fd });
+      if (!res.ok) throw new Error(`submit ${res.status}`);
+      return res.json(); // { job_id, status }
+    }
+    async function fetchJob(jobId) {
+      const res = await fetch(`${API_BASE}/api/jobs/${jobId}`);
+      if (!res.ok) throw new Error(`poll ${res.status}`);
+      return res.json();
+    }
+
+    // 降级：后端不可达时的本地占位（保留原假进度，保证断网也能走完 demo）
     const MOCK_FAILURE = false;
-    const generationService = {
+    const mockService = {
       submit() { return { id:`capture-${Math.random().toString(36).slice(2, 8)}`, startedAt:performance.now() }; },
       poll(job) {
         const elapsed = performance.now() - job.startedAt;
@@ -287,12 +326,38 @@
       ready:['组件已就绪','正在整理你的新组件'],
       failed:['生成没有完成',''],
     };
+    // 进度条：与后端粗粒度 progress(8→55→100) 解耦。排队时不动；一进入生成就基于时间平滑爬升
+    // (减速逼近 92% 封顶，始终在动、不平台期卡住)；成功瞬间补满 100，失败则停在当前值。
+    const progressCtl = (() => {
+      let raf = 0, running = false, done = false, startT = 0, displayed = 0;
+      const paint = (v) => { displayed = v; progressBar.style.width = v.toFixed(1) + '%'; };
+      const loop = () => {
+        const t = performance.now() - startT;
+        const target = 92 * (1 - Math.exp(-t / 28000)); // 平滑减速爬升，~60-90s 自然到 80%+
+        if (target > displayed) paint(target);
+        if (running) raf = requestAnimationFrame(loop);
+      };
+      return {
+        reset() { cancelAnimationFrame(raf); running = false; done = false; startT = 0; paint(0); },
+        queued() { /* 保持当前(通常 0)，不启动爬升 —— "一开始没进度" */ },
+        run() { if (done || running) return; running = true; startT = performance.now(); raf = requestAnimationFrame(loop); },
+        finish() { if (done) return; done = true; running = false; cancelAnimationFrame(raf);
+          const from = displayed, t0 = performance.now();
+          const step = () => { const k = Math.min(1, (performance.now() - t0) / 420); paint(from + (100 - from) * k); if (k < 1) requestAnimationFrame(step); };
+          requestAnimationFrame(step);
+        },
+        fail() { running = false; cancelAnimationFrame(raf); },
+      };
+    })();
     function updateGen(status, progress, error = '') {
       const copy = GEN_COPY[status] || GEN_COPY.queued;
       genOrbit.dataset.status = status === 'ready' ? 'processing' : status;
       genTitle.textContent = copy[0];
       genCopy.textContent = status === 'failed' ? (error || '请检查照片或重新尝试') : copy[1];
-      progressBar.style.width = `${progress}%`;
+      if (status === 'ready') progressCtl.finish();
+      else if (status === 'failed') progressCtl.fail();
+      else if (status === 'processing') progressCtl.run();
+      else progressCtl.queued();
       genRetry.hidden = status !== 'failed';
     }
 
@@ -320,33 +385,152 @@
       });
     }
 
-    function pollJob() {
-      clearTimeout(state.pollTimer);
-      const result = generationService.poll(state.job);
-      updateGen(result.status, result.progress, result.error);
-      if (result.status === 'ready') { finishGeneration(); return; }
-      if (result.status === 'failed') return;
-      state.pollTimer = setTimeout(pollJob, 620);
-    }
-    function startGeneration() {
-      setPhase('gen');
-      updateGen('queued', 6);
-      genRetry.hidden = true;
-      state.job = generationService.submit();
+    // 降级到本地占位（提交失败或轮询中掉线都走这里）
+    function degradeToMock() {
+      state.mock = true;
+      state.job = mockService.submit();
+      showToast('未连接后端，本地占位演示');
       state.pollTimer = setTimeout(pollJob, 420);
     }
-    function finishGeneration() {
-      const assets = buildAssets();
-      state.generatedAssets = assets;
-      assets.forEach((asset) => { addUserAsset(asset); }); // 生成即入库；addUserAsset 内部已自动收藏（autoCollectOwn），勿再 toggle 否则会取消收藏
-      renderResult(assets);
+
+    async function pollJob() {
+      clearTimeout(state.pollTimer);
+      if (state.mock) {
+        const r = mockService.poll(state.job);
+        updateGen(r.status, r.progress, r.error);
+        if (r.status === 'ready') { finishGeneration(null); return; }
+        if (r.status === 'failed') return;
+        state.pollTimer = setTimeout(pollJob, 620);
+        return;
+      }
+      let job;
+      try { job = await fetchJob(state.job.job_id); }
+      catch (e) { degradeToMock(); return; } // 轮询期间后端掉线 → 回退占位
+      const ui = STATUS_MAP[job.status] || 'queued';
+      updateGen(ui, job.progress || 0, job.error);
+      if (job.status === 'succeeded') { finishGeneration(job); return; }
+      if (job.status === 'failed') return; // error 已展示，等用户点重新生成
+      state.pollTimer = setTimeout(pollJob, 1600); // 真 3D 30–120s，轮询间隔放宽
+    }
+    async function startGeneration() {
+      setPhase('gen');
+      progressCtl.reset();
+      state.thumbReady = null; // 新一轮生成，清掉上一轮的缩略图 promise
+      updateGen('queued', 6);
+      genRetry.hidden = true;
+      state.mock = false;
+      if (!state.photoFile) { degradeToMock(); return; } // 无 File（异常）→ 占位
+      try {
+        const sub = await submitPhoto();
+        state.job = { job_id: sub.job_id };
+      } catch (e) { degradeToMock(); return; } // 后端不可达 → 占位演示
+      state.pollTimer = setTimeout(pollJob, 900);
+    }
+    async function finishGeneration(job) {
+      const asset = (job && job.model_url) ? buildAssetFromJob(job) : buildAssets()[0];
+      state.generatedAssets = [asset];
+      addUserAsset(asset); // 先入库(此刻缩略图未渲染)；addUserAsset 内部自动收藏，勿再 toggle
+      renderResult([asset]);
       setPhase('result');
-      showToast(assets.length > 1 ? `已生成 ${assets.length} 个组件并加入收藏` : '已生成并加入灵感库收藏');
+      showToast(asset.modelUrl ? '已生成 3D 组件并加入收藏' : '已生成并加入灵感库收藏');
+      // 后台把"组件本身"渲成缩略图(对齐平台 512² 透明渲染)，完成后回写入库 + 刷新卡片。
+      // 存成 promise：跳转前 await 它，避免"渲染没完就离开本页→缩略图没写进库"的竞态。
+      state.thumbReady = asset.modelUrl ? (async () => {
+        const thumb = await renderThumbnail(asset.modelUrl);
+        if (!thumb) return;
+        asset.thumbnail = thumb;
+        addUserAsset(asset);          // 同 id 覆盖回写，下游收藏/灵感库/我的家卡片即用真缩略图
+        const img = resultList.querySelector(`.result-thumb[data-thumb="${asset.id}"]`);
+        if (img) img.src = thumb; else renderResult([asset]);
+      })() : Promise.resolve();
+    }
+    // 离屏 model-viewer 把 GLB 渲成 512² 透明 PNG dataURL（组件本身的图，替代旧的图元占位）
+    function renderThumbnail(modelUrl) {
+      return new Promise((resolve) => {
+        const mv = document.createElement('model-viewer');
+        mv.setAttribute('src', modelUrl);
+        mv.setAttribute('camera-orbit', '25deg 72deg auto');
+        mv.setAttribute('exposure', '1');
+        mv.setAttribute('shadow-intensity', '0');
+        mv.setAttribute('interaction-prompt', 'none');
+        mv.setAttribute('disable-zoom', '');
+        mv.setAttribute('loading', 'eager');
+        // 关键：offscreen(left:-10000px) 会被 model-viewer 的 IntersectionObserver 判为"不可见"→真机(硬件合成)
+        // 上直接跳过渲染，toDataURL 拿到空白。改为留在视口内但 opacity:0(几何仍相交→照常渲染)、不可点、置底。
+        mv.style.cssText = 'position:fixed;left:0;top:0;width:512px;height:512px;opacity:0;pointer-events:none;z-index:-1;background:transparent;';
+        document.body.appendChild(mv);
+        let settled = false;
+        const done = (val) => { if (settled) return; settled = true; try { mv.remove(); } catch {} resolve(val); };
+        mv.addEventListener('load', () => {
+          // 等两帧确保已实际绘制一帧，再读像素（否则可能读到未渲染的空画布）
+          requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(async () => {
+            let url = null; try { url = mv.toDataURL('image/png'); } catch {}
+            if (url) url = await downscale(url, 384); // 固定 384²，消除 dpr 放大(1024²→506KB 的坑)
+            done(url);
+          }, 260)));
+        });
+        mv.addEventListener('error', () => done(null));
+        setTimeout(() => done(null), 12000); // 兜底：模型/组件未就绪则退回图元
+      });
+    }
+    // 把渲染图等比居中缩到固定 size²(透明底)，与设备像素比无关，控住 localStorage 体积
+    function downscale(dataUrl, size) {
+      return new Promise((resolve) => {
+        const im = new Image();
+        im.onload = () => {
+          const c = document.createElement('canvas'); c.width = c.height = size;
+          const ctx = c.getContext('2d');
+          const s = Math.min(size / im.width, size / im.height);
+          const w = im.width * s, h = im.height * s;
+          ctx.clearRect(0, 0, size, size);
+          ctx.drawImage(im, (size - w) / 2, (size - h) / 2, w, h);
+          resolve(c.toDataURL('image/png'));
+        };
+        im.onerror = () => resolve(dataUrl);
+        im.src = dataUrl;
+      });
+    }
+    // 用后端 job 真数据构建资产：model_url(GLB) + 识别品类/尺寸；缺字段回退品类默认
+    function buildAssetFromJob(job) {
+      const catId = state.categories[0];
+      const category = FURNITURE_CATEGORIES.find((item) => item.id === catId);
+      const seqBase = String(Date.now()).slice(-3);
+      const dims = (Array.isArray(job.estimated_size_m) && job.estimated_size_m.length === 3)
+        ? job.estimated_size_m.map(Number) : (CATEGORY_DIMENSIONS[catId] || [1, .8, .6]);
+      const color = state.photoColor;
+      const modelUrl = /^https?:/i.test(job.model_url || '') ? job.model_url : `${API_BASE}${job.model_url || ''}`;
+      return {
+        id:`capture-${catId}-${seqBase}-${Math.random().toString(36).slice(2, 6)}`,
+        kind:'furniture',
+        name:`拍摄·${category.label} ${seqBase}`,
+        category:catId,                                  // 前端品类 id（驱动筛选/导航/图元），非后端标签
+        primitive:CATEGORY_PRIMITIVE[catId] || 'cabinet',
+        color, accent:lighten(color, .3),
+        dimensions:dims,
+        sizePrior:{ w:dims[0], h:dims[1], d:dims[2] },
+        modelUrl,                                        // 真·GLB（后端产出）
+        rawModel:true,
+        thumbnail:job.thumbnail_url || null,             // 后端无缩略图则回退品类图元（勿存 blob:，刷新即失效）
+        backendCategory:job.category || null,            // 后端识别标签（仅展示）
+        style:job.style || null, material:job.material || null,
+        source:'user', sourceType:'capture',
+        createdAt:new Date().toISOString(),
+      };
     }
     function renderResult(assets) {
       resultList.innerHTML = assets.map((asset) => {
         const category = FURNITURE_CATEGORIES.find((item) => item.id === asset.category);
-        return `<div class="result-item"><div class="result-visual" style="--object:${asset.color};--accent:${asset.accent}"><span class="object object--${asset.primitive}"></span></div><div class="result-body"><input class="result-name" maxlength="16" value="${asset.name}" data-name="${asset.id}" aria-label="组件名称" /><p class="result-meta">家具类 · ${category.label} · 已收藏</p></div></div>`;
+        const dims = Array.isArray(asset.dimensions) ? asset.dimensions : [];
+        const sizeText = dims.length === 3 ? ` · ${dims.map((n) => (+n).toFixed(2)).join('×')}m` : '';
+        const backendCat = (asset.backendCategory && asset.backendCategory !== category.label) ? ` · ${asset.backendCategory}` : '';
+        // 真 GLB 徽标：web 用 <model-viewer> 预览；抖音小程序改 xr-frame/原生 3D 组件承载（此处为规格）
+        const glbTag = asset.modelUrl
+          ? `<a href="${asset.modelUrl}" target="_blank" rel="noopener" style="position:absolute;left:8px;bottom:8px;z-index:2;display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:999px;background:rgba(29,36,31,.72);color:#fff;font-size:10px;font-weight:700;text-decoration:none;">3D·GLB ↗</a>` : '';
+        // 缩略图就绪 → 用组件本身的渲染图；未就绪(或占位路径) → 暂用图元
+        const visual = asset.thumbnail
+          ? `<img class="result-thumb" data-thumb="${asset.id}" src="${asset.thumbnail}" alt="${category.label}组件缩略图" />`
+          : `<span class="object object--${asset.primitive}"></span>`;
+        return `<div class="result-item"><div class="result-visual" style="position:relative;--object:${asset.color};--accent:${asset.accent}">${visual}${glbTag}</div><div class="result-body"><input class="result-name" maxlength="16" value="${asset.name}" data-name="${asset.id}" aria-label="组件名称" /><p class="result-meta">家具类 · ${category.label}${backendCat}${sizeText} · 已收藏</p></div></div>`;
       }).join('');
     }
 
@@ -364,9 +548,18 @@
     generateBtn.addEventListener('click', () => { if (state.hasPhoto) startGeneration(); });
     genBack.addEventListener('click', () => { clearTimeout(state.pollTimer); setPhase('capture'); });
     genRetry.addEventListener('click', startGeneration);
+    // 跳转前先 await 缩略图渲染完成（有上限：renderThumbnail 自带 12s 兜底），保证组件带真缩略图入库再离开本页
+    async function awaitThumb() { try { await state.thumbReady; } catch {} }
+    toMyHome.addEventListener('click', (event) => {
+      if (!state.thumbReady) return;                 // 无待渲染任务 → 走默认 <a> 跳转
+      event.preventDefault();
+      awaitThumb().then(() => { location.href = toMyHome.getAttribute('href'); });
+    });
     toLibrary.addEventListener('click', (event) => {
       event.preventDefault();
-      location.href = `../my-favorites/index.html#catalog=furniture:${encodeURIComponent(state.generatedAssets[0].category)}`;
+      awaitThumb().then(() => {
+        location.href = `../my-favorites/index.html#catalog=furniture:${encodeURIComponent(state.generatedAssets[0].category)}`;
+      });
     });
     captureAgain.addEventListener('click', () => { resetPhoto(); setPhase('capture'); });
   </script>

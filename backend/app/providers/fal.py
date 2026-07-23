@@ -52,7 +52,22 @@ class FalTrellisProvider(Gen3DProvider):
 
     async def submit(self, image_path: str, *, texture: bool = True, prompt: str = "",
                      extra_image_paths: list[str] | None = None) -> str:
-        payload = {"image_url": _to_data_uri(image_path)}
+        # 质量参数（可用环境变量覆盖）。默认对家具这类含细结构(椅腿/桌腿)的物体调优：
+        #   mesh_simplify 调低 → 少简化、保住细腿；采样步数调高 → 结构更完整；贴图 2048 更清晰。
+        import os
+        payload: dict[str, Any] = {
+            "ss_sampling_steps": int(os.environ.get("TRELLIS_SS_STEPS", "25")),
+            "slat_sampling_steps": int(os.environ.get("TRELLIS_SLAT_STEPS", "25")),
+            "mesh_simplify": float(os.environ.get("TRELLIS_MESH_SIMPLIFY", "0.9")),
+            "texture_size": int(os.environ.get("TRELLIS_TEXTURE_SIZE", "2048")),
+        }
+        # 多图重建：调用方给了多张(不同角度) → 走 image_urls，解决单图遮挡漏结构(如椅子背面腿)。
+        imgs = [image_path] + list(extra_image_paths or [])
+        if len(imgs) > 1:
+            payload["image_urls"] = [_to_data_uri(p) for p in imgs]
+            payload["multiimage_algo"] = os.environ.get("TRELLIS_MULTIIMAGE_ALGO", "stochastic")
+        else:
+            payload["image_url"] = _to_data_uri(image_path)
         if prompt:
             payload["prompt"] = prompt
         async with httpx.AsyncClient(timeout=60) as client:
