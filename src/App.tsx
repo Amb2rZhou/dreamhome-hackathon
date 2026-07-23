@@ -1263,11 +1263,11 @@ function SceneActions({ videoId }: { videoId: string }) {
 
 function DreamHomeNavIcon({ kind }: { kind: 'capture' | 'feed' | 'library' | 'favorites' | 'home' }) {
   const paths = {
-    capture: <><path d="M8.7 4.6h6.6l1.3 2.1h2.8A2.6 2.6 0 0 1 22 9.3v8.3a2.6 2.6 0 0 1-2.6 2.6H4.6A2.6 2.6 0 0 1 2 17.6V9.3a2.6 2.6 0 0 1 2.6-2.6h2.8l1.3-2.1Z" /><circle cx="12" cy="13.3" r="3.4" fill="none" stroke="currentColor" strokeWidth="1.8" /></>,
-    feed: <><rect x="3" y="3" width="18" height="18" rx="4" /><path d="m10 8.2 6.2 3.8-6.2 3.8V8.2Z" /></>,
-    library: <><path d="M12 2.6a6.4 6.4 0 0 0-3.9 11.5c.5.4.7.9.8 1.5l.1.9h6l.1-.9c.1-.6.3-1.1.8-1.5A6.4 6.4 0 0 0 12 2.6Z" /><rect x="8.7" y="17.4" width="6.6" height="1.9" rx="1" /></>,
-    favorites: <path d="M7 3.6h10a2.2 2.2 0 0 1 2.2 2.2v13.9c0 .9-.9 1.4-1.7.9L12 17.2l-5.5 3.4c-.8.5-1.7 0-1.7-.9V5.8A2.2 2.2 0 0 1 7 3.6Z" />,
-    home: <path d="m3.2 10.4 8.8-7.6 8.8 7.6v8a2 2 0 0 1-2 2h-4.1v-5.7H9.3v5.7H5.2a2 2 0 0 1-2-2v-8Z" />,
+    capture: <path fillRule="evenodd" d="M8.7 4.6c-.6 0-1.15.32-1.44.84l-.7 1.24H4.6A2.6 2.6 0 0 0 2 9.32v8.28a2.6 2.6 0 0 0 2.6 2.6h14.8a2.6 2.6 0 0 0 2.6-2.6V9.32a2.6 2.6 0 0 0-2.6-2.6h-1.96l-.7-1.24a1.65 1.65 0 0 0-1.44-.84H8.7Zm3.3 5.1a3.55 3.55 0 1 0 0 7.1 3.55 3.55 0 0 0 0-7.1Z" />,
+    feed: <path fillRule="evenodd" d="M6.4 3.2h11.2A3.4 3.4 0 0 1 21 6.6v10.8a3.4 3.4 0 0 1-3.4 3.4H6.4A3.4 3.4 0 0 1 3 17.4V6.6a3.4 3.4 0 0 1 3.4-3.4Zm3.5 5.05c-.5-.3-1.14.06-1.14.65v6.3c0 .59.64.95 1.14.65l5.2-3.15c.48-.29.48-1.01 0-1.3l-5.2-3.15Z" />,
+    library: <><path fillRule="evenodd" d="M12 2.6a6.4 6.4 0 0 0-3.9 11.48c.46.36.74.9.82 1.48l.13.94h5.84l.13-.94c.08-.58.36-1.12.82-1.48A6.4 6.4 0 0 0 12 2.6Z" /><rect x="8.7" y="17.4" width="6.6" height="1.9" rx=".95" /><rect x="9.6" y="20" width="4.8" height="1.9" rx=".95" /></>,
+    favorites: <path fillRule="evenodd" d="M7 3.6h10a2.2 2.2 0 0 1 2.2 2.2v13.9c0 .86-.94 1.38-1.66.92L12 17.2l-5.54 3.42c-.72.46-1.66-.06-1.66-.92V5.8A2.2 2.2 0 0 1 7 3.6Z" />,
+    home: <path fillRule="evenodd" d="M10.7 3.3a2 2 0 0 1 2.6 0l6.8 5.86c.44.38.7.94.7 1.53v7.71a2 2 0 0 1-2 2h-2.8a1 1 0 0 1-1-1v-4.4a1 1 0 0 0-1-1h-2.4a1 1 0 0 0-1 1v4.4a1 1 0 0 1-1 1H6.2a2 2 0 0 1-2-2V10.7c0-.59.26-1.15.7-1.53L10.7 3.3Z" />,
   }
   return <svg viewBox="0 0 24 24" aria-hidden="true">{paths[kind]}</svg>
 }
@@ -1276,22 +1276,22 @@ function DreamHomeBottomNav() {
   const items = [
     { kind: 'capture' as const, label: '拍一张', href: '/prototype/pages/capture/index.html' },
     { kind: 'feed' as const, label: '刷一刷', href: '/prototype/pages/discover/index.html', active: true },
-    { kind: 'library' as const, label: '资产库', href: '/prototype/pages/inspiration-library/index.html' },
-    { kind: 'favorites' as const, label: '收藏', href: '/prototype/pages/my-favorites/index.html' },
+    { kind: 'library' as const, label: '灵感库', href: '/prototype/pages/inspiration-library/index.html' },
+    { kind: 'favorites' as const, label: '我的收藏', href: '/prototype/pages/my-favorites/index.html' },
     { kind: 'home' as const, label: '我的家', href: '/prototype/pages/my-home/index.html' },
   ]
   return (
-    <nav className="douyin-bottom-nav dreamhome-bottom-nav" aria-label="DreamHome 主功能导航">
+    <nav className="dh-tabbar dh-tabbar--main" aria-label="主功能导航">
       {items.map((item) => (
         <a
           key={item.kind}
-          className={`douyin-nav-item dreamhome-nav-item ${item.active ? 'is-active' : ''}`}
+          className={`dh-tab ${item.active ? 'dh-tab--active' : ''}`}
           href={item.href}
           target="_top"
+          aria-label={item.label}
           aria-current={item.active ? 'page' : undefined}
         >
-          <DreamHomeNavIcon kind={item.kind} />
-          <span className="dreamhome-nav-label">{item.label}</span>
+          <span className="dh-tab-icon"><DreamHomeNavIcon kind={item.kind} /></span>
         </a>
       ))}
     </nav>

@@ -210,11 +210,43 @@
     const toLibrary = document.getElementById('toLibrary');
 
     const DEFAULT_CATEGORY = FURNITURE_CATEGORIES[0].id; // 默认选中首个真实分类（列表首位、可见即高亮）
+    const ACTIVE_JOB_KEY = 'dreamhome.capture.active-job.v1';
+    const ACTIVE_JOB_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
     const state = { categories:[DEFAULT_CATEGORY], photoUrl:null, photoFile:null, hasPhoto:false, backendReady:false, photoColor:'#9a8163', pollTimer:null, pollFailures:0, job:null, generatedAssets:[] };
     let toastTimer = null;
     const showToast = (message) => { toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1600); };
     const rgbToHex = (r, g, b) => '#' + [r, g, b].map((c) => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0')).join('');
     const lighten = (hex, amount = .34) => { const n = parseInt(hex.slice(1), 16); const mix = (c) => Math.round(c + (255 - c) * amount); return '#' + [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => mix(c).toString(16).padStart(2, '0')).join(''); };
+    function readActiveJob() {
+      try {
+        const value = JSON.parse(localStorage.getItem(ACTIVE_JOB_KEY) || 'null');
+        if (!value?.jobId || !value?.submittedAt || Date.now() - value.submittedAt > ACTIVE_JOB_MAX_AGE_MS) {
+          localStorage.removeItem(ACTIVE_JOB_KEY);
+          return null;
+        }
+        return value;
+      } catch {
+        localStorage.removeItem(ACTIVE_JOB_KEY);
+        return null;
+      }
+    }
+    function persistActiveJob(job = state.job) {
+      if (!job?.job_id) return;
+      const previous = readActiveJob();
+      localStorage.setItem(ACTIVE_JOB_KEY, JSON.stringify({
+        jobId:job.job_id,
+        status:job.status || previous?.status || 'queued',
+        progress:Number(job.progress || previous?.progress || 0),
+        categoryId:state.categories[0] || previous?.categoryId || DEFAULT_CATEGORY,
+        photoColor:state.photoColor || previous?.photoColor || '#9a8163',
+        submittedAt:previous?.jobId === job.job_id ? previous.submittedAt : Date.now(),
+        updatedAt:Date.now(),
+      }));
+    }
+    function clearActiveJob() {
+      localStorage.removeItem(ACTIVE_JOB_KEY);
+      state.job = null;
+    }
 
     // 从照片提取主色（缩到小图求均值，作生成组件配色）· 小程序侧等价 tt.canvasGetImageData
     function extractPhotoColor(img) {
@@ -237,6 +269,7 @@
 
     function onPhotoChosen(file) {
       if (!file) return;
+      clearActiveJob();
       if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
       state.photoFile = file;
       state.photoUrl = URL.createObjectURL(file);
@@ -385,6 +418,8 @@
       clearTimeout(state.pollTimer);
       try {
         const job = await fetchJob(state.job.job_id);
+        state.job = job;
+        persistActiveJob(job);
         state.pollFailures = 0;
         const uiStatus = STATUS_MAP[job.status] || 'queued';
         updateGen(uiStatus, job.progress || 0, job.error);
@@ -405,6 +440,7 @@
           state.pollTimer = setTimeout(pollJob, Math.min(8000, 1600 + state.pollFailures * 400));
           return;
         }
+        if (error.status === 404) clearActiveJob();
         updateGen('failed', 0, error.message || '后端暂时不可用，请稍后重试');
       }
     }
@@ -415,18 +451,43 @@
       state.pollFailures = 0;
       try {
         state.job = await submitPhoto();
+        persistActiveJob(state.job);
         state.pollTimer = setTimeout(pollJob, 900);
       } catch (error) {
         updateGen('failed', 0, error.message || '3D 服务提交失败，请稍后重试');
       }
     }
     function finishGeneration(job) {
+      state.job = job;
+      persistActiveJob(job);
       const asset = buildAssetFromJob(job);
       state.generatedAssets = [asset];
       addUserAsset(asset); // 拍照资产自动进入自己的收藏，不伪造视频来源。
       renderResult([asset]);
       setPhase('result');
       showToast('已生成 3D 组件并加入收藏');
+    }
+    function restoreActiveGeneration() {
+      const active = readActiveJob();
+      if (!active) return false;
+      if (FURNITURE_CATEGORIES.some((item) => item.id === active.categoryId)) {
+        state.categories = [active.categoryId];
+        syncCategoryTabs();
+      }
+      state.photoColor = active.photoColor || state.photoColor;
+      state.job = { job_id:active.jobId, status:active.status, progress:active.progress };
+      state.pollFailures = 0;
+      setPhase('gen');
+      updateGen(STATUS_MAP[active.status] || 'queued', active.progress || 6);
+      if (active.status === 'succeeded') {
+        genTitle.textContent = '正在恢复生成结果';
+        genCopy.textContent = '组件已经生成，正在重新载入';
+      } else {
+        genTitle.textContent = active.status === 'failed' ? '正在确认任务状态' : '仍在后台生成';
+        genCopy.textContent = '已恢复上次任务，正在同步最新进度';
+      }
+      pollJob();
+      return true;
     }
     function renderResult(assets) {
       resultList.innerHTML = assets.map((asset) => {
@@ -451,12 +512,23 @@
     // 前进按钮只负责跳转（已入库）；查看我的收藏直达首个组件所属细分标签全部页
     generateBtn.addEventListener('click', () => { if (state.hasPhoto) startGeneration(); });
     genBack.addEventListener('click', () => { clearTimeout(state.pollTimer); setPhase('capture'); });
-    genRetry.addEventListener('click', startGeneration);
+    genRetry.addEventListener('click', () => {
+      if (state.photoFile) {
+        startGeneration();
+        return;
+      }
+      clearActiveJob();
+      resetPhoto();
+      setPhase('capture');
+      showToast('请重新选择照片后生成');
+    });
     toLibrary.addEventListener('click', (event) => {
       event.preventDefault();
       location.href = `../my-favorites/index.html#catalog=furniture:${encodeURIComponent(state.generatedAssets[0].category)}`;
     });
-    captureAgain.addEventListener('click', () => { resetPhoto(); setPhase('capture'); });
+    captureAgain.addEventListener('click', () => { clearActiveJob(); resetPhoto(); setPhase('capture'); });
+    window.addEventListener('pagehide', () => persistActiveJob());
+    restoreActiveGeneration();
   </script>
 </body>
 </html>

@@ -555,7 +555,9 @@ button {
   text-overflow: ellipsis;
 }
 
-.douyin-bottom-nav {
+/* Keep the Feed on the exact same canonical five-tab component used by the
+   static product pages in prototype/pages/shared/tabbar.css. */
+.dh-tabbar.dh-tabbar--main {
   position: absolute;
   z-index: 20;
   left: 50%;
@@ -570,46 +572,50 @@ button {
   padding: 6px 6px 8px;
   border: 1px solid rgba(255,255,255,.88);
   border-radius: 26px;
-  background: rgba(255,253,248,.96);
-  box-shadow: 0 8px 24px rgba(78,59,35,.18);
-  -webkit-backdrop-filter: blur(16px) saturate(130%);
-  backdrop-filter: blur(16px) saturate(130%);
-}
-.dreamhome-bottom-nav {
+  background: rgba(255,255,255,.76);
+  box-shadow: 0 14px 30px rgba(63,86,64,.09);
   overflow: visible;
 }
-.douyin-nav-item {
-  position: relative;
+.dh-tabbar.dh-tabbar--main .dh-tab {
   min-width: 0;
   min-height: 44px;
   display: grid;
   place-items: center;
   color: #b8ad98;
+  border: 0;
   border-radius: 15px;
   text-decoration: none;
-  touch-action: manipulation;
+  opacity: 1;
   -webkit-tap-highlight-color: transparent;
   transition: color .18s ease;
 }
-.douyin-nav-item svg { width: 27px; height: 27px; fill: currentColor; display: block; }
-.douyin-nav-item .dreamhome-nav-label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0,0,0,0);
-  white-space: nowrap;
+.dh-tabbar.dh-tabbar--main .dh-tab-icon {
+  width: 27px;
+  height: 27px;
+  display: grid;
+  place-items: center;
+  background: none;
   border: 0;
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+  transition: transform .18s ease;
 }
-.dreamhome-nav-item:focus-visible {
-  outline: 2px solid #c78f2a;
+.dh-tabbar.dh-tabbar--main .dh-tab-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: currentColor;
+}
+.dh-tabbar.dh-tabbar--main .dh-tab:focus-visible {
+  outline: 2px solid #8fa48a;
   outline-offset: 2px;
 }
-.dreamhome-nav-item:active { background: rgba(199,143,42,.1); }
-.dreamhome-nav-item.is-active { color: #c78f2a; }
-.dreamhome-nav-item.is-active svg { transform: translateY(-1px) scale(1.06); }
+.dh-tabbar.dh-tabbar--main .dh-tab--active { color: #c78f2a; }
+.dh-tabbar.dh-tabbar--main .dh-tab--active .dh-tab-icon { transform: translateY(-1px) scale(1.06); }
+@media (max-width: 420px) {
+  .dh-tabbar.dh-tabbar--main { width: calc(100% - 18px); }
+}
 
 .scene-actions-inline {
   position: absolute;
