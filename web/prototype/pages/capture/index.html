@@ -86,7 +86,10 @@
     .result-list { width:100%; max-width:264px; box-sizing:border-box; display:flex; flex-direction:column; gap:9px; max-height:340px; overflow-y:auto; padding:2px; scrollbar-width:none; }
     .result-list::-webkit-scrollbar { display:none; }
     .result-item { display:flex; align-items:center; gap:11px; padding:9px; border:1px solid rgba(117,139,113,.2); border-radius:16px; background:rgba(255,255,255,.92); box-shadow:var(--dh-shadow-soft); }
-    .result-visual { position:relative; width:66px; height:66px; flex:none; border:1px solid var(--dh-border-soft); border-radius:12px; background:linear-gradient(145deg,#f7edda,#fffdf6); overflow:hidden; }
+    .result-visual { position:relative; width:84px; height:84px; flex:none; border:1px solid var(--dh-border-soft); border-radius:12px; background:linear-gradient(145deg,#f7edda,#fffdf6); overflow:hidden; cursor:grab; touch-action:none; }
+    .result-visual:active { cursor:grabbing; }
+    .result-model-viewer { width:100%; height:100%; display:block; }
+    .result-model-hint { position:absolute; left:50%; bottom:3px; transform:translateX(-50%); padding:2px 5px; border-radius:999px; background:rgba(255,253,247,.78); color:#8b765a; font-size:7px; font-weight:var(--dh-font-weight-bold); white-space:nowrap; pointer-events:none; }
     .result-visual .object { position:absolute; left:50%; bottom:11px; transform:translateX(-50%) scale(.92); transform-origin:bottom center; background:var(--object); box-shadow:inset 0 8px rgba(255,255,255,.18); }
     .object--sofa{width:47px;height:22px;border-radius:12px 12px 5px 5px}.object--sofa::before{content:"";position:absolute;left:9px;top:-12px;width:29px;height:16px;border-radius:9px 9px 3px 3px;background:var(--accent)}
     .object--chair{width:25px;height:23px;border-radius:7px 7px 4px 4px}.object--chair::before{content:"";position:absolute;left:4px;top:-14px;width:17px;height:18px;border-radius:7px 7px 2px 2px;background:var(--accent)}
@@ -185,7 +188,13 @@
     </section>
   </main>
 
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
   <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+    import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
     import { FURNITURE_CATEGORIES, CATEGORY_PRIMITIVE, CATEGORY_DIMENSIONS, addUserAsset } from '../shared/asset-library-data.js';
 
     const photoEmpty = document.getElementById('photoEmpty');
@@ -213,6 +222,9 @@
     const ACTIVE_JOB_KEY = 'dreamhome.capture.active-job.v1';
     const ACTIVE_JOB_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
     const state = { categories:[DEFAULT_CATEGORY], photoUrl:null, photoFile:null, hasPhoto:false, backendReady:false, photoColor:'#9a8163', pollTimer:null, pollFailures:0, job:null, generatedAssets:[] };
+    const dracoLoader = new DRACOLoader().setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/libs/draco/');
+    const generatedModelLoader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).setDRACOLoader(dracoLoader);
+    const resultPreviewDisposers = [];
     let toastTimer = null;
     const showToast = (message) => { toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1600); };
     const rgbToHex = (r, g, b) => '#' + [r, g, b].map((c) => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0')).join('');
@@ -382,12 +394,19 @@
       genRetry.hidden = status !== 'failed';
     }
 
-    function buildAssetFromJob(job) {
+    function buildAssetFromJob(job, modelDimensions) {
       const categoryId = state.categories[0];
       const category = FURNITURE_CATEGORIES.find((item) => item.id === categoryId);
       const dimensions = Array.isArray(job.estimated_size_m) && job.estimated_size_m.length === 3
         ? job.estimated_size_m.map(Number)
-        : (CATEGORY_DIMENSIONS[categoryId] || [1, .8, .6]);
+        : (() => {
+            const fallback = CATEGORY_DIMENSIONS[categoryId] || [1, .8, .6];
+            const longest = Math.max(...modelDimensions);
+            const targetLongest = Math.max(...fallback);
+            return longest > 0
+              ? modelDimensions.map((value) => value / longest * targetLongest)
+              : fallback;
+          })();
       const modelUrl = /^https?:/i.test(job.model_url || '')
         ? job.model_url
         : `${API_BASE}${job.model_url || ''}`;
@@ -401,9 +420,13 @@
         accent:lighten(state.photoColor, .3),
         dimensions,
         sizePrior:{ w:dimensions[0], h:dimensions[1], d:dimensions[2] },
+        sizePriorVersion:2,
         modelUrl,
         rawModel:true,
-        thumbnail:job.thumbnail_url || null,
+        modelValidated:true,
+        canonicalStatus:'raw_succeeded',
+        libraryAttached:false,
+        thumbnail:null,
         backendCategory:job.category || null,
         style:job.style || null,
         material:job.material || null,
@@ -412,6 +435,70 @@
         sourceUrl:null,
         createdAt:new Date().toISOString(),
       };
+    }
+
+    async function loadVerifiedGeneratedModel(modelUrl) {
+      if (!modelUrl) throw new Error('生成结果缺少 3D 文件地址');
+      const response = await fetch(modelUrl, { cache:'no-store' });
+      if (!response.ok) throw new Error(`3D 文件读取失败（${response.status}）`);
+      const contentType = response.headers.get('content-type') || '';
+      const buffer = await response.arrayBuffer();
+      if (buffer.byteLength < 1024) throw new Error('生成的 3D 文件不完整');
+      const magic = new TextDecoder().decode(new Uint8Array(buffer, 0, 4));
+      if (magic !== 'glTF' && !contentType.includes('model/gltf')) throw new Error('生成结果不是有效 GLB');
+      const gltf = await new Promise((resolve, reject) => {
+        generatedModelLoader.parse(buffer, new URL('.', modelUrl).href, resolve, reject);
+      });
+      const box = new THREE.Box3().setFromObject(gltf.scene);
+      const size = box.getSize(new THREE.Vector3());
+      if (![size.x, size.y, size.z].every((value) => Number.isFinite(value) && value > .0001)) {
+        throw new Error('生成的 3D 模型没有有效几何');
+      }
+      return { gltf, dimensions:[size.x, size.y, size.z] };
+    }
+
+    function disposeResultPreviews() {
+      while (resultPreviewDisposers.length) resultPreviewDisposers.pop()();
+    }
+
+    function mountResultModel(canvas, sourceScene, name) {
+      const scene = new THREE.Scene();
+      const model = sourceScene.clone(true);
+      const originalBox = new THREE.Box3().setFromObject(model);
+      const center = originalBox.getCenter(new THREE.Vector3());
+      const size = originalBox.getSize(new THREE.Vector3());
+      model.position.set(-center.x, -originalBox.min.y, -center.z);
+      scene.add(model);
+      scene.add(new THREE.HemisphereLight('#fff8e8', '#8f806d', 2.25));
+      const key = new THREE.DirectionalLight('#fff2d8', 3.2);
+      key.position.set(3, 5, 4);
+      scene.add(key);
+      const width = Math.max(canvas.clientWidth, 84);
+      const height = Math.max(canvas.clientHeight, 84);
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha:true, antialias:true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(width, height, false);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.08;
+      const camera = new THREE.PerspectiveCamera(32, width / height, .01, 100);
+      const radius = Math.max(size.x, size.y, size.z);
+      camera.position.set(radius * 1.7, radius * 1.15, radius * 2.1);
+      const controls = new OrbitControls(camera, canvas);
+      controls.enablePan = false;
+      controls.enableZoom = true;
+      controls.minDistance = radius * 1.35;
+      controls.maxDistance = radius * 4;
+      controls.target.set(0, size.y * .48, 0);
+      const render = () => renderer.render(scene, camera);
+      controls.addEventListener('change', render);
+      controls.update();
+      render();
+      canvas.setAttribute('aria-label', `${name} 的真实 3D，可拖动旋转`);
+      resultPreviewDisposers.push(() => {
+        controls.dispose();
+        renderer.dispose();
+      });
     }
 
     async function pollJob() {
@@ -457,15 +544,27 @@
         updateGen('failed', 0, error.message || '3D 服务提交失败，请稍后重试');
       }
     }
-    function finishGeneration(job) {
+    async function finishGeneration(job) {
       state.job = job;
       persistActiveJob(job);
-      const asset = buildAssetFromJob(job);
-      state.generatedAssets = [asset];
-      addUserAsset(asset); // 拍照资产自动进入自己的收藏，不伪造视频来源。
-      renderResult([asset]);
-      setPhase('result');
-      showToast('已生成 3D 组件并加入收藏');
+      setPhase('gen');
+      genTitle.textContent = '正在验证真实 3D';
+      genCopy.textContent = '确认模型、纹理和比例可正常加载';
+      progressBar.style.width = '100%';
+      try {
+        const modelUrl = /^https?:/i.test(job.model_url || '')
+          ? job.model_url
+          : `${API_BASE}${job.model_url || ''}`;
+        const verified = await loadVerifiedGeneratedModel(modelUrl);
+        const asset = buildAssetFromJob(job, verified.dimensions);
+        state.generatedAssets = [asset];
+        addUserAsset(asset);
+        renderResult([asset], verified.gltf);
+        setPhase('result');
+        showToast('真实 3D 已验证并保存到本机收藏');
+      } catch (error) {
+        updateGen('failed', 100, error.message || '真实 3D 无法加载，请重新生成');
+      }
     }
     function restoreActiveGeneration() {
       const active = readActiveJob();
@@ -489,14 +588,14 @@
       pollJob();
       return true;
     }
-    function renderResult(assets) {
+    function renderResult(assets, gltf) {
+      disposeResultPreviews();
       resultList.innerHTML = assets.map((asset) => {
         const category = FURNITURE_CATEGORIES.find((item) => item.id === asset.category);
-        const preview = asset.thumbnail
-          ? `<img src="${asset.thumbnail}" alt="${asset.name} 的 3D 缩略图" style="width:100%;height:100%;object-fit:contain;" />`
-          : `<span class="object object--${asset.primitive}"></span>`;
-        return `<div class="result-item"><div class="result-visual" style="--object:${asset.color};--accent:${asset.accent}">${preview}</div><div class="result-body"><input class="result-name" maxlength="16" value="${asset.name}" data-name="${asset.id}" aria-label="组件名称" /><p class="result-meta">家具类 · ${category.label} · 拍照生成 · 已收藏</p></div></div>`;
+        return `<div class="result-item"><div class="result-visual"><canvas class="result-model-viewer" data-model-preview="${asset.id}"></canvas><span class="result-model-hint">拖动查看</span></div><div class="result-body"><input class="result-name" maxlength="16" value="${asset.name}" data-name="${asset.id}" aria-label="组件名称" /><p class="result-meta">家具类 · ${category.label} · 真实 GLB · 本机收藏</p></div></div>`;
       }).join('');
+      const canvas = resultList.querySelector('[data-model-preview]');
+      if (canvas && gltf?.scene) mountResultModel(canvas, gltf.scene, assets[0].name);
     }
 
     // 名称编辑：写回已入库的用户资产（同 id 覆盖）
@@ -526,8 +625,9 @@
       event.preventDefault();
       location.href = `../my-favorites/index.html#catalog=furniture:${encodeURIComponent(state.generatedAssets[0].category)}`;
     });
-    captureAgain.addEventListener('click', () => { clearActiveJob(); resetPhoto(); setPhase('capture'); });
+    captureAgain.addEventListener('click', () => { disposeResultPreviews(); clearActiveJob(); resetPhoto(); setPhase('capture'); });
     window.addEventListener('pagehide', () => persistActiveJob());
+    window.addEventListener('pagehide', disposeResultPreviews);
     restoreActiveGeneration();
   </script>
 </body>
