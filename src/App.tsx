@@ -1255,7 +1255,7 @@ function SceneActions({ videoId }: { videoId: string }) {
 function DreamHomeNavIcon({ kind }: { kind: 'capture' | 'feed' | 'library' | 'favorites' | 'home' }) {
   const paths = {
     capture: <><path d="M8.7 4.6h6.6l1.3 2.1h2.8A2.6 2.6 0 0 1 22 9.3v8.3a2.6 2.6 0 0 1-2.6 2.6H4.6A2.6 2.6 0 0 1 2 17.6V9.3a2.6 2.6 0 0 1 2.6-2.6h2.8l1.3-2.1Z" /><circle cx="12" cy="13.3" r="3.4" fill="none" stroke="currentColor" strokeWidth="1.8" /></>,
-    feed: <><rect x="3" y="3" width="18" height="18" rx="4" /><path d="m10 8.2 6.2 3.8-6.2 3.8V8.2Z" fill="#0a0a0b" /></>,
+    feed: <><rect x="3" y="3" width="18" height="18" rx="4" /><path d="m10 8.2 6.2 3.8-6.2 3.8V8.2Z" /></>,
     library: <><path d="M12 2.6a6.4 6.4 0 0 0-3.9 11.5c.5.4.7.9.8 1.5l.1.9h6l.1-.9c.1-.6.3-1.1.8-1.5A6.4 6.4 0 0 0 12 2.6Z" /><rect x="8.7" y="17.4" width="6.6" height="1.9" rx="1" /></>,
     favorites: <path d="M7 3.6h10a2.2 2.2 0 0 1 2.2 2.2v13.9c0 .9-.9 1.4-1.7.9L12 17.2l-5.5 3.4c-.8.5-1.7 0-1.7-.9V5.8A2.2 2.2 0 0 1 7 3.6Z" />,
     home: <path d="m3.2 10.4 8.8-7.6 8.8 7.6v8a2 2 0 0 1-2 2h-4.1v-5.7H9.3v5.7H5.2a2 2 0 0 1-2-2v-8Z" />,
@@ -1282,7 +1282,7 @@ function DreamHomeBottomNav() {
           aria-current={item.active ? 'page' : undefined}
         >
           <DreamHomeNavIcon kind={item.kind} />
-          <span>{item.label}</span>
+          <span className="dreamhome-nav-label">{item.label}</span>
         </a>
       ))}
     </nav>

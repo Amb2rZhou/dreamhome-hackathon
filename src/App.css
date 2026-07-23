@@ -557,54 +557,66 @@ button {
 
 .douyin-bottom-nav {
   position: absolute;
-  z-index: 8;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 67px;
+  z-index: 20;
+  left: 50%;
+  bottom: 19px;
+  width: calc(100% - 24px);
+  height: 56px;
+  transform: translateX(-50%);
   display: grid;
   grid-template-columns: repeat(5,minmax(0,1fr));
-  align-items: start;
-  padding: 7px 10px 17px;
-  border-top: 1px solid rgba(255,255,255,.06);
-  background: rgba(10,10,11,.96);
-  box-shadow: 0 -10px 24px rgba(0,0,0,.12);
+  gap: 0;
+  align-items: center;
+  padding: 6px 6px 8px;
+  border: 1px solid rgba(255,255,255,.88);
+  border-radius: 26px;
+  background: rgba(255,253,248,.96);
+  box-shadow: 0 8px 24px rgba(78,59,35,.18);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  backdrop-filter: blur(16px) saturate(130%);
 }
 .dreamhome-bottom-nav {
-  padding-inline: 6px;
+  overflow: visible;
 }
 .douyin-nav-item {
   position: relative;
   min-width: 0;
-  height: 43px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  color: rgba(255,255,255,.58);
-  border-radius: 10px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  color: #b8ad98;
+  border-radius: 15px;
   text-decoration: none;
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: color .18s ease;
 }
-.douyin-nav-item svg { width: 21px; height: 21px; }
-.douyin-nav-item span { font-size: 10px; line-height: 1; font-weight: 650; }
-.douyin-nav-item.is-active { color: #fff; }
-.douyin-nav-item.is-active span { font-weight: 800; }
+.douyin-nav-item svg { width: 27px; height: 27px; fill: currentColor; display: block; }
+.douyin-nav-item .dreamhome-nav-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
 .dreamhome-nav-item:focus-visible {
-  outline: 2px solid #f2b94b;
-  outline-offset: -2px;
+  outline: 2px solid #c78f2a;
+  outline-offset: 2px;
 }
-.dreamhome-nav-item:active { background: rgba(255,255,255,.1); }
-.dreamhome-nav-item.is-active { color: #f2b94b; }
-.dreamhome-nav-item.is-active svg path[fill="#0a0a0b"] { fill: #0a0a0b; }
+.dreamhome-nav-item:active { background: rgba(199,143,42,.1); }
+.dreamhome-nav-item.is-active { color: #c78f2a; }
+.dreamhome-nav-item.is-active svg { transform: translateY(-1px) scale(1.06); }
 
 .scene-actions-inline {
   position: absolute;
   z-index: 12;
   left: 12px;
   right: 12px;
-  bottom: 72px;
+  bottom: 82px;
   min-height: 48px;
   padding: 3px;
   display: grid;

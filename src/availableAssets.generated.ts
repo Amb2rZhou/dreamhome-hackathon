@@ -1,4 +1,5 @@
 import type { LibraryComponent } from './types'
+import { SCENE_SUPPLEMENTAL_ASSETS } from './sceneSupplementalAssets'
 
 // Generated from the reviewed available-assets-v1 dataset (149 assets).
 // Card art is the completed 2D input; detail pages load the matching GLB model.
@@ -6298,7 +6299,7 @@ export const AVAILABLE_ASSETS: LibraryComponent[] = [
   }
 ]
 
-export const AVAILABLE_ASSETS_BY_VIDEO = AVAILABLE_ASSETS.reduce<Record<string, LibraryComponent[]>>((groups, asset) => {
+export const AVAILABLE_ASSETS_BY_VIDEO = [...AVAILABLE_ASSETS, ...SCENE_SUPPLEMENTAL_ASSETS].reduce<Record<string, LibraryComponent[]>>((groups, asset) => {
   const key = asset.sourceVideo?.videoId ?? 'unknown'
   ;(groups[key] ??= []).push(asset)
   return groups
