@@ -11,6 +11,7 @@ Environment=PYTHONPATH=/opt/dreamhome/backend
 Environment=GEN3D_PROVIDER=selfhost
 Environment=DETECT_PROVIDER=remote
 Environment=REMOTE_GPU_URL=http://127.0.0.1:9000
+Environment=GEN3D_REMOTE_URL=http://127.0.0.1:9001
 Environment=LABELS_PROVIDER=dashscope
 Environment=ENHANCE_PROVIDER=module
 Environment=SEGMENT_API_URL=http://127.0.0.1:8002

@@ -50,6 +50,10 @@ class Settings:
     DETECT_PROVIDER: str = _env("DETECT_PROVIDER", "mock").lower()
     # AutoDL/RunPod 上 gpu/server.py 的地址，如 http://x.x.x.x:9000
     REMOTE_GPU_URL: str = _env("REMOTE_GPU_URL", "")
+    # TRELLIS may run behind the general GPU API or as a dedicated local
+    # worker. Keeping its URL separate avoids sending large completed images
+    # through the detection proxy on the all-in-one ECS deployment.
+    GEN3D_REMOTE_URL: str = _env("GEN3D_REMOTE_URL", "") or REMOTE_GPU_URL
     # 打标签 provider: mock | anthropic | dashscope
     LABELS_PROVIDER: str = _env("LABELS_PROVIDER", "mock").lower()
     DASHSCOPE_API_KEY: str = _env("DASHSCOPE_API_KEY")
@@ -81,7 +85,7 @@ class Settings:
     @property
     def effective_provider(self) -> str:
         """有 key 才用真 provider，否则一律 mock，避免线上 500。"""
-        if self.GEN3D_PROVIDER == "selfhost" and self.REMOTE_GPU_URL:
+        if self.GEN3D_PROVIDER == "selfhost" and self.GEN3D_REMOTE_URL:
             return "selfhost"
         if self.GEN3D_PROVIDER == "fal" and self.FAL_KEY:
             return "fal"

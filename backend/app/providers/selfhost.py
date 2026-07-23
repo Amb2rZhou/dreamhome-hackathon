@@ -18,7 +18,7 @@ class SelfhostTrellisProvider(Gen3DProvider):
     name = "selfhost"
 
     def __init__(self) -> None:
-        self._base = settings.REMOTE_GPU_URL.rstrip("/")
+        self._base = settings.GEN3D_REMOTE_URL.rstrip("/")
 
     async def submit(self, image_path: str, *, texture: bool = True, prompt: str = "",
                      extra_image_paths: list[str] | None = None) -> str:
