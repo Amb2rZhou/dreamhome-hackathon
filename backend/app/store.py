@@ -91,14 +91,15 @@ def create_job(kind: str, image_path: str, *, texture: bool = True,
     if not _capacity_available():
         raise GenerationQueueFull("generation queue is full")
     provider = get_provider()
-    job = Job(
-        job_id=uuid.uuid4().hex,
-        kind=kind,
-        status=JobStatus.queued,
-        provider=provider.name,
-        stage="queued",
-        **(meta or {}),
-    )
+    job_data = {
+        "job_id": uuid.uuid4().hex,
+        "kind": kind,
+        "status": JobStatus.queued,
+        "provider": provider.name,
+        "stage": "queued",
+    }
+    job_data.update(meta or {})
+    job = Job(**job_data)
     request = {
         "mode": "atomic",
         "kind": kind,
@@ -117,14 +118,15 @@ def create_workflow_job(kind: str, runner: Callable[[Job], Awaitable[None]], *,
     if not _capacity_available():
         raise GenerationQueueFull("generation queue is full")
     provider = get_provider()
-    job = Job(
-        job_id=uuid.uuid4().hex,
-        kind=kind,
-        status=JobStatus.queued,
-        provider=provider.name,
-        stage="queued",
-        **(meta or {}),
-    )
+    job_data = {
+        "job_id": uuid.uuid4().hex,
+        "kind": kind,
+        "status": JobStatus.queued,
+        "provider": provider.name,
+        "stage": "queued",
+    }
+    job_data.update(meta or {})
+    job = Job(**job_data)
     request = {"mode": "workflow", "kind": kind}
     _JOBS[job.job_id] = job
     _REQUESTS[job.job_id] = request

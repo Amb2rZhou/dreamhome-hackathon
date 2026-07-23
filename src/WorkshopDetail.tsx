@@ -50,6 +50,9 @@ function TaskRow({
       <span className="workshop-task-name">
         <strong>{task.name}</strong>
         <small>{batchLabel}</small>
+        {(task.status === 'waiting' || task.status === 'failed') && task.error && (
+          <small className="workshop-task-error" title={task.error}>{task.error}</small>
+        )}
       </span>
       {task.status === 'processing' && <span className="workshop-task-status is-processing"><i />加工中</span>}
       {task.status === 'completed' && <span className="workshop-task-status is-completed">查看 <b>›</b></span>}

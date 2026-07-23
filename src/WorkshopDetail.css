@@ -278,6 +278,13 @@
 .workshop-task-name { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 2px; overflow: hidden; }
 .workshop-task-name strong { overflow: hidden; font-size: 12px; font-weight: 750; text-overflow: ellipsis; white-space: nowrap; }
 .workshop-task-name small { color: #9a998f; font-size: 9px; font-weight: 600; letter-spacing: .01em; }
+.workshop-task-name .workshop-task-error {
+  max-width: 15rem;
+  overflow: hidden;
+  color: #a96042;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .workshop-task-status { flex: 0 0 auto; font-size: 10px; font-weight: 750; }
 .workshop-task-status.is-processing { display: inline-flex; align-items: center; gap: 6px; color: #9a6f25; }
 .workshop-task-status.is-processing i {

@@ -230,7 +230,6 @@ def start_selection_production(
             "style": styles[0] if styles else None,
             "material": materials[0] if materials else None,
             "quality_mode": "production",
-            "stage": "queued",
         },
     )
     db.update_asset(asset_id, job_id=job.job_id)

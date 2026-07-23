@@ -141,6 +141,43 @@ class SelectionReuseTests(unittest.TestCase):
         self.assertEqual(response.json()["quality_mode"], "production")
         labels.assert_awaited_once()
         self.assertEqual(start.call_args.kwargs["labels"], refreshed_labels)
+        self.assertNotIn("sel-reject", videos._SELECTS)
+
+    def test_failed_production_submission_keeps_selection_for_retry(self):
+        videos._SELECTS["sel-retry"] = {
+            "video_id": "vid_test",
+            "t": 3.0,
+            "bbox": [0.1, 0.1, 0.5, 0.5],
+            "polygon": [[0.1, 0.1], [0.6, 0.1], [0.6, 0.6], [0.1, 0.6]],
+            "labels": READY_ASSET["labels"],
+            "track_id": "trk_existing",
+            "source_crop": "/tmp/context.jpg",
+            "completion_path": [(1, 1), (2, 1), (2, 2)],
+            "isolation_mode": "polygon_context",
+            "has_source_frame": True,
+        }
+        track = {"track_id": "trk_existing", "video_id": "vid_test",
+                 "asset_id": None}
+        with (
+            patch.object(videos.db, "get_track", return_value=track),
+            patch.object(videos, "production_readiness", return_value={"ready": True}),
+            patch.object(
+                videos,
+                "start_selection_production",
+                side_effect=RuntimeError("temporary queue failure"),
+            ),
+        ):
+            with self.assertRaises(RuntimeError):
+                self.client.post(
+                    "/api/videos/vid_test/select/confirm",
+                    json={
+                        "select_id": "sel-retry",
+                        "generate_new": True,
+                        "quality_mode": "production",
+                    },
+                )
+
+        self.assertIn("sel-retry", videos._SELECTS)
 
 
 if __name__ == "__main__":

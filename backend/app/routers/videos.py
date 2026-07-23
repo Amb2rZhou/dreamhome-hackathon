@@ -432,8 +432,6 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
             raise HTTPException(503, {"message": "production pipeline is not ready",
                                       "capability": readiness})
 
-    _SELECTS.pop(req.select_id, None)
-
     selected_track = db.get_track(sel["track_id"]) if sel.get("track_id") else None
     track_id = (sel["track_id"] if selected_track
                 and selected_track.get("video_id") == video_id else None)
@@ -444,6 +442,7 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
 
     if req.use_asset_id:
         db.bind_track_asset(track_id, req.use_asset_id)
+        _SELECTS.pop(req.select_id, None)
         return SelectConfirmResponse(asset_id=req.use_asset_id, track_id=track_id,
                                      quality_mode="reuse")
 
@@ -463,6 +462,9 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
             user_id=req.user_id,
             completion_path=sel.get("completion_path") or [],
         )
+        # Do not consume the selection until the production job is accepted.
+        # This keeps transient queue/provider failures safely retryable.
+        _SELECTS.pop(req.select_id, None)
         return SelectConfirmResponse(
             asset_id=asset_id,
             job_id=job.job_id,
@@ -479,5 +481,6 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
         status="generating", job_id=job.job_id, created_by="user",
     )
     db.bind_track_asset(track_id, asset_id)
+    _SELECTS.pop(req.select_id, None)
     return SelectConfirmResponse(asset_id=asset_id, job_id=job.job_id, track_id=track_id,
                                  quality_mode="fast")

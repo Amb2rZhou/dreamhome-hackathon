@@ -85,6 +85,23 @@ class DurableJobQueueTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(restored.status, JobStatus.succeeded)
         self.assertEqual(restored.model_url, "/storage/models/result.glb")
 
+    async def test_workflow_metadata_can_set_initial_stage_without_duplicate_kwargs(self):
+        blocker = asyncio.Event()
+
+        async def workflow(job):
+            await blocker.wait()
+            job.status = JobStatus.succeeded
+
+        job = store.create_workflow_job(
+            "video",
+            workflow,
+            meta={"asset_id": "ast_test", "stage": "queued"},
+        )
+        self.assertEqual(job.stage, "queued")
+        self.assertEqual(job.asset_id, "ast_test")
+        blocker.set()
+        await store._TASKS[job.job_id]
+
     async def test_running_atomic_job_is_rescheduled_after_restart(self):
         job = store.create_job("photo", "/tmp/photo.png")
         original_task = store._TASKS[job.job_id]
