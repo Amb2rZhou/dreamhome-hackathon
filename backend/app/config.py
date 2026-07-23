@@ -76,6 +76,11 @@ class Settings:
 
     # 上传文件落地目录（demo 用本地磁盘；生产换对象存储）
     STORAGE_DIR: str = _env("STORAGE_DIR", os.path.join(os.path.dirname(__file__), "..", "storage"))
+    # A single A10 should execute one heavy completion/TRELLIS workflow at a
+    # time. Additional requests remain durable queued jobs instead of spawning
+    # unbounded background work and exhausting GPU/CPU memory.
+    JOB_MAX_CONCURRENCY: int = max(1, int(_env("JOB_MAX_CONCURRENCY", "1")))
+    JOB_QUEUE_MAX: int = max(1, int(_env("JOB_QUEUE_MAX", "100")))
     # 对外可访问的基址，用于拼 model_url（部署到 Vercel/服务器时改成公网域名）
     PUBLIC_BASE_URL: str = _env("PUBLIC_BASE_URL", "http://localhost:8000")
 

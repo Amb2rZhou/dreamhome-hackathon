@@ -101,6 +101,14 @@ CREATE TABLE IF NOT EXISTS home_project_versions(
   created_at REAL NOT NULL
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_home_versions_revision ON home_project_versions(project_id, revision);
+CREATE TABLE IF NOT EXISTS generation_jobs(
+  job_id TEXT PRIMARY KEY,
+  document_json TEXT NOT NULL,
+  request_json TEXT NOT NULL DEFAULT '{}',
+  created_at REAL NOT NULL,
+  updated_at REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_generation_jobs_updated ON generation_jobs(updated_at);
 """
 
 
@@ -137,6 +145,60 @@ def _row(sql: str, params: tuple = ()) -> Optional[dict]:
 
 def new_id(prefix: str) -> str:
     return f"{prefix}_{uuid.uuid4().hex[:12]}"
+
+
+# ---- durable generation jobs ----
+
+def upsert_generation_job(job_id: str, document: dict, request: Optional[dict] = None) -> None:
+    now = time.time()
+    existing = _row("SELECT request_json,created_at FROM generation_jobs WHERE job_id=?", (job_id,))
+    request_json = json.dumps(
+        request if request is not None else json.loads(existing["request_json"] or "{}")
+        if existing else {},
+        ensure_ascii=False,
+    )
+    created_at = existing["created_at"] if existing else now
+    _exec(
+        "INSERT INTO generation_jobs(job_id,document_json,request_json,created_at,updated_at)"
+        " VALUES(?,?,?,?,?)"
+        " ON CONFLICT(job_id) DO UPDATE SET document_json=excluded.document_json,"
+        " request_json=excluded.request_json,updated_at=excluded.updated_at",
+        (
+            job_id,
+            json.dumps(document, ensure_ascii=False),
+            request_json,
+            created_at,
+            now,
+        ),
+    )
+
+
+def get_generation_job(job_id: str) -> Optional[dict]:
+    row = _row("SELECT * FROM generation_jobs WHERE job_id=?", (job_id,))
+    if not row:
+        return None
+    return {
+        "job": json.loads(row["document_json"]),
+        "request": json.loads(row["request_json"] or "{}"),
+        "created_at": row["created_at"],
+        "updated_at": row["updated_at"],
+    }
+
+
+def list_generation_jobs(*, include_terminal: bool = True) -> list[dict]:
+    rows = _rows("SELECT * FROM generation_jobs ORDER BY created_at")
+    result = []
+    for row in rows:
+        document = json.loads(row["document_json"])
+        if not include_terminal and document.get("status") in {"succeeded", "failed"}:
+            continue
+        result.append({
+            "job": document,
+            "request": json.loads(row["request_json"] or "{}"),
+            "created_at": row["created_at"],
+            "updated_at": row["updated_at"],
+        })
+    return result
 
 
 # ---- videos ----

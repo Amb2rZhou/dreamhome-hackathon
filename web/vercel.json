@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/dreamhome-api/api/jobs/:jobId",
+      "destination": "/api/dreamhome-jobs/:jobId"
+    },
+    {
       "source": "/dreamhome-api/:path*",
       "destination": "http://218.244.156.128:8000/:path*"
     }
@@ -8,7 +12,8 @@
   "functions": {
     "api/photo-to-3d.js": { "maxDuration": 60 },
     "api/selection-to-3d.js": { "maxDuration": 60 },
-    "api/jobs/[id].js": { "maxDuration": 30 }
+    "api/jobs/[id].js": { "maxDuration": 30 },
+    "api/dreamhome-jobs/[id].js": { "maxDuration": 30 }
   },
   "headers": [
     {

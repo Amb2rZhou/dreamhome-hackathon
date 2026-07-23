@@ -33,6 +33,8 @@ class Job(BaseModel):
     stage: Optional[str] = None
     quality_mode: Optional[Literal["fast", "production"]] = None
     library_attached: bool = False
+    queue_position: int = 0
+    queue_depth: int = 0
 
 
 class SubmitResponse(BaseModel):

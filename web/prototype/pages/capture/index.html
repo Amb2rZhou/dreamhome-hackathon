@@ -210,7 +210,7 @@
     const toLibrary = document.getElementById('toLibrary');
 
     const DEFAULT_CATEGORY = FURNITURE_CATEGORIES[0].id; // 默认选中首个真实分类（列表首位、可见即高亮）
-    const state = { categories:[DEFAULT_CATEGORY], photoUrl:null, photoFile:null, hasPhoto:false, backendReady:false, photoColor:'#9a8163', pollTimer:null, job:null, generatedAssets:[] };
+    const state = { categories:[DEFAULT_CATEGORY], photoUrl:null, photoFile:null, hasPhoto:false, backendReady:false, photoColor:'#9a8163', pollTimer:null, pollFailures:0, job:null, generatedAssets:[] };
     let toastTimer = null;
     const showToast = (message) => { toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1600); };
     const rgbToHex = (r, g, b) => '#' + [r, g, b].map((c) => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0')).join('');
@@ -327,7 +327,11 @@
     }
     async function fetchJob(jobId) {
       const response = await fetch(`${API_BASE}/api/jobs/${encodeURIComponent(jobId)}`, { cache:'no-store' });
-      if (!response.ok) throw new Error(`读取生成进度失败（${response.status}）`);
+      if (!response.ok) {
+        const error = new Error(`读取生成进度失败（${response.status}）`);
+        error.status = response.status;
+        throw error;
+      }
       return response.json();
     }
     const GEN_COPY = {
@@ -381,12 +385,26 @@
       clearTimeout(state.pollTimer);
       try {
         const job = await fetchJob(state.job.job_id);
+        state.pollFailures = 0;
         const uiStatus = STATUS_MAP[job.status] || 'queued';
         updateGen(uiStatus, job.progress || 0, job.error);
+        if (job.status === 'queued' && job.queue_position > 0) {
+          genCopy.textContent = job.queue_position === 1
+            ? '任务已保存，正在等待当前组件生成完成'
+            : `任务已保存，前面还有 ${job.queue_position - 1} 个生成任务`;
+        }
         if (job.status === 'succeeded') { finishGeneration(job); return; }
         if (job.status === 'failed') return;
         state.pollTimer = setTimeout(pollJob, 1600);
       } catch (error) {
+        const transient = !error.status || error.status === 408 || error.status === 429 || error.status >= 500;
+        if (transient && state.pollFailures < 20) {
+          state.pollFailures += 1;
+          genTitle.textContent = '仍在后台生成';
+          genCopy.textContent = '网络暂时波动，正在自动恢复进度';
+          state.pollTimer = setTimeout(pollJob, Math.min(8000, 1600 + state.pollFailures * 400));
+          return;
+        }
         updateGen('failed', 0, error.message || '后端暂时不可用，请稍后重试');
       }
     }
@@ -394,6 +412,7 @@
       setPhase('gen');
       updateGen('queued', 6);
       genRetry.hidden = true;
+      state.pollFailures = 0;
       try {
         state.job = await submitPhoto();
         state.pollTimer = setTimeout(pollJob, 900);

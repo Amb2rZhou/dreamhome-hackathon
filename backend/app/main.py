@@ -5,11 +5,13 @@ storage 目录静态托管，供前端直接取中间产物/结果。
 本地运行：  uvicorn app.main:app --reload --port 8000
 """
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .config import settings
+from .store import GenerationQueueFull, restore_persisted_jobs
 from .services.selection_production import production_readiness
 from .routers import video, photo, sketch, voice, jobs, assets, videos, library, tracks_fix, annotations, agent, scenes, review_qc, frame_assets, libraries, home_projects
 
@@ -50,6 +52,23 @@ app.include_router(frame_assets.router)
 # 专项资产库(窗户/吊顶/地板/光线/窗外景观,T6)
 app.include_router(libraries.router)
 app.include_router(home_projects.router)
+
+
+@app.exception_handler(GenerationQueueFull)
+async def generation_queue_full(_request: Request, _exc: GenerationQueueFull):
+    return JSONResponse(
+        status_code=429,
+        content={
+            "detail": "当前生成请求较多，请稍后再试",
+            "code": "generation_queue_full",
+        },
+        headers={"Retry-After": "30"},
+    )
+
+
+@app.on_event("startup")
+async def restore_generation_jobs():
+    await restore_persisted_jobs()
 
 
 @app.get("/api/health", tags=["health"])
