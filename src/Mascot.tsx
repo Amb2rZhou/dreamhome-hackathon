@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { MascotState } from './types'
 import { BlackKeyImage, BlackKeyVideo } from './BlackKeyMedia'
+import { hasSeenFeedOnboarding } from './onboardingState'
 import './Mascot.css'
 
 type MotionName =
@@ -43,23 +44,6 @@ const IDLE_ACCENT_DELAY = 10_000
 const WORK_ACCENT_DELAY = 2_500
 const MOTION_FADE_MS = 300
 const MOTION_ASSET_ROOT = '/mascot-motion'
-const ONBOARDING_SEEN_KEY = 'dreamhome-feed-onboarding-seen-v1'
-
-function hasSeenOnboarding(): boolean {
-  try {
-    return window.localStorage.getItem(ONBOARDING_SEEN_KEY) === '1'
-  } catch {
-    return false
-  }
-}
-
-function rememberOnboarding(): void {
-  try {
-    window.localStorage.setItem(ONBOARDING_SEEN_KEY, '1')
-  } catch {
-    // Storage restrictions must not block the onboarding action.
-  }
-}
 // 统一角色脚底基线；各段素材的轻微视觉差异在这里校准，不需要重新导出。
 const MOTIONS: Record<MotionName, MotionClip> = {
   // 与《包工球交互》状态文档逐项对应；MP4 为原始 H.264 MOV 的无损换封装。
@@ -146,7 +130,7 @@ export function Mascot({
   const [videoFailed, setVideoFailed] = useState(false)
   const pointerStartRef = useRef<{ x: number; y: number; moved: boolean } | null>(null)
   const [startTipSeen, setStartTipSeen] = useState(false)
-  const [welcomeVisible, setWelcomeVisible] = useState(() => !hasSeenOnboarding())
+  const [welcomeVisible, setWelcomeVisible] = useState(() => !hasSeenFeedOnboarding())
   const welcomeTextRef = useRef('嗨，我是包工球。一起把路过的灵感，慢慢装进家里。')
   const idleTimerRef = useRef<number | null>(null)
   const lastIdleAccentRef = useRef<'idleMagnifier' | 'idleBelt' | null>(null)
@@ -279,7 +263,6 @@ export function Mascot({
   }, [guideMode, welcomeVisible])
 
   const dismissWelcome = () => {
-    rememberOnboarding()
     setWelcomeVisible(false)
     onBeginOnboarding()
   }

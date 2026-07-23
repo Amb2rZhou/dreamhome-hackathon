@@ -32,6 +32,7 @@ import {
   UserIcon,
 } from './DouyinIcons'
 import { clientPointInElement } from './screenSpace'
+import { hasSeenFeedOnboarding, rememberFeedOnboarding } from './onboardingState'
 import './App.css'
 
 interface State {
@@ -646,6 +647,13 @@ function App() {
   }, [awaitingCollectionView])
 
   useEffect(() => {
+    if (sessionGuideStage !== 'progress') return
+    // This hint must never trap the user behind an onboarding overlay.
+    const timer = window.setTimeout(() => setSessionGuideStage('waiting'), 4200)
+    return () => window.clearTimeout(timer)
+  }, [sessionGuideStage])
+
+  useEffect(() => {
     warmupEdgeSam()
       .catch((error) => {
         console.warn('[EdgeSAM] model warmup failed; session will retry', error)
@@ -968,7 +976,11 @@ function App() {
           progressGuideActive={sessionGuideStage === 'progress'}
           notice={state.toast ?? (state.showFailHint ? '这件家具还没完整露出来，换一帧或圈近一点再试试。' : null)}
           onOpenCollection={() => dispatch({ type: 'SHOW_COLLECTION_DETAIL' })}
-          onBeginOnboarding={() => setSessionGuideStage('pause')}
+          onBeginOnboarding={() => {
+            if (hasSeenFeedOnboarding()) return
+            rememberFeedOnboarding()
+            setSessionGuideStage('pause')
+          }}
           onProgressGuideOpened={() => setSessionGuideStage('waiting')}
           onCompletionGuideOpened={() => setSessionGuideStage('done')}
           onDismissStartTip={() => dispatch({ type: 'HIDE_CRAFT_START_TIP' })}
@@ -993,7 +1005,9 @@ function App() {
             }}
             showDragGuide={sessionGuideStage === 'drag'}
             onDragGuideShown={() => {}}
-            onCraftDropped={() => setSessionGuideStage('progress')}
+            onCraftDropped={() => setSessionGuideStage((current) => (
+              current === 'drag' ? 'progress' : current
+            ))}
           />
         )}
 
@@ -1509,6 +1523,8 @@ function SessionLayer({
     y: number
     hovering: boolean
   }>({ phase: 'idle', x: 0, y: 0, hovering: false })
+  const pickupPhaseRef = useRef<'idle' | 'pressing' | 'dragging' | 'dropping' | 'returning'>('idle')
+  const pickupHoveringRef = useRef(false)
   const [isRecognizing, setIsRecognizing] = useState(false)
   const [frameAssetsOpen, setFrameAssetsOpen] = useState(false)
   const [recognizeGuideVisible, setRecognizeGuideVisible] = useState(showRecognizeGuide)
@@ -1650,7 +1666,11 @@ function SessionLayer({
         || point.y > box.y + box.h
       ) continue
       const mask = cutoutHitMasksRef.current.get(object.id)
-      if (!mask || box.w <= 0 || box.h <= 0) continue
+      if (box.w <= 0 || box.h <= 0) continue
+      // The alpha hit mask is prepared after the cutout image paints. Until
+      // then, fall back to its visible bounding box so the object can be
+      // picked up immediately instead of feeling locked for one render/load.
+      if (!mask) return object
       const maskX = Math.min(mask.width - 1, Math.max(0, Math.floor(((point.x - box.x) / box.w) * mask.width)))
       const maskY = Math.min(mask.height - 1, Math.max(0, Math.floor(((point.y - box.y) / box.h) * mask.height)))
       if (mask.alpha[maskY * mask.width + maskX] >= 32) return object
@@ -1690,6 +1710,8 @@ function SessionLayer({
       objectId: object.id,
     }
     dispatch({ type: 'SELECT_OBJECT', id: object.id })
+    pickupPhaseRef.current = 'pressing'
+    pickupHoveringRef.current = false
     setPickup({ phase: 'pressing', x: point.x, y: point.y, hovering: false })
     ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
     holdTimerRef.current = window.setTimeout(() => {
@@ -1701,6 +1723,7 @@ function SessionLayer({
       const canvas = canvasRef.current
       const context = canvas?.getContext('2d')
       if (canvas && context) context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+      pickupPhaseRef.current = 'dragging'
       setPickup((current) => ({ ...current, phase: 'dragging' }))
       onMascotModeChange('collecting')
       holdTimerRef.current = null
@@ -1714,19 +1737,31 @@ function SessionLayer({
     if (!point) return
     e.preventDefault()
     e.stopPropagation()
-    if (pickup.phase === 'pressing') {
+    if (pickupPhaseRef.current === 'pressing') {
       const distance = Math.hypot(point.x - press.startX, point.y - press.startY)
-      if (distance > 10) {
-        clearHoldTimer()
-        pressRef.current = null
-        gestureModeRef.current = 'idle'
-        setPickup({ phase: 'idle', x: 0, y: 0, hovering: false })
-        onMascotModeChange('none')
-      }
+      if (distance <= 4) return
+
+      // A cutout is already an explicit selection, so movement means drag.
+      // Previously movement cancelled pickup until a 360 ms long-press had
+      // elapsed, which made a freshly extracted object feel unresponsive.
+      clearHoldTimer()
+      drawingRef.current = false
+      movedRef.current = true
+      pathRef.current = []
+      bboxRef.current = null
+      const canvas = canvasRef.current
+      const context = canvas?.getContext('2d')
+      if (canvas && context) context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+      const hovering = isInsideCart(e.clientX, e.clientY)
+      pickupPhaseRef.current = 'dragging'
+      pickupHoveringRef.current = hovering
+      setPickup({ phase: 'dragging', x: point.x, y: point.y, hovering })
+      onMascotModeChange(hovering ? 'ready' : 'collecting')
       return
     }
-    if (pickup.phase !== 'dragging') return
+    if (pickupPhaseRef.current !== 'dragging') return
     const hovering = isInsideCart(e.clientX, e.clientY)
+    pickupHoveringRef.current = hovering
     setPickup({
       phase: 'dragging',
       x: point.x,
@@ -2053,16 +2088,20 @@ function SessionLayer({
     e.stopPropagation()
     clearHoldTimer()
     pressRef.current = null
-    if (pickup.phase === 'dragging') {
-      if (pickup.hovering) {
+    if (pickupPhaseRef.current === 'dragging') {
+      if (pickupHoveringRef.current) {
+        pickupPhaseRef.current = 'dropping'
         setPickup((current) => ({ ...current, phase: 'dropping' }))
         onMascotModeChange('receiving')
         window.setTimeout(() => { void handleCraft() }, 360)
       } else {
+        pickupPhaseRef.current = 'returning'
         setPickup((current) => ({ ...current, phase: 'returning', hovering: false }))
         onMascotModeChange('none')
         dispatch({ type: 'SHOW_TOAST', msg: '重新试试，再靠近一点就能放进来！' })
         window.setTimeout(() => {
+          pickupPhaseRef.current = 'idle'
+          pickupHoveringRef.current = false
           setPickup({ phase: 'idle', x: 0, y: 0, hovering: false })
         }, 240)
       }
@@ -2080,6 +2119,8 @@ function SessionLayer({
       if (canvas && context) context.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
       dispatch({ type: 'SELECT_OBJECT', id: press.objectId })
     }
+    pickupPhaseRef.current = 'idle'
+    pickupHoveringRef.current = false
     setPickup({ phase: 'idle', x: 0, y: 0, hovering: false })
     onMascotModeChange('none')
   }

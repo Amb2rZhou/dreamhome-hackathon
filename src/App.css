@@ -1047,7 +1047,6 @@ button {
   cursor: none;
 }
 .draw-layer.is-recognizing {
-  pointer-events: none;
   cursor: default;
 }
 .pen-tip {
