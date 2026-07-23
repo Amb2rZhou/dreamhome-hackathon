@@ -202,7 +202,7 @@
     const toLibrary = document.getElementById('toLibrary');
 
     const DEFAULT_CATEGORY = FURNITURE_CATEGORIES[0].id; // 默认选中首个真实分类（列表首位、可见即高亮）
-    const state = { categories:[DEFAULT_CATEGORY], photoUrl:null, hasPhoto:false, photoColor:'#9a8163', pollTimer:null, job:null, generatedAssets:[] };
+    const state = { categories:[DEFAULT_CATEGORY], photoUrl:null, photoFile:null, hasPhoto:false, photoColor:'#9a8163', pollTimer:null, job:null, generatedAssets:[] };
     let toastTimer = null;
     const showToast = (message) => { toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1600); };
     const rgbToHex = (r, g, b) => '#' + [r, g, b].map((c) => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0')).join('');
@@ -230,6 +230,7 @@
     function onPhotoChosen(file) {
       if (!file) return;
       if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
+      state.photoFile = file;
       state.photoUrl = URL.createObjectURL(file);
       const img = new Image();
       img.onload = () => { state.photoColor = extractPhotoColor(img); };
@@ -243,7 +244,7 @@
     }
     function resetPhoto() {
       if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
-      state.photoUrl = null; state.hasPhoto = false;
+      state.photoUrl = null; state.photoFile = null; state.hasPhoto = false;
       photoPreview.hidden = true; photoPreview.removeAttribute('src');
       photoEmpty.classList.remove('is-hidden');
       photoReset.hidden = true;
@@ -268,19 +269,32 @@
 
     function setPhase(name) { Object.entries(phases).forEach(([key, el]) => el.classList.toggle('is-active', key === name)); }
 
-    // ---- Mock 生成任务服务（与画一笔一致的降级策略）----
-    const MOCK_FAILURE = false;
-    const generationService = {
-      submit() { return { id:`capture-${Math.random().toString(36).slice(2, 8)}`, startedAt:performance.now() }; },
-      poll(job) {
-        const elapsed = performance.now() - job.startedAt;
-        if (MOCK_FAILURE && elapsed > 1100) return { status:'failed', progress:60, error:'没能认出家具，换张更清晰的照片' };
-        if (elapsed < 700) return { status:'queued', progress:16 };
-        if (elapsed < 1500) return { status:'processing', progress:52 };
-        if (elapsed < 2300) return { status:'processing', progress:82 };
-        return { status:'ready', progress:100 };
-      },
-    };
+    // ---- 拍照 → 3D：正式后端异步任务 ----
+    // 公网始终走 Vercel 同源代理，避免浏览器直连 ECS 的 mixed-content/CORS
+    // 问题；本地开发则连接本地 FastAPI。
+    const API_BASE = ['127.0.0.1', 'localhost'].includes(location.hostname)
+      ? 'http://127.0.0.1:8000'
+      : '/dreamhome-api';
+    const STATUS_MAP = { queued:'queued', running:'processing', succeeded:'ready', failed:'failed' };
+    const categoryLabel = (id) => (FURNITURE_CATEGORIES.find((item) => item.id === id) || {}).label || id;
+    async function submitPhoto() {
+      if (!state.photoFile) throw new Error('请先重新选择照片');
+      const form = new FormData();
+      form.append('file', state.photoFile, state.photoFile.name || 'photo.jpg');
+      form.append('texture', 'true');
+      form.append('meta', JSON.stringify({ category:categoryLabel(state.categories[0]) }));
+      const response = await fetch(`${API_BASE}/api/photo-to-3d`, { method:'POST', body:form });
+      if (!response.ok) {
+        const detail = await response.json().catch(() => null);
+        throw new Error(detail?.detail || detail?.error || `提交失败（${response.status}）`);
+      }
+      return response.json();
+    }
+    async function fetchJob(jobId) {
+      const response = await fetch(`${API_BASE}/api/jobs/${encodeURIComponent(jobId)}`, { cache:'no-store' });
+      if (!response.ok) throw new Error(`读取生成进度失败（${response.status}）`);
+      return response.json();
+    }
     const GEN_COPY = {
       queued:['正在识别照片','包公球正在看你拍的家居照片'],
       processing:['正在提取家具','从照片里认出家具并生成 3D 组件'],
@@ -296,57 +310,77 @@
       genRetry.hidden = status !== 'failed';
     }
 
-    // 按所选品类生成一个组件（单选）
-    function buildAssets() {
-      const seqBase = String(Date.now()).slice(-3);
-      return state.categories.map((catId, index) => {
-        const primitive = CATEGORY_PRIMITIVE[catId] || 'cabinet';
-        const category = FURNITURE_CATEGORIES.find((item) => item.id === catId);
-        const color = state.photoColor;
-        const accent = lighten(color, .28 + index * .07);
-        return {
-          id:`capture-${catId}-${seqBase}${index + 1}-${Math.random().toString(36).slice(2, 6)}`,
-          kind:'furniture',
-          name:`拍摄·${category.label} ${seqBase}`,
-          category:catId,
-          primitive,
-          color,
-          accent,
-          dimensions:CATEGORY_DIMENSIONS[catId] || [1, .8, .6],
-          source:'user',
-          sourceType:'capture',
-          createdAt:new Date().toISOString(),
-        };
-      });
+    function buildAssetFromJob(job) {
+      const categoryId = state.categories[0];
+      const category = FURNITURE_CATEGORIES.find((item) => item.id === categoryId);
+      const dimensions = Array.isArray(job.estimated_size_m) && job.estimated_size_m.length === 3
+        ? job.estimated_size_m.map(Number)
+        : (CATEGORY_DIMENSIONS[categoryId] || [1, .8, .6]);
+      const modelUrl = /^https?:/i.test(job.model_url || '')
+        ? job.model_url
+        : `${API_BASE}${job.model_url || ''}`;
+      return {
+        id:`capture-${categoryId}-${job.job_id || Date.now()}`,
+        kind:'furniture',
+        name:`拍摄·${category.label}`,
+        category:categoryId,
+        primitive:CATEGORY_PRIMITIVE[categoryId] || 'cabinet',
+        color:state.photoColor,
+        accent:lighten(state.photoColor, .3),
+        dimensions,
+        sizePrior:{ w:dimensions[0], h:dimensions[1], d:dimensions[2] },
+        modelUrl,
+        rawModel:true,
+        thumbnail:job.thumbnail_url || null,
+        backendCategory:job.category || null,
+        style:job.style || null,
+        material:job.material || null,
+        source:'user',
+        sourceType:'capture',
+        sourceUrl:null,
+        createdAt:new Date().toISOString(),
+      };
     }
 
-    function pollJob() {
+    async function pollJob() {
       clearTimeout(state.pollTimer);
-      const result = generationService.poll(state.job);
-      updateGen(result.status, result.progress, result.error);
-      if (result.status === 'ready') { finishGeneration(); return; }
-      if (result.status === 'failed') return;
-      state.pollTimer = setTimeout(pollJob, 620);
+      try {
+        const job = await fetchJob(state.job.job_id);
+        const uiStatus = STATUS_MAP[job.status] || 'queued';
+        updateGen(uiStatus, job.progress || 0, job.error);
+        if (job.status === 'succeeded') { finishGeneration(job); return; }
+        if (job.status === 'failed') return;
+        state.pollTimer = setTimeout(pollJob, 1600);
+      } catch (error) {
+        updateGen('failed', 0, error.message || '后端暂时不可用，请稍后重试');
+      }
     }
-    function startGeneration() {
+    async function startGeneration() {
       setPhase('gen');
       updateGen('queued', 6);
       genRetry.hidden = true;
-      state.job = generationService.submit();
-      state.pollTimer = setTimeout(pollJob, 420);
+      try {
+        state.job = await submitPhoto();
+        state.pollTimer = setTimeout(pollJob, 900);
+      } catch (error) {
+        updateGen('failed', 0, error.message || '3D 服务提交失败，请稍后重试');
+      }
     }
-    function finishGeneration() {
-      const assets = buildAssets();
-      state.generatedAssets = assets;
-      assets.forEach((asset) => { addUserAsset(asset); }); // 生成即入库；addUserAsset 内部已自动收藏（autoCollectOwn），勿再 toggle 否则会取消收藏
-      renderResult(assets);
+    function finishGeneration(job) {
+      const asset = buildAssetFromJob(job);
+      state.generatedAssets = [asset];
+      addUserAsset(asset); // 拍照资产自动进入自己的收藏，不伪造视频来源。
+      renderResult([asset]);
       setPhase('result');
-      showToast(assets.length > 1 ? `已生成 ${assets.length} 个组件并加入收藏` : '已生成并加入灵感库收藏');
+      showToast('已生成 3D 组件并加入收藏');
     }
     function renderResult(assets) {
       resultList.innerHTML = assets.map((asset) => {
         const category = FURNITURE_CATEGORIES.find((item) => item.id === asset.category);
-        return `<div class="result-item"><div class="result-visual" style="--object:${asset.color};--accent:${asset.accent}"><span class="object object--${asset.primitive}"></span></div><div class="result-body"><input class="result-name" maxlength="16" value="${asset.name}" data-name="${asset.id}" aria-label="组件名称" /><p class="result-meta">家具类 · ${category.label} · 已收藏</p></div></div>`;
+        const preview = asset.thumbnail
+          ? `<img src="${asset.thumbnail}" alt="${asset.name} 的 3D 缩略图" style="width:100%;height:100%;object-fit:contain;" />`
+          : `<span class="object object--${asset.primitive}"></span>`;
+        return `<div class="result-item"><div class="result-visual" style="--object:${asset.color};--accent:${asset.accent}">${preview}</div><div class="result-body"><input class="result-name" maxlength="16" value="${asset.name}" data-name="${asset.id}" aria-label="组件名称" /><p class="result-meta">家具类 · ${category.label} · 拍照生成 · 已收藏</p></div></div>`;
       }).join('');
     }
 

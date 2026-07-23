@@ -28,6 +28,14 @@ class Settings:
 
     FAL_KEY: str = _env("FAL_KEY")
     FAL_TRELLIS_ENDPOINT: str = _env("FAL_TRELLIS_ENDPOINT", "fal-ai/trellis")
+    TRELLIS_SS_STEPS: int = int(_env("TRELLIS_SS_STEPS", "25"))
+    TRELLIS_SLAT_STEPS: int = int(_env("TRELLIS_SLAT_STEPS", "25"))
+    TRELLIS_MESH_SIMPLIFY: float = float(_env("TRELLIS_MESH_SIMPLIFY", "0.9"))
+    TRELLIS_TEXTURE_SIZE: int = int(_env("TRELLIS_TEXTURE_SIZE", "2048"))
+    TRELLIS_MULTIIMAGE_ALGO: str = _env(
+        "TRELLIS_MULTIIMAGE_ALGO",
+        "stochastic",
+    )
     # TRELLIS often bakes scene shadows into the base-color texture.  Keep the
     # correction explicit and versionable so generated assets are not silently
     # delivered with the raw, overly-dark material.

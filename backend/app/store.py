@@ -57,7 +57,22 @@ def create_workflow_job(kind: str, runner: Callable[[Job], Awaitable[None]], *,
 async def _run(job: Job, image_path: str, texture: bool) -> None:
     provider = get_provider()
     try:
-        pjid = await provider.submit(image_path, texture=texture)
+        source_path = image_path
+        if job.kind == "photo":
+            job.status = JobStatus.running
+            job.stage = "prepare_photo"
+            job.progress = 5
+            # Photographs must pass through the same isolate/completion/QC
+            # pipeline as video selections before reaching TRELLIS.
+            from .services.prepare import prepare_photo
+
+            source_path, _preparation = await prepare_photo(
+                image_path,
+                category=job.category or "",
+            )
+            job.stage = "generate_3d"
+            job.progress = 10
+        pjid = await provider.submit(source_path, texture=texture)
         job.provider_job_id = pjid
         job.status = JobStatus.running
         # 轮询直到终态，最多 ~5 分钟

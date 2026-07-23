@@ -52,7 +52,18 @@ class FalTrellisProvider(Gen3DProvider):
 
     async def submit(self, image_path: str, *, texture: bool = True, prompt: str = "",
                      extra_image_paths: list[str] | None = None) -> str:
-        payload = {"image_url": _to_data_uri(image_path)}
+        payload: dict[str, Any] = {
+            "ss_sampling_steps": settings.TRELLIS_SS_STEPS,
+            "slat_sampling_steps": settings.TRELLIS_SLAT_STEPS,
+            "mesh_simplify": settings.TRELLIS_MESH_SIMPLIFY,
+            "texture_size": settings.TRELLIS_TEXTURE_SIZE,
+        }
+        image_paths = [image_path, *(extra_image_paths or [])]
+        if len(image_paths) > 1:
+            payload["image_urls"] = [_to_data_uri(path) for path in image_paths]
+            payload["multiimage_algo"] = settings.TRELLIS_MULTIIMAGE_ALGO
+        else:
+            payload["image_url"] = _to_data_uri(image_path)
         if prompt:
             payload["prompt"] = prompt
         async with httpx.AsyncClient(timeout=60, trust_env=False) as client:

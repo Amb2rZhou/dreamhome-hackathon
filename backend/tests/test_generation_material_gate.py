@@ -55,6 +55,40 @@ class GenerationMaterialGateTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(job.status, JobStatus.succeeded)
         self.assertEqual(job.model_url, processed)
 
+    async def test_photo_job_submits_prepared_image(self):
+        job = Job(
+            job_id="job-photo-prepared",
+            kind="photo",
+            status=JobStatus.queued,
+            category="沙发",
+        )
+        provider = _SuccessfulProvider()
+        provider.submit = AsyncMock(return_value="provider-job")
+        with (
+            patch.object(store, "get_provider", return_value=provider),
+            patch.object(store.asyncio, "sleep", new=AsyncMock()),
+            patch(
+                "app.services.prepare.prepare_photo",
+                new=AsyncMock(return_value=(
+                    "/tmp/prepared.jpg",
+                    {"prepped": True},
+                )),
+            ),
+            patch(
+                "app.services.glb_material.materialize_postprocessed_glb",
+                new=AsyncMock(return_value=(
+                    "https://api.example/storage/models/processed.glb",
+                    {"triangles": 1},
+                )),
+            ),
+        ):
+            await store._run(job, "/tmp/original.jpg", True)
+
+        provider.submit.assert_awaited_once_with(
+            "/tmp/prepared.jpg",
+            texture=True,
+        )
+
     async def test_production_generation_rejects_when_material_gate_fails(self):
         provider = _SuccessfulProvider()
         with (
