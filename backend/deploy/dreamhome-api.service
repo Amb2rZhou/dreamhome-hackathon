@@ -18,7 +18,7 @@ Environment=ENHANCE_PROVIDER=module
 Environment=SEGMENT_API_URL=http://127.0.0.1:8002
 Environment=DB_PATH=/opt/dreamhome/data/dreamhome.db
 Environment=STORAGE_DIR=/opt/dreamhome/data/storage
-Environment=PUBLIC_BASE_URL=https://web-git-agent-frontend-integration-amb2rzhous-projects.vercel.app/dreamhome-api
+Environment=PUBLIC_BASE_URL=https://web-five-rho-44.vercel.app/dreamhome-api
 ExecStart=/opt/dreamhome/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
 Restart=always
 RestartSec=3
