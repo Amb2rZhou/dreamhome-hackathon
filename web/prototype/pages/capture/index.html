@@ -217,6 +217,7 @@
     const resultList = document.getElementById('resultList');
     const captureAgain = document.getElementById('captureAgain');
     const toLibrary = document.getElementById('toLibrary');
+    const toMyHome = document.getElementById('toMyHome');
 
     const DEFAULT_CATEGORY = FURNITURE_CATEGORIES[0].id; // 默认选中首个真实分类（列表首位、可见即高亮）
     const ACTIVE_JOB_KEY = 'dreamhome.capture.active-job.v1';
@@ -559,6 +560,7 @@
         const asset = buildAssetFromJob(job, verified.dimensions);
         state.generatedAssets = [asset];
         addUserAsset(asset);
+        toMyHome.href = `../my-home/index.html?addAsset=${encodeURIComponent(asset.id)}`;
         renderResult([asset], verified.gltf);
         setPhase('result');
         showToast('真实 3D 已验证并保存到本机收藏');

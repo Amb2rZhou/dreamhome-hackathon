@@ -427,7 +427,12 @@
     viewerFav.addEventListener('click', () => { if (!viewerAssetId) return; toggle(viewerAssetId); syncViewerFav(); });
     // 删除（仅用户组件）→ 先弹「删除后不可恢复」二次确认
     viewerDelete.addEventListener('click', () => { if (!viewerAssetId) return; openDelConfirm({ type: 'single', id: viewerAssetId }); });
-    viewerSource.addEventListener('click', () => { const asset = getAsset(viewerAssetId); if (!asset?.videoUrl) return; location.href = `../discover/index.html#asset=${encodeURIComponent(viewerAssetId)}`; }); // 仅视频资产跳「刷一刷」看来源
+    viewerSource.addEventListener('click', () => {
+      const asset = getAsset(viewerAssetId); if (!asset?.videoUrl) return;
+      const target = new URLSearchParams({ asset:viewerAssetId, video:asset.videoId || '' });
+      if (asset.videoSec != null && Number.isFinite(Number(asset.videoSec))) target.set('t', String(asset.videoSec));
+      location.href = `../discover/index.html#${target}`;
+    }); // 仅视频资产跳「刷一刷」准确来源
 
     // ---------- 删除二次确认弹窗 ----------
     const delConfirm = document.getElementById('delConfirm');

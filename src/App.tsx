@@ -569,6 +569,39 @@ function reducer(state: State, action: Action): State {
   }
 }
 
+interface FeedDeepLink {
+  index: number
+  videoId: string
+  time: number
+}
+
+function readFeedDeepLink(): FeedDeepLink | null {
+  const hash = window.location.hash.replace(/^#/, '')
+  if (!hash || hash.startsWith('/')) return null
+  const params = new URLSearchParams(hash)
+  const assetId = params.get('asset') ?? ''
+  let videoId = params.get('video') ?? ''
+  let time = Number(params.get('t'))
+  if (!videoId && assetId) {
+    for (const [candidateVideoId, assets] of Object.entries(AVAILABLE_ASSETS_BY_VIDEO)) {
+      const asset = assets.find((candidate) => candidate.id === assetId)
+      if (!asset) continue
+      videoId = candidateVideoId
+      time = asset.sourceVideo?.appearances?.[0]?.representativeSec
+        ?? asset.sourceVideo?.startSec
+        ?? defaultAssetFrame(candidateVideoId)
+      break
+    }
+  }
+  const index = FEED_VIDEOS.findIndex((video) => video.id === videoId)
+  if (index < 0) return null
+  return {
+    index,
+    videoId,
+    time: Number.isFinite(time) ? Math.max(0, time) : defaultAssetFrame(videoId),
+  }
+}
+
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState)
   const [favoriteAssetIds, setFavoriteAssetIds] = useState<string[]>(() => {
@@ -584,10 +617,12 @@ function App() {
       return []
     }
   })
-  const [feedIndex, setFeedIndex] = useState(0)
+  const initialFeedTargetRef = useRef<FeedDeepLink | null>(readFeedDeepLink())
+  const pendingFeedTargetRef = useRef<FeedDeepLink | null>(initialFeedTargetRef.current)
+  const [feedIndex, setFeedIndex] = useState(initialFeedTargetRef.current?.index ?? 0)
   const [pausedFrame, setPausedFrame] = useState(() => ({
-    videoId: FEED_VIDEOS[0].id,
-    time: defaultAssetFrame(FEED_VIDEOS[0].id),
+    videoId: initialFeedTargetRef.current?.videoId ?? FEED_VIDEOS[0].id,
+    time: initialFeedTargetRef.current?.time ?? defaultAssetFrame(FEED_VIDEOS[0].id),
   }))
   const [collectionMascotMode, setCollectionMascotMode] = useState<CollectionMascotMode>('none')
   const [reuseCandidate, setReuseCandidate] = useState<SelectionMatchCandidate | null>(null)
@@ -673,7 +708,15 @@ function App() {
   useEffect(() => {
     const onHash = () => {
       if (window.location.hash === '#/trace') dispatch({ type: 'SHOW_TRACE' })
-      else dispatch({ type: 'HIDE_TRACE' })
+      else {
+        dispatch({ type: 'HIDE_TRACE' })
+        const target = readFeedDeepLink()
+        if (target) {
+          pendingFeedTargetRef.current = target
+          setFeedIndex(target.index)
+          setPausedFrame({ videoId: target.videoId, time: target.time })
+        }
+      }
     }
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
@@ -944,6 +987,15 @@ function App() {
           playsInline
           autoPlay
           preload="auto"
+          onLoadedMetadata={(event) => {
+            const target = pendingFeedTargetRef.current
+            if (!target || target.videoId !== activeFeedVideo.id) return
+            event.currentTarget.currentTime = Math.min(
+              target.time,
+              Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : target.time,
+            )
+            pendingFeedTargetRef.current = null
+          }}
         />
 
         {state.phase === 'browse' && (

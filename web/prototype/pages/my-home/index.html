@@ -589,11 +589,25 @@
       renderTemplatePreviews(ui.homeGrid,homes);
       updateContinueGrid();
     }
-    async function openHome(id) {
+    function beginRequestedAssetPlacement(assetId) {
+      const asset=getAsset(assetId);
+      if(!asset||asset.kind!=='furniture'){tell('这个组件暂时不能加入房间');return;}
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        if(!sceneRuntime)return;
+        state.drawerExpanded=true;
+        state.drawerMode='furniture';
+        renderAssetDrawer();
+        sceneRuntime.beginPlacement(assetId);
+        tell(`请在房间中放置「${asset.name}」`);
+        history.replaceState(null,'',location.pathname);
+      }));
+    }
+    async function openHome(id, requestedAssetId='') {
       const home = homeSceneService.loadHomes().find((item) => item.id === id);
       if (!home) return;
-      if(home.source?.type==='video_rebuild'){await openVideoScene(home.source.videoId,home.name);return;}
+      if(home.source?.type==='video_rebuild'){await openVideoScene(home.source.videoId,home.name,false,requestedAssetId);return;}
       enterProjectEditor(home);
+      if(requestedAssetId)beginRequestedAssetPlacement(requestedAssetId);
     }
     const sceneDataCache=new Map();
     const DEFAULT_DEMO_SCENE_IDS=['vid_40734d7f2e6c','vid_91fe552c5f7d'];
@@ -677,7 +691,7 @@
       return normalizeHomeProject({...baseline,createdAt:now(),updatedAt:now()});
     }
     function enterProjectEditor(project,{loading=false,title=''}={}){state.project=normalizeHomeProject(project);state.selectedRoomId=null;state.selectedPlacementId=null;state.selectedWindowSlotId=null;state.interaction.mode='orbit';state.phase=loading?'scene-loading':'editor';if(loading)pendingSceneTitle=title||state.project.name;updatePhases();initEditor();}
-    async function openVideoScene(videoId, title='视频户型重建', caseMode=false) {
+    async function openVideoScene(videoId, title='视频户型重建', caseMode=false, requestedAssetId='') {
       state.caseMode=caseMode;
       disposeScene();
       delete document.documentElement.dataset.sceneLoadMs;
@@ -692,6 +706,7 @@
         const project=projectFromVideoScene(sceneData,assets,!USE_LOCAL_BACKEND);
         if(caseMode)enterProjectEditor(project);
         else{homeSceneService.saveProject(project);syncProjectInBackground(project);updateGeneration('processing',58);enterProjectEditor(project,{loading:true,title});}
+        if(requestedAssetId)beginRequestedAssetPlacement(requestedAssetId);
       } catch(error) { pendingSceneStartedAt=0;pendingSceneTitle='';state.phase='setup'; updatePhases(); tell(error.message); }
     }
     function updatePhases() { const root=document.querySelector('.dh-root'),sceneLoading=state.phase==='scene-loading',generating=['submitting','polling','error'].includes(state.phase)||sceneLoading,editor=state.phase==='editor'||sceneLoading,real=editor&&!!state.project?.realScene,roomTemplate=editor&&TEMPLATES.find(item=>item.id===state.project?.source?.templateId)?.scope==='room';ui.setupPhase.style.display=state.phase==='setup'?'flex':'none';ui.generationPhase.classList.toggle('is-visible',generating);ui.editorPhase.classList.toggle('is-visible',editor);root.classList.toggle('is-editor',editor);root.classList.toggle('is-real-scene',real);root.classList.toggle('is-scene-editor',real||roomTemplate);root.classList.toggle('is-case',editor&&state.caseMode);if(generating)genVideo?.play().catch(()=>{});else genVideo?.pause(); }
@@ -965,10 +980,24 @@
     ui.editorBack.addEventListener('click',returnToSetup); ui.shareButton.addEventListener('click',openShareSheet); ui.shareSheet.addEventListener('click',(event)=>{ if(event.target.closest('[data-share-close]')){ closeShareSheet(); return; } const target=event.target.closest('[data-share]'); if(target){ closeShareSheet(); tell(`已唤起分享 · ${target.querySelector('b')?.textContent || ''}`); } });
     document.addEventListener('keydown',(event)=>{if(event.key==='Escape' && state.interaction.mode!=='orbit') exitInteraction();}); window.addEventListener('pagehide',()=>{clearTimeout(saveTimer);persistProjectNow();});window.addEventListener('beforeunload',()=>{clearTimeout(saveTimer);persistProjectNow();disposeScene();});
     state.phase='setup';renderTemplates();renderSavedHomes();renderVideoScenes();updatePhases();
-    homeSceneService.hydrate().then(()=>{renderSavedHomes();renderVideoScenes();}).catch((error)=>console.warn('[DreamHome] 后端项目暂不可用，继续使用本地布局',error));
+    const requestedAssetId=QUERY.get('addAsset');
+    homeSceneService.hydrate().then(async()=>{
+      renderSavedHomes();renderVideoScenes();
+      if(requestedAssetId){
+        const home=homeSceneService.loadHomes()[0];
+        if(home)await openHome(home.id,requestedAssetId);
+        else tell('请先生成一个家，再加入组件');
+      }
+    }).catch(async(error)=>{
+      console.warn('[DreamHome] 后端项目暂不可用，继续使用本地布局',error);
+      if(requestedAssetId){
+        const home=homeSceneService.loadHomes()[0];
+        if(home)await openHome(home.id,requestedAssetId);
+      }
+    });
     // 从灵感库 banner 案例卡进入：只读案例模式（复用拼装编辑器，去掉抽屉与移动/调整，加收藏）
     const caseVideoId=QUERY.get('case');
-    if(caseVideoId){ openVideoScene(caseVideoId,'案例空间',true); }
+    if(caseVideoId&&!requestedAssetId){ openVideoScene(caseVideoId,'案例空间',true); }
     if(new URLSearchParams(location.search).get('focus')==='templates'){requestAnimationFrame(()=>requestAnimationFrame(()=>{document.getElementById('templateBox')?.scrollIntoView({block:'center'});history.replaceState(null,'',location.pathname);}));}
   </script>
 </body>

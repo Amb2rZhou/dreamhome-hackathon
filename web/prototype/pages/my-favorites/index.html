@@ -33,9 +33,10 @@
     .hero-case-foot{margin-top:auto;color:#fff}.hero-case-blogger{font-size:13px;font-weight:var(--dh-font-weight-heavy);text-shadow:0 1px 4px rgba(0,0,0,.3)}.hero-case-cta{margin-top:1px;font-size:10px;font-weight:var(--dh-font-weight-semibold);opacity:.92}
     .hero-dots{display:flex;justify-content:center;gap:6px;margin-top:8px}.hero-dots i{width:6px;height:6px;border-radius:50%;background:rgba(93,115,91,.28);transition:.2s ease}.hero-dots i.is-active{width:16px;border-radius:3px;background:var(--dh-color-sage-600)}
     .viewer-actions{margin-top:10px;display:flex;align-items:center;justify-content:center;gap:10px}
-    .viewer-fav{display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 15px;border:1px solid rgba(190,105,89,.4);border-radius:999px;background:#fff4ef;color:#be6959;font:inherit;font-size:12px;font-weight:var(--dh-font-weight-bold);cursor:pointer;transition:background .15s ease,color .15s ease}
+    .viewer-fav,.viewer-home{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:32px;padding:0 15px;border:1px solid rgba(190,105,89,.4);border-radius:999px;background:#fff4ef;color:#be6959;font:inherit;font-size:12px;font-weight:var(--dh-font-weight-bold);cursor:pointer;transition:background .15s ease,color .15s ease}
     .viewer-fav .vf-heart{font-size:13px;line-height:1}
     .viewer-fav[aria-pressed="true"]{background:#be6959;color:#fff;border-color:#be6959}
+    .viewer-home{border-color:#293127;background:#293127;color:#fff}.viewer-home[hidden]{display:none}
     .viewer-source{width:32px;height:32px;padding:0;border:1px solid rgba(110,132,107,.3);border-radius:50%;background:#fff;color:var(--dh-color-sage-700);display:inline-grid;place-items:center;cursor:pointer}.viewer-source svg{width:16px;height:16px}.viewer-source[hidden]{display:none}
     .confirm-modal{position:absolute;inset:0;z-index:64;display:flex;align-items:center;justify-content:center;padding:0 28px}.confirm-modal[hidden]{display:none}
     .confirm-backdrop{position:absolute;inset:0;background:rgba(20,26,21,.5);opacity:0;transition:opacity .2s ease}.confirm-modal.is-open .confirm-backdrop{opacity:1}
@@ -103,6 +104,7 @@
               <p class="viewer-meta" id="viewerMeta"></p>
               <div class="viewer-actions">
                 <button class="viewer-fav" id="viewerFav" type="button" aria-pressed="false"><span class="vf-heart" aria-hidden="true">♡</span><span class="vf-text">收藏</span></button>
+                <button class="viewer-home" id="viewerHome" type="button">加入我的家</button>
                 <button class="viewer-source" id="viewerSource" type="button" aria-label="查看原视频" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
               </div>
               <button class="viewer-delete" id="viewerDelete" type="button" hidden>删除</button>
@@ -152,7 +154,7 @@
     const isUser = (asset) => asset?.source === 'user';
     const showToast = (message) => { toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1500); };
     const favoriteButton = (asset) => `<button class="favorite-control" data-favorite="${asset.id}" aria-label="收藏 ${asset.name}" aria-pressed="${getFavorites().has(asset.id)}">${getFavorites().has(asset.id) ? '♥' : '♡'}</button>`;
-    const sourceBadge = (asset) => asset.sourceType === 'offline_photo' ? '<span class="source-badge">拍照生成</span>' : '';
+    const sourceBadge = (asset) => ['offline_photo','capture'].includes(asset.sourceType) ? '<span class="source-badge">拍照生成</span>' : '';
     const visual = (asset) => {
       if (asset.kind === 'floorplan') return `<div class="component-visual visual--floorplan"><canvas data-template-preview="${asset.templateId}" aria-label="${asset.name} 3D 户型预览"></canvas></div>`;
       if (asset.thumbnail) return `<div class="component-visual visual--photo"><img src="${asset.thumbnail}" alt="" loading="lazy" /></div>`; // 平台真实资产用照片
@@ -279,6 +281,7 @@
     const viewerDelete = document.getElementById('viewerDelete');
     const viewerSource = document.getElementById('viewerSource');
     const viewerFav = document.getElementById('viewerFav');
+    const viewerHome = document.getElementById('viewerHome');
     let viewer3D = null; // { dispose } · 小程序侧对应 WebGL canvas 适配层
     let viewerAssetId = null;
 
@@ -372,11 +375,12 @@
       viewerName.value = asset.name;
       viewerName.readOnly = !editable;
       viewerDelete.hidden = !editable;
+      viewerHome.hidden = asset.kind !== 'furniture';
       viewerSource.hidden = editable || asset.sourceType === 'offline_photo' || !asset.videoUrl; // 拍照资产没有虚构的视频跳转
       syncViewerFav();
       fitViewerName();
       const catLabel = asset.category ? FURNITURE_CATEGORIES.find((c) => c.id === asset.category)?.label || '' : '';
-      const provenance = asset.sourceType === 'offline_photo' ? '线下拍照生成' : (editable ? '我的组件' : '平台组件');
+      const provenance = ['offline_photo','capture'].includes(asset.sourceType) ? '拍照生成 · 本机收藏' : (editable ? '我的组件' : '平台组件');
       viewerMeta.textContent = `${labelByKind[asset.kind]}${catLabel ? ` · ${catLabel}` : ''} · ${provenance}`;
       viewer.hidden = false;
       disposeTemplatePreviews(viewerStage);
@@ -417,9 +421,18 @@
     // 收藏（所有组件都可收藏）
     const syncViewerFav = () => { const on = viewerAssetId && getFavorites().has(viewerAssetId); viewerFav.setAttribute('aria-pressed', on ? 'true' : 'false'); viewerFav.querySelector('.vf-heart').textContent = on ? '♥' : '♡'; viewerFav.querySelector('.vf-text').textContent = on ? '已收藏' : '收藏'; };
     viewerFav.addEventListener('click', () => { if (!viewerAssetId) return; toggle(viewerAssetId); syncViewerFav(); });
+    viewerHome.addEventListener('click', () => {
+      if (!viewerAssetId) return;
+      location.href = `../my-home/index.html?addAsset=${encodeURIComponent(viewerAssetId)}`;
+    });
     // 删除（仅用户组件）→ 先弹「删除后不可恢复」二次确认
     viewerDelete.addEventListener('click', () => { if (!viewerAssetId) return; openDelConfirm({ type: 'single', id: viewerAssetId }); });
-    viewerSource.addEventListener('click', () => { const asset = getAsset(viewerAssetId); if (!asset?.videoUrl) return; location.href = `../discover/index.html#asset=${encodeURIComponent(viewerAssetId)}`; }); // 仅视频资产跳「刷一刷」看来源
+    viewerSource.addEventListener('click', () => {
+      const asset = getAsset(viewerAssetId); if (!asset?.videoUrl) return;
+      const target = new URLSearchParams({ asset:viewerAssetId, video:asset.videoId || '' });
+      if (asset.videoSec != null && Number.isFinite(Number(asset.videoSec))) target.set('t', String(asset.videoSec));
+      location.href = `../discover/index.html#${target}`;
+    }); // 仅视频资产跳「刷一刷」准确来源
 
     // ---------- 删除二次确认弹窗 ----------
     const delConfirm = document.getElementById('delConfirm');

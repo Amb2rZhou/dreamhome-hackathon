@@ -169,7 +169,9 @@ function userAssetById(id) {
 }
 
 export function getAssets(kind, category) {
-  const combined = COMPONENT_ASSETS.concat(getUserAssets());
+  // 用户刚生成的组件必须优先可见；收藏首页只展示有限数量，
+  // 若放在平台资产之后会造成“生成成功但收藏里看不见”的错觉。
+  const combined = getUserAssets().concat(COMPONENT_ASSETS);
   return combined.filter((item) => item.kind === kind && (!category || item.category === category));
 }
 

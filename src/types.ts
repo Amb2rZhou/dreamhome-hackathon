@@ -137,13 +137,6 @@ const amberFeedVideo = (
 })
 
 export const FEED_VIDEOS: FeedVideo[] = [
-  amberFeedVideo('vid_40734d7f2e6c', '02', {
-    author: '@鸡蛋灌饼',
-    publishedAt: '5天前',
-    captionBadge: '查看图文版',
-    caption: '我说幸福万万岁！ #治愈系小窝 #宅家 #卧室布置',
-    music: '原声 - 鸡蛋灌饼',
-  }),
   {
     id: 'home-1',
     src: `/videos/home-1.mp4?v=${FEED_MEDIA_VERSION}`,
@@ -152,6 +145,13 @@ export const FEED_VIDEOS: FeedVideo[] = [
     music: '原声 - home_vibes · 北欧治愈系居家BGM',
     source: 'local',
   },
+  amberFeedVideo('vid_40734d7f2e6c', '02', {
+    author: '@鸡蛋灌饼',
+    publishedAt: '5天前',
+    captionBadge: '查看图文版',
+    caption: '我说幸福万万岁！ #治愈系小窝 #宅家 #卧室布置',
+    music: '原声 - 鸡蛋灌饼',
+  }),
   amberFeedVideo('vid_b75d95dc92a7', '01', {
     author: '@拾点',
     publishedAt: '04月22日',
