@@ -9,6 +9,7 @@ export function FrameAssetsDrawer({
   favoriteIds = [],
   onClose,
   onFavorite,
+  onFavoriteAll,
   title,
   subtitle,
   ariaLabel,
@@ -17,6 +18,7 @@ export function FrameAssetsDrawer({
   favoriteIds?: string[]
   onClose: () => void
   onFavorite: (id: string) => void
+  onFavoriteAll?: () => void
   title?: string
   subtitle?: string
   ariaLabel?: string
@@ -33,7 +35,7 @@ export function FrameAssetsDrawer({
     setActiveId(assets[0]?.id ?? '')
   }, [activeId, assets])
 
-  if (!active) return null
+  const allFavorited = assets.length > 0 && assets.every((asset) => favoriteIds.includes(asset.id))
 
   return (
     <div
@@ -59,7 +61,29 @@ export function FrameAssetsDrawer({
             <strong>{title ?? `本帧识别 ${assets.length} 件`}</strong>
             <span>{subtitle ?? '点选缩略图，直接切换对应 3D 家具'}</span>
           </div>
+          {onFavoriteAll && assets.length > 0 && (
+            <button
+              type="button"
+              className={`frame-assets-favorite-all ${allFavorited ? 'is-favorite' : ''}`}
+              disabled={allFavorited}
+              onClick={onFavoriteAll}
+            >
+              {allFavorited ? '✓ 已全部收藏' : '一键收藏全部'}
+            </button>
+          )}
         </header>
+
+        {!active ? (
+          <div className="frame-assets-drawer-empty" role="status">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m12 3 8 4.6v8.8L12 21l-8-4.6V7.6L12 3Z" />
+              <path d="m4.3 7.8 7.7 4.4 7.7-4.4M12 12.2v8.5" />
+            </svg>
+            <strong>这条视频暂无现成 3D 组件</strong>
+            <span>你仍可以暂停画面并圈选想要的家具</span>
+          </div>
+        ) : (
+          <>
 
         <div className="frame-assets-drawer-preview" role="tabpanel" aria-label={`${active.name} 3D预览`}>
           <FurnitureModelPreview
@@ -110,6 +134,8 @@ export function FrameAssetsDrawer({
             </button>
           </div>
         </div>
+          </>
+        )}
       </section>
     </div>
   )

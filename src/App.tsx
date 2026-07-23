@@ -14,8 +14,9 @@ import { Mascot, type CollectionMascotMode } from './Mascot'
 import { WorkshopDetail } from './WorkshopDetail'
 import { FrameAssetsDrawer } from './FrameAssetsDrawer'
 import { FurnitureAssetThumbnail } from './FurnitureAssetThumbnail'
+import { VideoAssetsEntry } from './VideoAssetsEntry'
 import { workshopFromAppState } from './workshopModel'
-import { assetsForVideoFrame, defaultAssetFrame } from './availableAssets.generated'
+import { AVAILABLE_ASSETS_BY_VIDEO, assetsForVideoFrame, defaultAssetFrame } from './availableAssets.generated'
 import {
   CommentIcon,
   CreateIcon,
@@ -579,9 +580,13 @@ function App() {
   const [state, dispatch] = useReducer(reducer, initialState)
   const [favoriteAssetIds, setFavoriteAssetIds] = useState<string[]>(() => {
     try {
-      const stored = window.localStorage.getItem('dreamhome-favorite-assets')
-      const parsed = stored ? JSON.parse(stored) : []
-      return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : []
+      const legacy = JSON.parse(window.localStorage.getItem('dreamhome-favorite-assets') || '[]')
+      const product = JSON.parse(window.localStorage.getItem('dreamhome.asset-library.v1') || '{}')
+      const legacyIds = Array.isArray(legacy) ? legacy : []
+      const productIds = Array.isArray(product?.ids) ? product.ids : []
+      return Array.from(new Set([...legacyIds, ...productIds].filter(
+        (id): id is string => typeof id === 'string',
+      )))
     } catch {
       return []
     }
@@ -605,6 +610,10 @@ function App() {
   const activeFrameAssets = useMemo(
     () => assetsForVideoFrame(pausedFrame.videoId, pausedFrame.time),
     [pausedFrame],
+  )
+  const activeVideoAssets = useMemo(
+    () => AVAILABLE_ASSETS_BY_VIDEO[activeFeedVideo.id] ?? [],
+    [activeFeedVideo.id],
   )
   useEffect(() => {
     const preloads = activeFrameAssets.map((component) => {
@@ -635,8 +644,17 @@ function App() {
       ? current.filter((candidate) => candidate !== id)
       : [...current, id])
   }, [])
+  const favoriteAllAssets = useCallback((ids: string[]) => {
+    setFavoriteAssetIds((current) => Array.from(new Set([...current, ...ids])))
+  }, [])
   useEffect(() => {
     window.localStorage.setItem('dreamhome-favorite-assets', JSON.stringify(favoriteAssetIds))
+    // Keep the Feed and the five-tab product shell on one canonical favorite
+    // collection so “一键收藏” appears immediately under “我的收藏”.
+    window.localStorage.setItem('dreamhome.asset-library.v1', JSON.stringify({
+      version: 1,
+      ids: favoriteAssetIds,
+    }))
   }, [favoriteAssetIds])
 
   useEffect(() => {
@@ -931,6 +949,10 @@ function App() {
         {state.phase === 'browse' && (
           <BrowseLayer
             video={activeFeedVideo}
+            videoAssets={activeVideoAssets}
+            favoriteAssetIds={favoriteAssetIds}
+            onToggleFavoriteAsset={toggleFavoriteAsset}
+            onFavoriteAllAssets={favoriteAllAssets}
             onPause={() => {
               if (suppressPause.current) return
               const video = videoRef.current
@@ -1193,7 +1215,21 @@ function DouyinBottomNav() {
   )
 }
 
-function BrowseLayer({ video, onPause }: { video: FeedVideo; onPause: () => void }) {
+function BrowseLayer({
+  video,
+  videoAssets,
+  favoriteAssetIds,
+  onToggleFavoriteAsset,
+  onFavoriteAllAssets,
+  onPause,
+}: {
+  video: FeedVideo
+  videoAssets: LibraryComponent[]
+  favoriteAssetIds: string[]
+  onToggleFavoriteAsset: (id: string) => void
+  onFavoriteAllAssets: (ids: string[]) => void
+  onPause: () => void
+}) {
   return (
     <>
       <div className="top-tabs">
@@ -1210,6 +1246,12 @@ function BrowseLayer({ video, onPause }: { video: FeedVideo; onPause: () => void
       </div>
       <div className="tap-area" onClick={onPause} />
       <SocialBar />
+      <VideoAssetsEntry
+        assets={videoAssets}
+        favoriteIds={favoriteAssetIds}
+        onFavorite={onToggleFavoriteAsset}
+        onFavoriteAll={onFavoriteAllAssets}
+      />
       <BottomInfo video={video} />
       <DouyinBottomNav />
     </>
@@ -1410,7 +1452,7 @@ function SessionGuideOverlay({
               : '把选中的家具交给包工球'}</strong>
             <span>{mode === 'recognize'
               ? '沿着任意家具外沿画一圈，松手后自动识别'
-              : '长按任意已选区域，再拖进右下角的小推车'}</span>
+              : '按住任意已选区域，直接拖进右下角的小推车'}</span>
           </div>
         </div>
         <img
@@ -1505,6 +1547,9 @@ function SessionLayer({
   const bboxRef = useRef<{ minX: number; minY: number; maxX: number; maxY: number } | null>(null)
   const pathRef = useRef<{ x: number; y: number }[]>([])
   const holdTimerRef = useRef<number | null>(null)
+  const pickupResetTimerRef = useRef<number | null>(null)
+  const pickupCaptureTargetRef = useRef<HTMLElement | null>(null)
+  const pickupFinalizedRef = useRef(true)
   const pressRef = useRef<{
     pointerId: number
     startX: number
@@ -1702,7 +1747,12 @@ function SessionLayer({
     e.preventDefault()
     e.stopPropagation()
     clearHoldTimer()
+    if (pickupResetTimerRef.current !== null) {
+      window.clearTimeout(pickupResetTimerRef.current)
+      pickupResetTimerRef.current = null
+    }
     movedRef.current = false
+    pickupFinalizedRef.current = false
     pressRef.current = {
       pointerId: e.pointerId,
       startX: point.x,
@@ -1713,7 +1763,14 @@ function SessionLayer({
     pickupPhaseRef.current = 'pressing'
     pickupHoveringRef.current = false
     setPickup({ phase: 'pressing', x: point.x, y: point.y, hovering: false })
-    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    const captureTarget = e.currentTarget as HTMLElement
+    pickupCaptureTargetRef.current = captureTarget
+    try {
+      captureTarget.setPointerCapture(e.pointerId)
+    } catch {
+      // Global release listeners still end the gesture when capture is not
+      // available (notably after an iOS system gesture interrupts the page).
+    }
     holdTimerRef.current = window.setTimeout(() => {
       if (!pressRef.current) return
       drawingRef.current = false
@@ -2081,17 +2138,36 @@ function SessionLayer({
     })
   }
 
-  const endPickup = (e: React.PointerEvent) => {
+  const endPickup = (
+    pointerId: number,
+    options: { cancelled?: boolean; clientX?: number; clientY?: number } = {},
+  ) => {
     const press = pressRef.current
-    if (!press || press.pointerId !== e.pointerId) return
-    e.preventDefault()
-    e.stopPropagation()
+    if (!press || press.pointerId !== pointerId || pickupFinalizedRef.current) return
+    pickupFinalizedRef.current = true
     clearHoldTimer()
     pressRef.current = null
+    gestureModeRef.current = 'idle'
+    updatePenTip(null)
+    const captureTarget = pickupCaptureTargetRef.current
+    pickupCaptureTargetRef.current = null
+    if (captureTarget?.hasPointerCapture(pointerId)) {
+      try {
+        captureTarget.releasePointerCapture(pointerId)
+      } catch {
+        // Capture may already have been released by the browser. Finalization
+        // is deliberately independent from capture ownership.
+      }
+    }
     if (pickupPhaseRef.current === 'dragging') {
-      if (pickupHoveringRef.current) {
+      const hovering = !options.cancelled
+        && (typeof options.clientX === 'number' && typeof options.clientY === 'number'
+          ? isInsideCart(options.clientX, options.clientY)
+          : pickupHoveringRef.current)
+      pickupHoveringRef.current = hovering
+      if (hovering) {
         pickupPhaseRef.current = 'dropping'
-        setPickup((current) => ({ ...current, phase: 'dropping' }))
+        setPickup((current) => ({ ...current, phase: 'dropping', hovering: true }))
         onMascotModeChange('receiving')
         window.setTimeout(() => { void handleCraft() }, 360)
       } else {
@@ -2099,7 +2175,8 @@ function SessionLayer({
         setPickup((current) => ({ ...current, phase: 'returning', hovering: false }))
         onMascotModeChange('none')
         dispatch({ type: 'SHOW_TOAST', msg: '重新试试，再靠近一点就能放进来！' })
-        window.setTimeout(() => {
+        pickupResetTimerRef.current = window.setTimeout(() => {
+          pickupResetTimerRef.current = null
           pickupPhaseRef.current = 'idle'
           pickupHoveringRef.current = false
           setPickup({ phase: 'idle', x: 0, y: 0, hovering: false })
@@ -2124,6 +2201,61 @@ function SessionLayer({
     setPickup({ phase: 'idle', x: 0, y: 0, hovering: false })
     onMascotModeChange('none')
   }
+
+  useEffect(() => {
+    const finishPointer = (event: PointerEvent) => {
+      endPickup(event.pointerId, {
+        cancelled: event.type === 'pointercancel',
+        clientX: event.clientX,
+        clientY: event.clientY,
+      })
+    }
+    const finishMouse = (event: MouseEvent) => {
+      const pointerId = pressRef.current?.pointerId
+      if (pointerId === undefined) return
+      endPickup(pointerId, { clientX: event.clientX, clientY: event.clientY })
+    }
+    const cancelActivePickup = () => {
+      const pointerId = pressRef.current?.pointerId
+      if (pointerId !== undefined) endPickup(pointerId, { cancelled: true })
+    }
+    const finishTouch = (event: TouchEvent) => {
+      const pointerId = pressRef.current?.pointerId
+      if (pointerId === undefined) return
+      const touch = event.changedTouches.item(0)
+      endPickup(pointerId, touch
+        ? { clientX: touch.clientX, clientY: touch.clientY }
+        : {})
+    }
+    const onVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') cancelActivePickup()
+    }
+
+    // Pointer capture is helpful but not sufficient: Safari can drop it when
+    // the pointer crosses an iframe/browser boundary. Capture-phase global
+    // listeners guarantee that releasing anywhere ends the pickup exactly once.
+    window.addEventListener('pointerup', finishPointer, true)
+    window.addEventListener('pointercancel', finishPointer, true)
+    window.addEventListener('mouseup', finishMouse, true)
+    window.addEventListener('touchend', finishTouch, true)
+    window.addEventListener('touchcancel', cancelActivePickup, true)
+    window.addEventListener('blur', cancelActivePickup)
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => {
+      window.removeEventListener('pointerup', finishPointer, true)
+      window.removeEventListener('pointercancel', finishPointer, true)
+      window.removeEventListener('mouseup', finishMouse, true)
+      window.removeEventListener('touchend', finishTouch, true)
+      window.removeEventListener('touchcancel', cancelActivePickup, true)
+      window.removeEventListener('blur', cancelActivePickup)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
+  })
+
+  useEffect(() => () => {
+    clearHoldTimer()
+    if (pickupResetTimerRef.current !== null) window.clearTimeout(pickupResetTimerRef.current)
+  }, [])
 
   return (
     <>
@@ -2198,12 +2330,23 @@ function SessionLayer({
           if (gestureModeRef.current === 'pickup') movePickup(event)
         }}
         onPointerUp={(event) => {
-          if (gestureModeRef.current === 'pickup') endPickup(event)
+          if (gestureModeRef.current === 'pickup') {
+            event.preventDefault()
+            event.stopPropagation()
+            endPickup(event.pointerId, { clientX: event.clientX, clientY: event.clientY })
+          }
           gestureModeRef.current = 'idle'
         }}
         onPointerCancel={(event) => {
-          if (gestureModeRef.current === 'pickup') endPickup(event)
+          if (gestureModeRef.current === 'pickup') {
+            event.preventDefault()
+            event.stopPropagation()
+            endPickup(event.pointerId, { cancelled: true })
+          }
           gestureModeRef.current = 'idle'
+        }}
+        onLostPointerCapture={(event) => {
+          endPickup(event.pointerId, { cancelled: true })
         }}
         onPointerLeave={() => updatePenTip(null)}
       />
