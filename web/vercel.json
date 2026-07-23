@@ -1,4 +1,10 @@
 {
+  "rewrites": [
+    {
+      "source": "/dreamhome-api/:path*",
+      "destination": "http://218.244.156.128:8000/:path*"
+    }
+  ],
   "functions": {
     "api/photo-to-3d.js": { "maxDuration": 60 },
     "api/selection-to-3d.js": { "maxDuration": 60 },
