@@ -3,8 +3,6 @@ import { createPortal } from 'react-dom'
 import { FEED_VIDEOS, MOCK_OBJECTS, LIBRARY_SEED, CATEGORY_COLOR, CURRENT_BLOGGER, type FeedVideo, type FeedState, type SelectedObject, type LibraryComponent, type FurnitureCategory, type MascotState, type CraftJob, type CraftBatch, type TraceEntry } from './types'
 import { genSticker } from './stickerGen'
 import { captureBbox, captureVideoSelectionUpload, saveTraceToBackend, loadTracesFromBackend, traceImageUrl, type VideoSelectionUpload } from './segmentApi'
-import { prepareEdgeSamFrame, segmentWithEdgeSam, warmupEdgeSam } from './mobileSam'
-import { detectGuideFurniture, prepareFurnitureLabels, warmupFurnitureDetector } from './objectGuide'
 import { falJobToComponent, getFalJob } from './falGenerationApi'
 import { confirmVideoSelection, submitVideoSelection } from './videoSelectionApi'
 import type { SelectionMatchCandidate } from './videoSelectionApi'
@@ -666,16 +664,6 @@ function App() {
     return () => window.clearTimeout(timer)
   }, [sessionGuideStage])
 
-  useEffect(() => {
-    warmupEdgeSam()
-      .catch((error) => {
-        console.warn('[EdgeSAM] model warmup failed; session will retry', error)
-      })
-      .finally(() => warmupFurnitureDetector().catch((error) => {
-        console.warn('[GuideDetector] model warmup failed; session will retry', error)
-      }))
-  }, [])
-
   // traces 持久化到 localStorage
   useEffect(() => {
     saveTraces(state.traces)
@@ -712,10 +700,26 @@ function App() {
 
   useEffect(() => {
     const next = FEED_VIDEOS[(feedIndex + 1) % FEED_VIDEOS.length]
+    const active = videoRef.current
     const preload = document.createElement('video')
-    preload.preload = 'metadata'
-    preload.src = next.src
+    let warmTimer = 0
+    const warmNext = () => {
+      warmTimer = window.setTimeout(() => {
+        preload.muted = true
+        preload.playsInline = true
+        preload.preload = 'auto'
+        preload.src = next.src
+        preload.load()
+      }, 450)
+    }
+    if (active?.readyState && active.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+      warmNext()
+    } else {
+      active?.addEventListener('canplay', warmNext, { once: true })
+    }
     return () => {
+      window.clearTimeout(warmTimer)
+      active?.removeEventListener('canplay', warmNext)
       preload.removeAttribute('src')
       preload.load()
     }
@@ -954,10 +958,14 @@ function App() {
               if (video) {
                 video.pause()
                 setPausedFrame({ videoId: activeFeedVideo.id, time: video.currentTime })
-                void prepareEdgeSamFrame(video).catch((error) => {
+                void import('./mobileSam').then(({ prepareEdgeSamFrame }) => (
+                  prepareEdgeSamFrame(video)
+                )).catch((error) => {
                   console.warn('[EdgeSAM] paused frame pre-encode failed', error)
                 })
-                void prepareFurnitureLabels(video).catch((error) => {
+                void import('./objectGuide').then(({ prepareFurnitureLabels }) => (
+                  prepareFurnitureLabels(video)
+                )).catch((error) => {
                   console.warn('[GuideDetector] paused frame detection failed', error)
                 })
               }
@@ -1687,10 +1695,14 @@ function SessionLayer({
     const prepare = () => {
       window.requestAnimationFrame(async () => {
         if (cancelled) return
-        void prepareEdgeSamFrame(video).catch((error) => {
+        void import('./mobileSam').then(({ prepareEdgeSamFrame }) => (
+          prepareEdgeSamFrame(video)
+        )).catch((error) => {
           console.warn('[EdgeSAM] frame preparation failed', error)
         })
-        void prepareFurnitureLabels(video).catch((error) => {
+        void import('./objectGuide').then(({ prepareFurnitureLabels }) => (
+          prepareFurnitureLabels(video)
+        )).catch((error) => {
           console.warn('[GuideDetector] frame preparation failed', error)
         })
       })
@@ -1983,7 +1995,9 @@ function SessionLayer({
       const video = document.querySelector<HTMLVideoElement>('.video')
       const selectionTime = video?.currentTime ?? pausedTime
       const realtimeLabelPromise = video
-        ? detectGuideFurniture(video, box)
+        ? import('./objectGuide').then(({ detectGuideFurniture }) => (
+          detectGuideFurniture(video, box)
+        ))
           .then((detection) => detection?.label || '家具')
           .catch((error) => {
             console.warn('[GuideDetector] realtime label failed', error)
@@ -2024,7 +2038,9 @@ function SessionLayer({
       // Web SAM is presentation-only; production still receives the original
       // frame and selection coordinates.
       const edgeSamPromise = video
-        ? segmentWithEdgeSam(video, path, box).catch((error) => {
+        ? import('./mobileSam').then(({ segmentWithEdgeSam }) => (
+          segmentWithEdgeSam(video, path, box)
+        )).catch((error) => {
             console.warn('[EdgeSAM] background cutout failed; keeping contextual preview', error)
             return null
           })

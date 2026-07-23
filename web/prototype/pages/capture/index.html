@@ -12,11 +12,17 @@
     body { margin:0; min-height:100vh; background:linear-gradient(90deg,#faf4e6,#fefdf8 48%,#f8f2e3); color:var(--dh-fg-primary); font-family:var(--dh-font-sans); }
     .preview-stage { min-height:100vh; display:grid; place-items:center; padding:28px 18px; box-sizing:border-box; }
     .draw-app { height:calc(100% - 50px); padding:0 16px; display:flex; flex-direction:column; box-sizing:border-box; overflow:hidden; }
-    .draw-header { display:grid; place-items:center; min-height:42px; padding-top:3px; }
+    .draw-header { position:relative; display:grid; place-items:center; min-height:42px; padding-top:3px; }
     /* 主页面顶栏：状态栏 + 标题栏统一为底部导航同色（白），营造真机 app 顶栏 */
     .dh-screen.dh-topwhite .dh-statusbar { background: var(--dh-bg-surface); }
     .dh-screen.dh-topwhite .draw-header { background: var(--dh-bg-surface); margin:0 -16px; padding-left:16px; padding-right:16px; box-shadow:0 2px 6px rgba(175,135,65,.06); }
     .draw-title { margin:0; font-size:16px; letter-spacing:0; font-weight:var(--dh-font-weight-heavy); }
+    .service-status { position:absolute; right:0; top:50%; transform:translateY(-50%); display:inline-flex; align-items:center; gap:4px; margin:0; color:var(--dh-fg-muted); font-size:9px; font-weight:var(--dh-font-weight-bold); }
+    .service-status::before { content:""; width:6px; height:6px; border-radius:50%; background:#c9bda3; box-shadow:0 0 0 2px rgba(201,189,163,.18); }
+    .service-status[data-state="ready"] { color:#567053; }
+    .service-status[data-state="ready"]::before { background:#6f936d; box-shadow:0 0 0 2px rgba(111,147,109,.18); }
+    .service-status[data-state="failed"] { color:#a85b4b; }
+    .service-status[data-state="failed"]::before { background:#b96a58; box-shadow:0 0 0 2px rgba(185,106,88,.18); }
     .draw-sub { margin:1px 0 0; font-size:10px; font-weight:var(--dh-font-weight-semibold); color:var(--dh-fg-muted); }
     .draw-content { flex:1; min-height:0; display:flex; flex-direction:column; padding:10px 0 var(--dh-tabbar-safe-space); overflow:hidden; }
     .phase { display:none; flex:1; min-height:0; flex-direction:column; }
@@ -112,6 +118,7 @@
         <div class="draw-app">
           <header class="draw-header">
             <h1 class="draw-title">拍一张</h1>
+            <p class="service-status" id="serviceStatus" data-state="checking">连接 3D 服务</p>
           </header>
           <div class="draw-content">
 
@@ -189,6 +196,7 @@
     const categoryTabs = document.getElementById('categoryTabs');
     const generateBtn = document.getElementById('generateBtn');
     const toast = document.getElementById('toast');
+    const serviceStatus = document.getElementById('serviceStatus');
 
     const phases = { capture:document.getElementById('capturePhase'), gen:document.getElementById('genPhase'), result:document.getElementById('resultPhase') };
     const genOrbit = document.getElementById('genOrbit');
@@ -202,7 +210,7 @@
     const toLibrary = document.getElementById('toLibrary');
 
     const DEFAULT_CATEGORY = FURNITURE_CATEGORIES[0].id; // 默认选中首个真实分类（列表首位、可见即高亮）
-    const state = { categories:[DEFAULT_CATEGORY], photoUrl:null, photoFile:null, hasPhoto:false, photoColor:'#9a8163', pollTimer:null, job:null, generatedAssets:[] };
+    const state = { categories:[DEFAULT_CATEGORY], photoUrl:null, photoFile:null, hasPhoto:false, backendReady:false, photoColor:'#9a8163', pollTimer:null, job:null, generatedAssets:[] };
     let toastTimer = null;
     const showToast = (message) => { toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1600); };
     const rgbToHex = (r, g, b) => '#' + [r, g, b].map((c) => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0')).join('');
@@ -240,7 +248,7 @@
       photoEmpty.classList.add('is-hidden');
       photoReset.hidden = false;
       state.hasPhoto = true;
-      generateBtn.disabled = false;
+      generateBtn.disabled = !state.backendReady;
     }
     function resetPhoto() {
       if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
@@ -277,6 +285,33 @@
       : '/dreamhome-api';
     const STATUS_MAP = { queued:'queued', running:'processing', succeeded:'ready', failed:'failed' };
     const categoryLabel = (id) => (FURNITURE_CATEGORIES.find((item) => item.id === id) || {}).label || id;
+    async function checkBackend() {
+      serviceStatus.dataset.state = 'checking';
+      serviceStatus.textContent = '连接 3D 服务';
+      try {
+        const response = await fetch(`${API_BASE}/api/health`, { cache:'no-store' });
+        if (!response.ok) throw new Error(`health ${response.status}`);
+        const health = await response.json();
+        const capabilities = health.capabilities || {};
+        const ready = health.consumer_contract === 'dreamhome-consumer-v1'
+          && capabilities.gen3d?.ready === true
+          && capabilities.completion?.ready === true
+          && capabilities.single_object_check?.ready === true
+          && capabilities.identity_check?.ready === true
+          && capabilities.material_postprocess?.ready === true;
+        if (!ready) throw new Error('pipeline not ready');
+        state.backendReady = true;
+        serviceStatus.dataset.state = 'ready';
+        serviceStatus.textContent = '3D 服务已连接';
+      } catch {
+        state.backendReady = false;
+        serviceStatus.dataset.state = 'failed';
+        serviceStatus.textContent = '3D 服务暂不可用';
+      }
+      generateBtn.disabled = !state.hasPhoto || !state.backendReady;
+    }
+    checkBackend();
+    window.addEventListener('focus', checkBackend);
     async function submitPhoto() {
       if (!state.photoFile) throw new Error('请先重新选择照片');
       const form = new FormData();
