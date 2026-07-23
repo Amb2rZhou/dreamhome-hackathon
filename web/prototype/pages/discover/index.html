@@ -5,18 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#fefdf8" />
   <title>DreamHome · 刷一刷</title>
-  <link rel="stylesheet" href="../shared/tabbar.css" />
   <style>
-    :root {
-      --dh-tabbar-height: 56px;
-      --dh-tabbar-bottom: calc(10px + env(safe-area-inset-bottom));
-      --dh-tabbar-z: 1000;
-      --dh-tabbar-bg: rgba(255, 253, 248, .94);
-      --dh-card-border: 1px solid rgba(255, 255, 255, .82);
-      --dh-shadow-soft: 0 8px 28px rgba(31, 37, 30, .22);
-      --dh-color-sage-500: #6e846b;
-    }
-
     html,
     body {
       width: 100%;
@@ -29,126 +18,9 @@
     .discover-app {
       display: block;
       width: 100%;
-      height: calc(100% - 82px - env(safe-area-inset-bottom));
+      height: 100%;
       border: 0;
       background: transparent;
-    }
-
-    .dh-tabbar.dh-tabbar--main {
-      position: fixed;
-      width: min(369px, calc(100% - 24px));
-    }
-
-    .scene-actions {
-      position: fixed;
-      z-index: 999;
-      left: 50%;
-      bottom: calc(78px + env(safe-area-inset-bottom));
-      display: flex;
-      width: min(288px, calc(100% - 32px));
-      min-height: 44px;
-      padding: 5px;
-      border: 1px solid rgba(255, 255, 255, .76);
-      border-radius: 18px;
-      background: rgba(255, 253, 248, .94);
-      box-shadow: 0 8px 24px rgba(31, 37, 30, .22);
-      backdrop-filter: blur(18px) saturate(135%);
-      -webkit-backdrop-filter: blur(18px) saturate(135%);
-      transform: translateX(-50%);
-    }
-
-    .scene-actions[hidden] { display: none; }
-
-    .scene-action {
-      flex: 1;
-      min-width: 0;
-      min-height: 44px;
-      border: 0;
-      border-radius: 14px;
-      color: #4e4437;
-      background: transparent;
-      font: 700 13px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      text-decoration: none;
-      cursor: pointer;
-      touch-action: manipulation;
-    }
-
-    a.scene-action { display: inline-flex; align-items: center; justify-content: center; }
-    .scene-action:first-child { background: #f1e3c5; color: #5b4527; }
-    .scene-action:hover { background: #f8eedb; }
-    .scene-action:active { transform: scale(.97); }
-    .scene-action:focus-visible { outline: 3px solid #d97706; outline-offset: 2px; }
-    .scene-action[aria-pressed="true"] { color: #a45c3e; }
-
-    .scene-toast {
-      position: fixed;
-      z-index: 1002;
-      left: 50%;
-      bottom: calc(142px + env(safe-area-inset-bottom));
-      max-width: calc(100% - 40px);
-      padding: 9px 13px;
-      border-radius: 999px;
-      color: #fff;
-      background: rgba(31, 37, 30, .92);
-      opacity: 0;
-      transform: translate(-50%, 8px);
-      pointer-events: none;
-      transition: opacity .18s ease, transform .18s ease;
-      font: 700 12px/1.3 system-ui, sans-serif;
-    }
-
-    .scene-toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
-
-    .discover-exit {
-      position: fixed;
-      z-index: 1000;
-      top: calc(12px + env(safe-area-inset-top));
-      left: calc(12px + env(safe-area-inset-left));
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      min-width: 112px;
-      min-height: 44px;
-      padding: 0 15px;
-      border: 1px solid rgba(255, 255, 255, .7);
-      border-radius: 999px;
-      color: #2f332e;
-      background: rgba(255, 253, 248, .88);
-      box-shadow: 0 8px 24px rgba(31, 37, 30, .2);
-      backdrop-filter: blur(18px) saturate(135%);
-      -webkit-backdrop-filter: blur(18px) saturate(135%);
-      font: 700 14px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      text-decoration: none;
-      cursor: pointer;
-      touch-action: manipulation;
-      transition: transform .2s ease, background-color .2s ease, box-shadow .2s ease;
-    }
-
-    .discover-exit:hover {
-      background: rgba(255, 255, 255, .96);
-      box-shadow: 0 10px 28px rgba(31, 37, 30, .24);
-      transform: translateY(-1px);
-    }
-
-    .discover-exit:active {
-      transform: scale(.97);
-    }
-
-    .discover-exit:focus-visible {
-      outline: 3px solid #d97706;
-      outline-offset: 3px;
-    }
-
-    .discover-exit svg {
-      width: 18px;
-      height: 18px;
-      flex: none;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
     }
 
     .discover-fallback {
@@ -163,96 +35,12 @@
 </head>
 <body>
   <noscript class="discover-fallback">请开启 JavaScript 体验“刷一刷”。</noscript>
-  <a class="discover-exit" href="../inspiration-library/index.html" aria-label="完成刷一刷并前往资产库">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.2 17 19 7"/></svg>
-    <span>完成 · 资产库</span>
-  </a>
   <iframe
     id="discoverApp"
     class="discover-app"
-    src="./app/index.html?v=legacy-ordering-removed-20260723"
+    src="./app/index.html?v=phone-shell-3d-preview-20260723"
     title="DreamHome 刷一刷"
     allow="autoplay; camera; microphone; fullscreen"
   ></iframe>
-  <section class="scene-actions" id="sceneActions" aria-label="当前视频的同款小家" hidden>
-    <a class="scene-action" id="viewScene" href="../my-home/index.html">查看同款小家</a>
-    <button class="scene-action" id="favoriteScene" type="button" aria-pressed="false">收藏布局</button>
-  </section>
-  <div class="scene-toast" id="sceneToast" role="status" aria-live="polite"></div>
-  <nav class="dh-tabbar dh-tabbar--main" aria-label="主功能导航">
-    <a class="dh-tab" href="../capture/index.html" aria-label="拍一张"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8.7 4.6c-.6 0-1.15.32-1.44.84l-.7 1.24H4.6A2.6 2.6 0 0 0 2 9.32v8.28a2.6 2.6 0 0 0 2.6 2.6h14.8a2.6 2.6 0 0 0 2.6-2.6V9.32a2.6 2.6 0 0 0-2.6-2.6h-1.96l-.7-1.24a1.65 1.65 0 0 0-1.44-.84H8.7Zm3.3 5.1a3.55 3.55 0 1 0 0 7.1 3.55 3.55 0 0 0 0-7.1Z"/></svg></span></a>
-    <a class="dh-tab dh-tab--active" href="./index.html" aria-label="刷一刷" aria-current="page"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M6.4 3.2h11.2A3.4 3.4 0 0 1 21 6.6v10.8a3.4 3.4 0 0 1-3.4 3.4H6.4A3.4 3.4 0 0 1 3 17.4V6.6a3.4 3.4 0 0 1 3.4-3.4Zm3.5 5.05c-.5-.3-1.14.06-1.14.65v6.3c0 .59.64.95 1.14.65l5.2-3.15c.48-.29.48-1.01 0-1.3l-5.2-3.15Z"/></svg></span></a>
-    <a class="dh-tab" href="../inspiration-library/index.html" aria-label="灵感库"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12 2.6a6.4 6.4 0 0 0-3.9 11.48c.46.36.74.9.82 1.48l.13.94h5.84l.13-.94c.08-.58.36-1.12.82-1.48A6.4 6.4 0 0 0 12 2.6Z"/><rect x="8.7" y="17.4" width="6.6" height="1.9" rx=".95"/><rect x="9.6" y="20" width="4.8" height="1.9" rx=".95"/></svg></span></a>
-    <a class="dh-tab" href="../my-favorites/index.html" aria-label="我的收藏"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7 3.6h10a2.2 2.2 0 0 1 2.2 2.2v13.9c0 .86-.94 1.38-1.66.92L12 17.2l-5.54 3.42c-.72.46-1.66-.06-1.66-.92V5.8A2.2 2.2 0 0 1 7 3.6Z"/></svg></span></a>
-    <a class="dh-tab" href="../my-home/index.html" aria-label="我的家"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10.7 3.3a2 2 0 0 1 2.6 0l6.8 5.86c.44.38.7.94.7 1.53v7.71a2 2 0 0 1-2 2h-2.8a1 1 0 0 1-1-1v-4.4a1 1 0 0 0-1-1h-2.4a1 1 0 0 0-1 1v4.4a1 1 0 0 1-1 1H6.2a2 2 0 0 1-2-2V10.7c0-.59.26-1.15.7-1.53L10.7 3.3Z"/></svg></span></a>
-  </nav>
-  <script>
-    (() => {
-      const SCENES = Object.freeze({
-        vid_40734d7f2e6c: '卧室（单间公寓）',
-        vid_91fe552c5f7d: '48 平长厅公寓',
-      });
-      const FAVORITES_KEY = 'dreamhome.favorite-video-layouts.v1';
-      const app = document.getElementById('discoverApp');
-      const actions = document.getElementById('sceneActions');
-      const view = document.getElementById('viewScene');
-      const favorite = document.getElementById('favoriteScene');
-      const toast = document.getElementById('sceneToast');
-      let activeVideoId = '';
-      let toastTimer = 0;
-
-      const readFavorites = () => {
-        try {
-          const saved = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
-          return new Set(Array.isArray(saved) ? saved.filter((id) => SCENES[id]) : []);
-        } catch {
-          return new Set();
-        }
-      };
-
-      const showToast = (message) => {
-        toast.textContent = message;
-        toast.classList.add('is-visible');
-        window.clearTimeout(toastTimer);
-        toastTimer = window.setTimeout(() => toast.classList.remove('is-visible'), 2200);
-      };
-
-      const render = () => {
-        let doc;
-        try { doc = app.contentDocument; } catch { actions.hidden = true; return; }
-        const video = doc?.querySelector('video.video');
-        const match = (video?.currentSrc || video?.src || '').match(/(vid_[a-z0-9]+)\.mp4/i);
-        const videoId = match?.[1] || '';
-        const isBrowsing = Boolean(doc?.querySelector('.tap-area'));
-        if (!isBrowsing || !SCENES[videoId]) {
-          actions.hidden = true;
-          activeVideoId = '';
-          return;
-        }
-        activeVideoId = videoId;
-        actions.hidden = false;
-        actions.setAttribute('aria-label', `${SCENES[videoId]}的同款小家`);
-        view.href = `../my-home/index.html?case=${encodeURIComponent(videoId)}`;
-        view.setAttribute('aria-label', `查看${SCENES[videoId]}的 1:1 同款小家`);
-        const saved = readFavorites().has(videoId);
-        favorite.setAttribute('aria-pressed', String(saved));
-        favorite.textContent = saved ? '✓ 已收藏布局' : '收藏布局';
-      };
-
-      favorite.addEventListener('click', () => {
-        if (!activeVideoId) return;
-        const favorites = readFavorites();
-        const collecting = !favorites.has(activeVideoId);
-        if (collecting) favorites.add(activeVideoId); else favorites.delete(activeVideoId);
-        localStorage.setItem(FAVORITES_KEY, JSON.stringify([...favorites]));
-        render();
-        showToast(collecting ? `已收藏 ${SCENES[activeVideoId]}` : '已取消收藏布局');
-      });
-
-      app.addEventListener('load', render);
-      window.setInterval(render, 500);
-      render();
-    })();
-  </script>
 </body>
 </html>

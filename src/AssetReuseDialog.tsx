@@ -1,4 +1,5 @@
 import type { SelectionMatchCandidate } from './videoSelectionApi'
+import { AssetMatchViewer } from './AssetMatchViewer'
 import './AssetReuseDialog.css'
 
 export function AssetReuseDialog({
@@ -18,9 +19,11 @@ export function AssetReuseDialog({
     <div className="asset-reuse-backdrop" role="presentation">
       <section className="asset-reuse-dialog" role="dialog" aria-modal="true" aria-labelledby="asset-reuse-title">
         <div className="asset-reuse-preview">
-          {asset.thumb_url
-            ? <img src={asset.thumb_url} alt={asset.name || category} />
-            : <span aria-hidden="true">✦</span>}
+          <AssetMatchViewer
+            modelUrl={asset.glb_url}
+            fallbackImage={asset.thumb_url}
+            name={asset.name || category}
+          />
           <i>已有 3D</i>
         </div>
         <div className="asset-reuse-copy">
@@ -34,7 +37,7 @@ export function AssetReuseDialog({
           直接使用已有 3D
         </button>
         <button type="button" className="asset-reuse-secondary" onClick={onGenerate}>
-          不是同款，重新生成
+          不是同款 · 重新生成新的 3D
         </button>
       </section>
     </div>

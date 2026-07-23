@@ -19,13 +19,8 @@ import { workshopFromAppState } from './workshopModel'
 import { AVAILABLE_ASSETS_BY_VIDEO, assetsForVideoFrame, defaultAssetFrame } from './availableAssets.generated'
 import {
   CommentIcon,
-  CreateIcon,
-  FriendsIcon,
   HeartIcon as DouyinHeartIcon,
-  HomeIcon,
-  MeIcon,
   MenuIcon,
-  MessageIcon,
   MusicIcon,
   SearchIcon,
   ShareIcon,
@@ -789,9 +784,9 @@ function App() {
               categoryHint: craft.name === '待分类家具' ? '' : craft.name,
             })
             const candidate = selected.exact_match ?? selected.candidates[0]
-            const shouldReuse = candidate
-              ? !!selected.exact_match || await requestReuseDecision(candidate)
-              : false
+            // Even an exact backend match must be visually confirmed: the user
+            // needs to inspect the canonical GLB from every angle before binding it.
+            const shouldReuse = candidate ? await requestReuseDecision(candidate) : false
             if (cancelled) return
             if (candidate && shouldReuse) {
               const reused = await confirmVideoSelection({
@@ -1188,29 +1183,108 @@ function BottomInfo({ video }: { video: FeedVideo }) {
   )
 }
 
-function DouyinBottomNav() {
+const VIDEO_SCENES: Record<string, string> = {
+  vid_40734d7f2e6c: '卧室（单间公寓）',
+  vid_91fe552c5f7d: '48 平长厅公寓',
+}
+
+function SceneActions({ videoId }: { videoId: string }) {
+  const sceneName = VIDEO_SCENES[videoId]
+  const favoritesKey = 'dreamhome.favorite-video-layouts.v1'
+  const [saved, setSaved] = useState(false)
+  const [notice, setNotice] = useState('')
+
+  useEffect(() => {
+    if (!sceneName) return
+    try {
+      const ids = JSON.parse(window.localStorage.getItem(favoritesKey) || '[]')
+      setSaved(Array.isArray(ids) && ids.includes(videoId))
+    } catch {
+      setSaved(false)
+    }
+  }, [sceneName, videoId])
+
+  useEffect(() => {
+    if (!notice) return
+    const timer = window.setTimeout(() => setNotice(''), 2200)
+    return () => window.clearTimeout(timer)
+  }, [notice])
+
+  if (!sceneName) return null
+
+  const toggleFavorite = () => {
+    let ids: string[] = []
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem(favoritesKey) || '[]')
+      ids = Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : []
+    } catch {
+      ids = []
+    }
+    const nextSaved = !ids.includes(videoId)
+    const next = nextSaved ? Array.from(new Set([...ids, videoId])) : ids.filter((id) => id !== videoId)
+    window.localStorage.setItem(favoritesKey, JSON.stringify(next))
+    setSaved(nextSaved)
+    setNotice(nextSaved ? `已收藏 ${sceneName}` : '已取消收藏布局')
+  }
+
   return (
-    <nav className="douyin-bottom-nav" aria-label="抖音底部导航">
-      <button className="douyin-nav-item is-active" aria-current="page">
-        <HomeIcon />
-        <span>首页</span>
-      </button>
-      <button className="douyin-nav-item">
-        <FriendsIcon />
-        <span>朋友</span>
-      </button>
-      <button className="douyin-nav-create" aria-label="发布作品">
-        <CreateIcon />
-      </button>
-      <button className="douyin-nav-item douyin-nav-message">
-        <MessageIcon />
-        <span>消息</span>
-        <em>99+</em>
-      </button>
-      <button className="douyin-nav-item">
-        <MeIcon />
-        <span>我</span>
-      </button>
+    <>
+      <section className="scene-actions-inline" aria-label={`${sceneName}的同款小家`}>
+        <a
+          className="scene-action-inline scene-action-inline--primary"
+          href={`/prototype/pages/my-home/index.html?case=${encodeURIComponent(videoId)}`}
+          target="_top"
+          aria-label={`查看${sceneName}的 1:1 同款小家`}
+        >
+          查看同款小家
+        </a>
+        <button
+          type="button"
+          className="scene-action-inline"
+          aria-pressed={saved}
+          onClick={toggleFavorite}
+        >
+          {saved ? '✓ 已收藏布局' : '收藏布局'}
+        </button>
+      </section>
+      {notice && <div className="scene-action-notice" role="status">{notice}</div>}
+    </>
+  )
+}
+
+function DreamHomeNavIcon({ kind }: { kind: 'capture' | 'feed' | 'library' | 'favorites' | 'home' }) {
+  const paths = {
+    capture: <><path d="M8.7 4.6h6.6l1.3 2.1h2.8A2.6 2.6 0 0 1 22 9.3v8.3a2.6 2.6 0 0 1-2.6 2.6H4.6A2.6 2.6 0 0 1 2 17.6V9.3a2.6 2.6 0 0 1 2.6-2.6h2.8l1.3-2.1Z" /><circle cx="12" cy="13.3" r="3.4" fill="none" stroke="currentColor" strokeWidth="1.8" /></>,
+    feed: <><rect x="3" y="3" width="18" height="18" rx="4" /><path d="m10 8.2 6.2 3.8-6.2 3.8V8.2Z" fill="#0a0a0b" /></>,
+    library: <><path d="M12 2.6a6.4 6.4 0 0 0-3.9 11.5c.5.4.7.9.8 1.5l.1.9h6l.1-.9c.1-.6.3-1.1.8-1.5A6.4 6.4 0 0 0 12 2.6Z" /><rect x="8.7" y="17.4" width="6.6" height="1.9" rx="1" /></>,
+    favorites: <path d="M7 3.6h10a2.2 2.2 0 0 1 2.2 2.2v13.9c0 .9-.9 1.4-1.7.9L12 17.2l-5.5 3.4c-.8.5-1.7 0-1.7-.9V5.8A2.2 2.2 0 0 1 7 3.6Z" />,
+    home: <path d="m3.2 10.4 8.8-7.6 8.8 7.6v8a2 2 0 0 1-2 2h-4.1v-5.7H9.3v5.7H5.2a2 2 0 0 1-2-2v-8Z" />,
+  }
+  return <svg viewBox="0 0 24 24" aria-hidden="true">{paths[kind]}</svg>
+}
+
+function DreamHomeBottomNav() {
+  const items = [
+    { kind: 'capture' as const, label: '拍一张', href: '/prototype/pages/capture/index.html' },
+    { kind: 'feed' as const, label: '刷一刷', href: '/prototype/pages/discover/index.html', active: true },
+    { kind: 'library' as const, label: '资产库', href: '/prototype/pages/inspiration-library/index.html' },
+    { kind: 'favorites' as const, label: '收藏', href: '/prototype/pages/my-favorites/index.html' },
+    { kind: 'home' as const, label: '我的家', href: '/prototype/pages/my-home/index.html' },
+  ]
+  return (
+    <nav className="douyin-bottom-nav dreamhome-bottom-nav" aria-label="DreamHome 主功能导航">
+      {items.map((item) => (
+        <a
+          key={item.kind}
+          className={`douyin-nav-item dreamhome-nav-item ${item.active ? 'is-active' : ''}`}
+          href={item.href}
+          target="_top"
+          aria-current={item.active ? 'page' : undefined}
+        >
+          <DreamHomeNavIcon kind={item.kind} />
+          <span>{item.label}</span>
+        </a>
+      ))}
     </nav>
   )
 }
@@ -1253,7 +1327,8 @@ function BrowseLayer({
         onFavoriteAll={onFavoriteAllAssets}
       />
       <BottomInfo video={video} />
-      <DouyinBottomNav />
+      <SceneActions videoId={video.id} />
+      <DreamHomeBottomNav />
     </>
   )
 }
