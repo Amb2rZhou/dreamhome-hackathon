@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { MascotState } from './types'
-import { clientPointInElement } from './screenSpace'
 import { BlackKeyImage, BlackKeyVideo } from './BlackKeyMedia'
 import './Mascot.css'
 
@@ -44,6 +43,23 @@ const IDLE_ACCENT_DELAY = 10_000
 const WORK_ACCENT_DELAY = 2_500
 const MOTION_FADE_MS = 300
 const MOTION_ASSET_ROOT = '/mascot-motion'
+const ONBOARDING_SEEN_KEY = 'dreamhome-feed-onboarding-seen-v1'
+
+function hasSeenOnboarding(): boolean {
+  try {
+    return window.localStorage.getItem(ONBOARDING_SEEN_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function rememberOnboarding(): void {
+  try {
+    window.localStorage.setItem(ONBOARDING_SEEN_KEY, '1')
+  } catch {
+    // Storage restrictions must not block the onboarding action.
+  }
+}
 // 统一角色脚底基线；各段素材的轻微视觉差异在这里校准，不需要重新导出。
 const MOTIONS: Record<MotionName, MotionClip> = {
   // 与《包工球交互》状态文档逐项对应；MP4 为原始 H.264 MOV 的无损换封装。
@@ -128,13 +144,9 @@ export function Mascot({
       : { current: next, previous: current.current })
   }, [])
   const [videoFailed, setVideoFailed] = useState(false)
-  const [pos, setPos] = useState({ x: 300, y: 560 })
-  const [dragging, setDragging] = useState(false)
-  const dragRef = useRef<{ ox: number; oy: number } | null>(null)
   const pointerStartRef = useRef<{ x: number; y: number; moved: boolean } | null>(null)
   const [startTipSeen, setStartTipSeen] = useState(false)
-  const [welcomeVisible, setWelcomeVisible] = useState(true)
-  // 原型每次刷新都从完整冷启动开始，确保演示始终能走完五步教学。
+  const [welcomeVisible, setWelcomeVisible] = useState(() => !hasSeenOnboarding())
   const welcomeTextRef = useRef('嗨，我是包工球。一起把路过的灵感，慢慢装进家里。')
   const idleTimerRef = useRef<number | null>(null)
   const lastIdleAccentRef = useRef<'idleMagnifier' | 'idleBelt' | null>(null)
@@ -267,6 +279,7 @@ export function Mascot({
   }, [guideMode, welcomeVisible])
 
   const dismissWelcome = () => {
+    rememberOnboarding()
     setWelcomeVisible(false)
     onBeginOnboarding()
   }
@@ -294,48 +307,22 @@ export function Mascot({
 
   const onDown = (event: React.PointerEvent) => {
     if (collectionMode !== 'none') return
-    const screen = document.querySelector('.screen') as HTMLElement | null
-    if (!screen) return
-    const point = clientPointInElement(screen, event.clientX, event.clientY)
-    setDragging(true)
-    dragRef.current = { ox: point.x - pos.x, oy: point.y - pos.y }
     pointerStartRef.current = { x: event.clientX, y: event.clientY, moved: false }
     ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
   }
   const onMove = (event: React.PointerEvent) => {
-    if (!dragging || !dragRef.current) return
-    if (pointerStartRef.current) {
-      const dx = event.clientX - pointerStartRef.current.x
-      const dy = event.clientY - pointerStartRef.current.y
-      if (Math.hypot(dx, dy) > 6) pointerStartRef.current.moved = true
-    }
-    const screen = document.querySelector('.screen') as HTMLElement
-    if (!screen) return
-    const point = clientPointInElement(screen, event.clientX, event.clientY)
-    const nx = point.x - dragRef.current.ox
-    const ny = point.y - dragRef.current.oy
-    setPos({
-      x: Math.max(8, Math.min(screen.offsetWidth - 88, nx)),
-      y: Math.max(8, Math.min(screen.offsetHeight - 88, ny)),
-    })
+    if (!pointerStartRef.current) return
+    const dx = event.clientX - pointerStartRef.current.x
+    const dy = event.clientY - pointerStartRef.current.y
+    if (Math.hypot(dx, dy) > 6) pointerStartRef.current.moved = true
   }
   const onUp = () => {
     const openWorkshop = !!pointerStartRef.current && !pointerStartRef.current.moved
     pointerStartRef.current = null
-    setDragging(false)
-    dragRef.current = null
-    setPos((current) => {
-      const screen = document.querySelector('.screen') as HTMLElement
-      if (!screen) return current
-      const mid = screen.offsetWidth / 2
-      return { x: current.x + 40 < mid ? 8 : screen.offsetWidth - 88, y: current.y }
-    })
     if (openWorkshop) openWorkshopFromMascot()
   }
   const onCancel = () => {
     pointerStartRef.current = null
-    dragRef.current = null
-    setDragging(false)
   }
 
   // 完成态必须持续到用户真正进入小工坊查看；不能再被欢迎语、普通通知或计时器吞掉。
@@ -343,15 +330,14 @@ export function Mascot({
   const showStartBubble = !showCompleteBubble && craftStartTip && !startTipSeen
   const showNoticeBubble = !showCompleteBubble && !showStartBubble && !!notice && collectionMode === 'none'
   const showWelcomeBubble = !showCompleteBubble && !showStartBubble && !showNoticeBubble && welcomeVisible && !guideMode && collectionMode === 'none'
-  const bubbleSide = pos.x > 225 ? 'right' : 'left'
+  const bubbleSide = 'right'
   const clip = MOTIONS[motion]
   const previousClip = motionView.previous ? MOTIONS[motionView.previous] : null
   const fadeDuration = `${MOTION_FADE_MS}ms`
 
   return (
     <div
-      className={`mascot-root mascot-${state} mascot-motion-${motion} mascot-collection-${collectionMode} ${awaitingCollectionView ? 'mascot-awaiting-view' : ''} ${progressGuideActive ? 'mascot-progress-guide' : ''} ${dragging ? 'dragging' : ''}`}
-      style={{ left: pos.x, top: pos.y }}
+      className={`mascot-root mascot-${state} mascot-motion-${motion} mascot-collection-${collectionMode} ${awaitingCollectionView ? 'mascot-awaiting-view' : ''} ${progressGuideActive ? 'mascot-progress-guide' : ''}`}
       role={collectionMode === 'none' ? 'button' : undefined}
       tabIndex={collectionMode === 'none' ? 0 : -1}
       aria-label={collectionMode === 'none' ? '打开包工球的小工坊' : undefined}
@@ -434,7 +420,10 @@ export function Mascot({
               className="mascot-motion-layer mascot-motion-layer--incoming"
               src={clip.src}
               loop={clip.loop}
-              preload="auto"
+              // Only the visible motion is mounted. `play()` in BlackKeyVideo
+              // will fetch the current clip on demand; metadata preload avoids
+              // retaining several decoded working variants in the tab cache.
+              preload="metadata"
               onEnded={onMotionEnded}
               onError={() => setVideoFailed(true)}
               style={{

@@ -71,7 +71,11 @@ type SessionGuideStage = 'idle' | 'pause' | 'recognize' | 'drag' | 'progress' | 
 type PendingSelectionRequests = Map<string, {
   videoId: string
   time: number
-  upload: VideoSelectionUpload
+  // Encoding the untouched full frame is allowed to finish in the
+  // background. Keeping the promise here prevents the lasso UI from waiting
+  // on a full-resolution JPEG while still guaranteeing that production waits
+  // for the exact frame before it submits.
+  uploadPromise: Promise<VideoSelectionUpload | null>
   labelPromise: Promise<string>
 }>
 
@@ -725,10 +729,12 @@ function App() {
               ? selectionRequestsRef.current.get(craft.sourceSelectionId)
               : null
             if (!pendingSelection) throw new Error('原始帧和圈选已丢失，请保持页面打开后重试')
+            const upload = await pendingSelection.uploadPromise
+            if (!upload) throw new Error('原始帧准备失败，请保持页面打开后重试')
             const selected = await submitVideoSelection({
               videoId: pendingSelection.videoId,
               time: pendingSelection.time,
-              upload: pendingSelection.upload,
+              upload,
               categoryHint: craft.name === '待分类家具' ? '' : craft.name,
             })
             const submitted = await confirmVideoSelection({
@@ -1421,6 +1427,7 @@ function SessionLayer({
 }) {
   const drawingRef = useRef(false)
   const movedRef = useRef(false)
+  const drawStartRef = useRef<{ x: number; y: number } | null>(null)
   const recognizingRef = useRef(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const penTipRef = useRef<HTMLDivElement>(null)
@@ -1682,27 +1689,44 @@ function SessionLayer({
   }
 
   useEffect(() => {
+    const appendDrawingPoint = (point: { x: number; y: number } | null) => {
+      if (!drawingRef.current || !point) return
+      const start = drawStartRef.current
+      if (!start) return
+      if (!movedRef.current) {
+        // Delay lasso activation until the gesture is clearly a drag. This
+        // keeps a normal tap available for resuming the paused video while
+        // tolerating the small amount of movement common on touch screens.
+        if (Math.hypot(point.x - start.x, point.y - start.y) < 10) return
+        movedRef.current = true
+        drawStrokeTo(start.x, start.y)
+      }
+      drawStrokeTo(point.x, point.y)
+    }
     const onMove = (e: MouseEvent | PointerEvent) => {
       const p = getCanvasPos(e.clientX, e.clientY)
       updatePenTip(p)
-      if (!drawingRef.current) return
-      movedRef.current = true
-      if (p) drawStrokeTo(p.x, p.y)
+      appendDrawingPoint(p)
     }
     const clearCanvas = () => {
       const canvas = canvasRef.current
       const ctx = canvas?.getContext('2d')
       if (canvas && ctx) ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
     }
-    const onUp = async () => {
+    const onUp = async (event: Event) => {
       if (!drawingRef.current) return
       drawingRef.current = false
+      drawStartRef.current = null
       lastPointRef.current = null
       updatePenTip(null)
       if (!movedRef.current) {
+        pathRef.current = []
+        bboxRef.current = null
         clearCanvas()
-        dispatch({ type: 'OBJECT_FAILED' })
-        setTimeout(() => dispatch({ type: 'HIDE_FAIL_HINT' }), 2000)
+        // A cancelled system gesture should be inert. A deliberate tap on the
+        // unobstructed video resumes playback without requiring the close
+        // button; controls and cards sit above this drawing surface.
+        if (event.type !== 'pointercancel') dispatch({ type: 'RESUME' })
         return
       }
       const b = bboxRef.current
@@ -1787,16 +1811,15 @@ function SessionLayer({
         snapshot: preview,
         source: 'custom',
       }
-      const selectionUpload = await selectionUploadPromise
-      if (selectionUpload) {
-        // 圈选先在浏览器中落地；只有进入加工队列后才请求正式生产后端。
-        selectionRequests.set(objId, {
-          videoId,
-          time: selectionTime,
-          upload: selectionUpload,
-          labelPromise: realtimeLabelPromise,
-        })
-      }
+      // Register the pending source artifact before exposing the sticker. The
+      // user can continue immediately; production awaits this promise only
+      // after the object is fed to the mascot.
+      selectionRequests.set(objId, {
+        videoId,
+        time: selectionTime,
+        uploadPromise: selectionUploadPromise,
+        labelPromise: realtimeLabelPromise,
+      })
       dispatch({ type: 'OBJECT_RECOGNIZED', obj })
       // The preview is now usable. Retire the hand-drawn loop immediately;
       // EdgeSAM and realtime labelling continue in the background.
@@ -1866,10 +1889,9 @@ function SessionLayer({
     }
     const onTouchMove = (e: TouchEvent) => {
       if (!drawingRef.current || !e.touches[0]) return
-      movedRef.current = true
       const t = e.touches[0]
       const p = getCanvasPos(t.clientX, t.clientY)
-      if (p) drawStrokeTo(p.x, p.y)
+      appendDrawingPoint(p)
     }
     document.addEventListener('mousemove', onMove)
     document.addEventListener('mouseup', onUp)
@@ -1908,7 +1930,8 @@ function SessionLayer({
     const ctx = canvasRef.current?.getContext('2d')
     if (ctx) ctx.clearRect(0, 0, canvasRef.current!.offsetWidth, canvasRef.current!.offsetHeight)
     const p = getCanvasPos(e.clientX, e.clientY)
-    if (p) drawStrokeTo(p.x, p.y)
+    drawStartRef.current = p
+    if (!p) drawingRef.current = false
   }
 
   const handleCraft = async () => {

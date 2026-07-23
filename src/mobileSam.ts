@@ -25,6 +25,7 @@ export type EdgeSamResult = {
 
 const MODEL_LONG_SIDE = 1024
 const FRAME_RENDER_SCALE = 2
+const MAX_FRAME_BITMAP_PIXELS = 1_800_000
 const STICKER_RENDER_SCALE = 1
 const ENCODER_URL = '/models/edge_sam_3x_encoder.onnx'
 const DECODER_URL = '/models/edge_sam_3x_decoder.onnx'
@@ -45,6 +46,46 @@ let encoderBackend: 'webgpu' | 'wasm' = 'webgpu'
 const modelBuffers = new Map<string, Promise<ArrayBuffer>>()
 let preparedFrame: PreparedFrame | null = null
 let preparingFrame: { key: string; promise: Promise<PreparedFrame> } | null = null
+let activeSegmentCount = 0
+const retiredFrames: PreparedFrame[] = []
+let activeSegmentation: Promise<EdgeSamResult | null> | null = null
+
+type NavigatorWithDeviceMemory = Navigator & { deviceMemory?: number }
+
+function canRunEdgeSamLocally(): boolean {
+  const deviceMemory = (navigator as NavigatorWithDeviceMemory).deviceMemory
+  const cores = navigator.hardwareConcurrency || 2
+  const hasWebGpu = 'gpu' in navigator
+
+  // The UI already has a lightweight bbox preview and the production backend
+  // receives the original frame. Do not risk terminating a constrained tab for
+  // an optional sticker refinement. Keep WASM only on machines with enough CPU
+  // headroom; deviceMemory is not exposed by every browser.
+  if (deviceMemory !== undefined && deviceMemory <= 2) return false
+  if (!hasWebGpu && cores < 8) return false
+  return true
+}
+
+function releasePreparedFrame(frame: PreparedFrame | null): void {
+  if (!frame) return
+  frame.embedding.dispose()
+  // A canvas keeps its backing bitmap alive even when no longer displayed.
+  // Explicitly shrink it when its embedding is replaced so mobile browsers do
+  // not wait for a later GC cycle to reclaim several megabytes of RGBA data.
+  frame.sourceCanvas.width = 1
+  frame.sourceCanvas.height = 1
+}
+
+function retirePreparedFrame(frame: PreparedFrame | null): void {
+  if (!frame) return
+  if (activeSegmentCount > 0) retiredFrames.push(frame)
+  else releasePreparedFrame(frame)
+}
+
+function releaseRetiredFramesWhenIdle(): void {
+  if (activeSegmentCount > 0) return
+  for (const frame of retiredFrames.splice(0)) releasePreparedFrame(frame)
+}
 
 function getModelBuffer(modelUrl: string): Promise<ArrayBuffer> {
   let promise = modelBuffers.get(modelUrl)
@@ -63,21 +104,26 @@ async function createSession(
   executionProviders: Array<'webgpu' | 'wasm'>,
 ): Promise<ort.InferenceSession> {
   const model = await getModelBuffer(modelUrl)
-  return ort.InferenceSession.create(model.slice(0), {
+  // onnxruntime does not detach this buffer. Passing it directly avoids a
+  // second 15-21 MB ArrayBuffer during session creation.
+  return ort.InferenceSession.create(model, {
     executionProviders,
     graphOptimizationLevel: 'all',
   })
 }
 
 function getEncoderSession(): Promise<ort.InferenceSession> {
+  if (!canRunEdgeSamLocally()) {
+    return Promise.reject(new Error('EdgeSAM disabled on this constrained device'))
+  }
   encoderSessionPromise ??= createSession(ENCODER_URL, ['webgpu']).catch(async (webGpuError) => {
     encoderBackend = 'wasm'
     console.info('[EdgeSAM] WebGPU encoder unavailable; using WASM', webGpuError)
     return createSession(ENCODER_URL, ['wasm'])
   }).catch((error) => {
-      encoderSessionPromise = null
-      throw error
-    })
+    encoderSessionPromise = null
+    throw error
+  }).finally(() => modelBuffers.delete(ENCODER_URL))
   return encoderSessionPromise
 }
 
@@ -85,19 +131,24 @@ function getDecoderSession(): Promise<ort.InferenceSession> {
   decoderSessionPromise ??= createSession(DECODER_URL, ['wasm']).catch((error) => {
     decoderSessionPromise = null
     throw error
-  })
+  }).finally(() => modelBuffers.delete(DECODER_URL))
   return decoderSessionPromise
 }
 
 export async function warmupEdgeSam(): Promise<void> {
-  // Download both model files together, then initialize sessions in order so
-  // WebGPU and WASM do not race the one-time ONNX bootstrap.
-  await Promise.all([
-    getModelBuffer(ENCODER_URL),
-    getModelBuffer(DECODER_URL),
-  ])
+  // The encoder is the expensive part and benefits most from warm-up. Keep the
+  // smaller decoder lazy: downloading both model buffers and building both
+  // sessions at once created a large cold-start memory spike on embedded and
+  // low-memory browsers. The HTTP cache still makes its later load cheap.
+  if (!canRunEdgeSamLocally() || document.visibilityState !== 'visible') return
   await getEncoderSession()
-  await getDecoderSession()
+}
+
+/** Wait until the heavy encoder is idle before starting another ONNX model. */
+export async function waitForEdgeSamIdle(): Promise<void> {
+  const work = [preparingFrame?.promise, activeSegmentation].filter(Boolean)
+  if (work.length === 0) return
+  await Promise.allSettled(work)
 }
 
 function frameKey(video: HTMLVideoElement): string {
@@ -108,12 +159,16 @@ function captureDisplayedFrame(video: HTMLVideoElement): HTMLCanvasElement {
   const width = Math.max(1, Math.round(video.offsetWidth))
   const height = Math.max(1, Math.round(video.offsetHeight))
   const transform = coverTransform(video)
+  const renderScale = Math.min(
+    FRAME_RENDER_SCALE,
+    Math.sqrt(MAX_FRAME_BITMAP_PIXELS / Math.max(1, width * height)),
+  )
   const canvas = document.createElement('canvas')
-  canvas.width = width * FRAME_RENDER_SCALE
-  canvas.height = height * FRAME_RENDER_SCALE
-  const context = canvas.getContext('2d', { willReadFrequently: true })
+  canvas.width = Math.max(1, Math.round(width * renderScale))
+  canvas.height = Math.max(1, Math.round(height * renderScale))
+  const context = canvas.getContext('2d')
   if (!context) throw new Error('Unable to capture video frame')
-  context.scale(FRAME_RENDER_SCALE, FRAME_RENDER_SCALE)
+  context.scale(renderScale, renderScale)
   context.imageSmoothingEnabled = true
   context.imageSmoothingQuality = 'high'
   context.drawImage(
@@ -154,46 +209,71 @@ function imageTensor(canvas: HTMLCanvasElement): {
       chw[planeSize * 2 + target] = (rgba[source + 2] - PIXEL_MEAN[2]) / PIXEL_STD[2]
     }
   }
-  return {
+  const prepared = {
     tensor: new ort.Tensor('float32', chw, [1, 3, MODEL_LONG_SIDE, MODEL_LONG_SIDE]),
     contentWidth,
     contentHeight,
   }
+  resized.width = 1
+  resized.height = 1
+  return prepared
 }
 
 export async function prepareEdgeSamFrame(video: HTMLVideoElement): Promise<void> {
   if (!video.videoWidth || !video.videoHeight) throw new Error('Video frame is not ready')
   const key = frameKey(video)
   if (preparedFrame?.key === key) return
-  if (preparingFrame?.key === key) {
+  if (preparingFrame) {
+    // Never run two encoders concurrently. Pause/timeupdate events can request
+    // adjacent frame keys within milliseconds, and overlapping WebGPU/WASM
+    // runs are a common cause of renderer termination on constrained devices.
     await preparingFrame.promise
-    return
+    return prepareEdgeSamFrame(video)
   }
 
   const promise = (async (): Promise<PreparedFrame> => {
     const startedAt = performance.now()
     const sourceCanvas = captureDisplayedFrame(video)
-    const input = imageTensor(sourceCanvas)
-    const encoder = await getEncoderSession()
-    const result = await encoder.run({ image: input.tensor })
-    const embedding = result.image_embeddings
-    if (!embedding) throw new Error('EdgeSAM encoder returned no image embedding')
-    const frame: PreparedFrame = {
-      key,
-      screenWidth: Math.max(1, Math.round(video.offsetWidth)),
-      screenHeight: Math.max(1, Math.round(video.offsetHeight)),
-      modelWidth: MODEL_LONG_SIDE,
-      modelHeight: MODEL_LONG_SIDE,
-      contentWidth: input.contentWidth,
-      contentHeight: input.contentHeight,
-      sourceCanvas,
-      embedding,
+    try {
+      const input = imageTensor(sourceCanvas)
+      const encoder = await getEncoderSession()
+      let result: Awaited<ReturnType<typeof encoder.run>> | null = null
+      try {
+        result = await encoder.run({ image: input.tensor })
+      } finally {
+        input.tensor.dispose()
+      }
+      const embedding = result.image_embeddings
+      if (!embedding) {
+        for (const tensor of Object.values(result)) tensor.dispose()
+        throw new Error('EdgeSAM encoder returned no image embedding')
+      }
+      const frame: PreparedFrame = {
+        key,
+        screenWidth: Math.max(1, Math.round(video.offsetWidth)),
+        screenHeight: Math.max(1, Math.round(video.offsetHeight)),
+        modelWidth: MODEL_LONG_SIDE,
+        modelHeight: MODEL_LONG_SIDE,
+        contentWidth: input.contentWidth,
+        contentHeight: input.contentHeight,
+        sourceCanvas,
+        embedding,
+      }
+      const previousFrame = preparedFrame
+      preparedFrame = frame
+      if (previousFrame !== frame) retirePreparedFrame(previousFrame)
+      for (const [name, tensor] of Object.entries(result)) {
+        if (name !== 'image_embeddings') tensor.dispose()
+      }
+      console.info(
+        `[EdgeSAM] frame prepared with ${encoderBackend} in ${Math.round(performance.now() - startedAt)}ms`,
+      )
+      return frame
+    } catch (error) {
+      sourceCanvas.width = 1
+      sourceCanvas.height = 1
+      throw error
     }
-    preparedFrame = frame
-    console.info(
-      `[EdgeSAM] frame prepared with ${encoderBackend} in ${Math.round(performance.now() - startedAt)}ms`,
-    )
-    return frame
   })()
   preparingFrame = { key, promise }
   try {
@@ -965,8 +1045,9 @@ function renderCutout(
     + anchorCoverage * 0.65
     - renderEdgeTouch * 2.8
 
-  return {
-    dataUrl: sticker.toDataURL('image/png'),
+  const dataUrl = sticker.toDataURL('image/png')
+  const result = {
+    dataUrl,
     box: {
       x: box.x + minX / STICKER_RENDER_SCALE - stickerPadding / STICKER_RENDER_SCALE,
       y: box.y + minY / STICKER_RENDER_SCALE - stickerPadding / STICKER_RENDER_SCALE,
@@ -978,6 +1059,13 @@ function renderCutout(
     finalInsidePrecision,
     renderEdgeTouch,
   }
+  sticker.width = 1
+  sticker.height = 1
+  rawCutout.width = 1
+  rawCutout.height = 1
+  whiteSilhouette.width = 1
+  whiteSilhouette.height = 1
+  return result
 }
 
 type PromptSet = { points: Point[]; labels: number[] }
@@ -1020,17 +1108,31 @@ async function decodeCandidates(
   prompt: { coordinates: Float32Array; labels: Float32Array },
 ): Promise<{ masks: ort.Tensor; scores: number[] }> {
   const pointCount = prompt.labels.length
-  const result = await decoder.run({
+  const pointCoords = new ort.Tensor('float32', prompt.coordinates, [1, pointCount, 2])
+  const pointLabels = new ort.Tensor('float32', prompt.labels, [1, pointCount])
+  let result: Awaited<ReturnType<typeof decoder.run>>
+  try {
+    result = await decoder.run({
     image_embeddings: frame.embedding,
-    point_coords: new ort.Tensor('float32', prompt.coordinates, [1, pointCount, 2]),
-    point_labels: new ort.Tensor('float32', prompt.labels, [1, pointCount]),
-  })
+      point_coords: pointCoords,
+      point_labels: pointLabels,
+    })
+  } finally {
+    pointCoords.dispose()
+    pointLabels.dispose()
+  }
   const masks = result.masks
-  if (!masks) throw new Error('EdgeSAM decoder returned no masks')
+  if (!masks) {
+    for (const tensor of Object.values(result)) tensor.dispose()
+    throw new Error('EdgeSAM decoder returned no masks')
+  }
   const scoresTensor = result.scores
   const scores = scoresTensor
     ? Array.from(scoresTensor.data as Float32Array, (value) => Number(value))
     : []
+  for (const [name, tensor] of Object.entries(result)) {
+    if (name !== 'masks') tensor.dispose()
+  }
   return { masks, scores }
 }
 
@@ -1252,7 +1354,7 @@ function isPlausibleCandidate(metrics: CandidateMetrics): boolean {
     && metrics.screenEdgeTouch <= 0.035
 }
 
-export async function segmentWithEdgeSam(
+async function runEdgeSamSegmentation(
   video: HTMLVideoElement,
   path: Point[],
   box: Box,
@@ -1262,22 +1364,25 @@ export async function segmentWithEdgeSam(
   const frameReadyAt = performance.now()
   const frame = preparedFrame
   if (!frame) return null
-  const decoder = await getDecoderSession()
-  const renderBox = expandBox(box, frame)
-  const boundaryPromptSets = buildBoundaryPositivePromptSets(path, box)
-  const centerPrompts = buildPositivePrompts(path, box)
-  const positivePromptSets = [
+  activeSegmentCount += 1
+  try {
+    const decoder = await getDecoderSession()
+    const renderBox = expandBox(box, frame)
+    const boundaryPromptSets = buildBoundaryPositivePromptSets(path, box)
+    const centerPrompts = buildPositivePrompts(path, box)
+    const positivePromptSets = [
     // Multiple simultaneous positives can force EdgeSAM to merge neighbouring
     // objects (bed + blanket + bedside table). Start with one unambiguous
     // subject point; retain one boundary pair only as a completeness fallback.
     [centerPrompts[0]],
     ...boundaryPromptSets.slice(0, 1),
   ]
-  const negativePrompts = buildNegativePrompts(path, box)
-  const scoringPath = simplifyPathForScoring(path)
-  const decodedSets: DecodedSet[] = []
-  let rankedCandidates: ReturnType<typeof rankCandidates> | null = null
-  for (let promptSetIndex = 0; promptSetIndex < positivePromptSets.length; promptSetIndex++) {
+    const negativePrompts = buildNegativePrompts(path, box)
+    const scoringPath = simplifyPathForScoring(path)
+    const decodedSets: DecodedSet[] = []
+    try {
+    let rankedCandidates: ReturnType<typeof rankCandidates> | null = null
+    for (let promptSetIndex = 0; promptSetIndex < positivePromptSets.length; promptSetIndex++) {
     const positivePrompts = positivePromptSets[promptSetIndex]
     const decoded = await decodeCandidates(
       decoder,
@@ -1295,9 +1400,9 @@ export async function segmentWithEdgeSam(
         break
       }
     }
-  }
-  const decodedAt = performance.now()
-  rankedCandidates ??= rankCandidates(decodedSets, frame, box, renderBox, scoringPath)
+    }
+    const decodedAt = performance.now()
+    rankedCandidates ??= rankCandidates(decodedSets, frame, box, renderBox, scoringPath)
 
   // Never surface an obviously wrong mask just because it ranked first among
   // weak candidates. Try the next plausible candidate; if none is clean enough
@@ -1360,5 +1465,33 @@ export async function segmentWithEdgeSam(
       postprocessMs: Math.round(performance.now() - decodedAt),
     },
   )
-  return { ...rendered, elapsedMs }
+    return { ...rendered, elapsedMs }
+    } finally {
+      for (const { decoded } of decodedSets) decoded.masks.dispose()
+    }
+  } finally {
+    activeSegmentCount -= 1
+    releaseRetiredFramesWhenIdle()
+  }
+}
+
+export async function segmentWithEdgeSam(
+  video: HTMLVideoElement,
+  path: Point[],
+  box: Box,
+): Promise<EdgeSamResult | null> {
+  // Multiple quick lasso gestures must not run the WASM decoder and its
+  // full-frame postprocessing concurrently. Queue refinements while the UI
+  // continues using its immediate bbox preview.
+  if (activeSegmentation) {
+    await activeSegmentation.catch(() => null)
+    return segmentWithEdgeSam(video, path, box)
+  }
+  const promise = runEdgeSamSegmentation(video, path, box)
+  activeSegmentation = promise
+  try {
+    return await promise
+  } finally {
+    if (activeSegmentation === promise) activeSegmentation = null
+  }
 }

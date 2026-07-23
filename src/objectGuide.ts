@@ -1,5 +1,6 @@
 import * as ort from 'onnxruntime-web'
 import { coverTransform } from './segmentApi'
+import { waitForEdgeSamIdle } from './mobileSam'
 
 export type GuideDetection = {
   box: { x: number; y: number; w: number; h: number }
@@ -43,7 +44,10 @@ function getDetectorSession(): Promise<ort.InferenceSession> {
 }
 
 export async function warmupFurnitureDetector(): Promise<void> {
-  await getDetectorSession()
+  // Keep this secondary model lazy. Eagerly building YOLO while EdgeSAM's
+  // encoder/decoder buffers were resident caused the largest cold-start peak
+  // and could terminate embedded Chromium renderers. The first paused frame
+  // still prepares labels in the background, after EdgeSAM becomes idle.
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -94,12 +98,15 @@ function prepareInput(source: HTMLCanvasElement) {
     chw[plane + pixel] = rgba[sourceIndex + 1] / 255
     chw[plane * 2 + pixel] = rgba[sourceIndex + 2] / 255
   }
-  return {
+  const prepared = {
     tensor: new ort.Tensor('float32', chw, [1, 3, INPUT_SIZE, INPUT_SIZE]),
     scale,
     padX,
     padY,
   }
+  canvas.width = 1
+  canvas.height = 1
+  return prepared
 }
 
 function iou(a: GuideDetection['box'], b: GuideDetection['box']): number {
@@ -114,14 +121,17 @@ function iou(a: GuideDetection['box'], b: GuideDetection['box']): number {
 
 async function runFurnitureDetector(video: HTMLVideoElement): Promise<GuideDetection[]> {
   const startedAt = performance.now()
+  await waitForEdgeSamIdle()
   const source = captureDisplayedFrame(video)
   const input = prepareInput(source)
-  const session = await getDetectorSession()
-  const result = await session.run({ [session.inputNames[0]]: input.tensor })
-  const output = result[session.outputNames[0]]
-  if (!output) return []
-  const dims = output.dims.map(Number)
-  const data = output.data as Float32Array
+  let result: Awaited<ReturnType<ort.InferenceSession['run']>> | null = null
+  try {
+    const session = await getDetectorSession()
+    result = await session.run({ [session.inputNames[0]]: input.tensor })
+    const output = result[session.outputNames[0]]
+    if (!output) return []
+    const dims = output.dims.map(Number)
+    const data = output.data as Float32Array
   const channelMajor = dims.length === 3 && dims[1] < dims[2]
   const attributes = channelMajor ? dims[1] : dims[2]
   const candidates = channelMajor ? dims[2] : dims[1]
@@ -170,8 +180,8 @@ async function runFurnitureDetector(video: HTMLVideoElement): Promise<GuideDetec
     if (kept.every((existing) => iou(existing.box, detection.box) < 0.55)) kept.push(detection)
     if (kept.length >= 6) break
   }
-  console.info(`[GuideDetector] ${kept.length} furniture candidates in ${Math.round(performance.now() - startedAt)}ms`)
-  return kept.map((detection) => {
+    console.info(`[GuideDetector] ${kept.length} furniture candidates in ${Math.round(performance.now() - startedAt)}ms`)
+    return kept.map((detection) => {
     const padX = Math.min(18, detection.box.w * 0.08)
     const padY = Math.min(18, detection.box.h * 0.08)
     return {
@@ -184,7 +194,15 @@ async function runFurnitureDetector(video: HTMLVideoElement): Promise<GuideDetec
       label: detection.label,
       confidence: detection.confidence,
     }
-  })
+    })
+  } finally {
+    input.tensor.dispose()
+    if (result) {
+      for (const tensor of Object.values(result)) tensor.dispose()
+    }
+    source.width = 1
+    source.height = 1
+  }
 }
 
 function detectionFrameKey(video: HTMLVideoElement): string {
@@ -194,7 +212,13 @@ function detectionFrameKey(video: HTMLVideoElement): string {
 async function furnitureDetections(video: HTMLVideoElement): Promise<GuideDetection[]> {
   const key = detectionFrameKey(video)
   if (preparedDetections?.key === key) return preparedDetections.detections
-  if (preparingDetections?.key === key) return preparingDetections.promise
+  if (preparingDetections) {
+    // timeupdate/pause events may request adjacent frames almost together.
+    // Serialize them so the WASM detector never owns two 640px tensors and
+    // two result buffers at the same time.
+    await preparingDetections.promise
+    return furnitureDetections(video)
+  }
   const promise = runFurnitureDetector(video).then((detections) => {
     preparedDetections = { key, detections }
     return detections

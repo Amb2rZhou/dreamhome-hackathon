@@ -1,13 +1,22 @@
 .mascot-root {
   position: absolute;
+  /* Keep the workshop entry in its own rail, immediately above the author
+     avatar. The social rail starts at 470px in the 390x882 design space;
+     370px also leaves 8px for the wider collection-state artwork. */
+  top: 370px;
+  right: 10px;
   width: 80px;
   height: 80px;
   z-index: 70;
-  touch-action: none;
-  cursor: grab;
+  touch-action: manipulation;
+  cursor: pointer;
   transition: filter 0.2s;
 }
-.mascot-root.dragging { cursor: grabbing; }
+.mascot-root:focus-visible {
+  outline: 3px solid rgba(255, 213, 79, 0.96);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
 .mascot-media-frame {
   position: absolute;
   inset: 0;
