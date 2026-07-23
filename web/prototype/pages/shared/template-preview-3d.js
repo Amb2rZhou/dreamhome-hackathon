@@ -80,10 +80,11 @@ function createFloor(spec, material) {
   return floor;
 }
 
-export async function renderTemplatePreview(canvas, templateId) {
+export async function renderTemplatePreview(canvas, templateId, opts = {}) {
   if (!canvas || active.has(canvas)) return;
   const spec = SPECS[templateId];
   if (!spec) return;
+  const view = opts.view || 'iso'; // 'iso' 等距(卡片,与我的家一致) | 'top' 从上往下俯拍(户型弹窗)
   const runtime={cancelled:false,cleanup:null};active.set(canvas,runtime);
   canvas.style.backgroundSize='cover';canvas.style.backgroundPosition='center';canvas.style.backgroundRepeat='no-repeat';
   const width = Math.max(120, canvas.clientWidth || 180), height = Math.max(86, canvas.clientHeight || 110);
@@ -91,7 +92,17 @@ export async function renderTemplatePreview(canvas, templateId) {
   const renderer = new THREE.WebGLRenderer({canvas:renderCanvas,antialias:true,alpha:true,powerPreference:'low-power',preserveDrawingBuffer:true});
   renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(width,height,false);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
   const scene=new THREE.Scene();scene.background=new THREE.Color('#f6f1e7');
-  const span=Math.max(spec.width,spec.depth),camera=new THREE.OrthographicCamera(-span*.72,span*.72,span*.48,-span*.48,.1,60);camera.position.set(span*.78,span*.66,span*.9);camera.lookAt(0,.62,0);
+  let camera;
+  if (view === 'top') {
+    // 俯拍：接近顶视的陡俯角(看进房间、露出地板与墙)，正交方形视锥按房间最大边适配(留边)
+    const span=Math.max(spec.width,spec.depth), half=span*0.6;
+    camera=new THREE.OrthographicCamera(-half,half,half,-half,.1,140);
+    camera.position.set(span*0.14,span*1.55,span*0.14);camera.lookAt(0,.15,0);
+  } else {
+    const span=Math.max(spec.width,spec.depth);
+    camera=new THREE.OrthographicCamera(-span*.72,span*.72,span*.48,-span*.48,.1,60);
+    camera.position.set(span*.78,span*.66,span*.9);camera.lookAt(0,.62,0);
+  }
   scene.add(new THREE.HemisphereLight('#fff9ec','#8b765e',1.55));
   const sun=new THREE.DirectionalLight('#fff1d5',3.4);sun.position.set(-5,9,7);sun.castShadow=true;sun.shadow.mapSize.set(512,512);sun.shadow.camera.left=sun.shadow.camera.bottom=-10;sun.shadow.camera.right=sun.shadow.camera.top=10;scene.add(sun);
   const group=new THREE.Group();scene.add(group);
@@ -126,8 +137,34 @@ export async function renderTemplatePreviews(root=document) {
   // 串行渲染：每个预览用完即释放 WebGL 上下文，避免多张缩略图同时占用上下文超出浏览器上限（否则触发 shader 崩溃）
   const canvases=[...root.querySelectorAll('canvas[data-template-preview]')];
   for (const canvas of canvases) {
-    try { await renderTemplatePreview(canvas,canvas.dataset.templatePreview); } catch (error) { console.warn('模板预览渲染失败', error); }
+    try { await renderTemplatePreview(canvas,canvas.dataset.templatePreview,{view:canvas.dataset.templateView||'iso'}); } catch (error) { console.warn('模板预览渲染失败', error); }
   }
+}
+
+// 构建可交互的房间 group(复用建场景逻辑)：供弹窗实时 3D 拖拽查看用。
+// 用模块内同一个 THREE 实例(importmap 单例)，加载完默认地板/窗景纹理后返回 group。
+export async function buildRoom(templateId) {
+  const spec = SPECS[templateId];
+  if (!spec) return null;
+  const group = new THREE.Group();
+  const floorMat = new THREE.MeshStandardMaterial({color:'#c69a67',roughness:.62,metalness:0});
+  const wallMat = new THREE.MeshStandardMaterial({color:'#f2ede3',roughness:.92,side:THREE.DoubleSide});
+  const trimMat = new THREE.MeshStandardMaterial({color:'#faf7f0',roughness:.8});
+  const frameMat = new THREE.MeshStandardMaterial({color:'#29343a',roughness:.32,metalness:.28});
+  const viewMat = new THREE.MeshBasicMaterial({color:'#b9d1df',side:THREE.DoubleSide});
+  const cushionMat = new THREE.MeshStandardMaterial({color:'#eee6d8',roughness:.88});
+  const floor=createFloor(spec,floorMat);floor.receiveShadow=true;group.add(floor);
+  const h=2.8,t=.13;
+  addBox(group,[spec.width,h,t],[0,h/2,-spec.depth/2],wallMat);
+  addBox(group,[t,h,spec.depth],[-spec.width/2,h/2,0],wallMat);
+  addBox(group,[spec.width,.12,.24],[0,h-.06,-spec.depth/2+.05],trimMat);
+  addBox(group,[.24,.12,spec.depth],[-spec.width/2+.05,h-.06,0],trimMat);
+  const materials={view:viewMat,frame:frameMat,cushion:cushionMat};
+  spec.windows.forEach((entry)=>{const [side,kind='standard']=entry.split('-');addWindow(group,side,spec,materials,kind);});
+  const [wood,landscape]=await Promise.all([floorTexture(),viewTexture()]);
+  if (wood) { floorMat.map=wood;floorMat.color.set('#ffffff');floorMat.needsUpdate=true; }
+  if (landscape) { viewMat.map=landscape;viewMat.color.set('#ffffff');viewMat.needsUpdate=true; }
+  return group;
 }
 
 export function disposeTemplatePreviews(root=document) {

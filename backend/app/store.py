@@ -36,7 +36,15 @@ def create_job(kind: str, image_path: str, *, texture: bool = True,
 async def _run(job: Job, image_path: str, texture: bool) -> None:
     provider = get_provider()
     try:
-        pjid = await provider.submit(image_path, texture=texture)
+        src = image_path
+        if job.kind == "photo":
+            # 拍一张：进 TRELLIS 前走 单体化→补全→单体闸→一致性闸(与离线管线同一 SOP)。
+            # ENHANCE_PROVIDER=off 时内部直接返回原图，行为与接入前一致。
+            from .services.prepare import prepare_photo
+            src, prep = await prepare_photo(image_path, category=job.category or "")
+            if prep.get("prepped"):
+                print(f"[photo {job.job_id[:8]}] 预处理: {prep}")
+        pjid = await provider.submit(src, texture=texture)
         job.provider_job_id = pjid
         job.status = JobStatus.running
         # 轮询直到终态，最多 ~5 分钟
