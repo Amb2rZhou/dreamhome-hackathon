@@ -108,6 +108,10 @@ class SelectResponse(BaseModel):
     select_id: str
     labels: Labels                     # 本次圈选提取出的标签
     candidates: List[MatchCandidate] = Field(default_factory=list)
+    # Deterministic same-video hit (bound track/manual annotation).  Unlike
+    # ``candidates``, this may be reused automatically without asking the user
+    # to judge whether two merely similar pieces of furniture are identical.
+    exact_match: Optional[MatchCandidate] = None
 
 
 class SelectConfirmRequest(BaseModel):

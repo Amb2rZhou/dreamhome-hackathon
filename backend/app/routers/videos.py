@@ -16,6 +16,7 @@ from .. import db, matching
 from ..schemas_lib import (DetectBox, DetectResponse, MatchCandidate, SelectConfirmRequest,
                            SelectConfirmResponse, SelectRequest, SelectResponse,
                            VideoIndex, VideoOut)
+from .frame_assets import find_exact_asset
 from ..services.detect import detect_frame
 from ..services.labels import extract_labels
 from ..services.selection_production import production_readiness, start_selection_production
@@ -284,6 +285,35 @@ async def select(video_id: str, request: Request):
         db.insert_video(video_id=video_id, title="刷一刷圈选",
                         status="unindexed", index_source="interactive")
     req.bbox = _validate_bbox(req.bbox)
+
+    # A bound track/manual annotation is object identity, not fuzzy similarity.
+    # Resolve it before image processing/provider calls.  The confirm endpoint
+    # also enforces this result, so an older client that blindly asks to
+    # generate cannot accidentally create a duplicate.
+    exact = find_exact_asset(video_id, req.t, req.bbox, req.track_id)
+    if exact:
+        asset = exact["asset"]
+        reason = "当前轨迹已有 3D" if exact["source"] == "track" else "当前圈选已生成 3D"
+        candidate = MatchCandidate(asset=asset, score=1.0, reason=reason)
+        sid = uuid.uuid4().hex
+        _SELECTS[sid] = {
+            "video_id": video_id,
+            "t": req.t,
+            "bbox": req.bbox,
+            "polygon": req.polygon,
+            "labels": asset.get("labels") or {},
+            "track_id": exact.get("track_id"),
+            "exact_asset_id": asset["asset_id"],
+            "has_source_frame": has_source_frame,
+            "created": time.time(),
+        }
+        return SelectResponse(
+            select_id=sid,
+            labels=asset.get("labels") or {},
+            candidates=[candidate],
+            exact_match=candidate,
+        )
+
     (frame_path, source_context, recognition_context, frame_size,
      isolation_mode, completion_path) = _save_selection_images(
         req.frame_data_uri, frame_bytes, req.bbox, req.polygon,
@@ -329,10 +359,39 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
 
     if req.use_asset_id and req.generate_new:
         raise HTTPException(400, "use_asset_id and generate_new are mutually exclusive")
+
+    exact_asset_id = sel.get("exact_asset_id")
+    if exact_asset_id:
+        exact_asset = db.get_asset(exact_asset_id)
+        if not exact_asset or exact_asset.get("status") != "ready":
+            raise HTTPException(409, "previously matched asset is no longer ready; select again")
+        if req.use_asset_id and req.use_asset_id != exact_asset_id:
+            raise HTTPException(409, "selection is already bound to a different ready asset")
+        if req.use_asset_id or req.generate_new:
+            _SELECTS.pop(req.select_id, None)
+            selected_track = db.get_track(sel["track_id"]) if sel.get("track_id") else None
+            track_id = (sel["track_id"] if selected_track
+                        and selected_track.get("video_id") == video_id else None)
+            if not track_id:
+                track_id = db.insert_track(
+                    video_id, sel["labels"].get("category", ""),
+                    [{"t": sel["t"], "bbox": sel["bbox"]}],
+                    t_start=sel["t"], t_end=sel["t"], best_frame_t=sel["t"],
+                )
+            db.bind_track_asset(track_id, exact_asset_id)
+            return SelectConfirmResponse(
+                asset_id=exact_asset_id,
+                track_id=track_id,
+                quality_mode="reuse",
+            )
     if req.quality_mode == "production" and not req.generate_new:
         raise HTTPException(400, "quality_mode=production requires generate_new=true")
-    if req.use_asset_id and not db.get_asset(req.use_asset_id):
-        raise HTTPException(404, "asset not found")
+    if req.use_asset_id:
+        reuse_asset = db.get_asset(req.use_asset_id)
+        if not reuse_asset:
+            raise HTTPException(404, "asset not found")
+        if reuse_asset.get("status") != "ready":
+            raise HTTPException(409, "only ready canonical assets can be reused")
     if req.quality_mode == "production" and not sel.get("has_source_frame"):
         raise HTTPException(422, "production mode requires a valid full frame in /select")
     if req.quality_mode == "production" and sel.get("isolation_mode") != "polygon_context":
@@ -345,7 +404,9 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
 
     _SELECTS.pop(req.select_id, None)
 
-    track_id = sel.get("track_id") if sel.get("track_id") and db.get_track(sel["track_id"]) else None
+    selected_track = db.get_track(sel["track_id"]) if sel.get("track_id") else None
+    track_id = (sel["track_id"] if selected_track
+                and selected_track.get("video_id") == video_id else None)
     if not track_id:
         track_id = db.insert_track(video_id, sel["labels"].get("category", ""),
                                    [{"t": sel["t"], "bbox": sel["bbox"]}],
