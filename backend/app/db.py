@@ -64,6 +64,43 @@ CREATE TABLE IF NOT EXISTS user_library(
   added_at REAL NOT NULL,
   PRIMARY KEY(user_id, asset_id)
 );
+CREATE TABLE IF NOT EXISTS home_projects(
+  project_id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  name TEXT NOT NULL DEFAULT '',
+  schema_version INTEGER NOT NULL DEFAULT 3,
+  source_json TEXT NOT NULL DEFAULT '{}',
+  envelope_json TEXT NOT NULL DEFAULT '{}',
+  walls_json TEXT NOT NULL DEFAULT '[]',
+  rooms_json TEXT NOT NULL DEFAULT '[]',
+  window_slots_json TEXT NOT NULL DEFAULT '[]',
+  finishes_json TEXT NOT NULL DEFAULT '{}',
+  created_at REAL NOT NULL,
+  updated_at REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_home_projects_user ON home_projects(user_id, updated_at);
+CREATE TABLE IF NOT EXISTS home_placements(
+  placement_id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  asset_id TEXT NOT NULL,
+  room_id TEXT NOT NULL DEFAULT '',
+  position_json TEXT NOT NULL DEFAULT '{}',
+  rotation_json TEXT NOT NULL DEFAULT '{}',
+  scale_json TEXT NOT NULL DEFAULT '{}',
+  custom_size_json TEXT,
+  visible INTEGER NOT NULL DEFAULT 1,
+  created_at REAL NOT NULL,
+  updated_at REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_home_placements_project ON home_placements(project_id);
+CREATE TABLE IF NOT EXISTS home_project_versions(
+  version_id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  revision INTEGER NOT NULL,
+  document_json TEXT NOT NULL,
+  created_at REAL NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_home_versions_revision ON home_project_versions(project_id, revision);
 """
 
 

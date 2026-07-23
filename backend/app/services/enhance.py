@@ -11,19 +11,23 @@
 失败/超时一律降级直通(返回原图),不阻塞量产。
 """
 import asyncio
+import json
 import os
 import shlex
+from typing import Optional
 
 from ..config import settings
 
 
-async def enhance_cutout(image_path: str, out_path: str, category: str = "") -> str:
+async def enhance_cutout(image_path: str, out_path: str, category: str = "",
+                         selection_path: Optional[list[tuple[int, int]]] = None) -> str:
     provider = settings.ENHANCE_PROVIDER
     if provider == "off":
         return image_path
     # 内容哈希缓存:同一张抠图+同品类,任何一轮重跑都不再花钱
     from . import cache
-    key = cache.content_key(image_path, extra=f"{provider}|{category}")
+    path_key = json.dumps(selection_path or [], separators=(",", ":"))
+    key = cache.content_key(image_path, extra=f"{provider}|{category}|{path_key}")
     hit = cache.get("enhance", key)
     if hit and "_files" in hit:
         return hit["_files"]["out.png"]
@@ -31,7 +35,10 @@ async def enhance_cutout(image_path: str, out_path: str, category: str = "") -> 
         if provider == "module":
             import enhance_custom  # 队友的模块,放 backend/ 下
             try:
-                result = enhance_custom.enhance(image_path, out_path, category=category)
+                result = enhance_custom.enhance(
+                    image_path, out_path, category=category,
+                    selection_path=selection_path,
+                )
             except TypeError:  # 模块不接受 category 的旧契约
                 result = enhance_custom.enhance(image_path, out_path)
             if asyncio.iscoroutine(result):

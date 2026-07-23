@@ -1,0 +1,136 @@
+import tempfile
+import unittest
+from io import BytesIO
+from pathlib import Path
+from unittest.mock import patch
+
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+from PIL import Image
+
+from app.routers import videos
+
+
+def _jpeg(width: int = 100, height: int = 80) -> bytes:
+    output = BytesIO()
+    Image.new("RGB", (width, height), (180, 120, 70)).save(output, format="JPEG")
+    return output.getvalue()
+
+
+class VideoSelectMultipartTests(unittest.TestCase):
+    def setUp(self):
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.counter = iter(range(20))
+
+        def fake_workpath(prefix: str, suffix: str) -> str:
+            return str(Path(self.temp_dir.name) / f"{prefix}-{next(self.counter)}{suffix}")
+
+        async def fake_labels(
+            path: str, category_hint: str = "", framed: bool = False,
+            strict: bool = False,
+        ) -> dict:
+            with Image.open(path) as crop:
+                self.assertEqual(crop.size, (90, 80))
+            self.assertTrue(framed)
+            self.assertEqual(strict, bool(category_hint or "polygon" in Path(path).name))
+            return {"category": category_hint or "其他", "sub": "茶壶"}
+
+        self.patches = [
+            patch.object(videos, "workpath", fake_workpath),
+            patch.object(videos.db, "get_video", lambda video_id: {"video_id": video_id}),
+            patch.object(videos, "extract_labels", fake_labels),
+            patch.object(videos.matching, "match_candidates", lambda labels: []),
+        ]
+        for active_patch in self.patches:
+            active_patch.start()
+        videos._SELECTS.clear()
+
+        app = FastAPI()
+        app.include_router(videos.router)
+        self.client = TestClient(app)
+
+    def tearDown(self):
+        for active_patch in reversed(self.patches):
+            active_patch.stop()
+        self.temp_dir.cleanup()
+
+    def test_persists_full_frame_and_keeps_context_around_polygon(self):
+        response = self.client.post(
+            "/api/videos/vid_test/select",
+            data={
+                "t": "12.5",
+                "bbox": "[0.2, 0.25, 0.4, 0.5]",
+                "polygon": "[[0.2, 0.25], [0.4, 0.25], [0.4, 0.75], [0.2, 0.75]]",
+                "frame_width": "100",
+                "frame_height": "80",
+                "category_hint": "其他",
+            },
+            files={"frame": ("frame.jpg", _jpeg(), "image/jpeg")},
+        )
+
+        self.assertEqual(response.status_code, 200, response.text)
+        payload = response.json()
+        self.assertEqual(payload["labels"]["sub"], "茶壶")
+        selection = videos._SELECTS[payload["select_id"]]
+        self.assertEqual(selection["frame_size"], (100, 80))
+        self.assertEqual(selection["polygon"], [[0.2, 0.25], [0.4, 0.25], [0.4, 0.75], [0.2, 0.75]])
+        self.assertEqual(selection["isolation_mode"], "polygon_context")
+        self.assertGreaterEqual(len(selection["completion_path"]), 3)
+        with Image.open(selection["frame"]) as frame:
+            self.assertEqual(frame.size, (100, 80))
+        with Image.open(selection["source_crop"]).convert("RGB") as crop:
+            self.assertEqual(crop.size, (90, 80))
+            # Pixels outside the lasso remain scene context; they are no longer
+            # replaced with a neutral background before completion.
+            context_pixel = crop.getpixel((80, 20))
+            self.assertLess(context_pixel[0], 210)
+
+    def test_production_rejects_bbox_only_selection(self):
+        selection_response = self.client.post(
+            "/api/videos/vid_test/select",
+            data={
+                "t": "2",
+                "bbox": "[0.2, 0.25, 0.4, 0.5]",
+                "frame_width": "100",
+                "frame_height": "80",
+            },
+            files={"frame": ("frame.jpg", _jpeg(), "image/jpeg")},
+        )
+        self.assertEqual(selection_response.status_code, 200, selection_response.text)
+
+        confirm_response = self.client.post(
+            "/api/videos/vid_test/select/confirm",
+            json={
+                "select_id": selection_response.json()["select_id"],
+                "generate_new": True,
+                "quality_mode": "production",
+            },
+        )
+        self.assertEqual(confirm_response.status_code, 422, confirm_response.text)
+        self.assertIn("polygon", confirm_response.text)
+
+    def test_rejects_multipart_without_full_frame(self):
+        response = self.client.post(
+            "/api/videos/vid_test/select",
+            data={"t": "0", "bbox": "[0.1, 0.1, 0.5, 0.5]"},
+            files={"not_frame": ("placeholder.txt", b"x", "text/plain")},
+        )
+        self.assertEqual(response.status_code, 422)
+
+    def test_rejects_mismatched_frame_dimensions(self):
+        response = self.client.post(
+            "/api/videos/vid_test/select",
+            data={
+                "t": "1",
+                "bbox": "[0.1, 0.1, 0.5, 0.5]",
+                "frame_width": "101",
+                "frame_height": "80",
+            },
+            files={"frame": ("frame.jpg", _jpeg(), "image/jpeg")},
+        )
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("frame_width", response.text)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,11 +1,5 @@
-// 抠图能力层：多 provider 可切换，本地 rembg 兜底
-// 通过 .env 的 VITE_SEGMENT_PROVIDER 配置：removebg | local
-
-type Provider = 'removebg' | 'local'
-
-const PROVIDER: Provider = (import.meta.env.VITE_SEGMENT_PROVIDER as Provider) || 'local'
-const REMOVEBG_API_KEY = import.meta.env.VITE_REMOVEBG_API_KEY || ''
-const LOCAL_URL = 'http://localhost:8001/api/segment'
+// 仅保留 EdgeSAM 流程所需的截图与调试留痕工具。
+// 付费万相、remove.bg 与旧 rembg 后端调用已从前端删除。
 
 export function dataUrlToBlob(dataUrl: string): Blob | null {
   const arr = dataUrl.split(',')
@@ -18,29 +12,6 @@ export function dataUrlToBlob(dataUrl: string): Blob | null {
   return new Blob([u8arr], { type: mime })
 }
 
-// path（screen 坐标）→ 后端约定的 bbox 相对坐标字符串 'x1,y1;x2,y2;...'
-function serializePath(
-  path: { x: number; y: number }[] | undefined,
-  bbox?: { x: number; y: number; w: number; h: number },
-): string | null {
-  if (!path || path.length < 3 || !bbox) return null
-  return path.map((p) => `${Math.round(p.x - bbox.x)},${Math.round(p.y - bbox.y)}`).join(';')
-}
-
-export async function segmentCutout(
-  imageBlob: Blob,
-  bbox?: { x: number; y: number; w: number; h: number },
-  path?: { x: number; y: number }[],
-): Promise<string | null> {
-  if (PROVIDER === 'removebg' && REMOVEBG_API_KEY) {
-    const r = await removeBgCutout(imageBlob, bbox, path)
-    if (r) return r
-    return localCutout(imageBlob, bbox, path)
-  }
-  return localCutout(imageBlob, bbox, path)
-}
-
-const INPAINT_URL = 'http://localhost:8001/api/inpaint'
 const SAVE_TRACE_URL = 'http://localhost:8001/api/save_trace'
 const TRACES_URL = 'http://localhost:8001/api/traces'
 
@@ -52,7 +23,6 @@ export async function saveTraceToBackend(trace: {
   status: string
   bboxDataUrl: string | null
   inpaintDataUrl: string | null
-  finalDataUrl: string | null
 }): Promise<boolean> {
   try {
     const form = new FormData()
@@ -68,7 +38,6 @@ export async function saveTraceToBackend(trace: {
     }
     safeAppend('bbox_img', trace.bboxDataUrl, 'bbox.png')
     safeAppend('inpaint_img', trace.inpaintDataUrl, 'inpaint.png')
-    safeAppend('final_img', trace.finalDataUrl, 'final.png')
     const res = await fetch(SAVE_TRACE_URL, { method: 'POST', body: form })
     if (!res.ok) {
       console.warn('[saveTrace] server returned', res.status, await res.text())
@@ -90,7 +59,6 @@ export async function loadTracesFromBackend(): Promise<{
   status: string
   has_bbox: boolean
   has_inpaint: boolean
-  has_final: boolean
 }[]> {
   try {
     const res = await fetch(TRACES_URL)
@@ -103,40 +71,10 @@ export async function loadTracesFromBackend(): Promise<{
 }
 
 // 构造后端图片 URL
-export function traceImageUrl(traceId: string, type: 'bbox' | 'inpaint' | 'final'): string {
+export function traceImageUrl(traceId: string, type: 'bbox' | 'inpaint'): string {
   return `${TRACES_URL}/${traceId}/image?type=${type}`
 }
 
-
-// 2D 实体家具提取：bbox 原图 + path，wan2.7 直接去背景+去遮挡+补全，输出透明家具
-export async function inpaint(
-  imageBlob: Blob,
-  bbox?: { x: number; y: number; w: number; h: number },
-  path?: { x: number; y: number }[],
-): Promise<string | null> {
-  try {
-    const form = new FormData()
-    form.append('file', imageBlob, 'frame.png')
-    if (bbox) {
-      form.append('bbox', `${Math.round(bbox.x)},${Math.round(bbox.y)},${Math.round(bbox.w)},${Math.round(bbox.h)}`)
-    }
-    if (path && path.length > 2) {
-      // path 是 screen 坐标，转成 bbox 相对坐标（与后端约定一致）
-      const rel = path.map((p) => `${Math.round(p.x - bbox!.x)},${Math.round(p.y - bbox!.y)}`).join(';')
-      form.append('path', rel)
-    }
-    const res = await fetch(INPAINT_URL, { method: 'POST', body: form })
-    if (!res.ok) {
-      console.warn('[inpaint] failed:', res.status, await res.text())
-      return null
-    }
-    const blob = await res.blob()
-    return await blobToDataUrl(blob)
-  } catch (e) {
-    console.warn('[inpaint] error:', e)
-    return null
-  }
-}
 
 // 从视频截 bbox 区域（带背景，cover 坐标转换），返回 dataURL
 export async function captureBbox(
@@ -152,68 +90,6 @@ export async function captureBbox(
   if (!ctx) return null
   ctx.drawImage(video, v.x, v.y, v.w, v.h, 0, 0, box.w, box.h)
   return canvas.toDataURL('image/png')
-}
-
-// === remove.bg：可选 bbox+path，path 外 rembg 前抹透明（走本地后端代理绕 CORS）===
-async function removeBgCutout(
-  imageBlob: Blob,
-  bbox?: { x: number; y: number; w: number; h: number },
-  path?: { x: number; y: number }[],
-): Promise<string | null> {
-  try {
-    const form = new FormData()
-    form.append('file', imageBlob, 'frame.png')
-    if (bbox) {
-      form.append('bbox', `${Math.round(bbox.x)},${Math.round(bbox.y)},${Math.round(bbox.w)},${Math.round(bbox.h)}`)
-    }
-    const p = serializePath(path, bbox)
-    if (p) form.append('path', p)
-    const res = await fetch('http://localhost:8001/api/removebg', {
-      method: 'POST',
-      body: form,
-    })
-    if (!res.ok) {
-      console.warn('[remove.bg] failed:', res.status, await res.text())
-      return null
-    }
-    const blob = await res.blob()
-    return await blobToDataUrl(blob)
-  } catch (e) {
-    console.warn('[remove.bg] error:', e)
-    return null
-  }
-}
-
-// === 本地 rembg：可选 bbox+path，path 外 rembg 前抹透明 ===
-async function localCutout(
-  imageBlob: Blob,
-  bbox?: { x: number; y: number; w: number; h: number },
-  path?: { x: number; y: number }[],
-): Promise<string | null> {
-  try {
-    const form = new FormData()
-    form.append('file', imageBlob, 'frame.png')
-    if (bbox) {
-      form.append('bbox', `${Math.round(bbox.x)},${Math.round(bbox.y)},${Math.round(bbox.w)},${Math.round(bbox.h)}`)
-    }
-    const p = serializePath(path, bbox)
-    if (p) form.append('path', p)
-    const res = await fetch(LOCAL_URL, { method: 'POST', body: form })
-    if (!res.ok) return null
-    const blob = await res.blob()
-    return await blobToDataUrl(blob)
-  } catch {
-    return null
-  }
-}
-
-function blobToDataUrl(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader()
-    r.onload = () => resolve(r.result as string)
-    r.onerror = reject
-    r.readAsDataURL(blob)
-  })
 }
 
 // object-fit: cover 几何：视频等比放大填满，居中，超出裁切。
@@ -241,6 +117,104 @@ export function screenToVideo(box: { x: number; y: number; w: number; h: number 
     w: box.w / t.scale,
     h: box.h / t.scale,
   }
+}
+
+export interface VideoSelectionUpload {
+  frame: Blob
+  frameWidth: number
+  frameHeight: number
+  bbox: [number, number, number, number]
+  polygon: Array<[number, number]>
+}
+
+export async function sourceCropDataUrl(
+  upload: VideoSelectionUpload,
+  maxEdge = 1024,
+): Promise<string> {
+  const bitmap = await createImageBitmap(upload.frame)
+  try {
+    const [x, y, w, h] = upload.bbox
+    const sourceX = Math.max(0, Math.floor(x * bitmap.width))
+    const sourceY = Math.max(0, Math.floor(y * bitmap.height))
+    const sourceWidth = Math.max(1, Math.min(bitmap.width - sourceX, Math.ceil(w * bitmap.width)))
+    const sourceHeight = Math.max(1, Math.min(bitmap.height - sourceY, Math.ceil(h * bitmap.height)))
+    const scale = Math.min(1, maxEdge / Math.max(sourceWidth, sourceHeight))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(sourceWidth * scale))
+    canvas.height = Math.max(1, Math.round(sourceHeight * scale))
+    const context = canvas.getContext('2d')
+    if (!context) throw new Error('无法准备原始帧圈选区域')
+    context.drawImage(
+      bitmap,
+      sourceX,
+      sourceY,
+      sourceWidth,
+      sourceHeight,
+      0,
+      0,
+      canvas.width,
+      canvas.height,
+    )
+    return canvas.toDataURL('image/jpeg', 0.88)
+  } finally {
+    bitmap.close()
+  }
+}
+
+const clamp01 = (value: number) => Math.max(0, Math.min(1, value))
+
+// Prepare the backend selection artifact from untouched source pixels. The
+// browser SAM cutout is deliberately not involved in this upload.
+export function captureVideoSelectionUpload(
+  video: HTMLVideoElement,
+  box: { x: number; y: number; w: number; h: number },
+  path: Array<{ x: number; y: number }>,
+): Promise<VideoSelectionUpload> {
+  return new Promise((resolve, reject) => {
+    const frameWidth = video.videoWidth
+    const frameHeight = video.videoHeight
+    if (!frameWidth || !frameHeight) {
+      reject(new Error('视频原始帧尚未就绪'))
+      return
+    }
+
+    const transform = coverTransform(video)
+    const sourceBox = screenToVideo(box, transform)
+    const left = clamp01(sourceBox.x / frameWidth)
+    const top = clamp01(sourceBox.y / frameHeight)
+    const right = clamp01((sourceBox.x + sourceBox.w) / frameWidth)
+    const bottom = clamp01((sourceBox.y + sourceBox.h) / frameHeight)
+    const bbox: [number, number, number, number] = [
+      left,
+      top,
+      Math.max(1 / frameWidth, right - left),
+      Math.max(1 / frameHeight, bottom - top),
+    ]
+    bbox[2] = Math.min(1 - bbox[0], bbox[2])
+    bbox[3] = Math.min(1 - bbox[1], bbox[3])
+
+    const polygon = path.map((point): [number, number] => [
+      clamp01(((point.x - transform.offsetX) / transform.scale) / frameWidth),
+      clamp01(((point.y - transform.offsetY) / transform.scale) / frameHeight),
+    ])
+
+    const canvas = document.createElement('canvas')
+    canvas.width = frameWidth
+    canvas.height = frameHeight
+    const context = canvas.getContext('2d')
+    if (!context) {
+      reject(new Error('无法读取视频原始帧'))
+      return
+    }
+    context.drawImage(video, 0, 0, frameWidth, frameHeight)
+    canvas.toBlob((frame) => {
+      if (!frame) {
+        reject(new Error('无法压缩视频原始帧'))
+        return
+      }
+      resolve({ frame, frameWidth, frameHeight, bbox, polygon })
+    }, 'image/jpeg', 0.84)
+  })
 }
 
 export function applyPathMask(

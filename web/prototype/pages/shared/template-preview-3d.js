@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { getAsset } from './asset-library-data.js';
 
 const SPECS = {
   'wide-living': { width:9, depth:5.5, shape:'rect', windows:['back-floor'] },
@@ -8,6 +9,7 @@ const SPECS = {
   'bay-bedroom': { width:6, depth:5, shape:'rect', windows:['back-bay'] },
   'corner-bedroom': { width:7, depth:5, shape:'rect', windows:['back','left'] },
 };
+const FALLBACKS=Object.fromEntries(Object.keys(SPECS).map(id=>[id,new URL(`../../assets/scenes/templates/${id==='standard-bedroom'?'corner-bedroom':id}.png`,import.meta.url).href]));
 
 const active = new WeakMap();
 const textureLoader = new THREE.TextureLoader();
@@ -80,11 +82,25 @@ function createFloor(spec, material) {
   return floor;
 }
 
-export async function renderTemplatePreview(canvas, templateId) {
+function addProjectPlacement(group, placement) {
+  const asset=getAsset(placement.assetId)||{},primitive=asset.primitive||'plant',dimensions=asset.dimensions||[.7,.7,.7],color=asset.color||asset.accent||'#b89b79';
+  const item=new THREE.Group(),material=new THREE.MeshStandardMaterial({color,roughness:.72}),accent=new THREE.MeshStandardMaterial({color:asset.accent||'#e2d1ba',roughness:.84}),[w,h,d]=dimensions;
+  if(primitive==='table'){addBox(item,[w,.1,d],[0,h-.05,0],material);[-1,1].forEach(x=>[-1,1].forEach(z=>addBox(item,[.07,h-.1,.07],[x*w*.38,(h-.1)/2,z*d*.38],accent)));}
+  else if(primitive==='chair'){addBox(item,[w,.14,d],[0,h*.48,0],material);addBox(item,[w,.5,.1],[0,h*.72,d*.42],accent);}
+  else if(primitive==='sofa'){addBox(item,[w,h*.48,d],[0,h*.24,0],material);addBox(item,[w*.92,h*.48,d*.2],[0,h*.66,d*.38],accent);}
+  else if(primitive==='bed'){addBox(item,[w,h*.38,d],[0,h*.19,0],material);addBox(item,[w*.94,h*.24,d*.86],[0,h*.48,-d*.04],accent);}
+  else if(primitive==='cabinet'){addBox(item,[w,h,d],[0,h/2,0],material);}
+  else if(primitive==='lamp'){addBox(item,[w*.5,.08,d*.5],[0,.04,0],material);addBox(item,[.06,h*.72,.06],[0,h*.4,0],accent);addBox(item,[w,h*.25,d],[0,h*.84,0],material);}
+  else {addBox(item,[w*.55,h*.32,d*.55],[0,h*.16,0],accent);const crown=new THREE.Mesh(new THREE.SphereGeometry(Math.max(w,d)*.42,10,7),material);crown.scale.y=Math.max(1,h/Math.max(w,d)*.72);crown.position.y=h*.68;item.add(crown);}
+  const position=placement.position||{},rotation=placement.rotation||{},scale=placement.scale||{};item.position.set(position.x||0,position.y||0,position.z||0);item.rotation.set(rotation.x||0,rotation.y||0,rotation.z||0);item.scale.set(scale.x||1,scale.y||1,scale.z||1);group.add(item);
+}
+
+export async function renderTemplatePreview(canvas, templateId, project=null) {
   if (!canvas || active.has(canvas)) return;
   const spec = SPECS[templateId];
   if (!spec) return;
   const runtime={cancelled:false,cleanup:null};active.set(canvas,runtime);
+  canvas.style.backgroundImage=`url("${FALLBACKS[templateId]}")`;
   canvas.style.backgroundSize='cover';canvas.style.backgroundPosition='center';canvas.style.backgroundRepeat='no-repeat';
   const width = Math.max(120, canvas.clientWidth || 180), height = Math.max(86, canvas.clientHeight || 110);
   const renderCanvas=document.createElement('canvas');
@@ -96,7 +112,7 @@ export async function renderTemplatePreview(canvas, templateId) {
   const sun=new THREE.DirectionalLight('#fff1d5',3.4);sun.position.set(-5,9,7);sun.castShadow=true;sun.shadow.mapSize.set(512,512);sun.shadow.camera.left=sun.shadow.camera.bottom=-10;sun.shadow.camera.right=sun.shadow.camera.top=10;scene.add(sun);
   const group=new THREE.Group();scene.add(group);
   const floorMat=new THREE.MeshStandardMaterial({color:'#c69a67',roughness:.62,metalness:0});
-  const wallMat=new THREE.MeshStandardMaterial({color:'#f2ede3',roughness:.92,side:THREE.DoubleSide});
+  const wallMat=new THREE.MeshStandardMaterial({color:project?.finishes?.wallColor||'#f2ede3',roughness:.92,side:THREE.DoubleSide});
   const trimMat=new THREE.MeshStandardMaterial({color:'#faf7f0',roughness:.8});
   const frameMat=new THREE.MeshStandardMaterial({color:'#29343a',roughness:.32,metalness:.28});
   const viewMat=new THREE.MeshBasicMaterial({color:'#b9d1df',side:THREE.DoubleSide});
@@ -109,6 +125,11 @@ export async function renderTemplatePreview(canvas, templateId) {
   addBox(group,[.24,.12,spec.depth],[-spec.width/2+.05,h-.06,0],trimMat);
   const materials={view:viewMat,frame:frameMat,cushion:cushionMat};
   spec.windows.forEach((entry)=>{const [side,kind='standard']=entry.split('-');addWindow(group,side,spec,materials,kind);});
+  if(project?.placements?.length)project.placements.forEach(placement=>addProjectPlacement(group,placement));
+  else if(spec.furnished==='bed'){
+    const bed=new THREE.Group(),wood=new THREE.MeshStandardMaterial({color:'#8c725c',roughness:.72}),linen=new THREE.MeshStandardMaterial({color:'#e8ded0',roughness:.92});
+    addBox(bed,[1.8,.28,2.05],[0,.2,0],wood);addBox(bed,[1.68,.18,1.78],[0,.43,-.05],linen);addBox(bed,[1.8,.62,.12],[0,.42,.97],wood);bed.position.set(.65,0,.35);bed.castShadow=true;group.add(bed);
+  }
   const ground=new THREE.Mesh(new THREE.PlaneGeometry(40,40),new THREE.ShadowMaterial({color:'#765f48',opacity:.13}));ground.rotation.x=-Math.PI/2;ground.position.y=-.13;ground.receiveShadow=true;scene.add(ground);
   const draw=()=>{renderer.render(scene,camera);if(!runtime.cancelled)canvas.style.backgroundImage=`url("${renderCanvas.toDataURL('image/webp',.86)}")`;};draw();
   let cleaned=false;const cleanup=()=>{if(cleaned)return;cleaned=true;scene.traverse((object)=>{if(object.isMesh){object.geometry?.dispose();if(Array.isArray(object.material))object.material.forEach(material=>material?.dispose());else object.material?.dispose();}});renderer.dispose();renderer.forceContextLoss?.();};
@@ -122,11 +143,12 @@ export async function renderTemplatePreview(canvas, templateId) {
   cleanup();runtime.cleanup=null;
 }
 
-export async function renderTemplatePreviews(root=document) {
+export async function renderTemplatePreviews(root=document, projects=[]) {
   // 串行渲染：每个预览用完即释放 WebGL 上下文，避免多张缩略图同时占用上下文超出浏览器上限（否则触发 shader 崩溃）
+  const projectMap=new Map(projects.map(project=>[project.id,project]));
   const canvases=[...root.querySelectorAll('canvas[data-template-preview]')];
   for (const canvas of canvases) {
-    try { await renderTemplatePreview(canvas,canvas.dataset.templatePreview); } catch (error) { console.warn('模板预览渲染失败', error); }
+    try { await renderTemplatePreview(canvas,canvas.dataset.templatePreview,projectMap.get(canvas.dataset.projectPreview)||null); } catch (error) { console.warn('模板预览渲染失败', error); }
   }
 }
 

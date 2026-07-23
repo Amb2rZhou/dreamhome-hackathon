@@ -175,8 +175,11 @@ async def gen3d(image_path: str, extra_image_paths: list[str] | None = None) -> 
     """同步等待一次 3D 生成,返回 (glb_url, status)。批量场景串行即可(GPU 侧本身排队)。
     带内容哈希缓存:同一(组)输入图重跑不重新生成。"""
     from app.services import cache
-    key = cache.content_key(image_path, *(extra_image_paths or []),
-                            extra=settings.effective_provider)
+    key = cache.content_key(
+        image_path,
+        *(extra_image_paths or []),
+        extra=f"{settings.effective_provider}|albedo-gamma={settings.TRELLIS_ALBEDO_GAMMA}",
+    )
     hit = cache.get("gen3d", key)
     if hit and hit.get("status") == "ready":
         # GLB 已在本机 storage(model_url 指向它),直接复用
@@ -201,6 +204,19 @@ async def gen3d(image_path: str, extra_image_paths: list[str] | None = None) -> 
                 break
             if res.status == "succeeded":
                 url = res.model_url or ""
+                try:
+                    from app.services.glb_material import materialize_postprocessed_glb
+                    url, material_meta = await materialize_postprocessed_glb(url)
+                    print(
+                        f"      GLB 材质后处理: gamma={material_meta['gamma']} "
+                        f"textures={material_meta['textures_corrected']} "
+                        f"triangles={material_meta['triangles']}"
+                    )
+                except Exception as exc:  # noqa: BLE001
+                    # Do not cache or expose a raw GLB as a ready canonical asset.
+                    print(f"      GLB 自动验收失败: {type(exc).__name__}: {exc}")
+                    failed = True
+                    break
                 cache.put("gen3d", key, {"glb_url": url, "status": "ready"})
                 return url, "ready"
             if res.status == "failed":
@@ -633,7 +649,9 @@ async def process(video_path: str, title: str, source_url: str) -> str:
         "未生成"轨迹也走这一步 —— 预审页/圈选提示的品类才不会是检测器的错标签。"""
         if not cut_quality_ok(cuts[cl[0]])[0]:
             return None
-        return await extract_labels(_ctx_image(cl, tag), category_hint=hint, framed=True)
+        return await extract_labels(
+            _ctx_image(cl, tag), category_hint=hint, framed=True, strict=True,
+        )
 
     for ci, cl in enumerate(gen_clusters):
         rep = tracks[cl[0]]
@@ -644,8 +662,9 @@ async def process(video_path: str, title: str, source_url: str) -> str:
         if ok:
             # 标签前置:qwen 看红框上下文图定品类,比检测词表准(电视机被检成"装饰"这类在此纠正);
             # "其他" = 词表误触发(门锁当家电),在花钱补全/生成之前就打回
-            labels = await extract_labels(_ctx_image(cl, ci), category_hint=rep["category"],
-                                          framed=True)
+            labels = await extract_labels(
+                _ctx_image(cl, ci), category_hint=rep["category"], framed=True, strict=True,
+            )
             if labels.get("category") == "其他":
                 ok, why, cat = False, f"标签判'其他'({labels.get('sub', '')})", "其他"
             elif labels.get("category") in CATEGORIES:

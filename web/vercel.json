@@ -1,0 +1,34 @@
+{
+  "rewrites": [
+    {
+      "source": "/dreamhome-api/:path*",
+      "destination": "http://218.244.156.128:8000/:path*"
+    }
+  ],
+  "functions": {
+    "api/photo-to-3d.js": { "maxDuration": 60 },
+    "api/selection-to-3d.js": { "maxDuration": 60 },
+    "api/jobs/[id].js": { "maxDuration": 30 }
+  },
+  "headers": [
+    {
+      "source": "/prototype/pages/discover/index.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, max-age=0" }
+      ]
+    },
+    {
+      "source": "/prototype/pages/discover/app/index.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, max-age=0" }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" }
+      ]
+    }
+  ]
+}

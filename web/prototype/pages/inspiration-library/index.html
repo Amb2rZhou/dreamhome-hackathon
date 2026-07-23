@@ -49,8 +49,8 @@
     .visual--photo{background:#f4ecdb}.visual--photo img{width:100%;height:100%;object-fit:contain;display:block}
     .viewer-photo{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 42% 34%,#fbfdf9,#f4ecdb 70%,#dbe6d4)}.viewer-photo img{width:100%;height:100%;object-fit:contain}.viewer-photo-note{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);padding:4px 10px;border-radius:999px;background:rgba(29,36,31,.55);color:#fff;font-size:9px;font-weight:var(--dh-font-weight-semibold);pointer-events:none}
     .catalog-section { margin-bottom:16px; padding:11px 10px 12px; border:1px solid rgba(117,139,113,.18); border-radius:14px; background:rgba(255,255,255,.9); box-shadow:0 5px 14px rgba(69,89,67,.07); }.section-head { display:flex; align-items:center; justify-content:space-between; min-height:27px; margin-bottom:8px; }.section-tag { width:max-content; padding:5px 7px; border-radius:7px; background:var(--dh-color-sage-100); color:var(--dh-color-sage-800); font-size:11px; font-weight:var(--dh-font-weight-heavy); letter-spacing:0; }.all-button,.catalog-back { border:0; padding:4px 0; background:transparent; color:var(--dh-color-sage-700); font:inherit; font-size:11px; font-weight:var(--dh-font-weight-heavy); cursor:pointer; }
-    .component-rail { display:flex; flex-wrap:nowrap; gap:9px; overflow-x:auto; overscroll-behavior-x:contain; margin:0 -2px; padding:3px 3px 7px; scrollbar-width:none; }.component-rail::-webkit-scrollbar{display:none}.component-card,.furniture-card { position:relative; }.component-card { flex:0 0 79px; min-width:0; border:0; padding:0; background:transparent; color:inherit; text-align:left; cursor:pointer; }.component-card--floorplan b{font-size:9px}.component-visual { position:relative; height:72px; overflow:hidden; border:var(--dh-card-border); border-radius:8px; background:#f7efe0; box-shadow:var(--dh-shadow-soft); }.component-card b{display:block;overflow:hidden;margin:6px 1px 0;font-size:10px;letter-spacing:0;text-overflow:ellipsis;white-space:nowrap}.favorite-control{position:absolute;z-index:3;right:4px;top:4px;width:21px;height:21px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.87);color:var(--dh-color-sage-600);font-size:12px;line-height:1;cursor:pointer;box-shadow:0 2px 5px rgba(44,59,45,.13)}.favorite-control[aria-pressed="true"]{color:#be6959;background:#fff4ef}
-    .visual--floorplan{background:linear-gradient(135deg,#f7ecd5,#fffdf6)}.visual--floorplan::before,.visual--floorplan::after{content:"";position:absolute;border:2px solid rgba(150,112,58,.5)}.visual--floorplan::before{inset:12px 14px}.visual--floorplan::after{left:37px;top:12px;bottom:12px;border-width:0 0 0 2px}
+    .component-rail { display:flex; flex-wrap:nowrap; gap:9px; overflow-x:auto; overscroll-behavior-x:contain; margin:0 -2px; padding:3px 3px 7px; scrollbar-width:none; }.component-rail::-webkit-scrollbar{display:none}.component-card,.furniture-card { position:relative; }.component-card { flex:0 0 79px; min-width:0; border:0; padding:0; background:transparent; color:inherit; text-align:left; cursor:pointer; }.component-card--floorplan b{font-size:9px}.component-visual { position:relative; height:72px; overflow:hidden; border:var(--dh-card-border); border-radius:8px; background:#f7efe0; box-shadow:var(--dh-shadow-soft); }.component-card b{display:block;overflow:hidden;margin:6px 1px 0;font-size:10px;letter-spacing:0;text-overflow:ellipsis;white-space:nowrap}.favorite-control{position:absolute;z-index:3;right:4px;top:4px;width:21px;height:21px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.87);color:var(--dh-color-sage-600);font-size:12px;line-height:1;cursor:pointer;box-shadow:0 2px 5px rgba(44,59,45,.13)}.favorite-control[aria-pressed="true"]{color:#be6959;background:#fff4ef}.source-badge{position:absolute;z-index:2;left:4px;top:4px;max-width:calc(100% - 34px);overflow:hidden;padding:3px 5px;border-radius:999px;background:rgba(65,78,64,.82);color:#fff;font-size:8px;font-weight:var(--dh-font-weight-bold);line-height:1;letter-spacing:.01em;text-overflow:ellipsis;white-space:nowrap;pointer-events:none}
+    .visual--floorplan{background:linear-gradient(135deg,#f7ecd5,#fffdf6)}.visual--floorplan canvas{display:block;width:100%;height:100%;background-size:cover;background-position:center;background-repeat:no-repeat}
     .furniture-tabs { display:flex; gap:6px; overflow-x:auto; margin:0 -2px; padding:1px 3px 9px; scrollbar-width:none; }.furniture-tabs::-webkit-scrollbar{display:none}.furniture-tab{flex:0 0 auto;border:1px solid rgba(110,132,107,.2);border-radius:999px;padding:5px 9px;background:rgba(255,255,255,.62);color:var(--dh-fg-secondary);font:inherit;font-size:10px;font-weight:var(--dh-font-weight-bold);cursor:pointer}.furniture-tab[aria-selected="true"]{border-color:var(--dh-color-sage-600);background:var(--dh-color-sage-600);color:white}
     .furniture-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px 7px; }.furniture-card{min-width:0;border:0;padding:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.furniture-card .component-visual{height:62px}.furniture-card b{display:block;margin:5px 1px 0;overflow:hidden;font-size:9px;font-weight:var(--dh-font-weight-bold);text-overflow:ellipsis;white-space:nowrap}.visual--furniture{background:linear-gradient(145deg,#f7efe0,#fffaf2)}.object{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);background:var(--object);box-shadow:inset 0 8px rgba(255,255,255,.18)}.object--sofa{width:47px;height:22px;border-radius:12px 12px 5px 5px}.object--sofa::before{content:"";position:absolute;left:9px;top:-12px;width:29px;height:16px;border-radius:9px 9px 3px 3px;background:var(--accent)}.object--chair{width:25px;height:23px;border-radius:7px 7px 4px 4px}.object--chair::before{content:"";position:absolute;left:4px;top:-14px;width:17px;height:18px;border-radius:7px 7px 2px 2px;background:var(--accent)}.object--table{width:42px;height:15px;border-radius:50%;bottom:18px}.object--table::before{content:"";position:absolute;left:19px;top:12px;width:4px;height:20px;background:var(--accent)}.object--lamp{width:4px;height:36px;border-radius:2px;bottom:9px}.object--lamp::before{content:"";position:absolute;left:-10px;top:-10px;width:24px;height:13px;border-radius:50% 50% 3px 3px;background:var(--accent)}.object--bed{width:46px;height:25px;border-radius:5px}.object--bed::before{content:"";position:absolute;left:5px;top:4px;width:35px;height:10px;border-radius:4px;background:var(--accent)}.object--cabinet{width:39px;height:29px;border-radius:3px}.object--plant{width:22px;height:23px;border-radius:45% 55% 38% 62%;background:var(--accent)}.object--plant::before{content:"";position:absolute;left:-7px;top:-8px;width:15px;height:22px;border-radius:50% 0 50% 0;background:var(--object)}.all-card{display:grid;place-items:center;height:62px;align-self:start;border:1px dashed rgba(150,112,58,.5)!important;border-radius:8px!important;background:rgba(245,236,215,.52)!important;color:var(--dh-color-sage-800)!important;font-size:10px;font-weight:var(--dh-font-weight-heavy);text-align:center}.all-card span{max-width:46px}
     .catalog-toolbar{display:grid;grid-template-columns:64px 1fr 64px;align-items:center}.catalog-toolbar h2{margin:0;font-size:16px;font-weight:var(--dh-font-weight-heavy);text-align:center;white-space:nowrap}.catalog-toolbar .catalog-back{justify-self:start;font-size:30px;line-height:1;padding:0 10px 0 2px;margin:-4px 0;color:var(--dh-color-sage-700)}.catalog-manage{justify-self:end;white-space:nowrap;border:1px solid rgba(110,132,107,.32);border-radius:999px;padding:5px 13px;background:rgba(255,255,255,.82);color:var(--dh-color-sage-700);font:inherit;font-size:11px;font-weight:var(--dh-font-weight-heavy);cursor:pointer}.catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px}.catalog-grid .component-card{min-width:0}.catalog-grid .component-visual{height:86px}.empty-state{padding:24px 10px;text-align:center;color:var(--dh-fg-secondary);font-size:12px}.toast{position:absolute;z-index:40;left:50%;bottom:78px;transform:translateX(-50%) translateY(8px);opacity:0;padding:9px 12px;border-radius:999px;background:rgba(29,36,31,.9);color:white;font-size:11px;font-weight:var(--dh-font-weight-semibold);pointer-events:none;transition:.2s ease}.toast.show{opacity:1;transform:translateX(-50%)}
@@ -131,6 +131,7 @@
   <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
   <script type="module">
     import { COMPONENT_FAMILIES, FURNITURE_CATEGORIES, getAssets, getAsset, getFavorites, toggleFavorite, removeUserAsset, addUserAsset } from '../shared/asset-library-data.js';
+    import { renderTemplatePreview, renderTemplatePreviews, disposeTemplatePreviews } from '../shared/template-preview-3d.js';
 
     const home = document.querySelector('#libraryHome');
     const catalog = document.querySelector('#catalogView');
@@ -147,12 +148,21 @@
     const view = { kind: '', category: '', favoriteOnly: false };
     const select = { on: false, ids: new Set() };
 
+    // 仅供把当前浏览器的收藏选择固化为演示默认值；普通访问不会显示或触发。
+    if (new URLSearchParams(location.search).get('exportFavorites') === '1') {
+      const ids = [...getFavorites()];
+      const blob = new Blob([JSON.stringify({ version: 1, ids }, null, 2)], { type: 'application/json' });
+      const href = URL.createObjectURL(blob);
+      document.body.innerHTML = `<main style="min-height:100vh;display:grid;place-items:center;background:#fffaf0;font:16px system-ui;color:#4b3b28"><section style="max-width:420px;padding:32px;text-align:center"><h1>收藏配置已准备好</h1><p>共 ${ids.length} 件。下载后把文件发给 Codex，即可固化为所有人首次打开的默认收藏。</p><a href="${href}" download="dreamhome-default-favorites.json" style="display:inline-block;margin-top:12px;padding:12px 20px;border-radius:999px;background:#70886f;color:white;text-decoration:none">下载收藏配置</a></section></main>`;
+    }
+
     const labelByKind = Object.fromEntries(COMPONENT_FAMILIES.map((family) => [family.id, family.label]));
     const isUser = (asset) => asset?.source === 'user';
     const showToast = (message) => { toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1500); };
     const favoriteButton = (asset) => `<button class="favorite-control" data-favorite="${asset.id}" aria-label="收藏 ${asset.name}" aria-pressed="${getFavorites().has(asset.id)}">${getFavorites().has(asset.id) ? '♥' : '♡'}</button>`;
+    const sourceBadge = (asset) => asset.sourceType === 'offline_photo' ? '<span class="source-badge">拍照生成</span>' : '';
     const visual = (asset) => {
-      if (asset.kind === 'floorplan') return `<div class="component-visual visual--floorplan"></div>`;
+      if (asset.kind === 'floorplan') return `<div class="component-visual visual--floorplan"><canvas data-template-preview="${asset.templateId}" aria-label="${asset.name} 3D 户型预览"></canvas></div>`;
       if (asset.thumbnail) return `<div class="component-visual visual--photo"><img src="${asset.thumbnail}" alt="" loading="lazy" /></div>`; // 平台真实资产用照片
       const type = asset.primitive || 'cabinet';
       return `<div class="component-visual visual--furniture" style="--object:${asset.color};--accent:${asset.accent}"><span class="object object--${type}"></span></div>`;
@@ -163,16 +173,16 @@
         const locked = !isUser(asset);
         const selected = select.ids.has(asset.id);
         const check = locked ? '' : `<span class="select-check">${selected ? '✓' : ''}</span>`;
-        return `<article class="${className}${locked ? ' component-card--locked' : ''}" data-asset="${asset.id}" ${locked ? '' : 'data-selectable'} data-selected="${selected}" tabindex="0">${check}${visual(asset)}<b>${asset.name}</b></article>`;
+        return `<article class="${className}${locked ? ' component-card--locked' : ''}" data-asset="${asset.id}" ${locked ? '' : 'data-selectable'} data-selected="${selected}" tabindex="0">${check}${sourceBadge(asset)}${visual(asset)}<b>${asset.name}</b></article>`;
       }
-      return `<article class="${className}" data-asset="${asset.id}" tabindex="0">${favoriteButton(asset)}${visual(asset)}<b>${asset.name}</b></article>`;
+      return `<article class="${className}" data-asset="${asset.id}" tabindex="0">${favoriteButton(asset)}${sourceBadge(asset)}${visual(asset)}<b>${asset.name}</b></article>`;
     };
     const openCatalog = (kind, category = '') => { location.hash = `catalog=${kind}${category ? `:${encodeURIComponent(category)}` : ''}`; }; // 中文子类需编码
     // ---------- 顶部 banner 轮播（情绪引导卡 + 平台案例卡；真机用 <swiper circular>） ----------
-    // 案例卡本轮为占位：视觉用 web/assets/gallery 单品图 + 风格标签 + @博主名；点击留 hook，下一轮接 3D 案例空间。
+    // 案例卡复用对应 1:1 重建场景的真实封面，确保入口预览与进入后的房间一致。
     const BANNER_CASES = [
-      { id: 'case-oak', videoId: 'vid_40734d7f2e6c', image: '../../../assets/gallery/sofa.jpg', tag: '原木侘寂 · 45㎡', blogger: '@小丸子的家' },
-      { id: 'case-cream', videoId: 'vid_5f32a0ac954a', image: '../../../assets/gallery/armchair.jpg', tag: '奶油风 · 78㎡', blogger: '@栗子设计日记' },
+      { id: 'case-oak', videoId: 'vid_40734d7f2e6c', image: '../../assets/scenes/vid_40734d7f2e6c.jpg', tag: '原木侘寂 · 45㎡', blogger: '@鸡蛋灌饼的家' },
+      { id: 'case-cream', videoId: 'vid_5f32a0ac954a', image: '../../assets/scenes/vid_5f32a0ac954a.jpg', tag: '奶油风 · 78㎡', blogger: '@栗子设计日记' },
     ];
     // 无缝循环：两端各加一张克隆，滑到克隆帧后在 transitionend 里瞬移回真实帧。向右滑=前进（第3张→第1张顺向切入）。
     let bannerPos = 1;        // 轨道位置：真实第 i 张在 pos=i+1
@@ -215,6 +225,7 @@
     const renderHome = () => {
       const previousTabs = home.querySelector('.furniture-tabs');
       const previousTabScrollLeft = previousTabs?.scrollLeft || 0;
+      disposeTemplatePreviews(home);
       const rails = ['floorplan'].map((kind) => { // 地板/墙纸类不在灵感库覆盖，改由「我的家」直接选（后端联调）；此处仅留户型类
         const assets = getAssets(kind).slice(0, 5);
         const cardClass = kind === 'floorplan' ? 'component-card component-card--floorplan' : 'component-card';
@@ -226,6 +237,7 @@
       const allData = isAllFurniture ? 'furniture' : `furniture:${activeFurnitureCategory}`;
       const allLabel = isAllFurniture ? '家具' : FURNITURE_CATEGORIES.find((item) => item.id === activeFurnitureCategory).label;
       home.innerHTML = `${rails}<section class="catalog-section"><div class="section-head"><span class="section-tag">家具类</span></div><div class="furniture-tabs" role="tablist" aria-label="家具子类">${tabs}</div><div class="furniture-grid">${furniture.map((asset) => card(asset, 'furniture-card')).join('')}<button class="furniture-card all-card" data-all="${allData}" aria-label="查看全部${allLabel}"><span>查看全部</span></button></div></section>`;
+      renderTemplatePreviews(home);
       const nextTabs = home.querySelector('.furniture-tabs');
       const selectedTab = nextTabs?.querySelector('[aria-selected="true"]');
       if (!nextTabs || !selectedTab) return;
@@ -249,7 +261,9 @@
       // 次级页标题栏移到滚动区外（与主页「灵感库」标题同构，随内容滚动而固定），隐藏底部 tabbar
       libraryHeader.hidden = false; libraryHeader.classList.add('is-catalog'); libraryHeader.innerHTML = toolbar;
       mainTabbar.hidden = true;
+      disposeTemplatePreviews(catalog);
       catalog.innerHTML = assets.length ? `<div class="catalog-grid">${assets.map((asset) => card(asset)).join('')}</div>` : '<p class="empty-state">还没有收藏组件。点击心形即可收藏。</p>';
+      renderTemplatePreviews(catalog);
       selectBar.hidden = !select.on;
       confirmDelete.disabled = select.ids.size === 0;
     };
@@ -366,17 +380,22 @@
       viewerName.value = asset.name;
       viewerName.readOnly = !editable;
       viewerDelete.hidden = !editable;
-      viewerSource.hidden = editable; // 链接icon 仅平台组件有原视频；用户手绘/拍照生成的不显示
+      viewerSource.hidden = editable || asset.sourceType === 'offline_photo' || !asset.videoUrl; // 拍照资产没有虚构的视频跳转
       syncViewerFav();
       fitViewerName();
       const catLabel = asset.category ? FURNITURE_CATEGORIES.find((c) => c.id === asset.category)?.label || '' : '';
-      viewerMeta.textContent = `${labelByKind[asset.kind]}${catLabel ? ` · ${catLabel}` : ''}${editable ? ' · 我的组件' : ' · 平台组件'}`;
+      const provenance = asset.sourceType === 'offline_photo' ? '线下拍照生成' : (editable ? '我的组件' : '平台组件');
+      viewerMeta.textContent = `${labelByKind[asset.kind]}${catLabel ? ` · ${catLabel}` : ''} · ${provenance}`;
       viewer.hidden = false;
+      disposeTemplatePreviews(viewerStage);
       const showPhoto = () => {
         if (asset.thumbnail) viewerStage.innerHTML = `<div class="viewer-photo"><img src="${asset.thumbnail}" alt="${asset.name}" /></div>`;
         else viewerStage.innerHTML = visual(asset);
       };
-      if (use3D) {
+      if (asset.kind === 'floorplan' && asset.templateId) {
+        viewerStage.innerHTML = `<div class="component-visual visual--floorplan"><canvas data-template-preview="${asset.templateId}" aria-label="${asset.name} 3D 户型预览"></canvas></div>`;
+        requestAnimationFrame(() => { viewer.classList.add('is-open'); renderTemplatePreview(viewerStage.querySelector('canvas'), asset.templateId); });
+      } else if (use3D) {
         viewerStage.innerHTML = '<span class="viewer-hint">拖动可 360° 查看</span>';
         requestAnimationFrame(async () => {
           viewer.classList.add('is-open');
@@ -393,6 +412,7 @@
     }
     function closeViewer() {
       viewer.classList.remove('is-open');
+      disposeTemplatePreviews(viewerStage);
       viewer3D?.dispose(); viewer3D = null; viewerAssetId = null;
       setTimeout(() => { viewer.hidden = true; }, 220);
     }
@@ -407,7 +427,7 @@
     viewerFav.addEventListener('click', () => { if (!viewerAssetId) return; toggle(viewerAssetId); syncViewerFav(); });
     // 删除（仅用户组件）→ 先弹「删除后不可恢复」二次确认
     viewerDelete.addEventListener('click', () => { if (!viewerAssetId) return; openDelConfirm({ type: 'single', id: viewerAssetId }); });
-    viewerSource.addEventListener('click', () => { if (!viewerAssetId) return; location.href = `../discover/index.html#asset=${encodeURIComponent(viewerAssetId)}`; }); // 跳「刷一刷」看该组件被提取的源视频帧
+    viewerSource.addEventListener('click', () => { const asset = getAsset(viewerAssetId); if (!asset?.videoUrl) return; location.href = `../discover/index.html#asset=${encodeURIComponent(viewerAssetId)}`; }); // 仅视频资产跳「刷一刷」看来源
 
     // ---------- 删除二次确认弹窗 ----------
     const delConfirm = document.getElementById('delConfirm');

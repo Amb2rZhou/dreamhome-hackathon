@@ -10,7 +10,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .config import settings
-from .routers import video, photo, sketch, voice, jobs, assets, videos, library, tracks_fix, annotations, agent, scenes, review_qc, frame_assets, libraries
+from .services.selection_production import production_readiness
+from .routers import video, photo, sketch, voice, jobs, assets, videos, library, tracks_fix, annotations, agent, scenes, review_qc, frame_assets, libraries, home_projects
 
 app = FastAPI(
     title="DreamHome API",
@@ -48,11 +49,23 @@ app.include_router(scenes.router)
 app.include_router(frame_assets.router)
 # 专项资产库(窗户/吊顶/地板/光线/窗外景观,T6)
 app.include_router(libraries.router)
+app.include_router(home_projects.router)
 
 
 @app.get("/api/health", tags=["health"])
 async def health():
-    return {"status": "ok", "provider": settings.effective_provider}
+    capabilities = settings.consumer_capabilities()
+    feed_selection = production_readiness()
+    capabilities["feed_selection_production"] = feed_selection
+    capabilities["consumer_pipeline_ready"] = bool(
+        capabilities["consumer_pipeline_ready"] and feed_selection["ready"]
+    )
+    return {
+        "status": "ok",
+        "consumer_contract": "dreamhome-consumer-v1",
+        "provider": settings.effective_provider,
+        "capabilities": capabilities,
+    }
 
 
 # 静态托管上传/中间产物/结果，路径与 config.STORAGE_DIR 对应
@@ -67,4 +80,5 @@ app.mount("/review", StaticFiles(directory=os.path.abspath(_review), html=True),
 # 内置占位 GLB(mock/种子数据用)。评委在国内,一切静态资源必须本机/国内源出,
 # 不能指向 raw.githubusercontent 等境外地址。
 _samples = os.path.join(os.path.dirname(__file__), "..", "samples")
+os.makedirs(os.path.abspath(_samples), exist_ok=True)
 app.mount("/samples", StaticFiles(directory=os.path.abspath(_samples)), name="samples")

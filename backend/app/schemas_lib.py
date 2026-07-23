@@ -2,7 +2,7 @@
 
 bbox 一律归一化 [x, y, w, h]，原点左上。
 """
-from typing import List, Optional, Union
+from typing import List, Literal, Optional, Union
 from pydantic import BaseModel, Field
 
 
@@ -91,6 +91,9 @@ class SelectRequest(BaseModel):
     t: float
     bbox: List[float]
     frame_data_uri: Optional[str] = None   # 前端截帧(dataURI)；不传则服务端尝试从视频抽帧
+    polygon: List[List[float]] = Field(default_factory=list)  # 原始帧归一化手绘圈；仅作选择意图
+    frame_width: Optional[int] = None
+    frame_height: Optional[int] = None
     category_hint: str = ""                # 检测框的品类(前端从 detect 结果透传)
     track_id: Optional[str] = None         # 圈的是 detect 返回的框时透传，复用该 track 不新建
 
@@ -105,18 +108,26 @@ class SelectResponse(BaseModel):
     select_id: str
     labels: Labels                     # 本次圈选提取出的标签
     candidates: List[MatchCandidate] = Field(default_factory=list)
+    # Deterministic same-video hit (bound track/manual annotation).  Unlike
+    # ``candidates``, this may be reused automatically without asking the user
+    # to judge whether two merely similar pieces of furniture are identical.
+    exact_match: Optional[MatchCandidate] = None
 
 
 class SelectConfirmRequest(BaseModel):
     select_id: str
     use_asset_id: Optional[str] = None  # 确认同款：挂现有资产，不重新生成
     generate_new: bool = False          # 生成新资产
+    quality_mode: Literal["fast", "production"] = "fast"
+    user_id: str = ""                   # 有明确用户身份时才自动加入素材库
 
 
 class SelectConfirmResponse(BaseModel):
     asset_id: Optional[str] = None
     job_id: Optional[str] = None        # generate_new 时轮询 /api/jobs/{id}
     track_id: str = ""
+    quality_mode: Literal["reuse", "fast", "production"] = "reuse"
+    library_attached: bool = False
 
 
 class LibraryAddRequest(BaseModel):

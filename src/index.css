@@ -7,11 +7,19 @@
 html, body, #root {
   width: 100%;
   min-height: 100vh;
-  background: #111;
+  min-height: 100dvh;
+  background: linear-gradient(90deg, #faf4e6, #fefdf8 48%, #f8f2e3);
 }
 
 #root {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 28px 18px;
+}
+
+@media (max-height: 730px) {
+  #root {
+    padding-block: 8px;
+  }
 }

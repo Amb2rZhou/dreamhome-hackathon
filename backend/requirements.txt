@@ -9,4 +9,5 @@ pydantic>=2.6
 pillow>=10.0
 opencv-python-headless>=4.9      # 视频抽帧 + 锐度评估
 rembg>=2.0                       # segment_api.py 照片去背景
+onnxruntime>=1.18                # rembg CPU inference runtime
 # imageio[pyav]>=2.34            # 无 opencv 时的抽帧兜底

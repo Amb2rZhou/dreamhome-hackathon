@@ -40,10 +40,18 @@ _EMPTY = {"category": "", "sub": "", "colors": [], "materials": [],
 
 
 async def extract_labels(image_path: Optional[str] = None, *,
-                         category_hint: str = "", framed: bool = False) -> dict:
-    """framed=True: 图里有红框标出目标(带环境上下文),判定只针对红框内物体。"""
+                         category_hint: str = "", framed: bool = False,
+                         strict: bool = False) -> dict:
+    """Extract structured labels.
+
+    ``strict=True`` is reserved for consumer production paths.  Those paths
+    must fail closed when the configured vision provider is unavailable or
+    rejects the request; a mock category must never be allowed to approve a
+    completion/TRELLIS job.
+    """
     provider = settings.effective_labels_provider
     labels = None
+    provider_error: Exception | None = None
     try:
         if provider in ("anthropic", "dashscope") and image_path:
             from . import cache
@@ -55,9 +63,17 @@ async def extract_labels(image_path: Optional[str] = None, *,
                 fn = _anthropic if provider == "anthropic" else _dashscope
                 labels = await fn(image_path, category_hint, framed)
                 cache.put("labels", key, {"labels": labels})
-    except Exception:
-        labels = None  # 打标签失败不阻断主链路，退 mock
+    except Exception as exc:
+        labels = None
+        provider_error = exc
     if labels is None:
+        if strict:
+            if provider not in ("anthropic", "dashscope"):
+                raise RuntimeError("labels provider is unavailable for production")
+            if not image_path:
+                raise RuntimeError("labels production input image is missing")
+            detail = f": {type(provider_error).__name__}" if provider_error else ""
+            raise RuntimeError(f"labels provider failed for production{detail}") from provider_error
         labels = _mock(image_path, category_hint)
     labels["mount"] = assign_mount(labels)
     return labels
