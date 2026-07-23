@@ -292,8 +292,15 @@ async def select(video_id: str, request: Request):
         raise HTTPException(422, "frame_width does not match uploaded frame")
     if req.frame_height is not None and req.frame_height != frame_size[1]:
         raise HTTPException(422, "frame_height does not match uploaded frame")
-    labels = await extract_labels(recognition_context, category_hint=req.category_hint,
-                                  framed=True)
+    try:
+        labels = await extract_labels(
+            recognition_context,
+            category_hint=req.category_hint,
+            framed=True,
+            strict=bool(req.polygon and has_source_frame),
+        )
+    except RuntimeError as exc:
+        raise HTTPException(503, f"production labels unavailable: {exc}") from exc
     cands = []
     for c in matching.match_candidates(labels):
         asset = db.get_asset(c["asset_id"])

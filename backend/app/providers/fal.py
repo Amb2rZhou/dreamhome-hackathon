@@ -55,7 +55,7 @@ class FalTrellisProvider(Gen3DProvider):
         payload = {"image_url": _to_data_uri(image_path)}
         if prompt:
             payload["prompt"] = prompt
-        async with httpx.AsyncClient(timeout=60) as client:
+        async with httpx.AsyncClient(timeout=60, trust_env=False) as client:
             r = await client.post(self._submit_url, headers=self._headers, json=payload)
             r.raise_for_status()
             data = r.json()
@@ -72,7 +72,7 @@ class FalTrellisProvider(Gen3DProvider):
         if not status_url or not response_url:
             return Gen3DResult(status="failed", error="fal response missing status_url/response_url")
 
-        async with httpx.AsyncClient(timeout=30) as client:
+        async with httpx.AsyncClient(timeout=30, trust_env=False) as client:
             s = await client.get(status_url, headers=self._headers)
             s.raise_for_status()
             status_payload = s.json()

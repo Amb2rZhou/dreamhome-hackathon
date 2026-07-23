@@ -1,0 +1,26 @@
+[Unit]
+Description=DreamHome production API
+After=network-online.target dreamhome-segment.service dreamhome-gpu.service
+Wants=network-online.target dreamhome-segment.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/dreamhome/backend
+EnvironmentFile=-/etc/dreamhome/backend.env
+Environment=PYTHONPATH=/opt/dreamhome/backend
+Environment=GEN3D_PROVIDER=selfhost
+Environment=DETECT_PROVIDER=remote
+Environment=REMOTE_GPU_URL=http://127.0.0.1:9000
+Environment=LABELS_PROVIDER=dashscope
+Environment=ENHANCE_PROVIDER=module
+Environment=SEGMENT_API_URL=http://127.0.0.1:8002
+Environment=DB_PATH=/opt/dreamhome/data/dreamhome.db
+Environment=STORAGE_DIR=/opt/dreamhome/data/storage
+Environment=PUBLIC_BASE_URL=https://web-git-agent-frontend-integration-amb2rzhous-projects.vercel.app/dreamhome-api
+ExecStart=/opt/dreamhome/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=3
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target

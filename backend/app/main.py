@@ -54,10 +54,17 @@ app.include_router(home_projects.router)
 
 @app.get("/api/health", tags=["health"])
 async def health():
+    capabilities = settings.consumer_capabilities()
+    feed_selection = production_readiness()
+    capabilities["feed_selection_production"] = feed_selection
+    capabilities["consumer_pipeline_ready"] = bool(
+        capabilities["consumer_pipeline_ready"] and feed_selection["ready"]
+    )
     return {
         "status": "ok",
+        "consumer_contract": "dreamhome-consumer-v1",
         "provider": settings.effective_provider,
-        "capabilities": {"feed_selection_production": production_readiness()},
+        "capabilities": capabilities,
     }
 
 

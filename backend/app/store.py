@@ -66,8 +66,25 @@ async def _run(job: Job, image_path: str, texture: bool) -> None:
             res = await provider.poll(pjid)
             job.progress = res.progress
             if res.status == "succeeded":
+                model_url = res.model_url
+                if not model_url:
+                    job.status = JobStatus.failed
+                    job.error = "material_postprocess_failed: provider returned no model URL"
+                    return
+                try:
+                    from .services.glb_material import materialize_postprocessed_glb
+                    model_url, _metadata = await materialize_postprocessed_glb(model_url)
+                except Exception as exc:
+                    # Raw provider output is not a consumer-ready result.  If
+                    # geometry/material validation fails, fail closed.
+                    job.status = JobStatus.failed
+                    job.error = (
+                        "material_postprocess_failed: "
+                        f"{type(exc).__name__}: {exc}"
+                    )
+                    return
                 job.status = JobStatus.succeeded
-                job.model_url = res.model_url
+                job.model_url = model_url
                 job.thumbnail_url = res.thumbnail_url or job.thumbnail_url
                 return
             if res.status == "failed":

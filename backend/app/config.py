@@ -28,6 +28,10 @@ class Settings:
 
     FAL_KEY: str = _env("FAL_KEY")
     FAL_TRELLIS_ENDPOINT: str = _env("FAL_TRELLIS_ENDPOINT", "fal-ai/trellis")
+    # TRELLIS often bakes scene shadows into the base-color texture.  Keep the
+    # correction explicit and versionable so generated assets are not silently
+    # delivered with the raw, overly-dark material.
+    TRELLIS_ALBEDO_GAMMA: float = float(_env("TRELLIS_ALBEDO_GAMMA", "0.7"))
 
     TRIPO_API_KEY: str = _env("TRIPO_API_KEY")
     TRIPO_BASE_URL: str = _env("TRIPO_BASE_URL", "https://api.tripo3d.ai/v2/openapi")
@@ -86,6 +90,47 @@ class Settings:
         if self.GEN3D_PROVIDER == "meshy" and self.MESHY_API_KEY:
             return "meshy"
         return "mock"
+
+    def consumer_capabilities(self) -> dict:
+        """Return secret-free configured readiness for the consumer pipeline."""
+        detect_provider = self.effective_detect_provider
+        labels_provider = self.effective_labels_provider
+        gen3d_provider = self.effective_provider
+        completion_ready = self.ENHANCE_PROVIDER in {"module", "cmd"}
+        consistency_ready = bool(self.DASHSCOPE_API_KEY)
+        trellis_ready = gen3d_provider in {"fal", "selfhost"}
+        capabilities = {
+            "detect": {"provider": detect_provider, "ready": detect_provider != "mock"},
+            "completion": {
+                "provider": self.ENHANCE_PROVIDER,
+                "ready": completion_ready,
+            },
+            "labels": {"provider": labels_provider, "ready": labels_provider != "mock"},
+            "single_object_check": {
+                "provider": "dashscope" if consistency_ready else "off",
+                "ready": consistency_ready,
+            },
+            "identity_check": {
+                "provider": "dashscope" if consistency_ready else "off",
+                "ready": consistency_ready,
+            },
+            "gen3d": {
+                "provider": gen3d_provider,
+                "model_family": "trellis" if trellis_ready else "unsupported",
+                "ready": trellis_ready,
+            },
+            "material_postprocess": {
+                "ready": 0 < self.TRELLIS_ALBEDO_GAMMA <= 1,
+                "albedo_gamma": self.TRELLIS_ALBEDO_GAMMA,
+            },
+            "identity": {"mode": "local_demo", "authenticated": False},
+        }
+        capabilities["consumer_pipeline_ready"] = all(
+            state.get("ready", True)
+            for name, state in capabilities.items()
+            if name != "identity"
+        )
+        return capabilities
 
 
 settings = Settings()

@@ -25,10 +25,14 @@ class VideoSelectMultipartTests(unittest.TestCase):
         def fake_workpath(prefix: str, suffix: str) -> str:
             return str(Path(self.temp_dir.name) / f"{prefix}-{next(self.counter)}{suffix}")
 
-        async def fake_labels(path: str, category_hint: str = "", framed: bool = False) -> dict:
+        async def fake_labels(
+            path: str, category_hint: str = "", framed: bool = False,
+            strict: bool = False,
+        ) -> dict:
             with Image.open(path) as crop:
                 self.assertEqual(crop.size, (90, 80))
             self.assertTrue(framed)
+            self.assertEqual(strict, bool(category_hint or "polygon" in Path(path).name))
             return {"category": category_hint or "其他", "sub": "茶壶"}
 
         self.patches = [
