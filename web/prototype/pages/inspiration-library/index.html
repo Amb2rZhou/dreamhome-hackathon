@@ -181,7 +181,7 @@
     // ---------- 顶部 banner 轮播（情绪引导卡 + 平台案例卡；真机用 <swiper circular>） ----------
     // 案例卡复用对应 1:1 重建场景的真实封面，确保入口预览与进入后的房间一致。
     const BANNER_CASES = [
-      { id: 'case-oak', videoId: 'vid_40734d7f2e6c', image: '../../assets/scenes/vid_40734d7f2e6c.jpg', tag: '原木侘寂 · 45㎡', blogger: '@鸡蛋灌饼的家' },
+      { id: 'case-oak', videoId: 'vid_40734d7f2e6c', image: '../../assets/scenes/vid_40734d7f2e6c.jpg?v=approved-room', tag: '原木侘寂 · 45㎡', blogger: '@鸡蛋灌饼的家' },
       { id: 'case-cream', videoId: 'vid_5f32a0ac954a', image: '../../assets/scenes/vid_5f32a0ac954a.jpg', tag: '奶油风 · 78㎡', blogger: '@栗子设计日记' },
     ];
     // 无缝循环：两端各加一张克隆，滑到克隆帧后在 transitionend 里瞬移回真实帧。向右滑=前进（第3张→第1张顺向切入）。

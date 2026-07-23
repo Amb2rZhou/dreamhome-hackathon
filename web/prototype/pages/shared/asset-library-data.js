@@ -2,8 +2,18 @@ import { BACKEND_ASSETS } from './library-assets.generated.js';
 
 const FAVORITES_KEY = 'dreamhome.asset-library.v1';
 const USER_ASSETS_KEY = 'dreamhome.user-assets.v1';
+const FAVORITES_MIGRATION_KEY = 'dreamhome.asset-library.defaults.20260723-approved-homes';
 // 产品演示的首次打开收藏。当前用户已明确选择的快照会写入这里；浏览器后续操作仍覆盖本地状态。
-export const DEFAULT_FAVORITE_IDS = [];
+export const DEFAULT_FAVORITE_IDS = [
+  'floorplan-wide-living', 'floorplan-long-living', 'floorplan-square-lounge',
+  'floorplan-l-living', 'floorplan-bay-bedroom', 'floorplan-standard-bedroom',
+  'ast_7a6844fdf7e6', 'ast_717c98fe0e21', 'ast_b914f61b3e04', 'ast_eea00f986e60',
+  'ast_42a4923c5286', 'ast_0c40e643ff23', 'ast_b7f81d8b8dcd', 'ast_7b10d7d4bdb6',
+  'ast_4a6964d61395', 'ast_2e0f65b42cfc', 'ast_dec6af78617b', 'ast_88ceb53354e6',
+  'ast_9d3dc36f80d6', 'ast_79d7df1565e0', 'ast_06c83d58cb62', 'ast_12910011860f',
+  'ast_ccc6f7405f39', 'ast_8926f9413f29', 'ast_b80193251739', 'ast_00e00df1bfeb',
+  'ast_09f5ed9678b1', 'ast_45226bd63340', 'ast_b80f4e4a387b',
+];
 
 export const COMPONENT_FAMILIES = [
   { id: 'floorplan', label: '户型类' },
@@ -93,7 +103,7 @@ export const COMPONENT_ASSETS = [
   asset('floorplan-square-lounge', 'floorplan', '方形会客厅', { templateId: 'square-lounge', supported: true, previewImage: '../../assets/scenes/templates/square-lounge.png?v=2' }),
   asset('floorplan-l-living', 'floorplan', 'L形客厅', { templateId: 'l-living', supported: true, previewImage: '../../assets/scenes/templates/l-living.png?v=2' }),
   asset('floorplan-bay-bedroom', 'floorplan', '飘窗卧室', { templateId: 'bay-bedroom', supported: true, previewImage: '../../assets/scenes/templates/bay-bedroom.png?v=2' }),
-  asset('floorplan-corner-bedroom', 'floorplan', '转角卧室', { templateId: 'corner-bedroom', supported: true, previewImage: '../../assets/scenes/templates/corner-bedroom.png?v=2' }),
+  asset('floorplan-standard-bedroom', 'floorplan', '普通方形卧室', { templateId: 'standard-bedroom', supported: true, previewImage: '../../assets/scenes/templates/bay-bedroom.png?v=3' }),
   asset('floor-oak', 'floor', '原木浅橡', { finish: { color: '#cfae7f', accent: '#ad895b', pattern: 'grain' } }),
   asset('floor-terrazzo', 'floor', '暖白水磨石', { finish: { color: '#ded9cb', accent: '#a9afa5', pattern: 'speckle' } }),
   asset('floor-walnut', 'floor', '胡桃木拼花', { finish: { color: '#835d42', accent: '#b58764', pattern: 'parquet' } }),
@@ -171,7 +181,13 @@ export function getFavorites() {
   try {
     const raw = localStorage.getItem(FAVORITES_KEY);
     const stored = raw ? JSON.parse(raw) : null;
-    const ids = Array.isArray(stored?.ids) ? stored.ids : DEFAULT_FAVORITE_IDS;
+    const storedIds = Array.isArray(stored?.ids) ? stored.ids : [];
+    const shouldSeed = !localStorage.getItem(FAVORITES_MIGRATION_KEY) && storedIds.length === 0;
+    const ids = shouldSeed || !stored ? DEFAULT_FAVORITE_IDS : storedIds;
+    if (shouldSeed || !stored) {
+      localStorage.setItem(FAVORITES_KEY, JSON.stringify({ version: 2, ids }));
+      localStorage.setItem(FAVORITES_MIGRATION_KEY, '1');
+    }
     const userIds = new Set(getUserAssets().map((item) => item.id));
     return new Set(ids.filter((id) => ASSET_BY_ID.has(id) || userIds.has(id)));
   } catch {
@@ -182,7 +198,8 @@ export function getFavorites() {
 export function setFavorites(ids) {
   const userIds = new Set(getUserAssets().map((item) => item.id));
   const known = [...new Set(ids)].filter((id) => ASSET_BY_ID.has(id) || userIds.has(id));
-  localStorage.setItem(FAVORITES_KEY, JSON.stringify({ version: 1, ids: known }));
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify({ version: 2, ids: known }));
+  localStorage.setItem(FAVORITES_MIGRATION_KEY, '1');
   return new Set(known);
 }
 

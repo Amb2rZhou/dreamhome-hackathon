@@ -312,7 +312,7 @@
 
     const STORAGE_KEY = 'dreamhome.my-home.v1';
     const HOMES_KEY = 'dreamhome.my-home.homes.v1';
-    const DEFAULT_HOMES_MIGRATION_KEY = 'dreamhome.default-homes.20260723-approved';
+    const DEFAULT_HOMES_MIGRATION_KEY = 'dreamhome.default-homes.20260723-approved-v2';
     const MOCK_FAILURE = new URLSearchParams(location.search).has('mockFailure');
     const wall = (id, axis, at, from, to, role='partition') => ({id,axis,at,from,to,role});
     const TEMPLATES = [
@@ -345,10 +345,10 @@
       ], walls:[wall('outer-n','x',-5,-7,7,'exterior'),wall('outer-s','x',5,-7,7,'exterior'),wall('outer-w','z',-7,-5,5,'exterior'),wall('outer-e','z',7,-5,5,'exterior'),wall('divide-main','z',0,-5,0),wall('divide-living','z',0,0,5),wall('divide-back','x',3,-7,7),wall('divide-kitchen','z',-2,0,3),wall('divide-bath','z',4,0,3),wall('divide-bedrooms','x',3,-7,7),wall('divide-bedroom-a','z',-1,3,5),wall('divide-bedroom-b','z',3,3,5)] }
       ,{ id:'wide-living', name:'横厅客厅', meta:'42㎡ · 落地采光', scope:'room', envelope:{width:9,depth:5.5}, rooms:[{name:'横厅客厅',label:'客厅',type:'living',zone:'public',x:0,z:0,width:9,depth:5.5,windowEdges:['north']}], walls:[wall('wide-n','x',-2.75,-4.5,4.5,'exterior'),wall('wide-s','x',2.75,-4.5,4.5,'exterior'),wall('wide-w','z',-4.5,-2.75,2.75,'exterior'),wall('wide-e','z',4.5,-2.75,2.75,'exterior')] }
       ,{ id:'long-living', name:'窄长客厅', meta:'36㎡ · 纵向采光', scope:'room', envelope:{width:5,depth:9}, rooms:[{name:'窄长客厅',label:'客厅',type:'living',zone:'public',x:0,z:0,width:5,depth:9,windowEdges:['east','south']}], walls:[wall('long-n','x',-4.5,-2.5,2.5,'exterior'),wall('long-s','x',4.5,-2.5,2.5,'exterior'),wall('long-w','z',-2.5,-4.5,4.5,'exterior'),wall('long-e','z',2.5,-4.5,4.5,'exterior')] }
-      ,{ id:'square-lounge', name:'方形会客厅', meta:'38㎡ · 对角采光', scope:'room', envelope:{width:6.5,depth:6.5}, rooms:[{name:'方形会客厅',label:'会客厅',type:'living',zone:'public',x:0,z:0,width:6.5,depth:6.5,windowEdges:['north','west']}], walls:[wall('square-n','x',-3.25,-3.25,3.25,'exterior'),wall('square-s','x',3.25,-3.25,3.25,'exterior'),wall('square-w','z',-3.25,-3.25,3.25,'exterior'),wall('square-e','z',3.25,-3.25,3.25,'exterior')] }
+      ,{ id:'square-lounge', name:'方形会客厅', meta:'56㎡ · 双面大窗', scope:'room', envelope:{width:8,depth:7}, rooms:[{name:'方形会客厅',label:'会客厅',type:'living',zone:'public',x:0,z:0,width:8,depth:7,windowEdges:['north','west']}], walls:[wall('square-n','x',-3.5,-4,4,'exterior'),wall('square-s','x',3.5,-4,4,'exterior'),wall('square-w','z',-4,-3.5,3.5,'exterior'),wall('square-e','z',4,-3.5,3.5,'exterior')] }
       ,{ id:'l-living', name:'L形客厅', meta:'44㎡ · 单面大窗', scope:'room', envelope:{width:8,depth:7}, rooms:[{name:'主客厅',label:'客厅',type:'living',zone:'public',x:-1.5,z:0,width:5,depth:7,windowEdges:['north']},{name:'转角区',label:'转角',type:'living',zone:'public',x:2.5,z:1.5,width:3,depth:4,windowEdges:[]}], walls:[wall('l-top','x',-3.5,-4,1,'exterior'),wall('l-notch-v','z',1,-3.5,-.5,'exterior'),wall('l-notch-h','x',-.5,1,4,'exterior'),wall('l-right','z',4,-.5,3.5,'exterior'),wall('l-bottom','x',3.5,-4,4,'exterior'),wall('l-left','z',-4,-3.5,3.5,'exterior')] }
-      ,{ id:'bay-bedroom', name:'飘窗卧室', meta:'27㎡ · 北向飘窗', scope:'room', envelope:{width:6,depth:5}, rooms:[{name:'飘窗卧室',label:'卧室',type:'bedroom',zone:'private',x:0,z:0,width:6,depth:5,windowEdges:['north']}], walls:[wall('bay-n','x',-2.5,-3,3,'exterior'),wall('bay-s','x',2.5,-3,3,'exterior'),wall('bay-w','z',-3,-2.5,2.5,'exterior'),wall('bay-e','z',3,-2.5,2.5,'exterior')] }
-      ,{ id:'corner-bedroom', name:'转角卧室', meta:'30㎡ · 西南双窗', scope:'room', envelope:{width:7,depth:5}, rooms:[{name:'转角卧室',label:'卧室',type:'bedroom',zone:'private',x:0,z:0,width:7,depth:5,windowEdges:['west','south']}], walls:[wall('corner-n','x',-2.5,-3.5,3.5,'exterior'),wall('corner-s','x',2.5,-3.5,3.5,'exterior'),wall('corner-w','z',-3.5,-2.5,2.5,'exterior'),wall('corner-e','z',3.5,-2.5,2.5,'exterior')] }
+      ,{ id:'bay-bedroom', name:'飘窗卧室', meta:'卧室（单间公寓）同款', scope:'room', envelope:{width:4.2,depth:6.15}, rooms:[{name:'飘窗卧室',label:'卧室',type:'bedroom',zone:'private',x:0,z:0,width:4.2,depth:5.2,windowEdges:[]}], walls:[wall('bay-n','x',-2.6,-2.1,2.1,'exterior'),wall('bay-s','x',2.6,-2.1,2.1,'exterior'),wall('bay-w','z',-2.1,-2.6,2.6,'exterior'),wall('bay-e','z',2.1,-2.6,2.6,'exterior')], realScene:{room:{w:4.2,d:5.2,h:2.8},balcony:{x0:-.1,x1:2.1,depth:.95},extras:[],cfg:{light:'dusk',view:'dusk_city',windows:[{id:'bay1',wall:'back',type:'bay',style:'grid',center:-1.15,width:1.7,height:1.95,sill:.45},{id:'balc1',wall:'balcony',type:'floor',style:'grid',center:1,width:2,height:2.5,sill:0}]}} }
+      ,{ id:'standard-bedroom', name:'普通方形卧室', meta:'25㎡ · 普通床', scope:'room', envelope:{width:5,depth:5}, rooms:[{name:'普通方形卧室',label:'卧室',type:'bedroom',zone:'private',x:0,z:0,width:5,depth:5,windowEdges:[]}], walls:[wall('standard-n','x',-2.5,-2.5,2.5,'exterior'),wall('standard-s','x',2.5,-2.5,2.5,'exterior'),wall('standard-w','z',-2.5,-2.5,2.5,'exterior'),wall('standard-e','z',2.5,-2.5,2.5,'exterior')], defaultPlacements:[{assetId:'ast_ccc6f7405f39',roomId:'room-real',position:{x:.75,y:0,z:.45},rotation:{x:0,y:0,z:0},scale:{x:1,y:1,z:1}}], realScene:{room:{w:5,d:5,h:2.8},balcony:null,extras:[],cfg:{light:'day',view:'day_city',windows:[{id:'standard-main',wall:'back',type:'standard',style:'grid',center:-.65,width:2.5,height:1.85,sill:.62}]}} }
     ];
     const ASSETS = [
       {id:'chair-walnut',name:'胡桃木单椅',category:'座椅',sourceType:'photo',defaultScale:1,accent:'#b47c5d'},
@@ -421,10 +421,11 @@
           const store = JSON.parse(localStorage.getItem(HOMES_KEY) || 'null');
           let homes = store && Array.isArray(store.homes) ? store.homes : [];
           if (!store) homes = clone(DEFAULT_HOMES);
-          // 用用户最终确认的快照一次性替换这两个同 ID 的旧/残缺版本；其他生成项目保持不变。
+          // 用户最终确认的两套布局是内置演示项目的唯一真源；清理旧奶油风演示，但保留用户自行生成的其他项目。
           if (!localStorage.getItem(DEFAULT_HOMES_MIGRATION_KEY)) {
             const approvedIds=new Set(DEFAULT_HOMES.map((home)=>home.id));
-            homes=[...clone(DEFAULT_HOMES),...homes.filter((home)=>!approvedIds.has(home.id))];
+            const legacyVideoIds=new Set(['vid_5f32a0ac954a']);
+            homes=[...clone(DEFAULT_HOMES),...homes.filter((home)=>!approvedIds.has(home.id)&&!legacyVideoIds.has(home.source?.videoId))];
             localStorage.setItem(DEFAULT_HOMES_MIGRATION_KEY,'1');
           }
           // 把旧版单独保存的视频房间迁入统一项目列表，之后所有入口都复用同一编辑器和保存链路。
@@ -517,7 +518,7 @@
       'square-lounge':  [{ wall: 'back', type: 'floor' }, { wall: 'left', type: 'plain' }],
       'l-living':       [{ wall: 'back', type: 'floor' }],
       'bay-bedroom':    [{ wall: 'back', type: 'bay' }],
-      'corner-bedroom': [{ wall: 'back', type: 'plain' }, { wall: 'left', type: 'plain' }],
+      'standard-bedroom': [{ wall: 'back', type: 'plain' }],
     };
     function realSceneFromTemplate(template) {
       const w = template.envelope.width, d = template.envelope.depth, h = 2.8;
@@ -537,10 +538,13 @@
       validateTemplate(template);
       const rooms = template.rooms.map(normalizeTemplateRoom);
       const windowSlots = rooms.flatMap((room, index) => windowEdgesFor(room).map((edge, slotIndex) => ({id:`window-slot-${index+1}-${edge}`,roomId:room.id,edge,occupied:Array.isArray(room.windowEdges)?true:slotIndex === 0,position:slotPosition(room, edge)})));
-      const project = { schemaVersion:2, id:uid('home'), name: drawingName ? '我的图纸之家' : template.name, source:{type:drawingName?'drawing':'template',templateId:template.id,drawingName}, envelope:clone(template.envelope), walls:clone(template.walls), rooms, windowSlots, placements:[], finishes:{floorAssetId:null,wallpaperAssetId:null}, daylight:'day', createdAt:now(), updatedAt:now() };
+      const projectId=uid('home');
+      const placements=(template.defaultPlacements||[]).map(item=>({id:uid('placement'),homeId:projectId,userAdded:false,...clone(item)}));
+      const project = { schemaVersion:2, id:projectId, name: drawingName ? '我的图纸之家' : template.name, source:{type:drawingName?'drawing':'template',templateId:template.id,drawingName}, envelope:clone(template.envelope), walls:clone(template.walls), rooms, windowSlots, placements, finishes:{floorAssetId:null,wallpaperAssetId:null}, daylight:'day', createdAt:now(), updatedAt:now() };
       // 单间户型进入 Amber 拟真单间编辑器（光线滑杆 / 拟真墙窗 / 拖拽手柄）；source.type 仍为 template/drawing，保证进「继续编辑」并持久化
       if (template.scope === 'room') {
-        project.realScene = realSceneFromTemplate(template);
+        project.realScene = template.realScene ? clone(template.realScene) : realSceneFromTemplate(template);
+        project.daylight = project.realScene.cfg?.light || 'day';
         // 装修态（地板/墙面/窗户/时段光线）存进 project → 每次生成都是全新默认空间；编辑后随 project 持久化，重开可还原
         project.decor = { floorPreset: 'warm-long-plank', wallColor: '#f3ecdc', windowStyle: 'dark-grid', timeValue: 100 };
       }
@@ -594,7 +598,7 @@
     const sceneDataCache=new Map();
     const DEFAULT_DEMO_SCENE_IDS=['vid_40734d7f2e6c','vid_91fe552c5f7d'];
     const LEGACY_DEMO_SCENE_IDS=[...DEFAULT_DEMO_SCENE_IDS,'vid_5f32a0ac954a'];
-    const DEFAULT_DEMO_SEED_KEY='dreamhome.default-demo-homes.v3';
+    const DEFAULT_DEMO_SEED_KEY='dreamhome.default-demo-homes.v4-approved-snapshots';
     // 联调优先真机后端(127.0.0.1:8000)，后端不可达时回退随包静态 demo 数据，保证本地离线也能预览
     async function fetchSceneResource(apiPath, staticPath) {
       if (USE_LOCAL_BACKEND) {
@@ -621,34 +625,27 @@
       document.documentElement.dataset.preloadMs=String(Math.round(performance.now()-startedAt));
     }
     function scheduleVideoScenePreload(scenes){const start=()=>preloadVideoSceneAssets(scenes).catch(()=>{});if('requestIdleCallback'in window)requestIdleCallback(start,{timeout:250});else setTimeout(start,0);}
-    async function seedDefaultDemoHomes(scenes){
+    async function seedDefaultDemoHomes(){
       if(localStorage.getItem(DEFAULT_DEMO_SEED_KEY))return false;
       const legacyIds=new Set(LEGACY_DEMO_SCENE_IDS);
-      const preservedHomes=homeSceneService.loadHomes().filter(home=>!legacyIds.has(home.source?.videoId));
-      localStorage.setItem(HOMES_KEY,JSON.stringify({version:2,homes:preservedHomes}));
+      const approvedIds=new Set(DEFAULT_HOMES.map(home=>home.id));
+      const preservedHomes=homeSceneService.loadHomes().filter(home=>!legacyIds.has(home.source?.videoId)&&!approvedIds.has(home.id));
+      const approvedHomes=clone(DEFAULT_HOMES);
+      localStorage.setItem(HOMES_KEY,JSON.stringify({version:3,homes:[...approvedHomes,...preservedHomes]}));
       for(const videoId of LEGACY_DEMO_SCENE_IDS){
         localStorage.removeItem(sceneProjectKey(videoId));
         localStorage.removeItem(sceneBaselineKey(videoId));
         localStorage.removeItem(sceneNameKey(videoId));
       }
-      const existingIds=new Set();
-      let added=false;
-      for(const scene of scenes){
-        if(existingIds.has(scene.video_id))continue;
-        const sceneData=await loadVideoSceneData(scene.video_id);
-        const project=projectFromVideoScene(sceneData,[],true);
-        homeSceneService.saveProject(project);syncProjectInBackground(project);
-        existingIds.add(scene.video_id);
-        added=true;
-      }
+      approvedHomes.forEach(syncProjectInBackground);
       localStorage.setItem(DEFAULT_DEMO_SEED_KEY,'1');
-      return added;
+      return true;
     }
     async function renderVideoScenes() {
       ui.homeGrid.querySelectorAll('[data-video-scene]').forEach(card=>card.remove());
       try {
         const allScenes=await fetchSceneResource('/api/scenes','/scenes/index.json'),scenes=DEFAULT_DEMO_SCENE_IDS.map(id=>allScenes.find(scene=>scene.video_id===id)).filter(Boolean);
-        if(await seedDefaultDemoHomes(scenes))renderSavedHomes();
+        if(await seedDefaultDemoHomes())renderSavedHomes();
         const savedVideoIds=new Set(homeSceneService.loadHomes().filter(home=>home.source?.type==='video_rebuild').map(home=>home.source.videoId));
         ui.homeGrid.insertAdjacentHTML('beforeend',scenes.filter(scene=>!savedVideoIds.has(scene.video_id)).map((scene)=>{const name=escapeText(displaySceneName(scene)),videoId=escapeText(scene.video_id);return `<button class="video-scene-card" data-video-scene="${videoId}" data-scene-title="${name}" aria-label="开始编辑 ${name}"><span class="video-scene-card__plan" aria-hidden="true"><img src="../../assets/scenes/${videoId}.jpg?v=2" alt="" loading="lazy" /></span><b>${name}</b></button>`;}).join(''));
         updateContinueGrid();
