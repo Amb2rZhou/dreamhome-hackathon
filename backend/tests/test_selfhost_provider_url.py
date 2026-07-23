@@ -9,9 +9,13 @@ class SelfhostProviderUrlTests(unittest.TestCase):
         with patch(
             "app.providers.selfhost.settings.GEN3D_REMOTE_URL",
             "http://127.0.0.1:9001/",
+        ), patch(
+            "app.providers.selfhost.settings.GEN3D_FILES_URL",
+            "http://127.0.0.1:9000/",
         ):
             provider = SelfhostTrellisProvider()
         self.assertEqual(provider._base, "http://127.0.0.1:9001")
+        self.assertEqual(provider._files_base, "http://127.0.0.1:9000")
 
 
 if __name__ == "__main__":

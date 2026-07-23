@@ -19,6 +19,7 @@ class SelfhostTrellisProvider(Gen3DProvider):
 
     def __init__(self) -> None:
         self._base = settings.GEN3D_REMOTE_URL.rstrip("/")
+        self._files_base = settings.GEN3D_FILES_URL.rstrip("/")
 
     async def submit(self, image_path: str, *, texture: bool = True, prompt: str = "",
                      extra_image_paths: list[str] | None = None) -> str:
@@ -44,7 +45,7 @@ class SelfhostTrellisProvider(Gen3DProvider):
 
             if data["status"] == "succeeded":
                 # 拉回本机 storage,前端从自己服务端取 GLB
-                glb_url = f"{self._base}{data['glb_path']}"
+                glb_url = f"{self._files_base}{data['glb_path']}"
                 local = os.path.join(os.path.abspath(settings.STORAGE_DIR),
                                      "models", f"{uuid.uuid4().hex}.glb")
                 os.makedirs(os.path.dirname(local), exist_ok=True)

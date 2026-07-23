@@ -54,6 +54,10 @@ class Settings:
     # worker. Keeping its URL separate avoids sending large completed images
     # through the detection proxy on the all-in-one ECS deployment.
     GEN3D_REMOTE_URL: str = _env("GEN3D_REMOTE_URL", "") or REMOTE_GPU_URL
+    # The dedicated worker exposes submit/status, while the lightweight GPU
+    # gateway owns the shared `/files` mount. They may be the same service on
+    # simpler deployments.
+    GEN3D_FILES_URL: str = _env("GEN3D_FILES_URL", "") or REMOTE_GPU_URL or GEN3D_REMOTE_URL
     # 打标签 provider: mock | anthropic | dashscope
     LABELS_PROVIDER: str = _env("LABELS_PROVIDER", "mock").lower()
     DASHSCOPE_API_KEY: str = _env("DASHSCOPE_API_KEY")
