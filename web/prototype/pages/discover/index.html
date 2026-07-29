@@ -28,19 +28,54 @@
       inset: 0;
       display: grid;
       place-items: center;
+      padding: 32px;
+      box-sizing: border-box;
       color: #17181b;
-      font: 14px/1.5 system-ui, sans-serif;
+      text-align: center;
+      font: 16px/1.6 system-ui, sans-serif;
+    }
+
+    .discover-fallback[hidden] {
+      display: none;
+    }
+
+    .discover-fallback a {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      color: #fff;
+      background: #17181b;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
   <noscript class="discover-fallback">请开启 JavaScript 体验“刷一刷”。</noscript>
+  <main id="fileWarning" class="discover-fallback" hidden>
+    <div>
+      DreamHome 不能通过本地文件方式完整加载。
+      <br />
+      <a href="https://amb2r.top/dreamhome">打开线上 DreamHome</a>
+    </div>
+  </main>
   <iframe
     id="discoverApp"
     class="discover-app"
-    src="./app/index.html?v=phone-shell-3d-preview-20260723"
+    src="about:blank"
     title="DreamHome 刷一刷"
     allow="autoplay; camera; microphone; fullscreen"
   ></iframe>
+  <script>
+    const discoverApp = document.querySelector('#discoverApp');
+    const fileWarning = document.querySelector('#fileWarning');
+
+    if (window.location.protocol === 'file:') {
+      discoverApp.remove();
+      fileWarning.hidden = false;
+    } else {
+      discoverApp.src = './app/index.html?v=phone-shell-3d-preview-20260723';
+    }
+  </script>
 </body>
 </html>
