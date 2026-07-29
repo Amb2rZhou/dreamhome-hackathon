@@ -136,8 +136,6 @@ export function Mascot({
   const lastIdleAccentRef = useRef<'idleMagnifier' | 'idleBelt' | null>(null)
   const lastWorkAccentRef = useRef<'workingHammer' | 'workingDrawing' | null>(null)
   const bootPlayingRef = useRef(firstMotion === 'coldStart')
-  const preloadedVideosRef = useRef<Map<string, HTMLVideoElement>>(new Map())
-
   useEffect(() => {
     if (!motionView.previous) return
     const timer = window.setTimeout(() => {
@@ -145,35 +143,6 @@ export function Mascot({
     }, MOTION_FADE_MS + 40)
     return () => window.clearTimeout(timer)
   }, [motionView.previous])
-
-  useEffect(() => {
-    const likelyNextMotions: MotionName[] = awaitingCollectionView
-      ? ['complete']
-      : busy || state === 'working'
-        ? ['working', 'workingHammer', 'workingDrawing', 'complete']
-        : ['idle', 'idleMagnifier', 'idleBelt']
-
-    likelyNextMotions.forEach((name) => {
-      const src = MOTIONS[name].src
-      if (preloadedVideosRef.current.has(src)) return
-      const video = document.createElement('video')
-      video.preload = 'auto'
-      video.muted = true
-      video.playsInline = true
-      video.src = src
-      video.load()
-      preloadedVideosRef.current.set(src, video)
-    })
-  }, [awaitingCollectionView, busy, state])
-
-  useEffect(() => () => {
-    preloadedVideosRef.current.forEach((video) => {
-      video.pause()
-      video.removeAttribute('src')
-      video.load()
-    })
-    preloadedVideosRef.current.clear()
-  }, [])
 
   const baseMotion = useCallback((): MotionName => {
     if (busy || state === 'working') return 'working'
@@ -374,6 +343,12 @@ export function Mascot({
         </div>
       )}
       <div className={`mascot-media-frame ${collectionMode !== 'none' ? 'is-collecting' : ''}`}>
+        <img
+          className="mascot-img mascot-img--base"
+          src={FALLBACK_IMG[state]}
+          alt="包公球"
+          draggable={false}
+        />
         {collectionMode !== 'none' ? (
           <BlackKeyImage
             key={collectionMode === 'collecting' ? 'collect' : 'collect-ready'}
@@ -417,9 +392,7 @@ export function Mascot({
               } as React.CSSProperties}
             />
           </>
-        ) : (
-          <img className="mascot-img" src={FALLBACK_IMG[state]} alt="包公球" draggable={false} />
-        )}
+        ) : null}
       </div>
     </div>
   )

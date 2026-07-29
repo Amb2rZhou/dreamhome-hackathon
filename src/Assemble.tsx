@@ -11,6 +11,18 @@ interface PlacedItem {
   group: THREE.Group
 }
 
+interface VoiceRecognition {
+  lang: string
+  interimResults: boolean
+  maxAlternatives: number
+  onresult: ((event: { results: ArrayLike<{ 0: { transcript: string } }> }) => void) | null
+  onerror: (() => void) | null
+  onend: (() => void) | null
+  start: () => void
+}
+
+type VoiceRecognitionConstructor = new () => VoiceRecognition
+
 interface AssembleProps {
   components: LibraryComponent[]
   layout: RoomLayout | null
@@ -23,6 +35,7 @@ export function Assemble({ components, layout, layoutSource, onClose, onRepickLa
   const mountRef = useRef<HTMLDivElement>(null)
   const [placed, setPlaced] = useState<PlacedItem[]>([])
   const [activeUid, setActiveUid] = useState<string | null>(null)
+  const [voiceStatus, setVoiceStatus] = useState<'idle' | 'listening' | 'done' | 'unsupported'>('idle')
   const placedRef = useRef<PlacedItem[]>([])
   const activeUidRef = useRef<string | null>(null)
   const sceneRef = useRef<THREE.Scene | null>(null)
@@ -223,13 +236,44 @@ export function Assemble({ components, layout, layoutSource, onClose, onRepickLa
     if (activeUid === uid) setActiveUid(null)
   }
 
-  const handleVoice = () => {
+  const applyVoiceCommand = (transcript: string) => {
     if (!activeUid) return
     const item = placed.find((p) => p.uid === activeUid)
     if (!item) return
-    const spots = [[1.5, 1.5], [-1.5, 1.5], [1.5, -1.5], [-1.5, -1.5], [0, 0]]
-    const s = spots[placed.length % spots.length]
-    item.group.position.set(s[0], 0, s[1])
+    const command = transcript.replace(/\s+/g, '')
+    if (command.includes('窗边')) item.group.position.set(1.55, 0, -1.45)
+    else if (command.includes('中间') || command.includes('中央')) item.group.position.set(0, 0, 0)
+    else if (command.includes('左边') || command.includes('往左')) item.group.position.x -= 0.8
+    else if (command.includes('右边') || command.includes('往右')) item.group.position.x += 0.8
+    else if (command.includes('前面') || command.includes('往前')) item.group.position.z -= 0.8
+    else if (command.includes('后面') || command.includes('往后')) item.group.position.z += 0.8
+    if (command.includes('放大')) item.group.scale.multiplyScalar(1.15)
+    if (command.includes('缩小')) item.group.scale.multiplyScalar(1 / 1.15)
+    if (command.includes('旋转')) item.group.rotation.y += Math.PI / 4
+    setVoiceStatus('done')
+  }
+
+  const handleVoice = () => {
+    if (!activeUid || voiceStatus === 'listening') return
+    const voiceWindow = window as unknown as {
+      SpeechRecognition?: VoiceRecognitionConstructor
+      webkitSpeechRecognition?: VoiceRecognitionConstructor
+    }
+    const Recognition = voiceWindow.SpeechRecognition ?? voiceWindow.webkitSpeechRecognition
+    if (!Recognition) {
+      setVoiceStatus('unsupported')
+      applyVoiceCommand('挪到窗边')
+      return
+    }
+    const recognition = new Recognition()
+    recognition.lang = 'zh-CN'
+    recognition.interimResults = false
+    recognition.maxAlternatives = 1
+    recognition.onresult = (event) => applyVoiceCommand(event.results[0]?.[0]?.transcript ?? '')
+    recognition.onerror = () => setVoiceStatus('idle')
+    recognition.onend = () => setVoiceStatus((current) => current === 'listening' ? 'idle' : current)
+    setVoiceStatus('listening')
+    recognition.start()
   }
 
   return (
@@ -272,7 +316,11 @@ export function Assemble({ components, layout, layoutSource, onClose, onRepickLa
               )}
             </div>
             <button className="asm-voice-btn" onClick={handleVoice}>
-              🎤 挪到窗边
+              {voiceStatus === 'listening'
+                ? '🎤 正在听…'
+                : voiceStatus === 'done'
+                  ? '✓ 已按语音调整'
+                  : '🎤 语音编辑'}
             </button>
             <button className="asm-del-btn" onClick={() => removePlaced(activeUid)}>删除</button>
           </div>

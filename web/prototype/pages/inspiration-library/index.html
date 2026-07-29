@@ -128,7 +128,7 @@
       </div>
     </section>
   </main>
-  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+  <script type="importmap">{"imports":{"three":"/vendor/three.module.js","three/addons/":"/vendor/three-addons/"}}</script>
   <script type="module">
     import { COMPONENT_FAMILIES, FURNITURE_CATEGORIES, getAssets, getAsset, getFavorites, toggleFavorite, removeUserAsset, addUserAsset } from '../shared/asset-library-data.js';
     import { renderTemplatePreview, renderTemplatePreviews, disposeTemplatePreviews } from '../shared/template-preview-3d.js';
@@ -217,7 +217,7 @@
       let startX = null;
       viewport.addEventListener('pointerdown', (event) => { startX = event.clientX; bannerDragged = false; try { viewport.setPointerCapture(event.pointerId); } catch (_) {} });
       viewport.addEventListener('pointermove', (event) => { if (startX !== null && Math.abs(event.clientX - startX) > 10) bannerDragged = true; });
-      const endDrag = (event) => { if (startX === null) return; const dx = event.clientX - startX; const wasTap = !bannerDragged && Math.abs(dx) < 10; startX = null; if (dx < -40) { stepBanner(1); return; } if (dx > 40) { stepBanner(-1); return; } if (wasTap) { const el = document.elementFromPoint(event.clientX, event.clientY); const caseSlide = el && el.closest('[data-case]'); if (caseSlide && caseSlide.dataset.video) location.href = `../my-home/index.html?case=${encodeURIComponent(caseSlide.dataset.video)}`; } }; // 指针捕获会吞掉 click，故 tap 跳转在此处理（elementFromPoint 定位案例卡）；左划(dx<0)前进 / 右划(dx>0)后退
+      const endDrag = (event) => { if (startX === null) return; const dx = event.clientX - startX; const wasTap = !bannerDragged && Math.abs(dx) < 10; startX = null; if (dx < -40) { stepBanner(1); return; } if (dx > 40) { stepBanner(-1); return; } if (wasTap) { const el = document.elementFromPoint(event.clientX, event.clientY); const caseSlide = el && el.closest('[data-case]'); if (caseSlide && caseSlide.dataset.video) location.href = `../same-home/index.html?case=${encodeURIComponent(caseSlide.dataset.video)}`; } }; // 指针捕获会吞掉 click，故 tap 跳转在此处理（elementFromPoint 定位案例卡）；左划(dx<0)前进 / 右划(dx>0)后退
       viewport.addEventListener('pointerup', endDrag);
       viewport.addEventListener('pointercancel', () => { startX = null; });
       libraryBanner.querySelector('#heroDots').addEventListener('click', (event) => { const i = [...libraryBanner.querySelectorAll('#heroDots i')].indexOf(event.target); if (i >= 0 && !bannerAnimating && i + 1 !== bannerPos) { bannerPos = i + 1; bannerAnimating = true; paintBanner(true); } });
@@ -328,7 +328,7 @@
       if (asset.modelUrl) {
         const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
         const { DRACOLoader } = await import('three/addons/loaders/DRACOLoader.js');
-        const draco = new DRACOLoader(); draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/libs/draco/');
+        const draco = new DRACOLoader(); draco.setDecoderPath('/vendor/three-addons/libs/draco/');
         const loader = new GLTFLoader(); loader.setDRACOLoader(draco);
         return new Promise((resolve) => {
           loader.load(asset.modelUrl, (gltf) => {
@@ -508,7 +508,7 @@
       if (tab) { activeFurnitureCategory = tab.dataset.category; renderHome(); return; }
       if (event.target.closest('#catalogBack')) { const fromMyHome = new URLSearchParams(location.search).get('from') === 'myhome'; if (fromMyHome && view.kind === 'floorplan' && !view.favoriteOnly) { location.href = '../my-home/index.html'; return; } if (location.hash) location.hash = ''; else route(); return; } // 唯一例外：从「我的家」进来的户型全部页返回我的家；其余回灵感库主页
       const caseSlide = event.target.closest('[data-case]');
-      if (caseSlide) { if (bannerDragged) { bannerDragged = false; return; } const videoId = caseSlide.dataset.video; if (videoId) location.href = `../my-home/index.html?case=${encodeURIComponent(videoId)}`; return; } // 跳「我的家」案例只读模式（复用拼装编辑器）
+      if (caseSlide) { if (bannerDragged) { bannerDragged = false; return; } const videoId = caseSlide.dataset.video; if (videoId) location.href = `../same-home/index.html?case=${encodeURIComponent(videoId)}`; return; } // 进入独立的“同款小家”案例空间
       const asset = event.target.closest('[data-asset]');
       if (asset) openViewer(asset.dataset.asset);
     });

@@ -8,6 +8,8 @@
   width: 80px;
   height: 80px;
   z-index: 70;
+  isolation: isolate;
+  contain: layout style;
   touch-action: manipulation;
   cursor: pointer;
   transition: filter 0.2s;
@@ -23,6 +25,11 @@
   z-index: 5;
   overflow: visible;
   pointer-events: none;
+}
+.mascot-img--base {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
 }
 .mascot-awaiting-view .mascot-media-frame {
   transform-origin: 50% 100%;
@@ -43,6 +50,7 @@
   top: 4px;
   width: 88px;
   height: 88px;
+  z-index: 2;
   transform-origin: 65% 74%;
   animation: mascotCollectionIn 220ms ease-out both;
   filter: drop-shadow(0 8px 11px rgba(56, 44, 24, 0.24));

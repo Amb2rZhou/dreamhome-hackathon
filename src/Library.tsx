@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { buildFurniture, autoFitCamera } from './threeFurniture'
 import { type LibraryComponent } from './types'
@@ -20,6 +20,41 @@ interface LibraryProps {
 export function Library({ components, newlyAddedIds, onClose, onDelete, onGoAssemble, onAddFromVideo, onAddFromPhoto, onAddFromSketch, onClearNew, onTraceBack }: LibraryProps) {
   const [active, setActive] = useState<LibraryComponent | null>(null)
   const [fabOpen, setFabOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const [activeTag, setActiveTag] = useState('全部')
+  const [recommendMode, setRecommendMode] = useState(false)
+  const tags = useMemo(() => {
+    const counts = new Map<string, number>()
+    components.forEach((component) => {
+      ;[component.category, ...component.styleTags].forEach((tag) => (
+        counts.set(tag, (counts.get(tag) ?? 0) + 1)
+      ))
+    })
+    return ['全部', ...Array.from(counts.entries())
+      .sort((left, right) => right[1] - left[1])
+      .slice(0, 9)
+      .map(([tag]) => tag)]
+  }, [components])
+  const visibleComponents = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase()
+    const filtered = components.filter((component) => {
+      const searchable = [component.name, component.category, ...component.styleTags].join(' ').toLowerCase()
+      const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery)
+      const matchesTag = activeTag === '全部'
+        || component.category === activeTag
+        || component.styleTags.includes(activeTag)
+      return matchesQuery && matchesTag
+    })
+    if (!recommendMode) return filtered
+    const preferred = ['北欧', '原木', '自然风', '米色', '实木', '绿植', '暖灰']
+    return [...filtered].sort((left, right) => {
+      const score = (component: LibraryComponent) => preferred.reduce(
+        (total, tag) => total + (component.styleTags.some((item) => item.includes(tag)) ? 1 : 0),
+        0,
+      )
+      return score(right) - score(left)
+    }).slice(0, 12)
+  }, [activeTag, components, query, recommendMode])
 
   useEffect(() => {
     if (newlyAddedIds.length === 0) return
@@ -33,13 +68,45 @@ export function Library({ components, newlyAddedIds, onClose, onDelete, onGoAsse
         <button className="lib-back" onClick={onClose}>←</button>
         <div className="lib-title-wrap">
           <div className="lib-title">素材库</div>
-          <div className="lib-sub">共 {components.length} 件 · 全部</div>
+          <div className="lib-sub">共 {components.length} 件 · 已显示 {visibleComponents.length} 件</div>
         </div>
         <button className="lib-assemble-btn" onClick={onGoAssemble}>去组装 →</button>
       </div>
 
+      <div className="lib-discovery">
+        <div className="lib-search-row">
+          <input
+            className="lib-search"
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="搜索家具、风格、材质"
+            aria-label="筛选家具"
+          />
+          <button
+            className={`lib-ai-match ${recommendMode ? 'is-active' : ''}`}
+            onClick={() => setRecommendMode((current) => !current)}
+            aria-pressed={recommendMode}
+          >
+            ✦ AI 搭配
+          </button>
+        </div>
+        <div className="lib-tags" aria-label="家具标签筛选">
+          {tags.map((tag) => (
+            <button
+              key={tag}
+              className={activeTag === tag ? 'is-active' : ''}
+              onClick={() => setActiveTag(tag)}
+              aria-pressed={activeTag === tag}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="lib-grid">
-        {components.map((c, i) => {
+        {visibleComponents.map((c, i) => {
           const isNew = newlyAddedIds.includes(c.id)
           return (
             <button
@@ -62,6 +129,9 @@ export function Library({ components, newlyAddedIds, onClose, onDelete, onGoAsse
             </button>
           )
         })}
+        {visibleComponents.length === 0 && (
+          <div className="lib-empty">没有匹配的家具，换个标签或关键词试试。</div>
+        )}
       </div>
 
       {fabOpen && <div className="fab-mask" onClick={() => setFabOpen(false)} />}

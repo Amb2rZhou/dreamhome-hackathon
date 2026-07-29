@@ -130,7 +130,7 @@
       </div>
     </section>
   </main>
-  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+  <script type="importmap">{"imports":{"three":"/vendor/three.module.js","three/addons/":"/vendor/three-addons/"}}</script>
   <script type="module">
     import { COMPONENT_FAMILIES, FURNITURE_CATEGORIES, getAssets, getAsset, getFavorites, toggleFavorite, removeUserAsset, addUserAsset } from '../shared/asset-library-data.js';
     import { renderTemplatePreview, renderTemplatePreviews, disposeTemplatePreviews } from '../shared/template-preview-3d.js';
@@ -323,7 +323,7 @@
       if (asset.modelUrl) {
         const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
         const { DRACOLoader } = await import('three/addons/loaders/DRACOLoader.js');
-        const draco = new DRACOLoader(); draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/libs/draco/');
+        const draco = new DRACOLoader(); draco.setDecoderPath('/vendor/three-addons/libs/draco/');
         const loader = new GLTFLoader(); loader.setDRACOLoader(draco);
         return new Promise((resolve) => {
           loader.load(asset.modelUrl, (gltf) => {
