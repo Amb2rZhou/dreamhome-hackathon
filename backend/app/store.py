@@ -6,6 +6,7 @@ create_job() 建 Job → 起 asyncio 后台任务 _run() → submit 给 provider
 """
 import asyncio
 import uuid
+from collections.abc import Awaitable, Callable
 from typing import Dict, Optional
 from .schemas import Job, JobStatus
 from .providers import get_provider
@@ -33,6 +34,26 @@ def create_job(kind: str, image_path: str, *, texture: bool = True,
     return job
 
 
+def create_workflow_job(kind: str, runner: Callable[[Job], Awaitable[None]], *,
+                        meta: Optional[dict] = None) -> Job:
+    """创建复用统一 Job 视图的多阶段后台任务。
+
+    runner 负责更新 stage/progress 并在成功时写入结果；这里统一兜住异常，
+    让前端仍然只需轮询 /api/jobs/{id}。
+    """
+    provider = get_provider()
+    job = Job(
+        job_id=uuid.uuid4().hex,
+        kind=kind,
+        status=JobStatus.queued,
+        provider=provider.name,
+        **(meta or {}),
+    )
+    _JOBS[job.job_id] = job
+    asyncio.create_task(_run_workflow(job, runner))
+    return job
+
+
 async def _run(job: Job, image_path: str, texture: bool) -> None:
     provider = get_provider()
     try:
@@ -57,5 +78,17 @@ async def _run(job: Job, image_path: str, texture: bool) -> None:
         job.status = JobStatus.failed
         job.error = "timeout"
     except Exception as e:  # 网络/权限/解码等
+        job.status = JobStatus.failed
+        job.error = f"{type(e).__name__}: {e}"
+
+
+async def _run_workflow(job: Job, runner: Callable[[Job], Awaitable[None]]) -> None:
+    job.status = JobStatus.running
+    try:
+        await runner(job)
+        if job.status not in (JobStatus.succeeded, JobStatus.failed):
+            job.status = JobStatus.succeeded
+            job.progress = 100
+    except Exception as e:  # 多阶段任务把可读失败原因写进统一 Job
         job.status = JobStatus.failed
         job.error = f"{type(e).__name__}: {e}"

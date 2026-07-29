@@ -27,6 +27,12 @@ class Job(BaseModel):
     error: Optional[str] = None
     provider: Optional[str] = None
     provider_job_id: Optional[str] = None
+    # 完整资产生产任务的附加状态；原子 photo/video/sketch job 保持兼容。
+    asset_id: Optional[str] = None
+    track_id: Optional[str] = None
+    stage: Optional[str] = None
+    quality_mode: Optional[Literal["fast", "production"]] = None
+    library_attached: bool = False
 
 
 class SubmitResponse(BaseModel):
