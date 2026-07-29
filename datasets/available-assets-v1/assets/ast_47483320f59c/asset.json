@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_47483320f59c",
+  "video_id": "vid_605df2fff231",
+  "appearances": [
+    {
+      "start_sec": 184.5,
+      "end_sec": 186.0,
+      "representative_sec": 185.5
+    }
+  ],
+  "name": "洗衣机",
+  "space": "",
+  "type": {
+    "category": "家电",
+    "subcategory": "洗衣机"
+  },
+  "labels": {
+    "category": "家电",
+    "sub": "洗衣机",
+    "colors": [
+      "灰色",
+      "黑色"
+    ],
+    "materials": [
+      "金属",
+      "玻璃"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "圆形门",
+      "控制面板",
+      "旋钮",
+      "透明门盖",
+      "嵌入式设计"
+    ],
+    "size_class": "中",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.33589327335357666,
+      -0.4936785399913788,
+      -0.349609375
+    ],
+    "bounds_max": [
+      0.3324032425880432,
+      0.5007837414741516,
+      0.3693934679031372
+    ],
+    "dimensions_model_unit": [
+      0.6682965159416199,
+      0.9944622814655304,
+      0.7190028429031372
+    ],
+    "center": [
+      -0.0017450153827667236,
+      0.0035526007413864136,
+      0.009892046451568604
+    ],
+    "vertex_count": 15680,
+    "triangle_count": 25047,
+    "collision": {
+      "type": "box",
+      "center": [
+        -0.0017450153827667236,
+        0.0035526007413864136,
+        0.009892046451568604
+      ],
+      "dimensions": [
+        0.6682965159416199,
+        0.9944622814655304,
+        0.7190028429031372
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.4936785399913788,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.188023+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_47483320f59c/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 97851,
+      "sha256": "13ac6a5100cb2023f16eaf6de600c72970ef2c3fe72a976e41bcdbc60528e2b4",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_47483320f59c/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 15674,
+      "sha256": "6e56ae31aa616a4635fb03b567ed3d3096b7f82307bee11fb9901a603b071ece"
+    },
+    "completed_input": {
+      "path": "assets/ast_47483320f59c/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1476878,
+      "sha256": "af95a38705ea80397ba0916331991663b8477b248d1f175f5f4e689667ec400e",
+      "width_px": 1034,
+      "height_px": 1012
+    },
+    "model_3d": {
+      "path": "assets/ast_47483320f59c/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1689728,
+      "sha256": "34e550621b15c304dd666f8633dba0886619b13d9bf1f5c7550e1de55064cb70"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T14:39:05.235597+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-19T15:38:27.244429+00:00"
+}

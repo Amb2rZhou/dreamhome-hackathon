@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_279a3b8e3809",
+  "video_id": "vid_58a7a1504281",
+  "appearances": [
+    {
+      "start_sec": 58.5,
+      "end_sec": 61.0,
+      "representative_sec": 60.0
+    },
+    {
+      "start_sec": 62.5,
+      "end_sec": 63.5,
+      "representative_sec": 62.5
+    },
+    {
+      "start_sec": 64.0,
+      "end_sec": 65.0,
+      "representative_sec": 64.0
+    }
+  ],
+  "name": "电视柜",
+  "space": "",
+  "type": {
+    "category": "柜子",
+    "subcategory": "电视柜"
+  },
+  "labels": {
+    "category": "柜子",
+    "sub": "电视柜",
+    "colors": [
+      "白色"
+    ],
+    "materials": [
+      "板材"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "悬挂式",
+      "带抽屉",
+      "简洁线条"
+    ],
+    "size_class": "大",
+    "mount": "wall"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.5010135173797607,
+      -0.07389933615922928,
+      -0.1510530412197113
+    ],
+    "bounds_max": [
+      0.5010886788368225,
+      0.07185047119855881,
+      0.1547786444425583
+    ],
+    "dimensions_model_unit": [
+      1.0021021962165833,
+      0.14574980735778809,
+      0.3058316856622696
+    ],
+    "center": [
+      3.758072853088379e-05,
+      -0.0010244324803352356,
+      0.0018628016114234924
+    ],
+    "vertex_count": 3693,
+    "triangle_count": 5519,
+    "collision": {
+      "type": "box",
+      "center": [
+        3.758072853088379e-05,
+        -0.0010244324803352356,
+        0.0018628016114234924
+      ],
+      "dimensions": [
+        1.0021021962165833,
+        0.14574980735778809,
+        0.3058316856622696
+      ]
+    },
+    "anchor": {
+      "surface": "wall",
+      "point": [
+        0,
+        -0.0010244324803352356,
+        -0.1510530412197113
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.203993+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_279a3b8e3809/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 106325,
+      "sha256": "f48e0a20ee705beb7f988746f2d1f1721e396e3f4ff3c58b0282a218a953c135",
+      "role": "representative_video_frame"
+    },
+    "source_crop": {
+      "path": "assets/ast_279a3b8e3809/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 25402,
+      "sha256": "46b904945794a6a031f24abdedcad83cb066d0adeca7c42ae95293f32958576d"
+    },
+    "completed_input": {
+      "path": "assets/ast_279a3b8e3809/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1485248,
+      "sha256": "c64c1724096e53d850ac738a5d0e041db34936aa066600d89281a4ab6b0b65e5",
+      "width_px": 1061,
+      "height_px": 986
+    },
+    "model_3d": {
+      "path": "assets/ast_279a3b8e3809/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1108360,
+      "sha256": "34aa1c0e0ef2355a611909e7ce0146cd069eadb5de47e4b5eaed20d140bf8c05"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T14:41:00.484299+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-17T16:24:28.211679+00:00"
+}

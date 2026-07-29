@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_06c83d58cb62",
+  "source": {
+    "type": "offline_photo",
+    "label": "线下拍照生成",
+    "url": null
+  },
+  "video_id": null,
+  "appearances": [],
+  "name": "胡桃木双层宠物窝边几",
+  "space": "",
+  "type": {
+    "category": "桌子",
+    "subcategory": "边几"
+  },
+  "labels": {
+    "category": "桌子",
+    "sub": "边几",
+    "colors": [
+      "棕色",
+      "原木色"
+    ],
+    "materials": [
+      "实木"
+    ],
+    "styles": [
+      "北欧",
+      "现代"
+    ],
+    "features": [
+      "圆形台面",
+      "镂空储物层",
+      "细腿设计",
+      "带猫窝空间",
+      "双层结构"
+    ],
+    "size_class": "小",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.42404788732528687,
+      -0.5001327395439148,
+      -0.3943628966808319
+    ],
+    "bounds_max": [
+      0.42819827795028687,
+      0.5010753870010376,
+      0.39481866359710693
+    ],
+    "dimensions_model_unit": [
+      0.8522461652755737,
+      1.0012081265449524,
+      0.7891815602779388
+    ],
+    "center": [
+      0.0020751953125,
+      0.00047132372856140137,
+      0.0002278834581375122
+    ],
+    "vertex_count": 25652,
+    "triangle_count": 40416,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.0020751953125,
+        0.00047132372856140137,
+        0.0002278834581375122
+      ],
+      "dimensions": [
+        0.8522461652755737,
+        1.0012081265449524,
+        0.7891815602779388
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.5001327395439148,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-22T16:54:56.325577+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_06c83d58cb62/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 99408,
+      "sha256": "631ceb3725e800c81f3cff91772eb08dc160d9c09d798ab68dc1d47541dfbf2c",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_06c83d58cb62/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 41181,
+      "sha256": "b44fb823f3e942070c1ad65f97171120c59a0db6b676fabe618a3b1dff4e02c2"
+    },
+    "completed_input": {
+      "path": "assets/ast_06c83d58cb62/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1514496,
+      "sha256": "3058e9a2c4976733cb736bb9bade9e4a2f24dbf29ca739648acf77986d54e49f",
+      "width_px": 937,
+      "height_px": 1117
+    },
+    "model_3d": {
+      "path": "assets/ast_06c83d58cb62/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 2301708,
+      "sha256": "e6e448c9fd915b058668f48305b62c183d0890a78194a6b550a126a0f72d59f9"
+    }
+  },
+  "review": {
+    "verdict": "not_required",
+    "reason": "C 端线下拍照生成资产，不需要人工审核",
+    "reviewed_at": null
+  },
+  "created_by": "annotation",
+  "created_at": "2026-07-22T16:26:48.609481+00:00"
+}

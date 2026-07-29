@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_5b314219acf0",
+  "video_id": "vid_b75d95dc92a7",
+  "appearances": [
+    {
+      "start_sec": 5.5,
+      "end_sec": 18.5,
+      "representative_sec": 13.0
+    }
+  ],
+  "name": "三人沙发",
+  "space": "",
+  "type": {
+    "category": "沙发",
+    "subcategory": "三人沙发"
+  },
+  "labels": {
+    "category": "沙发",
+    "sub": "三人沙发",
+    "colors": [
+      "蓝色",
+      "灰色",
+      "红色"
+    ],
+    "materials": [
+      "布艺",
+      "实木"
+    ],
+    "styles": [
+      "北欧",
+      "现代"
+    ],
+    "features": [
+      "靠垫",
+      "条纹抱枕",
+      "格子抱枕",
+      "动物图案抱枕",
+      "深色木质框架"
+    ],
+    "size_class": "大",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.4952092170715332,
+      -0.21142922341823578,
+      -0.2092268019914627
+    ],
+    "bounds_max": [
+      0.4951988756656647,
+      0.21039223670959473,
+      0.2066819965839386
+    ],
+    "dimensions_model_unit": [
+      0.9904080927371979,
+      0.4218214601278305,
+      0.4159087985754013
+    ],
+    "center": [
+      -5.170702934265137e-06,
+      -0.0005184933543205261,
+      -0.0012724027037620544
+    ],
+    "vertex_count": 8869,
+    "triangle_count": 13844,
+    "collision": {
+      "type": "box",
+      "center": [
+        -5.170702934265137e-06,
+        -0.0005184933543205261,
+        -0.0012724027037620544
+      ],
+      "dimensions": [
+        0.9904080927371979,
+        0.4218214601278305,
+        0.4159087985754013
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.21142922341823578,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.179306+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_5b314219acf0/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 126615,
+      "sha256": "4b818a7c1d75ec02ebda0fd1228dd6511397f01df0ac36fd7e39510ad1325b36",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_5b314219acf0/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 44210,
+      "sha256": "c63104948812617b087147015b0fe74196a7ffe25d922332eafb62ea4ee03ab8"
+    },
+    "completed_input": {
+      "path": "assets/ast_5b314219acf0/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1301159,
+      "sha256": "1a59e7111fbeff235adde5f0c04cc58c2d2fa2de03017e999c6112dfe23a8191",
+      "width_px": 1175,
+      "height_px": 891
+    },
+    "model_3d": {
+      "path": "assets/ast_5b314219acf0/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1334656,
+      "sha256": "972297ab9862055ec996f898980e89ffc327122dde3b623e4076d3b5ac4a649a"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T12:33:20.160414+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-20T17:41:55.783962+00:00"
+}

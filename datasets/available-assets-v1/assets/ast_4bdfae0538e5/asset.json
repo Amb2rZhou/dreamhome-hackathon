@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_4bdfae0538e5",
+  "video_id": "vid_182cbf77954d",
+  "appearances": [
+    {
+      "start_sec": 37.4,
+      "end_sec": 40.0,
+      "representative_sec": 39.5
+    }
+  ],
+  "name": "长方形地毯",
+  "space": "",
+  "type": {
+    "category": "地毯",
+    "subcategory": "长方形地毯"
+  },
+  "labels": {
+    "category": "地毯",
+    "sub": "长方形地毯",
+    "colors": [
+      "浅灰色"
+    ],
+    "materials": [
+      "编织"
+    ],
+    "styles": [
+      "现代",
+      "北欧"
+    ],
+    "features": [
+      "平整表面",
+      "边缘整齐",
+      "铺满客厅中央"
+    ],
+    "size_class": "大",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.5009765625,
+      -0.005547789391130209,
+      -0.5005149841308594
+    ],
+    "bounds_max": [
+      0.5009765625,
+      0.0026073455810546875,
+      0.50146484375
+    ],
+    "dimensions_model_unit": [
+      1.001953125,
+      0.008155134972184896,
+      1.0019798278808594
+    ],
+    "center": [
+      0.0,
+      -0.0014702219050377607,
+      0.0004749298095703125
+    ],
+    "vertex_count": 9052,
+    "triangle_count": 13418,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.0,
+        -0.0014702219050377607,
+        0.0004749298095703125
+      ],
+      "dimensions": [
+        1.001953125,
+        0.008155134972184896,
+        1.0019798278808594
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.005547789391130209,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.170627+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_4bdfae0538e5/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 42683,
+      "sha256": "6c3bbc8f0450ee08b4a2177fc6d1ff6ead91d18a2c26fc4dee68980f9b59c3f2",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_4bdfae0538e5/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 15815,
+      "sha256": "5ecfc8cba41408456ea3740c864c6f21f5479ed45b4c2d105db522cd379ffe0f"
+    },
+    "completed_input": {
+      "path": "assets/ast_4bdfae0538e5/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1351945,
+      "sha256": "d9ad6545d2846b413449d5a76ef0744c0fb97229a6dfa9f51b0ca1ae3b9731fe",
+      "width_px": 1166,
+      "height_px": 897
+    },
+    "model_3d": {
+      "path": "assets/ast_4bdfae0538e5/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1336856,
+      "sha256": "7206ce4bf94022430b070ca457d245740113b81da1f5e85bc8bf353bd14835ab"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T12:31:08.693111+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-20T18:14:22.702996+00:00"
+}

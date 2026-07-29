@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_b590657ab045",
+  "video_id": "vid_605df2fff231",
+  "appearances": [
+    {
+      "start_sec": 41.5,
+      "end_sec": 82.0,
+      "representative_sec": 81.5
+    }
+  ],
+  "name": "电视",
+  "space": "",
+  "type": {
+    "category": "家电",
+    "subcategory": "电视"
+  },
+  "labels": {
+    "category": "家电",
+    "sub": "电视",
+    "colors": [
+      "黑色"
+    ],
+    "materials": [
+      "玻璃",
+      "金属"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "超薄边框",
+      "壁挂安装",
+      "大屏显示"
+    ],
+    "size_class": "大",
+    "complete": true,
+    "mount": "wall"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.5009893178939819,
+      -0.31666556000709534,
+      -0.1496533751487732
+    ],
+    "bounds_max": [
+      0.5007138252258301,
+      0.31442758440971375,
+      0.1492205113172531
+    ],
+    "dimensions_model_unit": [
+      1.001703143119812,
+      0.6310931444168091,
+      0.2988738864660263
+    ],
+    "center": [
+      -0.00013774633407592773,
+      -0.001118987798690796,
+      -0.00021643191576004028
+    ],
+    "vertex_count": 6797,
+    "triangle_count": 12500,
+    "collision": {
+      "type": "box",
+      "center": [
+        -0.00013774633407592773,
+        -0.001118987798690796,
+        -0.00021643191576004028
+      ],
+      "dimensions": [
+        1.001703143119812,
+        0.6310931444168091,
+        0.2988738864660263
+      ]
+    },
+    "anchor": {
+      "surface": "wall",
+      "point": [
+        0,
+        -0.001118987798690796,
+        -0.1496533751487732
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.190958+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_b590657ab045/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 108966,
+      "sha256": "fcaeee1ebf3bfd4223c07c4b08423f71e3c0c797a171eb0dcbc1a2ee7b8b51e7",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_b590657ab045/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 31597,
+      "sha256": "a5898d5c2e60afc4964766965e2d551129796780819453b936177e4b913801fa"
+    },
+    "completed_input": {
+      "path": "assets/ast_b590657ab045/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1299206,
+      "sha256": "380ca5f2bfdc933a92e19a3858667253eb91ddf2a72a365ac87e80207e258601",
+      "width_px": 815,
+      "height_px": 1286
+    },
+    "model_3d": {
+      "path": "assets/ast_b590657ab045/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1080032,
+      "sha256": "0366a3f444d95068c095aed14f7daca30a6668528903341ea4d0cfb490ebe9ae"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T14:38:48.134443+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-19T15:33:34.791068+00:00"
+}

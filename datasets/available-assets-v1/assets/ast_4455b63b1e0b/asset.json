@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_4455b63b1e0b",
+  "video_id": "vid_58a7a1504281",
+  "appearances": [
+    {
+      "start_sec": 133.0,
+      "end_sec": 133.5,
+      "representative_sec": 133.5
+    }
+  ],
+  "name": "玻璃罩摆件",
+  "space": "",
+  "type": {
+    "category": "装饰",
+    "subcategory": "玻璃罩摆件"
+  },
+  "labels": {
+    "category": "装饰",
+    "sub": "玻璃罩摆件",
+    "colors": [
+      "透明",
+      "黑色",
+      "米白"
+    ],
+    "materials": [
+      "玻璃",
+      "金属",
+      "陶瓷"
+    ],
+    "styles": [
+      "现代",
+      "简约"
+    ],
+    "features": [
+      "圆顶玻璃罩",
+      "底座圆形",
+      "内含雕塑"
+    ],
+    "size_class": "小",
+    "mount": "surface"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.16806279122829437,
+      -0.1968422532081604,
+      -0.1730855107307434
+    ],
+    "bounds_max": [
+      0.17654268443584442,
+      0.3153860867023468,
+      0.16978861391544342
+    ],
+    "dimensions_model_unit": [
+      0.3446054756641388,
+      0.5122283399105072,
+      0.34287412464618683
+    ],
+    "center": [
+      0.004239946603775024,
+      0.0592719167470932,
+      -0.001648448407649994
+    ],
+    "vertex_count": 2211,
+    "triangle_count": 3730,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.004239946603775024,
+        0.0592719167470932,
+        -0.001648448407649994
+      ],
+      "dimensions": [
+        0.3446054756641388,
+        0.5122283399105072,
+        0.34287412464618683
+      ]
+    },
+    "anchor": {
+      "surface": "surface",
+      "point": [
+        0,
+        -0.1968422532081604,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.195891+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_4455b63b1e0b/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 99926,
+      "sha256": "7de4308f6124a63d8b91e6d4be706ac32bad7abe430594d3cab622b7a1187f19",
+      "role": "representative_video_frame"
+    },
+    "source_crop": {
+      "path": "assets/ast_4455b63b1e0b/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 12931,
+      "sha256": "c1cbed8b9fb96cd29de5c2a27cbf74f95b9a1e54a2392b971ac46903b1bfbb6a"
+    },
+    "completed_input": {
+      "path": "assets/ast_4455b63b1e0b/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1253325,
+      "sha256": "2243d4154eadd398185acbf8a10ef1404ce4cc654e9d6926871dae5bff6766ab",
+      "width_px": 768,
+      "height_px": 1431
+    },
+    "model_3d": {
+      "path": "assets/ast_4455b63b1e0b/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1046644,
+      "sha256": "f9d53012b2d366f8e3721768eac866b41276389c9882ba45b7d7356cc94272cc"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T14:42:17.451655+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-17T16:45:04.454920+00:00"
+}

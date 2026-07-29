@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_43bc7ba471cf",
+  "video_id": "vid_605df2fff231",
+  "appearances": [
+    {
+      "start_sec": 244.5,
+      "end_sec": 248.0,
+      "representative_sec": 246.5
+    }
+  ],
+  "name": "储物床",
+  "space": "",
+  "type": {
+    "category": "床",
+    "subcategory": "储物床"
+  },
+  "labels": {
+    "category": "床",
+    "sub": "储物床",
+    "colors": [
+      "米色",
+      "棕色"
+    ],
+    "materials": [
+      "皮革",
+      "布艺"
+    ],
+    "styles": [
+      "现代",
+      "简约"
+    ],
+    "features": [
+      "带储物功能",
+      "低矮设计",
+      "软包床头",
+      "床尾无靠背"
+    ],
+    "size_class": "中",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.5007078051567078,
+      -0.1308574080467224,
+      -0.2803776264190674
+    ],
+    "bounds_max": [
+      0.5006749629974365,
+      0.13526131212711334,
+      0.27996087074279785
+    ],
+    "dimensions_model_unit": [
+      1.0013827681541443,
+      0.26611872017383575,
+      0.5603384971618652
+    ],
+    "center": [
+      -1.6421079635620117e-05,
+      0.002201952040195465,
+      -0.00020837783813476562
+    ],
+    "vertex_count": 7492,
+    "triangle_count": 11747,
+    "collision": {
+      "type": "box",
+      "center": [
+        -1.6421079635620117e-05,
+        0.002201952040195465,
+        -0.00020837783813476562
+      ],
+      "dimensions": [
+        1.0013827681541443,
+        0.26611872017383575,
+        0.5603384971618652
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.1308574080467224,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.189649+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_43bc7ba471cf/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 71804,
+      "sha256": "23ccd31f4c22464530a0a8c10041b2e7ee98e8fbae9c6b1dda11418dad36b33f",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_43bc7ba471cf/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 31268,
+      "sha256": "4d17b454b13e58416e92685704b396f5178b74dffaaafcfb2fea35d5a83f44d2"
+    },
+    "completed_input": {
+      "path": "assets/ast_43bc7ba471cf/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1495614,
+      "sha256": "bebd6e68618ac7bf70e3214debe1a15d963be6b08757310e68bfef034c6b7d08",
+      "width_px": 1007,
+      "height_px": 1041
+    },
+    "model_3d": {
+      "path": "assets/ast_43bc7ba471cf/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1358820,
+      "sha256": "5a591c8aeac514ec980b2928e61820a1c6e7e1c13aec8e60e7d60450b4eb1b8e"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T14:39:09.785067+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-19T15:36:01.099780+00:00"
+}

@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_3d31fe60ee00",
+  "source": {
+    "type": "offline_photo",
+    "label": "线下拍照生成",
+    "url": null
+  },
+  "video_id": null,
+  "appearances": [],
+  "name": "奶油白人体工学办公椅",
+  "space": "",
+  "type": {
+    "category": "单椅",
+    "subcategory": "办公椅"
+  },
+  "labels": {
+    "category": "单椅",
+    "sub": "办公椅",
+    "colors": [
+      "白色",
+      "黑色",
+      "黄色"
+    ],
+    "materials": [
+      "皮革",
+      "金属"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "带头枕",
+      "可旋转",
+      "带轮子",
+      "扶手",
+      "靠背支撑"
+    ],
+    "size_class": "中",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.30000531673431396,
+      -0.5000620484352112,
+      -0.3051536977291107
+    ],
+    "bounds_max": [
+      0.306103378534317,
+      0.5002577304840088,
+      0.316022664308548
+    ],
+    "dimensions_model_unit": [
+      0.606108695268631,
+      1.00031977891922,
+      0.6211763620376587
+    ],
+    "center": [
+      0.003049030900001526,
+      9.784102439880371e-05,
+      0.005434483289718628
+    ],
+    "vertex_count": 21827,
+    "triangle_count": 29686,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.003049030900001526,
+        9.784102439880371e-05,
+        0.005434483289718628
+      ],
+      "dimensions": [
+        0.606108695268631,
+        1.00031977891922,
+        0.6211763620376587
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.5000620484352112,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-22T16:55:50.697405+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_3d31fe60ee00/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 95107,
+      "sha256": "dad61e9e142d290d655b5c78c194f79ac6b8712c61c4e5890984d9797786409d",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_3d31fe60ee00/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 58475,
+      "sha256": "e5221b9bd55c5eb59bb51cfeb781cdd5a3386f2cb07fd4aac5f8316f2ae6cbd3"
+    },
+    "completed_input": {
+      "path": "assets/ast_3d31fe60ee00/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1642758,
+      "sha256": "01201bdf79d5a9bf19d500f6249e5d8a329c91b84411383a990e6d9e7ae1ea8f",
+      "width_px": 901,
+      "height_px": 1162
+    },
+    "model_3d": {
+      "path": "assets/ast_3d31fe60ee00/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 2097596,
+      "sha256": "52737d3c5d4f77a63a866da27c7ee1ddb7afc44b7eaec29307c12585beb90186"
+    }
+  },
+  "review": {
+    "verdict": "not_required",
+    "reason": "C 端线下拍照生成资产，不需要人工审核",
+    "reviewed_at": null
+  },
+  "created_by": "annotation",
+  "created_at": "2026-07-22T16:28:48.955800+00:00"
+}

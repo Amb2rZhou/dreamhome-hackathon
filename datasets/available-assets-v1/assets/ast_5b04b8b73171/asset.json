@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_5b04b8b73171",
+  "source": {
+    "type": "offline_photo",
+    "label": "线下拍照生成",
+    "url": null
+  },
+  "video_id": null,
+  "appearances": [],
+  "name": "三层矩形吸顶灯",
+  "space": "",
+  "type": {
+    "category": "灯具",
+    "subcategory": "吸顶灯"
+  },
+  "labels": {
+    "category": "灯具",
+    "sub": "吸顶灯",
+    "colors": [
+      "米黄",
+      "浅灰"
+    ],
+    "materials": [
+      "金属",
+      "亚克力"
+    ],
+    "styles": [
+      "现代",
+      "简约"
+    ],
+    "features": [
+      "长条形",
+      "多层叠放",
+      "柔和光效",
+      "边缘圆角"
+    ],
+    "size_class": "中",
+    "complete": true,
+    "mount": "ceiling"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.4985711872577667,
+      -0.021531980484724045,
+      -0.4232809245586395
+    ],
+    "bounds_max": [
+      0.4973881244659424,
+      0.005705683492124081,
+      0.4230251908302307
+    ],
+    "dimensions_model_unit": [
+      0.9959593117237091,
+      0.027237663976848125,
+      0.8463061153888702
+    ],
+    "center": [
+      -0.0005915313959121704,
+      -0.007913148496299982,
+      -0.00012786686420440674
+    ],
+    "vertex_count": 7976,
+    "triangle_count": 11584,
+    "collision": {
+      "type": "box",
+      "center": [
+        -0.0005915313959121704,
+        -0.007913148496299982,
+        -0.00012786686420440674
+      ],
+      "dimensions": [
+        0.9959593117237091,
+        0.027237663976848125,
+        0.8463061153888702
+      ]
+    },
+    "anchor": {
+      "surface": "ceiling",
+      "point": [
+        0,
+        0.005705683492124081,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-22T16:53:55.422721+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_5b04b8b73171/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 27237,
+      "sha256": "8f9c8197f9c34383a4626fddf67621d448707bba0e6f18dcb366d88fba4dffbe",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_5b04b8b73171/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 16197,
+      "sha256": "cf699b37ffcdda516cd33a74b5cf5665380020eaf7450a9863dad25519717326"
+    },
+    "completed_input": {
+      "path": "assets/ast_5b04b8b73171/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1280104,
+      "sha256": "1af83019d77d0b6783bb0b4e5436e1af12a9c4d7aefc16b427c246089aa04082",
+      "width_px": 939,
+      "height_px": 1116
+    },
+    "model_3d": {
+      "path": "assets/ast_5b04b8b73171/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1390980,
+      "sha256": "b5b2997c43ee57183756f13ae0f7d2e4a4ef8ce0c9d753dd9130aee5aad57f17"
+    }
+  },
+  "review": {
+    "verdict": "not_required",
+    "reason": "C 端线下拍照生成资产，不需要人工审核",
+    "reviewed_at": null
+  },
+  "created_by": "annotation",
+  "created_at": "2026-07-22T15:18:46.905085+00:00"
+}

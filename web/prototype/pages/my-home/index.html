@@ -417,14 +417,24 @@
           return homes.map(normalizeHomeProject).filter(Boolean);
         } catch { return []; }
       },
-      saveProject(project) { const homes = this.loadHomes().filter((home) => home.id !== project.id); homes.unshift({...project, schemaVersion:2, updatedAt: now()}); localStorage.setItem(HOMES_KEY, JSON.stringify({version:1, homes})); },
+      saveProject(project) {
+        const homes = this.loadHomes().filter((home) => home.id !== project.id);
+        homes.unshift({...project, schemaVersion:2, updatedAt: now()});
+        localStorage.setItem(HOMES_KEY, JSON.stringify({version:1, homes}));
+        fetch(`/api/home-projects/${encodeURIComponent(project.id)}?user_id=demo`, {
+          method:'PUT', headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({...project,schemaVersion:2})
+        }).catch((error) => console.warn('[DreamHome] 后端保存失败，已保留本地副本', error));
+      },
       deleteHome(id) { const homes = this.loadHomes().filter((home) => home.id !== id); localStorage.setItem(HOMES_KEY, JSON.stringify({version:1, homes})); }
     };
     const HttpHomeSceneService = {
       async submitHomeGeneration({templateId, drawingFile}) { const form = new FormData(); if (templateId) form.append('template_id', templateId); if (drawingFile) form.append('file', drawingFile); const response = await fetch('/api/home-generation', {method:'POST', body:form}); if (!response.ok) throw new Error('提交户型生成任务失败'); return response.json(); },
       async getJob(job) { const response = await fetch(`/api/jobs/${job.id}`); if (!response.ok) throw new Error('获取任务状态失败'); return response.json(); },
       async listAssets() { const response = await fetch('/api/assets'); if (!response.ok) throw new Error('获取资产失败'); return response.json(); },
-      loadProject() { return null; }, saveProject() {}, loadHomes() { return []; }, deleteHome() {}
+      loadProject() { return null; },
+      saveProject(project) { return fetch(`/api/home-projects/${encodeURIComponent(project.id)}?user_id=demo`, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(project)}); },
+      loadHomes() { return []; }, deleteHome() {}
     };
     const homeSceneService = USE_MOCK_HOME_SERVICE ? MockHomeSceneService : HttpHomeSceneService;
 

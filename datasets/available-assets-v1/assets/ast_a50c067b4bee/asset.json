@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_a50c067b4bee",
+  "video_id": "vid_58a7a1504281",
+  "appearances": [
+    {
+      "start_sec": 11.0,
+      "end_sec": 14.0,
+      "representative_sec": 11.5
+    },
+    {
+      "start_sec": 25.0,
+      "end_sec": 26.0,
+      "representative_sec": 26.0
+    },
+    {
+      "start_sec": 49.5,
+      "end_sec": 51.5,
+      "representative_sec": 50.5
+    }
+  ],
+  "name": "茶几",
+  "space": "",
+  "type": {
+    "category": "桌子",
+    "subcategory": "茶几"
+  },
+  "labels": {
+    "category": "桌子",
+    "sub": "茶几",
+    "colors": [
+      "黑色"
+    ],
+    "materials": [
+      "金属",
+      "玻璃"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "方形",
+      "细腿",
+      "简约"
+    ],
+    "size_class": "小",
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.16731706261634827,
+      -0.14340755343437195,
+      -0.16186653077602386
+    ],
+    "bounds_max": [
+      0.16712352633476257,
+      0.1450812965631485,
+      0.162109375
+    ],
+    "dimensions_model_unit": [
+      0.33444058895111084,
+      0.28848884999752045,
+      0.32397590577602386
+    ],
+    "center": [
+      -9.676814079284668e-05,
+      0.0008368715643882751,
+      0.00012142211198806763
+    ],
+    "vertex_count": 2411,
+    "triangle_count": 4316,
+    "collision": {
+      "type": "box",
+      "center": [
+        -9.676814079284668e-05,
+        0.0008368715643882751,
+        0.00012142211198806763
+      ],
+      "dimensions": [
+        0.33444058895111084,
+        0.28848884999752045,
+        0.32397590577602386
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.14340755343437195,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.201855+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_a50c067b4bee/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 135908,
+      "sha256": "3e05feed520644338dc2904e3448786f5aa85d6b678a62e1162e2ae9b9adad98",
+      "role": "representative_video_frame"
+    },
+    "source_crop": {
+      "path": "assets/ast_a50c067b4bee/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 20637,
+      "sha256": "bd4fe8648181db130c14dbe4308ac694d91ab5fd166e8d0188112c0c0b64bef4"
+    },
+    "completed_input": {
+      "path": "assets/ast_a50c067b4bee/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 620920,
+      "sha256": "38841d4287a222c10fc2c475d086579ed63086392133ab2952662b437f49e293",
+      "width_px": 827,
+      "height_px": 1265
+    },
+    "model_3d": {
+      "path": "assets/ast_a50c067b4bee/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1104104,
+      "sha256": "be8230f8675e82fbc96c478bdf54a0c03a78f930732923d0a24d0ac0016ddde2"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T14:39:54.136169+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-17T16:30:08.616384+00:00"
+}

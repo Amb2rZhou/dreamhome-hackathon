@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_9b81d305c7aa",
+  "source": {
+    "type": "offline_photo",
+    "label": "线下拍照生成",
+    "url": null
+  },
+  "video_id": null,
+  "appearances": [],
+  "name": "米白色大地毯",
+  "space": "",
+  "type": {
+    "category": "地毯",
+    "subcategory": "矩形地毯"
+  },
+  "labels": {
+    "category": "地毯",
+    "sub": "矩形地毯",
+    "colors": [
+      "米白色"
+    ],
+    "materials": [
+      "布艺"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "平整表面",
+      "矩形轮廓",
+      "细密纹理"
+    ],
+    "size_class": "中",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.4986870288848877,
+      -0.004081900231540203,
+      -0.49958348274230957
+    ],
+    "bounds_max": [
+      0.4994301497936249,
+      0.004243454895913601,
+      0.4984137713909149
+    ],
+    "dimensions_model_unit": [
+      0.9981171786785126,
+      0.008325355127453804,
+      0.9979972541332245
+    ],
+    "center": [
+      0.0003715604543685913,
+      8.077733218669891e-05,
+      -0.0005848556756973267
+    ],
+    "vertex_count": 7104,
+    "triangle_count": 13292,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.0003715604543685913,
+        8.077733218669891e-05,
+        -0.0005848556756973267
+      ],
+      "dimensions": [
+        0.9981171786785126,
+        0.008325355127453804,
+        0.9979972541332245
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.004081900231540203,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-22T16:54:09.128024+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_9b81d305c7aa/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 317217,
+      "sha256": "b6bf1664a08d3ab3714bffdba707d220220c3ff54a9488f868da27cec5380202",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_9b81d305c7aa/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 144093,
+      "sha256": "218fec51e7fb07f126a5f7b8011e1f942824f856474d42f05fc27f4cd54ba858"
+    },
+    "completed_input": {
+      "path": "assets/ast_9b81d305c7aa/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1481036,
+      "sha256": "a746c994b1f3a73e0f926f53da35795384859a3390fe517ec6e7d5551260e814",
+      "width_px": 1095,
+      "height_px": 957
+    },
+    "model_3d": {
+      "path": "assets/ast_9b81d305c7aa/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1436520,
+      "sha256": "0472450475e463b95eff73a5ebdd8f6313c036d9b8a6791960ee8acfdfe4f2ce"
+    }
+  },
+  "review": {
+    "verdict": "not_required",
+    "reason": "C 端线下拍照生成资产，不需要人工审核",
+    "reviewed_at": null
+  },
+  "created_by": "annotation",
+  "created_at": "2026-07-22T15:20:11.081271+00:00"
+}

@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_cd8aec2bdb05",
+  "video_id": "vid_b75d95dc92a7",
+  "appearances": [
+    {
+      "start_sec": 0.0,
+      "end_sec": 4.0,
+      "representative_sec": 0.0
+    }
+  ],
+  "name": "镜子",
+  "space": "",
+  "type": {
+    "category": "卫浴",
+    "subcategory": "镜子"
+  },
+  "labels": {
+    "category": "卫浴",
+    "sub": "镜子",
+    "colors": [
+      "棕色",
+      "透明"
+    ],
+    "materials": [
+      "实木",
+      "玻璃"
+    ],
+    "styles": [
+      "复古",
+      "北欧"
+    ],
+    "features": [
+      "矩形边框",
+      "木质框架",
+      "墙面安装"
+    ],
+    "size_class": "中",
+    "complete": true,
+    "mount": "wall"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.5007085800170898,
+      -0.4930952191352844,
+      -0.05332738161087036
+    ],
+    "bounds_max": [
+      0.5007196068763733,
+      0.5000379681587219,
+      -0.010225421749055386
+    ],
+    "dimensions_model_unit": [
+      1.0014281868934631,
+      0.9931331872940063,
+      0.043101959861814976
+    ],
+    "center": [
+      5.513429641723633e-06,
+      0.00347137451171875,
+      -0.03177640167996287
+    ],
+    "vertex_count": 3514,
+    "triangle_count": 5135,
+    "collision": {
+      "type": "box",
+      "center": [
+        5.513429641723633e-06,
+        0.00347137451171875,
+        -0.03177640167996287
+      ],
+      "dimensions": [
+        1.0014281868934631,
+        0.9931331872940063,
+        0.043101959861814976
+      ]
+    },
+    "anchor": {
+      "surface": "wall",
+      "point": [
+        0,
+        0.00347137451171875,
+        -0.05332738161087036
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.176136+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_cd8aec2bdb05/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 32644,
+      "sha256": "ec9198165e4a941463e2d6e1d5e08d980fc6669b04c966973d2c6acb6115b62f",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_cd8aec2bdb05/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 11993,
+      "sha256": "5896e697a1430c9618974d0477b9a98590a7d44bf591efbf17afdbb5655b63c8"
+    },
+    "completed_input": {
+      "path": "assets/ast_cd8aec2bdb05/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1378508,
+      "sha256": "f483b46ea1b850e0e5efc847ddfef97cdd32cb1e46186dc592d3adb4769b02ba",
+      "width_px": 940,
+      "height_px": 1114
+    },
+    "model_3d": {
+      "path": "assets/ast_cd8aec2bdb05/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1250400,
+      "sha256": "28dc511e7bd614ab456752736b839143d762d5abd59908bd3c296566d65e9173"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T12:34:20.626775+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-20T17:50:11.327895+00:00"
+}

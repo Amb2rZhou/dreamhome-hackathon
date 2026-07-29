@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_23dd1b781087",
+  "source": {
+    "type": "offline_photo",
+    "label": "线下拍照生成",
+    "url": null
+  },
+  "video_id": null,
+  "appearances": [],
+  "name": "白色立式空调",
+  "space": "",
+  "type": {
+    "category": "家电",
+    "subcategory": "立式空调"
+  },
+  "labels": {
+    "category": "家电",
+    "sub": "立式空调",
+    "colors": [
+      "白色",
+      "黑色"
+    ],
+    "materials": [
+      "塑料",
+      "金属"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "圆柱形机身",
+      "竖向出风口",
+      "简洁面板",
+      "底部圆形底座",
+      "隐藏式电源线"
+    ],
+    "size_class": "中",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.12469350546598434,
+      -0.49965450167655945,
+      -0.1044088676571846
+    ],
+    "bounds_max": [
+      0.1298390030860901,
+      0.5000191330909729,
+      0.10705260932445526
+    ],
+    "dimensions_model_unit": [
+      0.25453250855207443,
+      0.9996736347675323,
+      0.21146147698163986
+    ],
+    "center": [
+      0.0025727488100528717,
+      0.00018231570720672607,
+      0.0013218708336353302
+    ],
+    "vertex_count": 3475,
+    "triangle_count": 5172,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.0025727488100528717,
+        0.00018231570720672607,
+        0.0013218708336353302
+      ],
+      "dimensions": [
+        0.25453250855207443,
+        0.9996736347675323,
+        0.21146147698163986
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.49965450167655945,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-22T16:53:59.474717+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_23dd1b781087/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 76483,
+      "sha256": "41fb7529d86350965fd0bfaee55e77fc8818a7ef1dd656752bcc72f67a5afcac",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_23dd1b781087/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 30658,
+      "sha256": "006e8288fe5ebe053c250f7ec0d2f9e9b9d50e74f9e66ea6b11865b3e8108c98"
+    },
+    "completed_input": {
+      "path": "assets/ast_23dd1b781087/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1538444,
+      "sha256": "8f8ca42b6e89fd37d7bcb7fdac9f07798c38d13c113d78b585b024bcbb0a59e0",
+      "width_px": 768,
+      "height_px": 1580
+    },
+    "model_3d": {
+      "path": "assets/ast_23dd1b781087/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1148592,
+      "sha256": "697028aa8a834ab65cf28e209fded4466328aef2a70a9c2e0456a279d3393444"
+    }
+  },
+  "review": {
+    "verdict": "not_required",
+    "reason": "C 端线下拍照生成资产，不需要人工审核",
+    "reviewed_at": null
+  },
+  "created_by": "annotation",
+  "created_at": "2026-07-22T15:19:11.751530+00:00"
+}

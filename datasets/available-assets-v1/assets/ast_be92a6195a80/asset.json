@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_be92a6195a80",
+  "source": {
+    "type": "offline_photo",
+    "label": "线下拍照生成",
+    "url": null
+  },
+  "video_id": null,
+  "appearances": [],
+  "name": "现代悬空一体式餐边柜",
+  "space": "",
+  "type": {
+    "category": "柜子",
+    "subcategory": "储物柜"
+  },
+  "labels": {
+    "category": "柜子",
+    "sub": "储物柜",
+    "colors": [
+      "白色",
+      "灰色",
+      "黑色"
+    ],
+    "materials": [
+      "金属",
+      "玻璃",
+      "板材"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "带灯带",
+      "玻璃门",
+      "分层设计",
+      "嵌入式",
+      "带抽屉"
+    ],
+    "size_class": "大",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.3320648968219757,
+      -0.4998231828212738,
+      -0.11989697068929672
+    ],
+    "bounds_max": [
+      0.3327207863330841,
+      0.500546395778656,
+      0.12094705551862717
+    ],
+    "dimensions_model_unit": [
+      0.6647856831550598,
+      1.0003695785999298,
+      0.2408440262079239
+    ],
+    "center": [
+      0.0003279447555541992,
+      0.0003616064786911011,
+      0.0005250424146652222
+    ],
+    "vertex_count": 7564,
+    "triangle_count": 11174,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.0003279447555541992,
+        0.0003616064786911011,
+        0.0005250424146652222
+      ],
+      "dimensions": [
+        0.6647856831550598,
+        1.0003695785999298,
+        0.2408440262079239
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.4998231828212738,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-22T16:56:05.382258+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_be92a6195a80/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 39936,
+      "sha256": "701515a14b7914220b4803a36b124a85d49c3240ad5b58eb93b923738cebaf43",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_be92a6195a80/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 20535,
+      "sha256": "2d977e587c18f08ce6887b5bfb22fc15d9f3dd44f9bb8cd3f0480ca743218436"
+    },
+    "completed_input": {
+      "path": "assets/ast_be92a6195a80/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1444390,
+      "sha256": "74f297bd2fbe0a4057259f9c41637528a9ea13bdb2c9037a0c30915c7473f7dd",
+      "width_px": 849,
+      "height_px": 1234
+    },
+    "model_3d": {
+      "path": "assets/ast_be92a6195a80/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1335940,
+      "sha256": "b54fcbe57d843e73bc3df7b87743b038ec1782d46374e5fd6ebc4dad117fdfe8"
+    }
+  },
+  "review": {
+    "verdict": "not_required",
+    "reason": "C 端线下拍照生成资产，不需要人工审核",
+    "reviewed_at": null
+  },
+  "created_by": "annotation",
+  "created_at": "2026-07-22T16:30:54.332260+00:00"
+}

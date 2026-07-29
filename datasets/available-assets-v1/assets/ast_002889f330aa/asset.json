@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_002889f330aa",
+  "video_id": "vid_b75d95dc92a7",
+  "appearances": [
+    {
+      "start_sec": 0.0,
+      "end_sec": 1.5,
+      "representative_sec": 0.0
+    }
+  ],
+  "name": "悬挂绿植",
+  "space": "",
+  "type": {
+    "category": "绿植",
+    "subcategory": "悬挂绿植"
+  },
+  "labels": {
+    "category": "绿植",
+    "sub": "悬挂绿植",
+    "colors": [
+      "绿色",
+      "白色"
+    ],
+    "materials": [
+      "植物",
+      "陶瓷"
+    ],
+    "styles": [
+      "现代",
+      "自然风"
+    ],
+    "features": [
+      "垂吊叶片",
+      "圆形花盆",
+      "悬挂式"
+    ],
+    "size_class": "中",
+    "complete": true,
+    "mount": "ceiling"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.31564730405807495,
+      -0.2927147448062897,
+      -0.2991298735141754
+    ],
+    "bounds_max": [
+      0.3119908571243286,
+      0.33067604899406433,
+      0.291677325963974
+    ],
+    "dimensions_model_unit": [
+      0.6276381611824036,
+      0.623390793800354,
+      0.5908071994781494
+    ],
+    "center": [
+      -0.001828223466873169,
+      0.01898065209388733,
+      -0.003726273775100708
+    ],
+    "vertex_count": 9693,
+    "triangle_count": 11279,
+    "collision": {
+      "type": "box",
+      "center": [
+        -0.001828223466873169,
+        0.01898065209388733,
+        -0.003726273775100708
+      ],
+      "dimensions": [
+        0.6276381611824036,
+        0.623390793800354,
+        0.5908071994781494
+      ]
+    },
+    "anchor": {
+      "surface": "ceiling",
+      "point": [
+        0,
+        0.33067604899406433,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.174583+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_002889f330aa/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 13133,
+      "sha256": "26e1a28a4a34eaf99cd017cc9d1ccd3e5ba417a4d8268162bf799e08c442895c",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_002889f330aa/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 14159,
+      "sha256": "115262800cb248bec27566e8ddbfe99126140a9ef314e73b128dad21b2837705"
+    },
+    "completed_input": {
+      "path": "assets/ast_002889f330aa/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1562880,
+      "sha256": "9f5da07bae22a3e543e3e404ed0ceed09e39c663abd72af64d2ed8618b39c609",
+      "width_px": 821,
+      "height_px": 1276
+    },
+    "model_3d": {
+      "path": "assets/ast_002889f330aa/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1896476,
+      "sha256": "3c04b7c6d0663ce495bbd03696be653b6e81ec4066f1121271d112e5edb1c5dd"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T12:32:32.576338+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-20T17:53:42.732595+00:00"
+}

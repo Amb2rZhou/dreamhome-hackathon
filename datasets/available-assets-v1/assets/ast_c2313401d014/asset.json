@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_c2313401d014",
+  "video_id": "vid_5c7efd168eb7",
+  "appearances": [
+    {
+      "start_sec": 95.0,
+      "end_sec": 96.0,
+      "representative_sec": 96.0
+    }
+  ],
+  "name": "户外木椅",
+  "space": "",
+  "type": {
+    "category": "单椅",
+    "subcategory": "户外木椅"
+  },
+  "labels": {
+    "category": "单椅",
+    "sub": "户外木椅",
+    "colors": [
+      "棕色"
+    ],
+    "materials": [
+      "实木"
+    ],
+    "styles": [
+      "现代",
+      "北欧"
+    ],
+    "features": [
+      "条形靠背",
+      "扶手设计",
+      "直腿结构",
+      "简洁线条"
+    ],
+    "size_class": "中"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.31256213784217834,
+      -0.3156590461730957,
+      -0.30881860852241516
+    ],
+    "bounds_max": [
+      0.31256207823753357,
+      0.31449297070503235,
+      0.298430860042572
+    ],
+    "dimensions_model_unit": [
+      0.6251242160797119,
+      0.630152016878128,
+      0.6072494685649872
+    ],
+    "center": [
+      -2.9802322387695312e-08,
+      -0.0005830377340316772,
+      -0.00519387423992157
+    ],
+    "vertex_count": 8933,
+    "triangle_count": 11940,
+    "collision": {
+      "type": "box",
+      "center": [
+        -2.9802322387695312e-08,
+        -0.0005830377340316772,
+        -0.00519387423992157
+      ],
+      "dimensions": [
+        0.6251242160797119,
+        0.630152016878128,
+        0.6072494685649872
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.3156590461730957,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.211236+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_c2313401d014/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 104938,
+      "sha256": "9ff59e6ea9f5ac02d6ed599a1191b086aaef21add8bc8f8de8e9e3bcce8a20fd",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_c2313401d014/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 9969,
+      "sha256": "a98466733d55e5aaf6d784bbc12fead4ac5e4d3e1de1740b52245536fce16a53"
+    },
+    "completed_input": {
+      "path": "assets/ast_c2313401d014/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1761270,
+      "sha256": "919dc0f82e69abac5597d117d63c2cdb5a70dcdb6271f8134820df355fb28a0d",
+      "width_px": 1892,
+      "height_px": 2216
+    },
+    "model_3d": {
+      "path": "assets/ast_c2313401d014/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1598472,
+      "sha256": "c2fb4af23965479b96ef568567d4512b6beb21b9a5b378afbd98e50be404bd3f"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T15:49:00.465235+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-16T17:50:29.027432+00:00"
+}

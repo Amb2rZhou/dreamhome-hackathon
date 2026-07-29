@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_88ceb53354e6",
+  "source": {
+    "type": "offline_photo",
+    "label": "线下拍照生成",
+    "url": null
+  },
+  "video_id": null,
+  "appearances": [],
+  "name": "深灰色狗形布艺儿童椅",
+  "space": "",
+  "type": {
+    "category": "其他",
+    "subcategory": "动物造型凳子"
+  },
+  "labels": {
+    "category": "其他",
+    "sub": "动物造型凳子",
+    "colors": [
+      "深灰色"
+    ],
+    "materials": [
+      "布艺"
+    ],
+    "styles": [
+      "现代",
+      "北欧"
+    ],
+    "features": [
+      "熊形设计",
+      "圆润造型",
+      "无腿支撑",
+      "柔软质感",
+      "整体一体式"
+    ],
+    "size_class": "小",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.5000081062316895,
+      -0.40700557827949524,
+      -0.26026612520217896
+    ],
+    "bounds_max": [
+      0.499881774187088,
+      0.4014280438423157,
+      0.26004743576049805
+    ],
+    "dimensions_model_unit": [
+      0.9998898804187775,
+      0.8084336221218109,
+      0.520313560962677
+    ],
+    "center": [
+      -6.316602230072021e-05,
+      -0.0027887672185897827,
+      -0.0001093447208404541
+    ],
+    "vertex_count": 8551,
+    "triangle_count": 14326,
+    "collision": {
+      "type": "box",
+      "center": [
+        -6.316602230072021e-05,
+        -0.0027887672185897827,
+        -0.0001093447208404541
+      ],
+      "dimensions": [
+        0.9998898804187775,
+        0.8084336221218109,
+        0.520313560962677
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.40700557827949524,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-22T16:53:51.449892+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_88ceb53354e6/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 384462,
+      "sha256": "f75f1de66d37e59509d3ee32fba95a6d2c65fd94c27555092ebe387c60b43929",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_88ceb53354e6/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 193272,
+      "sha256": "f69a46116bfb3ebcdc01a6a95ae97e393a19217a4920423958eff71f026bd421"
+    },
+    "completed_input": {
+      "path": "assets/ast_88ceb53354e6/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1489632,
+      "sha256": "0014a3706ffbd78c296913856bb6999b7ee49fb9dab1c367f889efeb4d3cf9f7",
+      "width_px": 967,
+      "height_px": 1084
+    },
+    "model_3d": {
+      "path": "assets/ast_88ceb53354e6/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1637684,
+      "sha256": "e5ccfb5ba4b493695489ba48b4fb81638857c7c3fe15324994244fe9f2fddff6"
+    }
+  },
+  "review": {
+    "verdict": "not_required",
+    "reason": "C 端线下拍照生成资产，不需要人工审核",
+    "reviewed_at": null
+  },
+  "created_by": "annotation",
+  "created_at": "2026-07-22T15:17:55.207866+00:00"
+}

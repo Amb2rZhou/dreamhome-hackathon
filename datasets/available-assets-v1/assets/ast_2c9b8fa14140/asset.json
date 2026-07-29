@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_2c9b8fa14140",
+  "video_id": "vid_58a7a1504281",
+  "appearances": [
+    {
+      "start_sec": 118.5,
+      "end_sec": 120.5,
+      "representative_sec": 120.0
+    }
+  ],
+  "name": "落地扇",
+  "space": "",
+  "type": {
+    "category": "家电",
+    "subcategory": "落地扇"
+  },
+  "labels": {
+    "category": "家电",
+    "sub": "落地扇",
+    "colors": [
+      "白色"
+    ],
+    "materials": [
+      "塑料",
+      "金属"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "圆形底座",
+      "可调节角度",
+      "立式设计",
+      "细长支架",
+      "网状扇叶"
+    ],
+    "size_class": "中",
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.15857821702957153,
+      -0.5004965662956238,
+      -0.17913389205932617
+    ],
+    "bounds_max": [
+      0.16401401162147522,
+      0.4967387914657593,
+      0.17951403558254242
+    ],
+    "dimensions_model_unit": [
+      0.32259222865104675,
+      0.9972353577613831,
+      0.3586479276418686
+    ],
+    "center": [
+      0.0027178972959518433,
+      -0.001878887414932251,
+      0.00019007176160812378
+    ],
+    "vertex_count": 2585,
+    "triangle_count": 4168,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.0027178972959518433,
+        -0.001878887414932251,
+        0.00019007176160812378
+      ],
+      "dimensions": [
+        0.32259222865104675,
+        0.9972353577613831,
+        0.3586479276418686
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.5004965662956238,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.202859+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_2c9b8fa14140/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 124400,
+      "sha256": "2cfe37abdffa8dc8b4c1e4fe0a0985fa462882e42b8e0ad7d0348efb4965580b",
+      "role": "representative_video_frame"
+    },
+    "source_crop": {
+      "path": "assets/ast_2c9b8fa14140/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 25094,
+      "sha256": "82ea47ac87c2305d858421dfff1cfb23b90a7fbbfd8ff4b8de5f18a184c2468b"
+    },
+    "completed_input": {
+      "path": "assets/ast_2c9b8fa14140/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1528595,
+      "sha256": "93c66513b1cffee8628676d22dfe58c9035f4c6aa671bfa047130019d50df831",
+      "width_px": 768,
+      "height_px": 1648
+    },
+    "model_3d": {
+      "path": "assets/ast_2c9b8fa14140/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1175836,
+      "sha256": "5c51fd7d35278868b06549edf726e389bdfb64aa2877eb82fe2d1dfea468fa73"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T14:42:02.400877+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-17T16:26:47.412391+00:00"
+}

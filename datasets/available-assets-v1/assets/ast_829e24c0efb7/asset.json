@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_829e24c0efb7",
+  "video_id": "vid_b75d95dc92a7",
+  "appearances": [
+    {
+      "start_sec": 13.5,
+      "end_sec": 16.0,
+      "representative_sec": 14.5
+    }
+  ],
+  "name": "盆栽植物",
+  "space": "",
+  "type": {
+    "category": "绿植",
+    "subcategory": "盆栽植物"
+  },
+  "labels": {
+    "category": "绿植",
+    "sub": "盆栽植物",
+    "colors": [
+      "绿色",
+      "棕色"
+    ],
+    "materials": [
+      "植物",
+      "陶瓷"
+    ],
+    "styles": [
+      "自然风",
+      "北欧"
+    ],
+    "features": [
+      "大型叶片",
+      "高茎",
+      "置于室内",
+      "带花盆"
+    ],
+    "size_class": "大",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.3365733027458191,
+      -0.5000579953193665,
+      -0.26789432764053345
+    ],
+    "bounds_max": [
+      0.34555065631866455,
+      0.5008037090301514,
+      0.23789161443710327
+    ],
+    "dimensions_model_unit": [
+      0.6821239590644836,
+      1.0008617043495178,
+      0.5057859420776367
+    ],
+    "center": [
+      0.0044886767864227295,
+      0.00037285685539245605,
+      -0.015001356601715088
+    ],
+    "vertex_count": 14651,
+    "triangle_count": 18024,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.0044886767864227295,
+        0.00037285685539245605,
+        -0.015001356601715088
+      ],
+      "dimensions": [
+        0.6821239590644836,
+        1.0008617043495178,
+        0.5057859420776367
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.5000579953193665,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.175418+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_829e24c0efb7/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 125875,
+      "sha256": "f02eaf4c84fd2e43ce4659fab4ff4b8f87ca4dc71725fb8784a9886d57fbb60f",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_829e24c0efb7/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 11004,
+      "sha256": "5a8967a020eac4e8174a7c2c07760d47df3f556ffe3a6b182c8c3ce68d25e616"
+    },
+    "completed_input": {
+      "path": "assets/ast_829e24c0efb7/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1697398,
+      "sha256": "a723f714d17ade67db5cf62479b53fc1519120c36f04b191dcfd1315f85ab558",
+      "width_px": 872,
+      "height_px": 1201
+    },
+    "model_3d": {
+      "path": "assets/ast_829e24c0efb7/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 2151388,
+      "sha256": "eb18f501bcb1586600cb45d1026a843fd536c1cc7f16eb429fa86469e60c32cf"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T12:33:27.659978+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-20T17:51:44.341129+00:00"
+}

@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_cab487441837",
+  "source": {
+    "type": "offline_photo",
+    "label": "线下拍照生成",
+    "url": null
+  },
+  "video_id": null,
+  "appearances": [],
+  "name": "黑色平板电视",
+  "space": "",
+  "type": {
+    "category": "家电",
+    "subcategory": "电视"
+  },
+  "labels": {
+    "category": "家电",
+    "sub": "电视",
+    "colors": [
+      "黑色"
+    ],
+    "materials": [
+      "玻璃",
+      "金属"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "超薄边框",
+      "平面屏幕",
+      "壁挂式"
+    ],
+    "size_class": "大",
+    "complete": true,
+    "mount": "wall"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.5006707310676575,
+      -0.24598869681358337,
+      -0.020812304690480232
+    ],
+    "bounds_max": [
+      0.5005267858505249,
+      0.2401648610830307,
+      0.012033709324896336
+    ],
+    "dimensions_model_unit": [
+      1.0011975169181824,
+      0.4861535578966141,
+      0.03284601401537657
+    ],
+    "center": [
+      -7.197260856628418e-05,
+      -0.0029119178652763367,
+      -0.004389297682791948
+    ],
+    "vertex_count": 3859,
+    "triangle_count": 7154,
+    "collision": {
+      "type": "box",
+      "center": [
+        -7.197260856628418e-05,
+        -0.0029119178652763367,
+        -0.004389297682791948
+      ],
+      "dimensions": [
+        1.0011975169181824,
+        0.4861535578966141,
+        0.03284601401537657
+      ]
+    },
+    "anchor": {
+      "surface": "wall",
+      "point": [
+        0,
+        -0.0029119178652763367,
+        -0.020812304690480232
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-22T16:54:41.601880+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_cab487441837/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 125586,
+      "sha256": "385bfe503a68ac10dd1bff54c5dfdd3876a61773eac2516043e4ca8cef391f3d",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_cab487441837/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 53796,
+      "sha256": "ef6ea41d6e028814c2398aa4e09043cb0ca77967c71cfbe41a719187ccec5eaa"
+    },
+    "completed_input": {
+      "path": "assets/ast_cab487441837/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1736288,
+      "sha256": "dae746cef1879a91e8ca8d994259dbd70eb4e08ea364a072483cc6e3b7b94126",
+      "width_px": 768,
+      "height_px": 1725
+    },
+    "model_3d": {
+      "path": "assets/ast_cab487441837/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1165324,
+      "sha256": "b24ebe1c5fca1e21f4f7132a942f904529e5ea96a5a510f0fb4112dcd9c6d6e5"
+    }
+  },
+  "review": {
+    "verdict": "not_required",
+    "reason": "C 端线下拍照生成资产，不需要人工审核",
+    "reviewed_at": null
+  },
+  "created_by": "annotation",
+  "created_at": "2026-07-22T15:23:02.591793+00:00"
+}

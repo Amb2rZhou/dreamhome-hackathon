@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_251c115561c7",
+  "video_id": "vid_182cbf77954d",
+  "appearances": [
+    {
+      "start_sec": 7.5,
+      "end_sec": 9.5,
+      "representative_sec": 7.5
+    }
+  ],
+  "name": "花艺摆件",
+  "space": "",
+  "type": {
+    "category": "装饰",
+    "subcategory": "花艺摆件"
+  },
+  "labels": {
+    "category": "装饰",
+    "sub": "花艺摆件",
+    "colors": [
+      "米色",
+      "蓝色",
+      "白色"
+    ],
+    "materials": [
+      "干花",
+      "陶瓷"
+    ],
+    "styles": [
+      "现代",
+      "北欧"
+    ],
+    "features": [
+      "高挑枝条",
+      "陶瓷花瓶",
+      "自然纹理"
+    ],
+    "size_class": "中",
+    "complete": true,
+    "mount": "surface"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.3418615758419037,
+      -0.5004590749740601,
+      -0.4367559552192688
+    ],
+    "bounds_max": [
+      0.34270673990249634,
+      0.4985840320587158,
+      0.424830824136734
+    ],
+    "dimensions_model_unit": [
+      0.6845683157444,
+      0.9990431070327759,
+      0.8615867793560028
+    ],
+    "center": [
+      0.0004225820302963257,
+      -0.0009375214576721191,
+      -0.005962565541267395
+    ],
+    "vertex_count": 16604,
+    "triangle_count": 21026,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.0004225820302963257,
+        -0.0009375214576721191,
+        -0.005962565541267395
+      ],
+      "dimensions": [
+        0.6845683157444,
+        0.9990431070327759,
+        0.8615867793560028
+      ]
+    },
+    "anchor": {
+      "surface": "surface",
+      "point": [
+        0,
+        -0.5004590749740601,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.165956+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_251c115561c7/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 11659,
+      "sha256": "c49ab393527aedd4fd6b272e9816dcc8f765422936d367c2f90c2a0743ead356",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_251c115561c7/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 8899,
+      "sha256": "850b9ac0c5e2709ba4e1e766160182e328b546aa67bc782194b3d42f301e583f"
+    },
+    "completed_input": {
+      "path": "assets/ast_251c115561c7/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1414763,
+      "sha256": "fdd491d0c2668f7759e931502cf1bfd3ed4f53ffadd13caca86b3d0ea5460ac8",
+      "width_px": 915,
+      "height_px": 1144
+    },
+    "model_3d": {
+      "path": "assets/ast_251c115561c7/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1953936,
+      "sha256": "99f3d93bfb3f204212bff0dd7f01b38016d7ebd171d50f5e911c124143b47761"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T12:26:20.327102+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-20T18:26:31.888361+00:00"
+}

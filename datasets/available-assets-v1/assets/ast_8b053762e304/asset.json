@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_8b053762e304",
+  "video_id": "vid_5f32a0ac954a",
+  "appearances": [
+    {
+      "start_sec": 4.0,
+      "end_sec": 7.0,
+      "representative_sec": 5.5
+    }
+  ],
+  "name": "三人沙发",
+  "space": "",
+  "type": {
+    "category": "沙发",
+    "subcategory": "三人沙发"
+  },
+  "labels": {
+    "category": "沙发",
+    "sub": "三人沙发",
+    "colors": [
+      "米白",
+      "浅灰"
+    ],
+    "materials": [
+      "布艺"
+    ],
+    "styles": [
+      "奶油风",
+      "现代"
+    ],
+    "features": [
+      "圆弧扶手",
+      "靠垫式设计",
+      "带毯子覆盖",
+      "L型布局"
+    ],
+    "size_class": "大",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.4987122118473053,
+      -0.17054633796215057,
+      -0.20399606227874756
+    ],
+    "bounds_max": [
+      0.499747097492218,
+      0.16885560750961304,
+      0.2069266140460968
+    ],
+    "dimensions_model_unit": [
+      0.9984593093395233,
+      0.3394019454717636,
+      0.41092267632484436
+    ],
+    "center": [
+      0.0005174428224563599,
+      -0.0008453652262687683,
+      0.0014652758836746216
+    ],
+    "vertex_count": 6619,
+    "triangle_count": 10536,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.0005174428224563599,
+        -0.0008453652262687683,
+        0.0014652758836746216
+      ],
+      "dimensions": [
+        0.9984593093395233,
+        0.3394019454717636,
+        0.41092267632484436
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.17054633796215057,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-21T17:46:46.187724+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_8b053762e304/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 132914,
+      "sha256": "1bce9e560d2d0df49fdd4b79bba306fd28da3df8540fb0d4f96e40e21e02314f",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_8b053762e304/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 58600,
+      "sha256": "68cfcaee614dbf8c5a9b4787f7fe88559818eaf06a271e54ac59b1ece8cec506"
+    },
+    "completed_input": {
+      "path": "assets/ast_8b053762e304/completed_input.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 1361758,
+      "sha256": "b54d84ae2ee1c17204f8ab68c2354951a3d82bef9f7ab691bd0ffbb2da672b69",
+      "width_px": 1097,
+      "height_px": 954
+    },
+    "model_3d": {
+      "path": "assets/ast_8b053762e304/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1289536,
+      "sha256": "5f0ff3efdd8b5510542ed1c00525bfd01972009fcc00811c222d3d00720e0721"
+    }
+  },
+  "review": {
+    "verdict": "pass",
+    "reason": "",
+    "reviewed_at": "2026-07-21T14:35:14.137561+00:00"
+  },
+  "created_by": "pipeline",
+  "created_at": "2026-07-20T16:51:21.821760+00:00"
+}

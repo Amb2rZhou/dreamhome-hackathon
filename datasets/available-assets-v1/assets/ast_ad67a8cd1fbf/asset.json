@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "availability": "available",
+  "asset_id": "ast_ad67a8cd1fbf",
+  "source": {
+    "type": "offline_photo",
+    "label": "线下拍照生成",
+    "url": null
+  },
+  "video_id": null,
+  "appearances": [],
+  "name": "木质扶手软垫淋浴椅",
+  "space": "",
+  "type": {
+    "category": "卫浴",
+    "subcategory": "浴室椅"
+  },
+  "labels": {
+    "category": "卫浴",
+    "sub": "浴室椅",
+    "colors": [
+      "米白色",
+      "浅木色"
+    ],
+    "materials": [
+      "塑料",
+      "实木"
+    ],
+    "styles": [
+      "现代"
+    ],
+    "features": [
+      "带扶手",
+      "防滑脚垫",
+      "靠背设计",
+      "木质框架",
+      "软垫坐面"
+    ],
+    "size_class": "中",
+    "complete": true,
+    "mount": "floor"
+  },
+  "size_status": "missing",
+  "physical_size_m": {
+    "width": null,
+    "height": null,
+    "depth": null
+  },
+  "geometry": {
+    "bounds_min": [
+      -0.37756311893463135,
+      -0.5003907084465027,
+      -0.34762635827064514
+    ],
+    "bounds_max": [
+      0.3803383409976959,
+      0.5001269578933716,
+      0.35343900322914124
+    ],
+    "dimensions_model_unit": [
+      0.7579014599323273,
+      1.0005176663398743,
+      0.7010653614997864
+    ],
+    "center": [
+      0.0013876110315322876,
+      -0.00013187527656555176,
+      0.002906322479248047
+    ],
+    "vertex_count": 17225,
+    "triangle_count": 25853,
+    "collision": {
+      "type": "box",
+      "center": [
+        0.0013876110315322876,
+        -0.00013187527656555176,
+        0.002906322479248047
+      ],
+      "dimensions": [
+        0.7579014599323273,
+        1.0005176663398743,
+        0.7010653614997864
+      ]
+    },
+    "anchor": {
+      "surface": "floor",
+      "point": [
+        0,
+        -0.5003907084465027,
+        0
+      ]
+    },
+    "unit": "model_unit",
+    "parser_version": "glb-accessor-v1",
+    "updated_at": "2026-07-22T16:55:45.221006+00:00"
+  },
+  "media": {
+    "context": {
+      "path": "assets/ast_ad67a8cd1fbf/context.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 315576,
+      "sha256": "62434b5f9838057e616291813fa2e3203b375ea5427ede6b4ac957db001ffb49",
+      "role": "recognition_context"
+    },
+    "source_crop": {
+      "path": "assets/ast_ad67a8cd1fbf/source_crop.jpg",
+      "mime_type": "image/jpeg",
+      "bytes": 186412,
+      "sha256": "9c239c3ab66d612d87e010c38c1d7256fe9f4810c86311e00be038ae5ac70295"
+    },
+    "completed_input": {
+      "path": "assets/ast_ad67a8cd1fbf/completed_input.png",
+      "mime_type": "image/png",
+      "bytes": 1357964,
+      "sha256": "fa356b1d72ca6b5dae1da42b44cdcd23ec9d92463a08b63d34518d88e9144b89",
+      "width_px": 963,
+      "height_px": 1087
+    },
+    "model_3d": {
+      "path": "assets/ast_ad67a8cd1fbf/model.glb",
+      "mime_type": "model/gltf-binary",
+      "bytes": 1733964,
+      "sha256": "7c9ac0b1d372fafe8a32cea57756111f530b5cd0332ec4d77e60304f46279052"
+    }
+  },
+  "review": {
+    "verdict": "not_required",
+    "reason": "C 端线下拍照生成资产，不需要人工审核",
+    "reviewed_at": null
+  },
+  "created_by": "annotation",
+  "created_at": "2026-07-22T16:28:10.080312+00:00"
+}
