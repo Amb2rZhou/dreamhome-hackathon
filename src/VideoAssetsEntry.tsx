@@ -4,11 +4,13 @@ import type { LibraryComponent } from './types'
 import './VideoAssetsEntry.css'
 
 export function VideoAssetsEntry({
+  videoId,
   assets,
   favoriteIds,
   onFavorite,
   onFavoriteAll,
 }: {
+  videoId: string
   assets: LibraryComponent[]
   favoriteIds: string[]
   onFavorite: (id: string) => void
@@ -22,7 +24,7 @@ export function VideoAssetsEntry({
   useEffect(() => {
     setOpen(false)
     setSavedNotice(false)
-  }, [assets])
+  }, [videoId])
 
   const favoriteAll = () => {
     if (assetIds.length === 0 || allSaved) return

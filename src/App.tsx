@@ -1337,6 +1337,7 @@ function BrowseLayer({
       <div className="tap-area" onClick={onPause} />
       <SocialBar />
       <VideoAssetsEntry
+        videoId={video.id}
         assets={videoAssets}
         favoriteIds={favoriteAssetIds}
         onFavorite={onToggleFavoriteAsset}

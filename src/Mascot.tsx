@@ -57,13 +57,6 @@ const MOTIONS: Record<MotionName, MotionClip> = {
   complete: { src: `${MOTION_ASSET_ROOT}/complete.mp4`, loop: true, scale: 0.98, x: 0, y: 1 },
 }
 
-const FALLBACK_IMG: Record<MascotState, string> = {
-  // 动态素材真正加载失败时才使用静态兜底；待机保持清醒形象。
-  sleeping: '/mascot-initial.png',
-  happy: '/mascot-happy.png',
-  working: '/mascot-working.png',
-}
-
 function chooseDifferent<T extends string>(options: readonly T[], previous: T | null): T {
   const available = options.filter((option) => option !== previous)
   return available[Math.floor(Math.random() * available.length)] ?? options[0]
@@ -343,12 +336,6 @@ export function Mascot({
         </div>
       )}
       <div className={`mascot-media-frame ${collectionMode !== 'none' ? 'is-collecting' : ''}`}>
-        <img
-          className="mascot-img mascot-img--base"
-          src={FALLBACK_IMG[state]}
-          alt="包公球"
-          draggable={false}
-        />
         {collectionMode !== 'none' ? (
           <BlackKeyImage
             key={collectionMode === 'collecting' ? 'collect' : 'collect-ready'}
