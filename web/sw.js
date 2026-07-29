@@ -1,24 +1,20 @@
-self.addEventListener("install", (event) => {
+const LEGACY_CACHE_PREFIX = "dreamhome-";
+
+self.addEventListener("install", () => {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.open("dreamhome-v2").then((cache) =>
-      cache.addAll([
-        "./",
-        "./index.html",
-        "./styles.css",
-        "./app.js",
-        "./vendor/three.module.js",
-        "./assets/gallery/sofa.jpg",
-        "./assets/gallery/lamp.jpg",
-        "./assets/gallery/plant.jpg",
-        "./assets/gallery/armchair.jpg",
-        "./assets/gallery/cabinet.jpg"
-      ])
-    )
+    caches.keys()
+      .then((keys) => Promise.all(
+        keys
+          .filter((key) => key.startsWith(LEGACY_CACHE_PREFIX))
+          .map((key) => caches.delete(key)),
+      ))
+      .then(() => self.clients.claim()),
   );
 });
 
-self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
-  );
-});
+// Static caching is handled by the hosting edge. This worker intentionally
+// avoids intercepting requests so an old app shell cannot pin stale bundles.
