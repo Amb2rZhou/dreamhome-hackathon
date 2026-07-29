@@ -1,6 +1,10 @@
+import { lazy, Suspense } from 'react'
 import type { SelectionMatchCandidate } from './videoSelectionApi'
-import { AssetMatchViewer } from './AssetMatchViewer'
 import './AssetReuseDialog.css'
+
+const AssetMatchViewer = lazy(() => import('./AssetMatchViewer').then((module) => ({
+  default: module.AssetMatchViewer,
+})))
 
 export function AssetReuseDialog({
   candidate,
@@ -19,11 +23,13 @@ export function AssetReuseDialog({
     <div className="asset-reuse-backdrop" role="presentation">
       <section className="asset-reuse-dialog" role="dialog" aria-modal="true" aria-labelledby="asset-reuse-title">
         <div className="asset-reuse-preview">
-          <AssetMatchViewer
-            modelUrl={asset.glb_url}
-            fallbackImage={asset.thumb_url}
-            name={asset.name || category}
-          />
+          <Suspense fallback={asset.thumb_url ? <img src={asset.thumb_url} alt="" /> : null}>
+            <AssetMatchViewer
+              modelUrl={asset.glb_url}
+              fallbackImage={asset.thumb_url}
+              name={asset.name || category}
+            />
+          </Suspense>
           <i>已有 3D</i>
         </div>
         <div className="asset-reuse-copy">

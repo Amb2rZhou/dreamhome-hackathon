@@ -988,10 +988,14 @@ function App() {
           muted
           playsInline
           autoPlay
-          preload="auto"
+          preload="metadata"
           onTimeUpdate={(event) => {
             const nextTime = event.currentTarget.currentTime
-            setFeedTime((current) => Math.abs(current - nextTime) >= 0.25 ? nextTime : current)
+            setFeedTime((current) => {
+              const currentKey = assetsForVideoFrame(activeFeedVideo.id, current).map((asset) => asset.id).join(',')
+              const nextKey = assetsForVideoFrame(activeFeedVideo.id, nextTime).map((asset) => asset.id).join(',')
+              return currentKey === nextKey ? current : nextTime
+            })
           }}
           onLoadedMetadata={(event) => {
             const target = pendingFeedTargetRef.current

@@ -3,7 +3,7 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "/prototype/pages/discover/index.html",
+      "destination": "/prototype/pages/discover/app/index.html",
       "permanent": false
     }
   ],

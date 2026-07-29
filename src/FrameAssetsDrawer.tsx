@@ -1,8 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { FurnitureAssetThumbnail, furnitureThumbnailUrl } from './FurnitureAssetThumbnail'
-import { FurnitureModelPreview } from './FurnitureModelPreview'
 import type { LibraryComponent } from './types'
 import './FrameAssetsDrawer.css'
+
+const FurnitureModelPreview = lazy(() => import('./FurnitureModelPreview').then((module) => ({
+  default: module.FurnitureModelPreview,
+})))
 
 export function FrameAssetsDrawer({
   assets,
@@ -86,12 +89,14 @@ export function FrameAssetsDrawer({
           <>
 
         <div className="frame-assets-drawer-preview" role="tabpanel" aria-label={`${active.name} 3D预览`}>
-          <FurnitureModelPreview
-            key={active.id}
-            modelUrl={active.modelUrl}
-            fallbackImage={furnitureThumbnailUrl(active)}
-            name={active.name}
-          />
+          <Suspense fallback={<img src={furnitureThumbnailUrl(active)} alt="" />}>
+            <FurnitureModelPreview
+              key={active.id}
+              modelUrl={active.modelUrl}
+              fallbackImage={furnitureThumbnailUrl(active)}
+              name={active.name}
+            />
+          </Suspense>
         </div>
 
         <div className="frame-assets-drawer-tabs" role="tablist" aria-label="本帧家具">
