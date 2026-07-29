@@ -620,7 +620,6 @@ function App() {
   const initialFeedTargetRef = useRef<FeedDeepLink | null>(readFeedDeepLink())
   const pendingFeedTargetRef = useRef<FeedDeepLink | null>(initialFeedTargetRef.current)
   const [feedIndex, setFeedIndex] = useState(initialFeedTargetRef.current?.index ?? 0)
-  const [feedTime, setFeedTime] = useState(initialFeedTargetRef.current?.time ?? 0)
   const [pausedFrame, setPausedFrame] = useState(() => ({
     videoId: initialFeedTargetRef.current?.videoId ?? FEED_VIDEOS[0].id,
     time: initialFeedTargetRef.current?.time ?? defaultAssetFrame(FEED_VIDEOS[0].id),
@@ -640,9 +639,9 @@ function App() {
     () => assetsForVideoFrame(pausedFrame.videoId, pausedFrame.time),
     [pausedFrame],
   )
-  const visibleVideoAssets = useMemo(
-    () => assetsForVideoFrame(activeFeedVideo.id, feedTime),
-    [activeFeedVideo.id, feedTime],
+  const activeVideoAssets = useMemo(
+    () => AVAILABLE_ASSETS_BY_VIDEO[activeFeedVideo.id] ?? [],
+    [activeFeedVideo.id],
   )
   useEffect(() => {
     const preloads = activeFrameAssets.map((component) => {
@@ -774,7 +773,6 @@ function App() {
     const nextIndex = (feedIndex + direction + FEED_VIDEOS.length) % FEED_VIDEOS.length
     const nextVideo = FEED_VIDEOS[nextIndex]
     setFeedIndex(nextIndex)
-    setFeedTime(0)
     setPausedFrame({ videoId: nextVideo.id, time: defaultAssetFrame(nextVideo.id) })
     setCollectionMascotMode('none')
     dispatch({ type: 'CHANGE_FEED_VIDEO' })
@@ -989,14 +987,6 @@ function App() {
           playsInline
           autoPlay
           preload="metadata"
-          onTimeUpdate={(event) => {
-            const nextTime = event.currentTarget.currentTime
-            setFeedTime((current) => {
-              const currentKey = assetsForVideoFrame(activeFeedVideo.id, current).map((asset) => asset.id).join(',')
-              const nextKey = assetsForVideoFrame(activeFeedVideo.id, nextTime).map((asset) => asset.id).join(',')
-              return currentKey === nextKey ? current : nextTime
-            })
-          }}
           onLoadedMetadata={(event) => {
             const target = pendingFeedTargetRef.current
             if (!target || target.videoId !== activeFeedVideo.id) return
@@ -1005,14 +995,13 @@ function App() {
               Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : target.time,
             )
             pendingFeedTargetRef.current = null
-            setFeedTime(event.currentTarget.currentTime)
           }}
         />
 
         {state.phase === 'browse' && (
           <BrowseLayer
             video={activeFeedVideo}
-            videoAssets={visibleVideoAssets}
+            videoAssets={activeVideoAssets}
             favoriteAssetIds={favoriteAssetIds}
             onToggleFavoriteAsset={toggleFavoriteAsset}
             onFavoriteAllAssets={favoriteAllAssets}
