@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CORSConfiguration>
+  <CORSRule>
+    <AllowedOrigin>https://amb2r.top</AllowedOrigin>
+    <AllowedOrigin>https://www.amb2r.top</AllowedOrigin>
+    <AllowedOrigin>https://dreamhouse.top</AllowedOrigin>
+    <AllowedOrigin>https://www.dreamhouse.top</AllowedOrigin>
+    <AllowedOrigin>https://*.vercel.app</AllowedOrigin>
+    <AllowedOrigin>http://localhost:*</AllowedOrigin>
+    <AllowedOrigin>http://127.0.0.1:*</AllowedOrigin>
+    <AllowedMethod>GET</AllowedMethod>
+    <AllowedMethod>HEAD</AllowedMethod>
+    <AllowedHeader>*</AllowedHeader>
+    <ExposeHeader>ETag</ExposeHeader>
+    <ExposeHeader>Content-Length</ExposeHeader>
+    <ExposeHeader>Accept-Ranges</ExposeHeader>
+    <ExposeHeader>Content-Range</ExposeHeader>
+    <ExposeHeader>Last-Modified</ExposeHeader>
+    <MaxAgeSeconds>86400</MaxAgeSeconds>
+  </CORSRule>
+  <ResponseVary>true</ResponseVary>
+</CORSConfiguration>

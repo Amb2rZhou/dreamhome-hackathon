@@ -644,7 +644,10 @@ function App() {
     [activeFeedVideo.id],
   )
   useEffect(() => {
-    const preloads = activeFrameAssets.map((component) => {
+    // The entry button renders at most four thumbnails.  Preloading every
+    // asset in the paused frame made a single pause fan out into dozens of
+    // image requests on mobile networks.
+    const preloads = activeFrameAssets.slice(0, 4).map((component) => {
       const image = new Image()
       image.decoding = 'async'
       image.src = component.completedImageUrl ?? component.sticker
@@ -750,10 +753,12 @@ function App() {
       warmTimer = window.setTimeout(() => {
         preload.muted = true
         preload.playsInline = true
-        preload.preload = 'auto'
+        // Only warm the next video's metadata. `auto` could download the
+        // complete 8–14 MB MP4 while the current video was still starting.
+        preload.preload = 'metadata'
         preload.src = next.src
         preload.load()
-      }, 450)
+      }, 1500)
     }
     if (active?.readyState && active.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
       warmNext()
@@ -1011,16 +1016,6 @@ function App() {
               if (video) {
                 video.pause()
                 setPausedFrame({ videoId: activeFeedVideo.id, time: video.currentTime })
-                void import('./mobileSam').then(({ prepareEdgeSamFrame }) => (
-                  prepareEdgeSamFrame(video)
-                )).catch((error) => {
-                  console.warn('[EdgeSAM] paused frame pre-encode failed', error)
-                })
-                void import('./objectGuide').then(({ prepareFurnitureLabels }) => (
-                  prepareFurnitureLabels(video)
-                )).catch((error) => {
-                  console.warn('[GuideDetector] paused frame detection failed', error)
-                })
               }
               setSessionGuideStage((current) => current === 'pause' ? 'recognize' : current)
               dispatch({ type: 'PAUSE' })
@@ -1696,38 +1691,6 @@ function SessionLayer({
     recognizeGuideShownRef.current = true
     onRecognizeGuideShown()
   }, [onRecognizeGuideShown, recognizeGuideVisible])
-
-  useEffect(() => {
-    const video = document.querySelector<HTMLVideoElement>('.video')
-    if (!video) return
-    let cancelled = false
-    const prepare = () => {
-      window.requestAnimationFrame(async () => {
-        if (cancelled) return
-        void import('./mobileSam').then(({ prepareEdgeSamFrame }) => (
-          prepareEdgeSamFrame(video)
-        )).catch((error) => {
-          console.warn('[EdgeSAM] frame preparation failed', error)
-        })
-        void import('./objectGuide').then(({ prepareFurnitureLabels }) => (
-          prepareFurnitureLabels(video)
-        )).catch((error) => {
-          console.warn('[GuideDetector] frame preparation failed', error)
-        })
-      })
-    }
-    const preparePausedFrame = () => {
-      if (video.paused) prepare()
-      else video.addEventListener('pause', prepare, { once: true })
-    }
-    if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) preparePausedFrame()
-    else video.addEventListener('loadeddata', preparePausedFrame, { once: true })
-    return () => {
-      cancelled = true
-      video.removeEventListener('loadeddata', preparePausedFrame)
-      video.removeEventListener('pause', prepare)
-    }
-  }, [])
 
   const drawStrokeTo = (x: number, y: number) => {
     const canvas = canvasRef.current
