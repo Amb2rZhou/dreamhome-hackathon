@@ -1,6 +1,6 @@
 import { useReducer, useRef, useEffect, useMemo, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { FEED_VIDEOS, MOCK_OBJECTS, LIBRARY_SEED, CATEGORY_COLOR, CURRENT_BLOGGER, type FeedVideo, type FeedState, type SelectedObject, type LibraryComponent, type FurnitureCategory, type MascotState, type CraftJob, type CraftBatch, type TraceEntry } from './types'
+import { FEED_VIDEOS, MOCK_OBJECTS, LIBRARY_SEED, CATEGORY_COLOR, CURRENT_BLOGGER, type FeedVideo, type SelectedObject, type LibraryComponent, type FurnitureCategory, type MascotState, type CraftJob, type CraftBatch, type TraceEntry } from './types'
 import { genSticker } from './stickerGen'
 import { captureBbox, captureVideoSelectionUpload, saveTraceToBackend, loadTracesFromBackend, traceImageUrl, type VideoSelectionUpload } from './segmentApi'
 import { falJobToComponent, getFalJob } from './falGenerationApi'
@@ -27,10 +27,11 @@ import {
 } from './DouyinIcons'
 import { clientPointInElement } from './screenSpace'
 import { hasSeenFeedOnboarding, rememberFeedOnboarding } from './onboardingState'
+import { createFeedRuntimeState, feedRuntimeReducer, type FeedRuntimeState } from './feedState'
 import './App.css'
 
 interface State {
-  phase: FeedState
+  feed: FeedRuntimeState
   selected: SelectedObject[]
   tool: 'brush' | 'detect'
   activeObjectId: string | null
@@ -82,9 +83,14 @@ const isCraftTerminal = (job: CraftJob) => (
 )
 
 type Action =
-  | { type: 'PAUSE' }
+  | { type: 'PAUSE'; videoId: string; time: number }
   | { type: 'RESUME' }
-  | { type: 'CHANGE_FEED_VIDEO' }
+  | { type: 'CHANGE_FEED_VIDEO'; index: number; videoId: string; time: number }
+  | { type: 'SET_FEED_TARGET'; index: number; videoId: string; time: number }
+  | { type: 'OPEN_VIDEO_ASSETS' }
+  | { type: 'CLOSE_VIDEO_ASSETS' }
+  | { type: 'OPEN_REUSE_DECISION' }
+  | { type: 'CLOSE_REUSE_DECISION' }
   | { type: 'SWITCH_TOOL'; tool: 'brush' | 'detect' }
   | { type: 'OBJECT_RECOGNIZED'; obj: SelectedObject }
   | { type: 'UPDATE_OBJECT_LABEL'; id: string; label: string; thumbnail: string }
@@ -129,8 +135,13 @@ type Action =
   | { type: 'SHOW_TRACE' }
   | { type: 'HIDE_TRACE' }
 
+const initialTraceVisible = window.location.hash === '#/trace'
+const initialFeedState = createFeedRuntimeState(0, FEED_VIDEOS[0].id, defaultAssetFrame(FEED_VIDEOS[0].id))
+
 const initialState: State = {
-  phase: 'browse',
+  feed: initialTraceVisible
+    ? feedRuntimeReducer(initialFeedState, { type: 'OPEN_OVERLAY', overlay: 'trace' })
+    : initialFeedState,
   selected: [],
   tool: 'brush',
   activeObjectId: null,
@@ -148,7 +159,7 @@ const initialState: State = {
   craftStartTipShown: false,
   batches: [],
   traces: loadTraces(),
-  showTrace: window.location.hash === '#/trace',
+  showTrace: initialTraceVisible,
 }
 
 const TRACES_KEY = 'dreamhome-traces'
@@ -192,14 +203,26 @@ function saveTraces(traces: TraceEntry[]) {
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case 'PAUSE':
-      return { ...state, phase: 'session', videoPlaying: false, selected: [], activeObjectId: null, showFailHint: false }
-    case 'RESUME':
-      return { ...state, phase: 'browse', videoPlaying: true, selected: [], activeObjectId: null, showFailHint: false, showCollectionDetail: false }
-    case 'CHANGE_FEED_VIDEO':
+    case 'PAUSE': {
+      const feed = feedRuntimeReducer(state.feed, action)
+      if (feed === state.feed) return state
       return {
         ...state,
-        phase: 'browse',
+        feed,
+        videoPlaying: false,
+        selected: [],
+        activeObjectId: null,
+        showFailHint: false,
+      }
+    }
+    case 'RESUME':
+      return { ...state, feed: feedRuntimeReducer(state.feed, { type: 'SET_PHASE', phase: 'browse' }), videoPlaying: true, selected: [], activeObjectId: null, showFailHint: false, showCollectionDetail: false }
+    case 'CHANGE_FEED_VIDEO': {
+      const feed = feedRuntimeReducer(state.feed, { type: 'NAVIGATE', index: action.index, videoId: action.videoId, time: action.time })
+      if (feed === state.feed) return state
+      return {
+        ...state,
+        feed,
         videoPlaying: true,
         selected: [],
         activeObjectId: null,
@@ -208,6 +231,24 @@ function reducer(state: State, action: Action): State {
         showCraftResult: false,
         toast: null,
       }
+    }
+    case 'SET_FEED_TARGET':
+      return {
+        ...state,
+        feed: feedRuntimeReducer(state.feed, { type: 'SET_TARGET', index: action.index, videoId: action.videoId, time: action.time }),
+        videoPlaying: true,
+        selected: [],
+        activeObjectId: null,
+        showFailHint: false,
+      }
+    case 'OPEN_VIDEO_ASSETS':
+      return { ...state, feed: feedRuntimeReducer(state.feed, action) }
+    case 'CLOSE_VIDEO_ASSETS':
+      return { ...state, feed: feedRuntimeReducer(state.feed, action) }
+    case 'OPEN_REUSE_DECISION':
+      return { ...state, feed: feedRuntimeReducer(state.feed, { type: 'OPEN_OVERLAY', overlay: 'reuse-decision' }) }
+    case 'CLOSE_REUSE_DECISION':
+      return { ...state, feed: feedRuntimeReducer(state.feed, { type: 'CLOSE_OVERLAY', overlay: 'reuse-decision' }) }
     case 'SWITCH_TOOL':
       return { ...state, tool: action.tool }
     case 'OBJECT_RECOGNIZED':
@@ -249,7 +290,7 @@ function reducer(state: State, action: Action): State {
     case 'STORE': {
       return {
         ...state,
-        phase: 'browse',
+        feed: feedRuntimeReducer(state.feed, { type: 'SET_PHASE', phase: 'browse' }),
         videoPlaying: true,
         selected: [],
         activeObjectId: null,
@@ -257,21 +298,21 @@ function reducer(state: State, action: Action): State {
     }
     case 'SWIPE_BACK':
       if (state.selected.length === 0) {
-        return { ...state, phase: 'browse', videoPlaying: true }
+        return { ...state, feed: feedRuntimeReducer(state.feed, { type: 'SET_PHASE', phase: 'browse' }), videoPlaying: true }
       }
-      return { ...state, phase: 'confirm' }
+      return { ...state, feed: feedRuntimeReducer(state.feed, { type: 'SET_PHASE', phase: 'confirm' }) }
     case 'CANCEL_DISCARD':
-      return { ...state, phase: 'session' }
+      return { ...state, feed: feedRuntimeReducer(state.feed, { type: 'SET_PHASE', phase: 'session' }) }
     case 'CONFIRM_DISCARD':
       return {
         ...state,
-        phase: 'browse',
+        feed: feedRuntimeReducer(state.feed, { type: 'SET_PHASE', phase: 'browse' }),
         videoPlaying: true,
         selected: [],
         activeObjectId: null,
       }
     case 'CLOSE_PREVIEW':
-      return { ...state, phase: 'session' }
+      return { ...state, feed: feedRuntimeReducer(state.feed, { type: 'SET_PHASE', phase: 'session' }) }
     case 'SHOW_TOAST':
       return { ...state, toast: action.msg }
     case 'HIDE_TOAST':
@@ -480,12 +521,12 @@ function reducer(state: State, action: Action): State {
       return { ...state, batches, currentCraft: retryJob, mascot: 'working' }
     }
     case 'SHOW_CRAFT_RESULT':
-      return { ...state, showCraftResult: true }
+      return { ...state, feed: feedRuntimeReducer(state.feed, { type: 'OPEN_OVERLAY', overlay: 'craft-result' }), showCraftResult: true }
     case 'HIDE_CRAFT_RESULT':
-      return { ...state, showCraftResult: false }
+      return { ...state, feed: feedRuntimeReducer(state.feed, { type: 'CLOSE_OVERLAY', overlay: 'craft-result' }), showCraftResult: false }
     case 'CRAFT_CONFIRM_STORE': {
       const doneBatch = state.batches.find((b) => b.jobs.every(isCraftTerminal) && !b.dismissed)
-      if (!doneBatch) return { ...state, showCraftResult: false }
+      if (!doneBatch) return { ...state, feed: feedRuntimeReducer(state.feed, { type: 'CLOSE_OVERLAY', overlay: 'craft-result' }), showCraftResult: false }
       const remainingBatches = state.batches.filter((b) => b.id !== doneBatch.id)
       const hasMore = !!state.currentCraft || state.craftQueue.length > 0
       return {
@@ -493,16 +534,17 @@ function reducer(state: State, action: Action): State {
         showCraftResult: false,
         batches: remainingBatches,
         mascot: hasMore ? 'working' : 'sleeping',
-        phase: 'browse',
+        feed: feedRuntimeReducer(state.feed, { type: 'SET_PHASE', phase: 'browse' }),
       }
     }
     case 'CRAFT_DISCARD': {
       const doneBatch = state.batches.find((b) => b.jobs.every(isCraftTerminal) && !b.dismissed)
-      if (!doneBatch) return { ...state, showCraftResult: false }
+      if (!doneBatch) return { ...state, feed: feedRuntimeReducer(state.feed, { type: 'CLOSE_OVERLAY', overlay: 'craft-result' }), showCraftResult: false }
       const remainingBatches = state.batches.filter((b) => b.id !== doneBatch.id)
       const hasMore = !!state.currentCraft || state.craftQueue.length > 0
       return {
         ...state,
+        feed: feedRuntimeReducer(state.feed, { type: 'CLOSE_OVERLAY', overlay: 'craft-result' }),
         showCraftResult: false,
         batches: remainingBatches,
         mascot: hasMore ? 'working' : 'sleeping',
@@ -533,6 +575,7 @@ function reducer(state: State, action: Action): State {
         : state.batches
       return {
         ...state,
+        feed: feedRuntimeReducer(state.feed, { type: 'OPEN_OVERLAY', overlay: 'workshop' }),
         batches,
         showCollectionDetail: true,
         activeWorkshopBatchId: targetBatch?.id ?? null,
@@ -540,7 +583,7 @@ function reducer(state: State, action: Action): State {
       }
     }
     case 'HIDE_COLLECTION_DETAIL':
-      return { ...state, showCollectionDetail: false, activeWorkshopBatchId: null }
+      return { ...state, feed: feedRuntimeReducer(state.feed, { type: 'CLOSE_OVERLAY', overlay: 'workshop' }), showCollectionDetail: false, activeWorkshopBatchId: null }
     case 'ADD_TRACE':
       return { ...state, traces: [action.trace, ...state.traces] }
     case 'UPDATE_TRACE':
@@ -559,9 +602,9 @@ function reducer(state: State, action: Action): State {
       return { ...state, traces: merged }
     }
     case 'SHOW_TRACE':
-      return { ...state, showTrace: true }
+      return { ...state, feed: feedRuntimeReducer(state.feed, { type: 'OPEN_OVERLAY', overlay: 'trace' }), showTrace: true }
     case 'HIDE_TRACE':
-      return { ...state, showTrace: false }
+      return { ...state, feed: feedRuntimeReducer(state.feed, { type: 'CLOSE_OVERLAY', overlay: 'trace' }), showTrace: false }
     case 'RELOAD_TRACES':
       return { ...state, traces: loadTraces() }
     default:
@@ -603,7 +646,15 @@ function readFeedDeepLink(): FeedDeepLink | null {
 }
 
 function App() {
-  const [state, dispatch] = useReducer(reducer, initialState)
+  const initialFeedTargetRef = useRef<FeedDeepLink | null>(readFeedDeepLink())
+  const [state, dispatch] = useReducer(reducer, initialState, (base) => {
+    const target = initialFeedTargetRef.current
+    if (!target) return base
+    return {
+      ...base,
+      feed: createFeedRuntimeState(target.index, target.videoId, target.time),
+    }
+  })
   const [favoriteAssetIds, setFavoriteAssetIds] = useState<string[]>(() => {
     try {
       const legacy = JSON.parse(window.localStorage.getItem('dreamhome-favorite-assets') || '[]')
@@ -617,13 +668,7 @@ function App() {
       return []
     }
   })
-  const initialFeedTargetRef = useRef<FeedDeepLink | null>(readFeedDeepLink())
   const pendingFeedTargetRef = useRef<FeedDeepLink | null>(initialFeedTargetRef.current)
-  const [feedIndex, setFeedIndex] = useState(initialFeedTargetRef.current?.index ?? 0)
-  const [pausedFrame, setPausedFrame] = useState(() => ({
-    videoId: initialFeedTargetRef.current?.videoId ?? FEED_VIDEOS[0].id,
-    time: initialFeedTargetRef.current?.time ?? defaultAssetFrame(FEED_VIDEOS[0].id),
-  }))
   const [collectionMascotMode, setCollectionMascotMode] = useState<CollectionMascotMode>('none')
   const [reuseCandidate, setReuseCandidate] = useState<SelectionMatchCandidate | null>(null)
   const reuseDecisionRef = useRef<((reuse: boolean) => void) | null>(null)
@@ -634,7 +679,8 @@ function App() {
   const feedTouchStartY = useRef<number | null>(null)
   const suppressPause = useRef(false)
   const wheelLocked = useRef(false)
-  const activeFeedVideo = FEED_VIDEOS[feedIndex]
+  const activeFeedVideo = FEED_VIDEOS[state.feed.index]
+  const pausedFrame = state.feed.pausedFrame
   const activeFrameAssets = useMemo(
     () => assetsForVideoFrame(pausedFrame.videoId, pausedFrame.time),
     [pausedFrame],
@@ -669,7 +715,7 @@ function App() {
     && batch.jobs.every(isCraftTerminal)
   ))
   const iosStatusDark = state.showTrace
-  const iosHomeDark = iosStatusDark || state.showCollectionDetail || state.showCraftResult || state.phase === 'preview'
+  const iosHomeDark = iosStatusDark || state.showCollectionDetail || state.showCraftResult || state.feed.phase === 'preview'
   const toggleFavoriteAsset = useCallback((id: string) => {
     setFavoriteAssetIds((current) => current.includes(id)
       ? current.filter((candidate) => candidate !== id)
@@ -716,8 +762,7 @@ function App() {
         const target = readFeedDeepLink()
         if (target) {
           pendingFeedTargetRef.current = target
-          setFeedIndex(target.index)
-          setPausedFrame({ videoId: target.videoId, time: target.time })
+          dispatch({ type: 'SET_FEED_TARGET', index: target.index, videoId: target.videoId, time: target.time })
         }
       }
     }
@@ -742,10 +787,10 @@ function App() {
     } else {
       v.pause()
     }
-  }, [state.videoPlaying, feedIndex])
+  }, [state.videoPlaying, state.feed.index])
 
   useEffect(() => {
-    const next = FEED_VIDEOS[(feedIndex + 1) % FEED_VIDEOS.length]
+    const next = FEED_VIDEOS[(state.feed.index + 1) % FEED_VIDEOS.length]
     const active = videoRef.current
     const preload = document.createElement('video')
     let warmTimer = 0
@@ -771,16 +816,19 @@ function App() {
       preload.removeAttribute('src')
       preload.load()
     }
-  }, [feedIndex])
+  }, [state.feed.index])
 
   const changeFeedVideo = (direction: 1 | -1) => {
-    if (state.phase !== 'browse' || state.showCollectionDetail || state.showCraftResult || state.showTrace) return
-    const nextIndex = (feedIndex + direction + FEED_VIDEOS.length) % FEED_VIDEOS.length
+    if (state.feed.phase !== 'browse' || state.feed.overlay !== 'none') return
+    const nextIndex = (state.feed.index + direction + FEED_VIDEOS.length) % FEED_VIDEOS.length
     const nextVideo = FEED_VIDEOS[nextIndex]
-    setFeedIndex(nextIndex)
-    setPausedFrame({ videoId: nextVideo.id, time: defaultAssetFrame(nextVideo.id) })
     setCollectionMascotMode('none')
-    dispatch({ type: 'CHANGE_FEED_VIDEO' })
+    dispatch({
+      type: 'CHANGE_FEED_VIDEO',
+      index: nextIndex,
+      videoId: nextVideo.id,
+      time: defaultAssetFrame(nextVideo.id),
+    })
   }
 
   const requestReuseDecision = useCallback((candidate: SelectionMatchCandidate) => (
@@ -788,6 +836,7 @@ function App() {
       reuseDecisionRef.current?.(false)
       reuseDecisionRef.current = resolve
       setReuseCandidate(candidate)
+      dispatch({ type: 'OPEN_REUSE_DECISION' })
     })
   ), [])
 
@@ -795,6 +844,7 @@ function App() {
     const resolve = reuseDecisionRef.current
     reuseDecisionRef.current = null
     setReuseCandidate(null)
+    dispatch({ type: 'CLOSE_REUSE_DECISION' })
     resolve?.(reuse)
   }, [])
 
@@ -962,13 +1012,20 @@ function App() {
           <div
             className="screen"
             onWheel={(event) => {
+              if (state.feed.overlay !== 'none') {
+                event.preventDefault()
+                event.stopPropagation()
+                return
+              }
               if (Math.abs(event.deltaY) < 32 || wheelLocked.current) return
               wheelLocked.current = true
               changeFeedVideo(event.deltaY > 0 ? 1 : -1)
               window.setTimeout(() => { wheelLocked.current = false }, 420)
             }}
             onTouchStart={(event) => {
-              feedTouchStartY.current = state.phase === 'browse' ? event.changedTouches[0]?.clientY ?? null : null
+              feedTouchStartY.current = state.feed.phase === 'browse' && state.feed.overlay === 'none'
+                ? event.changedTouches[0]?.clientY ?? null
+                : null
             }}
             onTouchEnd={(event) => {
               const startY = feedTouchStartY.current
@@ -1003,27 +1060,29 @@ function App() {
           }}
         />
 
-        {state.phase === 'browse' && (
+        {state.feed.phase === 'browse' && (
           <BrowseLayer
             video={activeFeedVideo}
             videoAssets={activeVideoAssets}
             favoriteAssetIds={favoriteAssetIds}
             onToggleFavoriteAsset={toggleFavoriteAsset}
             onFavoriteAllAssets={favoriteAllAssets}
+            assetsOpen={state.feed.overlay === 'video-assets'}
+            onOpenAssets={() => dispatch({ type: 'OPEN_VIDEO_ASSETS' })}
+            onCloseAssets={() => dispatch({ type: 'CLOSE_VIDEO_ASSETS' })}
             onPause={() => {
-              if (suppressPause.current) return
+              if (suppressPause.current || state.feed.overlay !== 'none') return
               const video = videoRef.current
               if (video) {
                 video.pause()
-                setPausedFrame({ videoId: activeFeedVideo.id, time: video.currentTime })
+                dispatch({ type: 'PAUSE', videoId: activeFeedVideo.id, time: video.currentTime })
               }
               setSessionGuideStage((current) => current === 'pause' ? 'recognize' : current)
-              dispatch({ type: 'PAUSE' })
             }}
           />
         )}
 
-        {state.phase === 'browse' && sessionGuideStage === 'pause' && <PauseGuideOverlay />}
+        {state.feed.phase === 'browse' && sessionGuideStage === 'pause' && <PauseGuideOverlay />}
 
         {state.toast && (
           <ToastLifetime msg={state.toast} onDone={() => dispatch({ type: 'HIDE_TOAST' })} />
@@ -1042,8 +1101,8 @@ function App() {
           awaitingCollectionView={awaitingCollectionView}
           craftStartTip={state.craftStartTip}
           busy={!!state.currentCraft || state.craftQueue.length > 0}
-          collectionMode={state.phase === 'session' ? collectionMascotMode : 'none'}
-          guideMode={state.phase === 'session'
+          collectionMode={state.feed.phase === 'session' ? collectionMascotMode : 'none'}
+          guideMode={state.feed.phase === 'session'
             ? (state.selected.length > 0 && collectionMascotMode === 'none' ? 'drag' : null)
             : null}
           progressGuideActive={sessionGuideStage === 'progress'}
@@ -1061,7 +1120,7 @@ function App() {
 
         {sessionGuideStage === 'progress' && <ProgressGuideOverlay />}
 
-        {state.phase === 'session' && (
+        {state.feed.phase === 'session' && (
           <SessionLayer
             state={state}
             dispatch={dispatch}
@@ -1084,7 +1143,7 @@ function App() {
           />
         )}
 
-        {state.phase === 'confirm' && (
+        {state.feed.phase === 'confirm' && (
           <ConfirmLayer
             count={state.selected.length}
             onCancel={() => dispatch({ type: 'CANCEL_DISCARD' })}
@@ -1092,7 +1151,7 @@ function App() {
           />
         )}
 
-        {state.phase === 'preview' && (
+        {state.feed.phase === 'preview' && (
           <PreviewLayer
             selected={state.selected}
             onClose={() => dispatch({ type: 'CLOSE_PREVIEW' })}
@@ -1306,6 +1365,9 @@ function BrowseLayer({
   favoriteAssetIds,
   onToggleFavoriteAsset,
   onFavoriteAllAssets,
+  assetsOpen,
+  onOpenAssets,
+  onCloseAssets,
   onPause,
 }: {
   video: FeedVideo
@@ -1313,6 +1375,9 @@ function BrowseLayer({
   favoriteAssetIds: string[]
   onToggleFavoriteAsset: (id: string) => void
   onFavoriteAllAssets: (ids: string[]) => void
+  assetsOpen: boolean
+  onOpenAssets: () => void
+  onCloseAssets: () => void
   onPause: () => void
 }) {
   return (
@@ -1337,6 +1402,9 @@ function BrowseLayer({
         favoriteIds={favoriteAssetIds}
         onFavorite={onToggleFavoriteAsset}
         onFavoriteAll={onFavoriteAllAssets}
+        open={assetsOpen}
+        onOpen={onOpenAssets}
+        onClose={onCloseAssets}
       />
       <BottomInfo video={video} />
       <SceneActions videoId={video.id} />

@@ -57,6 +57,12 @@ const MOTIONS: Record<MotionName, MotionClip> = {
   complete: { src: `${MOTION_ASSET_ROOT}/complete.mp4`, loop: true, scale: 0.98, x: 0, y: 1 },
 }
 
+const FALLBACK_IMG: Record<MascotState, string> = {
+  sleeping: '/mascot-initial.png',
+  happy: '/mascot-happy.png',
+  working: '/mascot-working.png',
+}
+
 function chooseDifferent<T extends string>(options: readonly T[], previous: T | null): T {
   const available = options.filter((option) => option !== previous)
   return available[Math.floor(Math.random() * available.length)] ?? options[0]
@@ -110,15 +116,9 @@ export function Mascot({
   })())
   const firstMotion = firstMotionRef.current
 
-  const [motionView, setMotionView] = useState<{ current: MotionName; previous: MotionName | null }>({
-    current: firstMotion,
-    previous: null,
-  })
-  const motion = motionView.current
+  const [motion, setCurrentMotion] = useState<MotionName>(firstMotion)
   const setMotion = useCallback((next: MotionName) => {
-    setMotionView((current) => current.current === next
-      ? current
-      : { current: next, previous: current.current })
+    setCurrentMotion((current) => current === next ? current : next)
   }, [])
   const [videoFailed, setVideoFailed] = useState(false)
   const pointerStartRef = useRef<{ x: number; y: number; moved: boolean } | null>(null)
@@ -129,14 +129,6 @@ export function Mascot({
   const lastIdleAccentRef = useRef<'idleMagnifier' | 'idleBelt' | null>(null)
   const lastWorkAccentRef = useRef<'workingHammer' | 'workingDrawing' | null>(null)
   const bootPlayingRef = useRef(firstMotion === 'coldStart')
-  useEffect(() => {
-    if (!motionView.previous) return
-    const timer = window.setTimeout(() => {
-      setMotionView((current) => ({ ...current, previous: null }))
-    }, MOTION_FADE_MS + 40)
-    return () => window.clearTimeout(timer)
-  }, [motionView.previous])
-
   const baseMotion = useCallback((): MotionName => {
     if (busy || state === 'working') return 'working'
     if (awaitingCollectionView) return 'complete'
@@ -277,7 +269,6 @@ export function Mascot({
   const showWelcomeBubble = !showCompleteBubble && !showStartBubble && !showNoticeBubble && welcomeVisible && !guideMode && collectionMode === 'none'
   const bubbleSide = 'right'
   const clip = MOTIONS[motion]
-  const previousClip = motionView.previous ? MOTIONS[motionView.previous] : null
   const fadeDuration = `${MOTION_FADE_MS}ms`
 
   return (
@@ -341,45 +332,35 @@ export function Mascot({
             key={collectionMode === 'collecting' ? 'collect' : 'collect-ready'}
             className="mascot-collection-figure"
             src={collectionMode === 'collecting' ? '/mascot-motion/collect.png' : '/mascot-motion/collect-ready.png'}
-            alt={collectionMode === 'collecting' ? '包公球推着购物车' : '包公球准备接收家具'}
+            alt={collectionMode === 'collecting' ? '包工球推着购物车' : '包工球准备接收家具'}
           />
         ) : !videoFailed ? (
-          <>
-            {motionView.previous && previousClip && (
-              <BlackKeyVideo
-                key={`outgoing-${motionView.previous}-${previousClip.src}`}
-                className="mascot-motion-layer mascot-motion-layer--outgoing"
-                src={previousClip.src}
-                loop={previousClip.loop}
-                preload="metadata"
-                style={{
-                  '--motion-scale': previousClip.scale,
-                  '--motion-x': `${previousClip.x}px`,
-                  '--motion-y': `${previousClip.y}px`,
-                  '--fade-duration': fadeDuration,
-                } as React.CSSProperties}
-              />
-            )}
-            <BlackKeyVideo
-              key={`incoming-${motion}-${clip.src}`}
-              className="mascot-motion-layer mascot-motion-layer--incoming"
-              src={clip.src}
-              loop={clip.loop}
-              // Only the visible motion is mounted. `play()` in BlackKeyVideo
-              // will fetch the current clip on demand; metadata preload avoids
-              // retaining several decoded working variants in the tab cache.
-              preload="metadata"
-              onEnded={onMotionEnded}
-              onError={() => setVideoFailed(true)}
-              style={{
-                '--motion-scale': clip.scale,
-                '--motion-x': `${clip.x}px`,
-                '--motion-y': `${clip.y}px`,
-                '--fade-duration': fadeDuration,
-              } as React.CSSProperties}
-            />
-          </>
-        ) : null}
+          <BlackKeyVideo
+            key={`${motion}-${clip.src}`}
+            className="mascot-motion-layer mascot-motion-layer--incoming"
+            src={clip.src}
+            loop={clip.loop}
+            // Exactly one dynamic mascot is mounted. The current clip is
+            // replaced atomically so transitions cannot double the character.
+            preload="metadata"
+            onEnded={onMotionEnded}
+            onError={() => setVideoFailed(true)}
+            style={{
+              '--motion-scale': clip.scale,
+              '--motion-x': `${clip.x}px`,
+              '--motion-y': `${clip.y}px`,
+              '--fade-duration': fadeDuration,
+            } as React.CSSProperties}
+          />
+        ) : (
+          <img
+            className="mascot-img mascot-img--fallback"
+            src={FALLBACK_IMG[state]}
+            alt="包工球"
+            draggable={false}
+            data-media="fallback"
+          />
+        )}
       </div>
     </div>
   )

@@ -8,6 +8,8 @@
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   animation: frame-assets-drawer-backdrop-in .2s ease-out both;
+  overscroll-behavior: contain;
+  touch-action: none;
 }
 
 .frame-assets-drawer {
@@ -41,6 +43,24 @@
   border-radius: 999px;
   background: rgba(102, 97, 87, .2);
 }
+
+.frame-assets-drawer-close {
+  position: absolute;
+  z-index: 2;
+  top: 10px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #4f574f;
+  background: rgba(231, 234, 228, .9);
+  font-size: 20px;
+  line-height: 1;
+  touch-action: manipulation;
+}
+.frame-assets-drawer-close:focus-visible { outline: 3px solid #e5a938; outline-offset: 2px; }
 
 .frame-assets-drawer-header {
   min-height: 48px;

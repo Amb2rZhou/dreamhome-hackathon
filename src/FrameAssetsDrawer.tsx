@@ -38,6 +38,14 @@ export function FrameAssetsDrawer({
     setActiveId(assets[0]?.id ?? '')
   }, [activeId, assets])
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [onClose])
+
   const allFavorited = assets.length > 0 && assets.every((asset) => favoriteIds.includes(asset.id))
 
   return (
@@ -48,6 +56,15 @@ export function FrameAssetsDrawer({
         onClose()
       }}
       onPointerDown={(event) => event.stopPropagation()}
+      onPointerMove={(event) => event.stopPropagation()}
+      onPointerUp={(event) => event.stopPropagation()}
+      onTouchStart={(event) => event.stopPropagation()}
+      onTouchMove={(event) => event.stopPropagation()}
+      onTouchEnd={(event) => event.stopPropagation()}
+      onWheel={(event) => {
+        event.preventDefault()
+        event.stopPropagation()
+      }}
       aria-hidden="false"
     >
       <section
@@ -58,6 +75,15 @@ export function FrameAssetsDrawer({
         onClick={(event) => event.stopPropagation()}
       >
         <div className="frame-assets-drawer-handle" aria-hidden="true" />
+
+        <button
+          type="button"
+          className="frame-assets-drawer-close"
+          aria-label="关闭全部 3D 组件"
+          onClick={onClose}
+        >
+          ×
+        </button>
 
         <header className="frame-assets-drawer-header">
           <div>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { FrameAssetsDrawer } from './FrameAssetsDrawer'
 import type { LibraryComponent } from './types'
 import './VideoAssetsEntry.css'
@@ -9,28 +9,39 @@ export function VideoAssetsEntry({
   favoriteIds,
   onFavorite,
   onFavoriteAll,
+  open,
+  onOpen,
+  onClose,
 }: {
   videoId: string
   assets: LibraryComponent[]
   favoriteIds: string[]
   onFavorite: (id: string) => void
   onFavoriteAll: (ids: string[]) => void
+  open: boolean
+  onOpen: () => void
+  onClose: () => void
 }) {
-  const [open, setOpen] = useState(false)
   const [savedNotice, setSavedNotice] = useState(false)
+  const savedNoticeTimerRef = useRef<number | null>(null)
   const assetIds = useMemo(() => assets.map((asset) => asset.id), [assets])
   const allSaved = assetIds.length > 0 && assetIds.every((id) => favoriteIds.includes(id))
 
   useEffect(() => {
-    setOpen(false)
     setSavedNotice(false)
+    if (savedNoticeTimerRef.current !== null) window.clearTimeout(savedNoticeTimerRef.current)
   }, [videoId])
+
+  useEffect(() => () => {
+    if (savedNoticeTimerRef.current !== null) window.clearTimeout(savedNoticeTimerRef.current)
+  }, [])
 
   const favoriteAll = () => {
     if (assetIds.length === 0 || allSaved) return
     onFavoriteAll(assetIds)
     setSavedNotice(true)
-    window.setTimeout(() => setSavedNotice(false), 2200)
+    if (savedNoticeTimerRef.current !== null) window.clearTimeout(savedNoticeTimerRef.current)
+    savedNoticeTimerRef.current = window.setTimeout(() => setSavedNotice(false), 2200)
   }
 
   return (
@@ -42,7 +53,7 @@ export function VideoAssetsEntry({
         aria-label={assets.length > 0
           ? `查看本条视频的全部 ${assets.length} 个 3D 组件`
           : '查看本条视频的全部 3D 组件'}
-        onClick={() => setOpen(true)}
+        onClick={onOpen}
       >
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="m12 2.8 7.8 4.5v9L12 20.8l-7.8-4.5v-9L12 2.8Z" />
@@ -65,7 +76,7 @@ export function VideoAssetsEntry({
           favoriteIds={favoriteIds}
           onFavorite={onFavorite}
           onFavoriteAll={favoriteAll}
-          onClose={() => setOpen(false)}
+          onClose={onClose}
           title={`本条视频 · 全部 ${assets.length} 个 3D 组件`}
           subtitle="按整条视频汇总，不受当前播放帧限制"
           ariaLabel="本条视频全部 3D 组件"

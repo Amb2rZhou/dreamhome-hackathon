@@ -34,7 +34,7 @@
     .photo-empty { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:0 22px; }
     .photo-hint { margin:0; text-align:center; font-size:12px; line-height:1.65; font-weight:var(--dh-font-weight-semibold); color:var(--dh-fg-muted); }
     .photo-empty.is-hidden { display:none; }
-    /* 包公球占位：待生成「包公球拍照」图后替换 src 即可 */
+    /* 包工球占位：待生成「包工球拍照」图后替换 src 即可 */
     .photo-mascot { width:96px; height:96px; object-fit:contain; transform-origin:50% 88%; animation:mascot-sway 2.6s ease-in-out infinite; }
     @keyframes mascot-sway { 0%,100%{transform:rotate(-2.2deg)} 50%{transform:rotate(2.2deg)} }
     .photo-preview { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
@@ -129,7 +129,7 @@
             <section class="phase is-active" id="capturePhase" aria-label="拍照或选图">
               <div class="photo-wrap">
                 <div class="photo-empty" id="photoEmpty">
-                  <img class="photo-mascot" src="../../assets/mascot/states/mascot-thinking.png" alt="包公球在等你拍照" />
+                  <img class="photo-mascot" src="../../assets/mascot/states/mascot-thinking.png" alt="包工球在等你拍照" />
                   <p class="photo-hint">拍一张喜欢的家具，<br />生成 3D 组件进入灵感库</p>
                 </div>
                 <img class="photo-preview" id="photoPreview" alt="已选图片或视频封面" hidden />
@@ -157,9 +157,9 @@
 
             <!-- 阶段 B · 生成中 -->
             <section class="phase gen-phase" id="genPhase" aria-live="polite">
-              <video class="gen-video" id="genOrbit" src="../../assets/mascot/motion/working-hammer.webm" autoplay muted loop playsinline aria-label="包公球正在生成组件"></video>
+              <video class="gen-video" id="genOrbit" src="../../assets/mascot/motion/working-hammer.webm" autoplay muted loop playsinline aria-label="包工球正在生成组件"></video>
               <h2 class="gen-title" id="genTitle">正在识别照片</h2>
-              <p class="gen-copy" id="genCopy">包公球正在看你拍的家居照片</p>
+              <p class="gen-copy" id="genCopy">包工球正在看你拍的家居照片</p>
               <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
               <div class="gen-actions">
                 <button class="secondary-button" id="genBack" type="button">返回</button>
@@ -408,7 +408,7 @@
       return response.json();
     }
     const GEN_COPY = {
-      queued:['正在识别照片','包公球正在看你拍的家居照片'],
+      queued:['正在识别照片','包工球正在看你拍的家居照片'],
       processing:['正在提取家具','从照片里认出家具并生成 3D 组件'],
       ready:['组件已就绪','正在整理你的新组件'],
       failed:['生成没有完成',''],

@@ -7,7 +7,9 @@
   right: 10px;
   width: 80px;
   height: 80px;
-  z-index: 70;
+  /* The mascot is a persistent Feed control, so drawers and modal backdrops
+     stay beneath it instead of replacing or dimming it. */
+  z-index: 120;
   isolation: isolate;
   contain: layout style;
   touch-action: manipulation;
@@ -26,10 +28,10 @@
   overflow: visible;
   pointer-events: none;
 }
-.mascot-img--base {
+.mascot-img--fallback {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 2;
 }
 .mascot-awaiting-view .mascot-media-frame {
   transform-origin: 50% 100%;
@@ -116,10 +118,6 @@
   z-index: 2;
   animation: mascotMotionFadeIn var(--fade-duration, 300ms) ease-in-out both;
 }
-.mascot-motion-layer--outgoing {
-  z-index: 1;
-  animation: mascotMotionFadeOut var(--fade-duration, 300ms) ease-in-out both;
-}
 .black-key-source {
   position: absolute;
   width: 1px;
@@ -137,13 +135,8 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
-@keyframes mascotMotionFadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
 @media (prefers-reduced-motion: reduce) {
-  .mascot-motion-layer--incoming,
-  .mascot-motion-layer--outgoing { animation-duration: 80ms; }
+  .mascot-motion-layer--incoming { animation-duration: 80ms; }
 }
 .mascot-img {
   width: 80px;
