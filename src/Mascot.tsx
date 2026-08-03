@@ -44,17 +44,21 @@ const IDLE_ACCENT_DELAY = 10_000
 const WORK_ACCENT_DELAY = 2_500
 const MOTION_FADE_MS = 300
 const MOTION_ASSET_ROOT = '/mascot-motion'
+const motionClip = (name: string, options: Omit<MotionClip, 'src'>): MotionClip => ({
+  src: `${MOTION_ASSET_ROOT}/${name}.web.mp4`,
+  ...options,
+})
 // 统一角色脚底基线；各段素材的轻微视觉差异在这里校准，不需要重新导出。
 const MOTIONS: Record<MotionName, MotionClip> = {
-  // 与《包工球交互》状态文档逐项对应；MP4 为原始 H.264 MOV 的无损换封装。
-  coldStart: { src: `${MOTION_ASSET_ROOT}/cold-start.mp4`, loop: false, scale: 1, x: 0, y: 0 },
-  idle: { src: `${MOTION_ASSET_ROOT}/idle.mp4`, loop: true, scale: 1, x: 0, y: 0 },
-  idleMagnifier: { src: `${MOTION_ASSET_ROOT}/idle-magnifier.mp4`, loop: false, scale: 0.98, x: 1, y: 1 },
-  idleBelt: { src: `${MOTION_ASSET_ROOT}/idle-belt.mp4`, loop: false, scale: 1.02, x: -1, y: 0 },
-  working: { src: `${MOTION_ASSET_ROOT}/working.mp4`, loop: true, scale: 1, x: 0, y: 0 },
-  workingHammer: { src: `${MOTION_ASSET_ROOT}/working-hammer.mp4`, loop: false, scale: 0.96, x: 1, y: 1 },
-  workingDrawing: { src: `${MOTION_ASSET_ROOT}/working-drawing.mp4`, loop: false, scale: 0.96, x: 0, y: 1 },
-  complete: { src: `${MOTION_ASSET_ROOT}/complete.mp4`, loop: true, scale: 0.98, x: 0, y: 1 },
+  // 主应用只请求压缩后的 H.264 版本；原始素材移到非发布目录保存。
+  coldStart: motionClip('cold-start', { loop: false, scale: 1, x: 0, y: 0 }),
+  idle: motionClip('idle', { loop: true, scale: 1, x: 0, y: 0 }),
+  idleMagnifier: motionClip('idle-magnifier', { loop: false, scale: 0.98, x: 1, y: 1 }),
+  idleBelt: motionClip('idle-belt', { loop: false, scale: 1.02, x: -1, y: 0 }),
+  working: motionClip('working', { loop: true, scale: 1, x: 0, y: 0 }),
+  workingHammer: motionClip('working-hammer', { loop: false, scale: 0.96, x: 1, y: 1 }),
+  workingDrawing: motionClip('working-drawing', { loop: false, scale: 0.96, x: 0, y: 1 }),
+  complete: motionClip('complete', { loop: true, scale: 0.98, x: 0, y: 1 }),
 }
 
 const FALLBACK_IMG: Record<MascotState, string> = {

@@ -2,13 +2,14 @@
   "schemaVersion": 1,
   "scope": [
     "public",
+    "source-assets/mascot-motion",
     "web/prototype/assets",
     "web/prototype/pages/discover/app/assets"
   ],
   "totalsByKind": {
     "css": {
       "files": 1,
-      "bytes": 62876
+      "bytes": 63049
     },
     "font": {
       "files": 1,
@@ -19,20 +20,20 @@
       "bytes": 47621568
     },
     "image": {
-      "files": 550,
-      "bytes": 44977493
+      "files": 543,
+      "bytes": 44676436
     },
     "js": {
       "files": 6,
-      "bytes": 1447773
+      "bytes": 1451025
     },
     "runtime-model": {
       "files": 4,
       "bytes": 71312512
     },
     "video": {
-      "files": 32,
-      "bytes": 134032322
+      "files": 20,
+      "bytes": 60122155
     }
   },
   "mascot": {
@@ -42,24 +43,10 @@
     ],
     "inventory": [
       {
-        "path": "public/mascot-motion/assembly-loading.mov",
-        "bytes": 5859518,
+        "path": "public/mascot-motion/cold-start.web.mp4",
+        "bytes": 989042,
         "kind": "video",
-        "sha256": "fda70c7983e1d25dd657f6c73fe57df0a66feaa195ebfed7eb3ea3d8cb7ed82c",
-        "references": []
-      },
-      {
-        "path": "public/mascot-motion/assembly-loading.mp4",
-        "bytes": 6120877,
-        "kind": "video",
-        "sha256": "4505f402f7beb08b22be45f94a8f25ddc12ea7d7160125687be6dd6e9829909e",
-        "references": []
-      },
-      {
-        "path": "public/mascot-motion/cold-start.mp4",
-        "bytes": 2684966,
-        "kind": "video",
-        "sha256": "cd04535743582e50abfa5d26a21537d272742fa72251e624aac2b0a25de74f80",
+        "sha256": "8809f1d905d7924cde925324587f1f2709231ef8d8e587d148b82ba0bda0d03c",
         "references": []
       },
       {
@@ -81,24 +68,10 @@
         ]
       },
       {
-        "path": "public/mascot-motion/complete.mp4",
-        "bytes": 10561172,
-        "kind": "video",
-        "sha256": "aa1c3e9155e6617dcca9f48866cd7aa34b6a93efb5ded064056aa09b4bc45d3e",
-        "references": []
-      },
-      {
-        "path": "public/mascot-motion/complete.poster.png",
-        "bytes": 36730,
-        "kind": "image",
-        "sha256": "0e56155b6d85f8f6de78672512fe2a231b2b7ceb54a2b94708a850eefd4829e5",
-        "references": []
-      },
-      {
         "path": "public/mascot-motion/complete.web.mp4",
         "bytes": 3339176,
         "kind": "video",
-        "sha256": "c65ff3b7d1a5d4199d50306ed348ba6e1c231284bf953e222972084ec4258a99",
+        "sha256": "2c6e647d454c1a9d911c099e623406186cba30b161fc8864a027c14d6a93c5d8",
         "references": []
       },
       {
@@ -120,150 +93,45 @@
         ]
       },
       {
-        "path": "public/mascot-motion/idle-belt.mp4",
-        "bytes": 2489023,
-        "kind": "video",
-        "sha256": "d8edd829ac96045bc58a645ea0f9d76d8a45a6dac36bda39d88db910ed49d7e5",
-        "references": []
-      },
-      {
-        "path": "public/mascot-motion/idle-belt.poster.png",
-        "bytes": 29259,
-        "kind": "image",
-        "sha256": "f1148df5e0e184035bd7b7f2fb852ff641e8f083a1fdf56762f96760033a2a89",
-        "references": []
-      },
-      {
         "path": "public/mascot-motion/idle-belt.web.mp4",
         "bytes": 919526,
         "kind": "video",
-        "sha256": "c322f4329d7c35183b4ea7b993b21afc847a921f3ce4e0b3be3f1d77c2b40112",
-        "references": []
-      },
-      {
-        "path": "public/mascot-motion/idle-magnifier.mp4",
-        "bytes": 5347849,
-        "kind": "video",
-        "sha256": "95bf514de5ba48a0f0cc51775f82fb8e61dcfa09e6291cb16aa71863d3290558",
-        "references": []
-      },
-      {
-        "path": "public/mascot-motion/idle-magnifier.poster.png",
-        "bytes": 32235,
-        "kind": "image",
-        "sha256": "b884d3cc595567a717d403ce2bd59d04e22eb4d491a024c108b3c0ceddb00dd7",
+        "sha256": "06503dd9c38dd5679a8e17ee33b0703f47b6d53145dcc0e02152781777f3bb58",
         "references": []
       },
       {
         "path": "public/mascot-motion/idle-magnifier.web.mp4",
         "bytes": 1777899,
         "kind": "video",
-        "sha256": "17dd9acab6fe680f92ce56ddb5fbff8f687435e702ef06739ead71a92cac4345",
-        "references": []
-      },
-      {
-        "path": "public/mascot-motion/idle.mp4",
-        "bytes": 1568079,
-        "kind": "video",
-        "sha256": "6942975eebae59ece1f37a8d0bc3899c9eb7255f74fa733ab4ebd369f296ea8f",
-        "references": []
-      },
-      {
-        "path": "public/mascot-motion/idle.poster.png",
-        "bytes": 31877,
-        "kind": "image",
-        "sha256": "a00922e6f48b3bb0116a005fcc72ee8f9691b304c6ec1816818233c903a4e350",
+        "sha256": "08cb9487cc9f3c8a9bec51c73234e6cc857088331572110c3dfc4eb0a49b159e",
         "references": []
       },
       {
         "path": "public/mascot-motion/idle.web.mp4",
-        "bytes": 520264,
+        "bytes": 520068,
         "kind": "video",
-        "sha256": "0d385d9e50e860a01366c5fddff3b67c607a4ec88a7b4cbf0f1f992b05121800",
-        "references": []
-      },
-      {
-        "path": "public/mascot-motion/working-drawing.mov",
-        "bytes": 6120715,
-        "kind": "video",
-        "sha256": "cac3eac0362505cf7cdac0c4668f928a8270a3d62329f8d1f8cba262762f1360",
-        "references": []
-      },
-      {
-        "path": "public/mascot-motion/working-drawing.mp4",
-        "bytes": 9820251,
-        "kind": "video",
-        "sha256": "89dce90fb8f617140aa80277fb6c9cbb836f713173689c4c073103cb005f7799",
-        "references": []
-      },
-      {
-        "path": "public/mascot-motion/working-drawing.poster.png",
-        "bytes": 64082,
-        "kind": "image",
-        "sha256": "79e6d8fedf0ef52cc1f20d2fa6e725e82ab6313f3e1fc5475029bce91d28e5b7",
+        "sha256": "28542c8dc0242321ae4696233c1f95559a2db74b8e174797069563f2e46510f1",
         "references": []
       },
       {
         "path": "public/mascot-motion/working-drawing.web.mp4",
-        "bytes": 2988622,
+        "bytes": 2992100,
         "kind": "video",
-        "sha256": "ebb98782c955779d1a28adeaf804fd12e3004d5b4f8b96ff46ef76c50435b862",
-        "references": []
-      },
-      {
-        "path": "public/mascot-motion/working-hammer.mov",
-        "bytes": 5544382,
-        "kind": "video",
-        "sha256": "f01fa6a28fbdca8fd4f003c39873df114367f808dc1b40f35aaea24d9f407244",
-        "references": []
-      },
-      {
-        "path": "public/mascot-motion/working-hammer.mp4",
-        "bytes": 8047202,
-        "kind": "video",
-        "sha256": "bd7f64c3e82af90f8ae7c936e29c948bd84587c8d4a52fc0b8c6096ea79e729a",
-        "references": []
-      },
-      {
-        "path": "public/mascot-motion/working-hammer.poster.png",
-        "bytes": 47257,
-        "kind": "image",
-        "sha256": "d260c3f03bad8f75626d705983e5d4e4bb11cd92f2a5f4d7bd5d73607b6c9ce8",
+        "sha256": "55f20084d542d18bd6792ae59661fc9324ea7560e86637b83ad0df24859d4259",
         "references": []
       },
       {
         "path": "public/mascot-motion/working-hammer.web.mp4",
-        "bytes": 2599369,
+        "bytes": 2598420,
         "kind": "video",
-        "sha256": "4cd6419e7e0cd03ec14816f7f9ca28d2c95df655b0b84564b17f104d18fa79d3",
-        "references": []
-      },
-      {
-        "path": "public/mascot-motion/working.mov",
-        "bytes": 4999144,
-        "kind": "video",
-        "sha256": "8acb9256bb06e7abbc61d9a1f1b2f46548435a45f94c2cb429c6bd02ed295bdf",
-        "references": []
-      },
-      {
-        "path": "public/mascot-motion/working.mp4",
-        "bytes": 5738364,
-        "kind": "video",
-        "sha256": "4f25c5906cd736ee4d84e558de3339fb93242582f80db89abf23d379aa008023",
-        "references": []
-      },
-      {
-        "path": "public/mascot-motion/working.poster.png",
-        "bytes": 59617,
-        "kind": "image",
-        "sha256": "d88bdf65eb081ffa375a298173c20d6dfab67b53a028baf59d8d892710cf0748",
+        "sha256": "60f8a5d9a2dd58cc2047179349a04c697b105980d835c5c4f0814c94e4c00cfc",
         "references": []
       },
       {
         "path": "public/mascot-motion/working.web.mp4",
         "bytes": 1967320,
         "kind": "video",
-        "sha256": "b2d68a057643410781b5fdbd29d39acd61257ef6c21dfa26db5985de562a09aa",
+        "sha256": "de360acc57a400a42ec7a5c227f01f31fa444a8846b2631064da9e3f409be49e",
         "references": []
       },
       {
@@ -272,6 +140,7 @@
         "kind": "image",
         "sha256": "7278c8b9238ef536c334273b5edb894a67c9682d94ebaefb612241e09472e5f2",
         "references": [
+          "src/Mascot.tsx",
           "web/prototype/pages/inspiration-library/index.html",
           "web/prototype/pages/my-favorites/index.html"
         ]
@@ -333,12 +202,15 @@
         "bytes": 2999111,
         "kind": "image",
         "sha256": "05fba838804ff30bf0fce8beee14c04722b316f7ed50efcd055482de1309ac66",
-        "references": []
+        "references": [
+          "src/Mascot.tsx"
+        ]
       }
     ],
     "exactDuplicates": [],
     "referenceSummary": {
       "mainAppDynamicMp4": [
+        "public/mascot-motion/cold-start.web.mp4",
         "public/mascot-motion/idle.web.mp4",
         "public/mascot-motion/idle-magnifier.web.mp4",
         "public/mascot-motion/idle-belt.web.mp4",
@@ -347,23 +219,20 @@
         "public/mascot-motion/working-drawing.web.mp4",
         "public/mascot-motion/complete.web.mp4"
       ],
-      "failureOnlyPosters": [
-        "public/mascot-motion/idle.poster.png",
-        "public/mascot-motion/idle-magnifier.poster.png",
-        "public/mascot-motion/idle-belt.poster.png",
-        "public/mascot-motion/working.poster.png",
-        "public/mascot-motion/working-hammer.poster.png",
-        "public/mascot-motion/working-drawing.poster.png",
-        "public/mascot-motion/complete.poster.png"
+      "failureFallbackImages": [
+        "public/mascot-initial.png",
+        "public/mascot-happy.png",
+        "public/mascot-working.png"
       ],
-      "retainedUnreferencedSources": [
-        "public/mascot-motion/idle.mp4",
-        "public/mascot-motion/idle-magnifier.mp4",
-        "public/mascot-motion/idle-belt.mp4",
-        "public/mascot-motion/working.mp4",
-        "public/mascot-motion/working-hammer.mp4",
-        "public/mascot-motion/working-drawing.mp4",
-        "public/mascot-motion/complete.mp4"
+      "retainedUnpublishedSources": [
+        "source-assets/mascot-motion/cold-start.mp4",
+        "source-assets/mascot-motion/idle.mp4",
+        "source-assets/mascot-motion/idle-magnifier.mp4",
+        "source-assets/mascot-motion/idle-belt.mp4",
+        "source-assets/mascot-motion/working.mp4",
+        "source-assets/mascot-motion/working-hammer.mp4",
+        "source-assets/mascot-motion/working-drawing.mp4",
+        "source-assets/mascot-motion/complete.mp4"
       ],
       "logicalOverlapNotByteDuplicates": [
         {
@@ -378,7 +247,7 @@
         },
         {
           "state": "assembly-loading",
-          "mainAppSourceOnly": "public/mascot-motion/assembly-loading.mp4",
+          "sourceOnly": "source-assets/mascot-motion/assembly-loading.mp4",
           "prototype": "web/prototype/assets/mascot/motion/assembly-loading.webm"
         }
       ]
@@ -386,17 +255,26 @@
     "compression": {
       "items": [
         {
+          "name": "cold-start",
+          "original": "source-assets/mascot-motion/cold-start.mp4",
+          "optimized": "public/mascot-motion/cold-start.web.mp4",
+          "beforeBytes": 2684966,
+          "afterBytes": 989042,
+          "savedBytes": 1695924,
+          "savedPercent": 63.16
+        },
+        {
           "name": "idle",
-          "original": "public/mascot-motion/idle.mp4",
+          "original": "source-assets/mascot-motion/idle.mp4",
           "optimized": "public/mascot-motion/idle.web.mp4",
           "beforeBytes": 1568079,
-          "afterBytes": 520264,
-          "savedBytes": 1047815,
-          "savedPercent": 66.82
+          "afterBytes": 520068,
+          "savedBytes": 1048011,
+          "savedPercent": 66.83
         },
         {
           "name": "idle-magnifier",
-          "original": "public/mascot-motion/idle-magnifier.mp4",
+          "original": "source-assets/mascot-motion/idle-magnifier.mp4",
           "optimized": "public/mascot-motion/idle-magnifier.web.mp4",
           "beforeBytes": 5347849,
           "afterBytes": 1777899,
@@ -405,7 +283,7 @@
         },
         {
           "name": "idle-belt",
-          "original": "public/mascot-motion/idle-belt.mp4",
+          "original": "source-assets/mascot-motion/idle-belt.mp4",
           "optimized": "public/mascot-motion/idle-belt.web.mp4",
           "beforeBytes": 2489023,
           "afterBytes": 919526,
@@ -414,7 +292,7 @@
         },
         {
           "name": "working",
-          "original": "public/mascot-motion/working.mp4",
+          "original": "source-assets/mascot-motion/working.mp4",
           "optimized": "public/mascot-motion/working.web.mp4",
           "beforeBytes": 5738364,
           "afterBytes": 1967320,
@@ -423,25 +301,25 @@
         },
         {
           "name": "working-hammer",
-          "original": "public/mascot-motion/working-hammer.mp4",
+          "original": "source-assets/mascot-motion/working-hammer.mp4",
           "optimized": "public/mascot-motion/working-hammer.web.mp4",
           "beforeBytes": 8047202,
-          "afterBytes": 2599369,
-          "savedBytes": 5447833,
-          "savedPercent": 67.7
+          "afterBytes": 2598420,
+          "savedBytes": 5448782,
+          "savedPercent": 67.71
         },
         {
           "name": "working-drawing",
-          "original": "public/mascot-motion/working-drawing.mp4",
+          "original": "source-assets/mascot-motion/working-drawing.mp4",
           "optimized": "public/mascot-motion/working-drawing.web.mp4",
           "beforeBytes": 9820251,
-          "afterBytes": 2988622,
-          "savedBytes": 6831629,
-          "savedPercent": 69.57
+          "afterBytes": 2992100,
+          "savedBytes": 6828151,
+          "savedPercent": 69.53
         },
         {
           "name": "complete",
-          "original": "public/mascot-motion/complete.mp4",
+          "original": "source-assets/mascot-motion/complete.mp4",
           "optimized": "public/mascot-motion/complete.web.mp4",
           "beforeBytes": 10561172,
           "afterBytes": 3339176,
@@ -450,10 +328,10 @@
         }
       ],
       "totals": {
-        "beforeBytes": 43571940,
-        "afterBytes": 14112176,
-        "savedBytes": 29459764,
-        "savedPercent": 67.61
+        "beforeBytes": 46256906,
+        "afterBytes": 15103551,
+        "savedBytes": 31153355,
+        "savedPercent": 67.35
       }
     },
     "deliveryStrategy": {
@@ -464,7 +342,7 @@
         "web/prototype/assets/mascot/motion/working-hammer.webm"
       ],
       "duplicatePolicy": "Keep referenced prototype WebM in place; do not copy it into public and create another binary duplicate",
-      "posterPolicy": "240x180 PNG loads only after mascot video failure"
+      "failurePolicy": "Existing small transparent mascot PNG loads only after the active video fails"
     },
     "loading": {
       "before": {
@@ -483,6 +361,7 @@
       },
       "failureFallbackAdditionalRequests": 1,
       "deferredStates": [
+        "cold-start",
         "idle-magnifier",
         "idle-belt",
         "working",
@@ -509,7 +388,7 @@
     }
   },
   "pathCheck": {
-    "checkedTextFiles": 103,
+    "checkedTextFiles": 109,
     "failures": []
   }
 }

@@ -1043,6 +1043,7 @@ function App() {
           key={activeFeedVideo.id}
           ref={videoRef}
           src={activeFeedVideo.src}
+          poster={activeFeedVideo.poster}
           className="video feed-video-enter"
           loop
           muted

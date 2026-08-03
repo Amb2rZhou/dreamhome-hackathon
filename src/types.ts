@@ -105,6 +105,7 @@ export interface LibraryComponent {
 export interface FeedVideo {
   id: string
   src: string
+  poster: string
   author: string
   authorBadge?: string
   publishedAt?: string
@@ -129,6 +130,7 @@ const amberFeedVideo = (
   // The eight Douyin source videos are versioned with the static prototype.
   // Keep the feed pointed at that canonical GitHub/Vercel asset location.
   src: `/prototype/assets/videos/${id}.mp4?v=${FEED_MEDIA_VERSION}`,
+  poster: `/video-posters/${id}.jpg?v=${FEED_MEDIA_VERSION}`,
   author: '@家居灵感研究所',
   caption: `家装灵感实拍 ${ordinal} · 把喜欢的家具圈进小工坊`,
   music: '原声 - Amber 家装灵感视频',
@@ -140,6 +142,7 @@ export const FEED_VIDEOS: FeedVideo[] = [
   {
     id: 'home-1',
     src: `/videos/home-1.mp4?v=${FEED_MEDIA_VERSION}`,
+    poster: `/video-posters/home-1.jpg?v=${FEED_MEDIA_VERSION}`,
     author: '@家居灵感研究所',
     caption: '这个北欧风客厅太治愈了，每一处软装都想抄回家',
     music: '原声 - home_vibes · 北欧治愈系居家BGM',

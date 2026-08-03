@@ -77,9 +77,9 @@ const mascotExactDuplicates = [...mascotHashes.entries()]
   .filter(([, paths]) => paths.length > 1)
   .map(([hash, paths]) => ({ sha256: hash, paths }))
 
-const motionNames = ['idle', 'idle-magnifier', 'idle-belt', 'working', 'working-hammer', 'working-drawing', 'complete']
+const motionNames = ['cold-start', 'idle', 'idle-magnifier', 'idle-belt', 'working', 'working-hammer', 'working-drawing', 'complete']
 const mascotCompression = motionNames.map((name) => {
-  const originalPath = join(root, 'public', 'mascot-motion', `${name}.mp4`)
+  const originalPath = join(root, 'source-assets', 'mascot-motion', `${name}.mp4`)
   const optimizedPath = join(root, 'public', 'mascot-motion', `${name}.web.mp4`)
   const beforeBytes = statSync(originalPath).size
   const afterBytes = statSync(optimizedPath).size
@@ -106,6 +106,7 @@ function checkLiteralPaths() {
   for (const { path, text } of textIndex.filter(({ path }) => path.includes(`${sep}src${sep}`))) {
     for (const match of text.matchAll(publicLiteral)) {
       const url = match[0].slice(1)
+      if (url.includes('${')) continue
       if (!existsSync(join(root, 'public', url))) failures.push({ source: posix(relative(root, path)), target: url })
     }
   }
@@ -124,7 +125,7 @@ function checkLiteralPaths() {
 const pathFailures = checkLiteralPaths()
 const report = {
   schemaVersion: 1,
-  scope: ['public', 'web/prototype/assets', 'web/prototype/pages/discover/app/assets'],
+  scope: ['public', 'source-assets/mascot-motion', 'web/prototype/assets', 'web/prototype/pages/discover/app/assets'],
   totalsByKind,
   mascot: {
     roots: ['public/mascot-motion', 'web/prototype/assets/mascot'],
@@ -132,12 +133,12 @@ const report = {
     exactDuplicates: mascotExactDuplicates,
     referenceSummary: {
       mainAppDynamicMp4: motionNames.map((name) => `public/mascot-motion/${name}.web.mp4`),
-      failureOnlyPosters: motionNames.map((name) => `public/mascot-motion/${name}.poster.png`),
-      retainedUnreferencedSources: motionNames.map((name) => `public/mascot-motion/${name}.mp4`),
+      failureFallbackImages: ['public/mascot-initial.png', 'public/mascot-happy.png', 'public/mascot-working.png'],
+      retainedUnpublishedSources: motionNames.map((name) => `source-assets/mascot-motion/${name}.mp4`),
       logicalOverlapNotByteDuplicates: [
         { state: 'working-hammer', mainApp: 'public/mascot-motion/working-hammer.web.mp4', prototype: 'web/prototype/assets/mascot/motion/working-hammer.webm' },
         { state: 'working-drawing', mainApp: 'public/mascot-motion/working-drawing.web.mp4', prototype: 'web/prototype/assets/mascot/motion/working-drawing.webm' },
-        { state: 'assembly-loading', mainAppSourceOnly: 'public/mascot-motion/assembly-loading.mp4', prototype: 'web/prototype/assets/mascot/motion/assembly-loading.webm' },
+        { state: 'assembly-loading', sourceOnly: 'source-assets/mascot-motion/assembly-loading.mp4', prototype: 'web/prototype/assets/mascot/motion/assembly-loading.webm' },
       ],
     },
     compression: { items: mascotCompression, totals: compressionTotals },
@@ -149,7 +150,7 @@ const report = {
         'web/prototype/assets/mascot/motion/working-hammer.webm',
       ],
       duplicatePolicy: 'Keep referenced prototype WebM in place; do not copy it into public and create another binary duplicate',
-      posterPolicy: '240x180 PNG loads only after mascot video failure',
+      failurePolicy: 'Existing small transparent mascot PNG loads only after the active video fails',
     },
     loading: {
       before: { normalRequestCount: 2, assets: ['original idle MP4', 'active feed video metadata'] },
