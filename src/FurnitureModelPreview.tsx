@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 interface FurnitureModelPreviewProps {
@@ -74,7 +75,10 @@ export function FurnitureModelPreview({ modelUrl, fallbackImage, name }: Furnitu
     let lastX = 0
     let raf = 0
 
+    const dracoLoader = new DRACOLoader()
+    dracoLoader.setDecoderPath('/draco/')
     const loader = new GLTFLoader()
+    loader.setDRACOLoader(dracoLoader)
     mount.dataset.state = 'loading'
     loader.load(
       modelUrl,
@@ -101,8 +105,11 @@ export function FurnitureModelPreview({ modelUrl, fallbackImage, name }: Furnitu
         mount.dataset.state = 'ready'
       },
       undefined,
-      () => {
-        if (!disposed) mount.dataset.state = 'failed'
+      (error) => {
+        if (!disposed) {
+          mount.dataset.state = 'failed'
+          console.warn(`[3D preview] failed to load ${modelUrl}`, error)
+        }
       },
     )
 
@@ -141,6 +148,7 @@ export function FurnitureModelPreview({ modelUrl, fallbackImage, name }: Furnitu
       renderer.domElement.removeEventListener('pointerup', onPointerUp)
       renderer.domElement.removeEventListener('pointercancel', onPointerUp)
       if (loadedModel) disposeObject(loadedModel)
+      dracoLoader.dispose()
       ground.geometry.dispose()
       ground.material.dispose()
       renderer.dispose()

@@ -6299,6 +6299,22 @@ export const AVAILABLE_ASSETS: LibraryComponent[] = [
   }
 ]
 
+// The generated catalog keeps backend-facing `/asset-cdn/...` provenance,
+// while this static demo ships the reviewed derivatives under
+// `/prototype/assets`.  Resolve every runtime URL to the files that are
+// actually included in the release so thumbnails and GLBs cannot silently
+// fall through to the SPA HTML response.
+for (const asset of AVAILABLE_ASSETS) {
+  const assetRoot = `/prototype/assets`
+  asset.sticker = `${assetRoot}/library/${asset.id}.jpg`
+  asset.completedImageUrl = `${assetRoot}/library/${asset.id}.jpg`
+  asset.sourceCropUrl = `${assetRoot}/frames/${asset.id}.jpg`
+  asset.modelUrl = `${assetRoot}/models/${asset.id}.glb`
+  if (asset.sourceVideo) {
+    asset.sourceVideo.frameImg = `${assetRoot}/frames/${asset.id}.jpg`
+  }
+}
+
 export const AVAILABLE_ASSETS_BY_VIDEO = [...AVAILABLE_ASSETS, ...SCENE_SUPPLEMENTAL_ASSETS].reduce<Record<string, LibraryComponent[]>>((groups, asset) => {
   const key = asset.sourceVideo?.videoId ?? 'unknown'
   ;(groups[key] ??= []).push(asset)
