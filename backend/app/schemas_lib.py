@@ -63,6 +63,14 @@ class TrackOut(BaseModel):
     frames: List[FramePoint] = Field(default_factory=list)
     best_frame_t: float = 0
     asset_id: Optional[str] = None     # 空 = 没人圈过，可圈选
+    confidence: Optional[float] = None
+    review_status: str = "unreviewed"
+    version: int = 1
+    source: str = "legacy"
+    binding_confidence: Optional[float] = None
+    binding_review_status: str = "unreviewed"
+    binding_version: int = 1
+    binding_source: str = "legacy"
 
 
 class VideoIndex(BaseModel):

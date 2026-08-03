@@ -12,6 +12,7 @@ import uuid
 from typing import Any, Optional
 
 from .config import settings
+from .migrations import apply_compat_migrations
 
 _lock = threading.Lock()
 _conn: Optional[sqlite3.Connection] = None
@@ -38,6 +39,14 @@ CREATE TABLE IF NOT EXISTS tracks(
   keyframe_masks_json TEXT NOT NULL DEFAULT '[]',
   best_frame_t REAL NOT NULL DEFAULT 0,
   asset_id     TEXT,                        -- NULL = 检测到但未入库(可圈选)
+  confidence   REAL,                        -- 轨迹检测/跟踪置信度
+  review_status TEXT NOT NULL DEFAULT 'unreviewed',
+  version      INTEGER NOT NULL DEFAULT 1,
+  source       TEXT NOT NULL DEFAULT 'legacy',
+  binding_confidence REAL,                  -- track -> canonical asset 映射置信度
+  binding_review_status TEXT NOT NULL DEFAULT 'unreviewed',
+  binding_version INTEGER NOT NULL DEFAULT 1,
+  binding_source TEXT NOT NULL DEFAULT 'legacy',
   created_at   REAL NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_tracks_video ON tracks(video_id);
@@ -120,6 +129,7 @@ def get_conn() -> sqlite3.Connection:
             _conn = sqlite3.connect(settings.DB_PATH, check_same_thread=False)
             _conn.row_factory = sqlite3.Row
             _conn.executescript(_SCHEMA)
+            apply_compat_migrations(_conn)
             _conn.commit()
         return _conn
 
@@ -232,13 +242,22 @@ def set_video_status(video_id: str, status: str, index_source: str = "") -> None
 
 def insert_track(video_id: str, category: str, frames: list[dict], *,
                  t_start: float = 0, t_end: float = 0, best_frame_t: float = 0,
-                 keyframe_masks: Optional[list] = None, asset_id: Optional[str] = None) -> str:
+                 keyframe_masks: Optional[list] = None, asset_id: Optional[str] = None,
+                 confidence: Optional[float] = None,
+                 review_status: str = "unreviewed", version: int = 1,
+                 source: str = "legacy", binding_confidence: Optional[float] = None,
+                 binding_review_status: str = "unreviewed",
+                 binding_version: int = 1, binding_source: str = "legacy") -> str:
     tid = new_id("trk")
     _exec(
         "INSERT INTO tracks(track_id,video_id,category,t_start,t_end,frames_json,"
-        "keyframe_masks_json,best_frame_t,asset_id,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)",
+        "keyframe_masks_json,best_frame_t,asset_id,confidence,review_status,version,source,"
+        "binding_confidence,binding_review_status,binding_version,binding_source,created_at) "
+        "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (tid, video_id, category, t_start, t_end, json.dumps(frames),
-         json.dumps(keyframe_masks or []), best_frame_t, asset_id, time.time()),
+         json.dumps(keyframe_masks or []), best_frame_t, asset_id, confidence,
+         review_status, version, source, binding_confidence, binding_review_status,
+         binding_version, binding_source, time.time()),
     )
     return tid
 

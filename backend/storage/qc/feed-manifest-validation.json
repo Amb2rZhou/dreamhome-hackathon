@@ -1,0 +1,230 @@
+{
+  "schema_version": "dreamhome-feed-validation/v1",
+  "manifest_schema_version": "dreamhome-feed-manifest/v1",
+  "manifest_content_version": "8aea10d756befa32eb3f9352217716f2d3b0a3f3a3a87a048d471a76d8f34d88",
+  "mode": "read_only",
+  "valid": false,
+  "summary": {
+    "errors": 11,
+    "warnings": 18,
+    "issues_by_code": {
+      "MISSING_ASSET": 11,
+      "MISSING_SCENE": 1,
+      "ORPHAN_MAPPING": 16,
+      "UNTRACKED_COMPATIBILITY_APPEARANCES": 1
+    },
+    "entities": {
+      "videos": 9,
+      "scenes": 2,
+      "tracks": 0,
+      "canonical_assets": 169,
+      "appearances": 195,
+      "same_home_templates": 2
+    }
+  },
+  "issues": [
+    {
+      "code": "UNTRACKED_COMPATIBILITY_APPEARANCES",
+      "severity": "warning",
+      "entity_type": "manifest",
+      "entity_id": "appearances",
+      "message": "195 frontend compatibility appearances cannot be verified against runtime tracks"
+    },
+    {
+      "code": "ORPHAN_MAPPING",
+      "severity": "warning",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_40734d7f2e6c",
+      "message": "track trk_376b958980a6 is unavailable in the runtime snapshot"
+    },
+    {
+      "code": "ORPHAN_MAPPING",
+      "severity": "warning",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_40734d7f2e6c",
+      "message": "track trk_8ebbaced5dc3 is unavailable in the runtime snapshot"
+    },
+    {
+      "code": "ORPHAN_MAPPING",
+      "severity": "warning",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_40734d7f2e6c",
+      "message": "track trk_21288e923fb1 is unavailable in the runtime snapshot"
+    },
+    {
+      "code": "ORPHAN_MAPPING",
+      "severity": "warning",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_40734d7f2e6c",
+      "message": "track trk_cce9267236a7 is unavailable in the runtime snapshot"
+    },
+    {
+      "code": "ORPHAN_MAPPING",
+      "severity": "warning",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_40734d7f2e6c",
+      "message": "track trk_29e5fd525389 is unavailable in the runtime snapshot"
+    },
+    {
+      "code": "ORPHAN_MAPPING",
+      "severity": "warning",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_40734d7f2e6c",
+      "message": "track trk_845ecda2369a is unavailable in the runtime snapshot"
+    },
+    {
+      "code": "ORPHAN_MAPPING",
+      "severity": "warning",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_40734d7f2e6c",
+      "message": "track trk_a5f976a41420 is unavailable in the runtime snapshot"
+    },
+    {
+      "code": "MISSING_ASSET",
+      "severity": "error",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_40734d7f2e6c",
+      "message": "asset ast_665e55cee687 does not exist"
+    },
+    {
+      "code": "MISSING_ASSET",
+      "severity": "error",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_40734d7f2e6c",
+      "message": "asset ast_cf21f0f0a02c does not exist"
+    },
+    {
+      "code": "MISSING_ASSET",
+      "severity": "error",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_40734d7f2e6c",
+      "message": "asset ast_6410374831cb does not exist"
+    },
+    {
+      "code": "ORPHAN_MAPPING",
+      "severity": "warning",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_5f32a0ac954a",
+      "message": "track trk_b8d3f564564f is unavailable in the runtime snapshot"
+    },
+    {
+      "code": "MISSING_ASSET",
+      "severity": "error",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_5f32a0ac954a",
+      "message": "asset ast_87dc36b29526 does not exist"
+    },
+    {
+      "code": "ORPHAN_MAPPING",
+      "severity": "warning",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_5f32a0ac954a",
+      "message": "track trk_ec91648826f0 is unavailable in the runtime snapshot"
+    },
+    {
+      "code": "MISSING_ASSET",
+      "severity": "error",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_5f32a0ac954a",
+      "message": "asset ast_339dc6e870de does not exist"
+    },
+    {
+      "code": "ORPHAN_MAPPING",
+      "severity": "warning",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_5f32a0ac954a",
+      "message": "track trk_8ea596ed91bc is unavailable in the runtime snapshot"
+    },
+    {
+      "code": "MISSING_ASSET",
+      "severity": "error",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_5f32a0ac954a",
+      "message": "asset ast_c0274a819f34 does not exist"
+    },
+    {
+      "code": "ORPHAN_MAPPING",
+      "severity": "warning",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_5f32a0ac954a",
+      "message": "track trk_70d8f305632d is unavailable in the runtime snapshot"
+    },
+    {
+      "code": "ORPHAN_MAPPING",
+      "severity": "warning",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_5f32a0ac954a",
+      "message": "track trk_57ece943d1c7 is unavailable in the runtime snapshot"
+    },
+    {
+      "code": "ORPHAN_MAPPING",
+      "severity": "warning",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_5f32a0ac954a",
+      "message": "track trk_eb3cf86e4027 is unavailable in the runtime snapshot"
+    },
+    {
+      "code": "ORPHAN_MAPPING",
+      "severity": "warning",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_5f32a0ac954a",
+      "message": "track trk_c64303662479 is unavailable in the runtime snapshot"
+    },
+    {
+      "code": "MISSING_ASSET",
+      "severity": "error",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_5f32a0ac954a",
+      "message": "asset ast_f7189ad0a9a2 does not exist"
+    },
+    {
+      "code": "ORPHAN_MAPPING",
+      "severity": "warning",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_5f32a0ac954a",
+      "message": "track trk_0844381a425d is unavailable in the runtime snapshot"
+    },
+    {
+      "code": "ORPHAN_MAPPING",
+      "severity": "warning",
+      "entity_type": "scene",
+      "entity_id": "scene:vid_5f32a0ac954a",
+      "message": "track trk_6641d5a0c6d5 is unavailable in the runtime snapshot"
+    },
+    {
+      "code": "MISSING_ASSET",
+      "severity": "error",
+      "entity_type": "home_template",
+      "entity_id": "video-vid_91fe552c5f7d",
+      "message": "asset ast_ec05acc016d9 does not exist"
+    },
+    {
+      "code": "MISSING_SCENE",
+      "severity": "warning",
+      "entity_type": "home_template",
+      "entity_id": "video-vid_91fe552c5f7d",
+      "message": "video vid_91fe552c5f7d has a same-home template but no backend scene document"
+    },
+    {
+      "code": "MISSING_ASSET",
+      "severity": "error",
+      "entity_type": "home_template",
+      "entity_id": "video-vid_40734d7f2e6c",
+      "message": "asset ast_665e55cee687 does not exist"
+    },
+    {
+      "code": "MISSING_ASSET",
+      "severity": "error",
+      "entity_type": "home_template",
+      "entity_id": "video-vid_40734d7f2e6c",
+      "message": "asset ast_cf21f0f0a02c does not exist"
+    },
+    {
+      "code": "MISSING_ASSET",
+      "severity": "error",
+      "entity_type": "home_template",
+      "entity_id": "video-vid_40734d7f2e6c",
+      "message": "asset ast_6410374831cb does not exist"
+    }
+  ]
+}
