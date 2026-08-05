@@ -547,43 +547,45 @@ button {
   text-overflow: ellipsis;
 }
 
-/* Keep the Feed on the exact same canonical five-tab component used by the
-   static product pages in prototype/pages/shared/tabbar.css. */
+/* The Feed is authored at 390 x 882 and then scaled into the 296 x 670 phone
+   viewport. These dimensions compensate for that inner transform so the
+   rendered tabbar has the same proportions as the canonical static component
+   in prototype/pages/shared/tabbar.css. */
 .dh-tabbar.dh-tabbar--main {
   position: absolute;
   z-index: 20;
   left: 50%;
-  bottom: 19px;
-  width: calc(100% - 24px);
-  height: 56px;
+  bottom: 25px;
+  width: calc(100% - 32px);
+  height: 74px;
   transform: translateX(-50%);
   display: grid;
   grid-template-columns: repeat(5,minmax(0,1fr));
   gap: 0;
   align-items: center;
-  padding: 6px 6px 8px;
+  padding: 8px 8px 11px;
   border: 1px solid rgba(255,255,255,.88);
-  border-radius: 26px;
+  border-radius: 34px;
   background: rgba(255,255,255,.76);
   box-shadow: 0 14px 30px rgba(63,86,64,.09);
   overflow: visible;
 }
 .dh-tabbar.dh-tabbar--main .dh-tab {
   min-width: 0;
-  min-height: 44px;
+  min-height: 58px;
   display: grid;
   place-items: center;
   color: #b8ad98;
   border: 0;
-  border-radius: 15px;
+  border-radius: 20px;
   text-decoration: none;
   opacity: 1;
   -webkit-tap-highlight-color: transparent;
   transition: color .18s ease;
 }
 .dh-tabbar.dh-tabbar--main .dh-tab-icon {
-  width: 27px;
-  height: 27px;
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
   background: none;
@@ -606,7 +608,7 @@ button {
 .dh-tabbar.dh-tabbar--main .dh-tab--active { color: #c78f2a; }
 .dh-tabbar.dh-tabbar--main .dh-tab--active .dh-tab-icon { transform: translateY(-1px) scale(1.06); }
 @media (max-width: 420px) {
-  .dh-tabbar.dh-tabbar--main { width: calc(100% - 18px); }
+  .dh-tabbar.dh-tabbar--main { width: calc(100% - 24px); }
 }
 
 .scene-actions-inline {
