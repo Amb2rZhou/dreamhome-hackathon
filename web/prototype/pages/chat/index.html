@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#f2f2f2" />
+  <link rel="icon" href="data:," />
+  <title>DreamHome · 好友消息</title>
+  <link rel="stylesheet" href="../my-home/dreamhome-d-system.css" />
+  <link rel="stylesheet" href="../shared/status-bar.css" />
+  <style>
+    :root { color-scheme:light; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; font-family:var(--dh-font-sans); color:#171717; background:linear-gradient(90deg,#faf4e6,#fefdf8 48%,#f8f2e3); }
+    button,textarea { font:inherit; }
+    button,a { -webkit-tap-highlight-color:transparent; }
+    .preview-stage { min-height:100vh; display:grid; place-items:center; padding:28px 18px; }
+    .chat-shell { position:relative; }
+    .chat-screen { background:#f2f2f2; }
+    .chat-screen .dh-statusbar { background:#f2f2f2; color:#171717; }
+    .chat-app { position:relative; height:calc(100% - 50px); display:flex; flex-direction:column; min-height:0; }
+    .chat-head { height:51px; flex:none; display:grid; grid-template-columns:42px 34px minmax(0,1fr) auto; align-items:center; gap:7px; padding:0 11px 0 8px; border-bottom:1px solid #dfdfdf; background:#f2f2f2; }
+    .back { width:38px; height:38px; border:0; padding:0; display:grid; place-items:center; background:transparent; color:#171717; text-decoration:none; font-size:29px; line-height:1; }
+    .avatar { width:32px; height:32px; flex:none; display:grid; place-items:center; border-radius:50%; background:var(--avatar,#94ad9d); color:#fff; font-size:11px; font-weight:var(--dh-font-weight-heavy); }
+    .friend-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:14px; font-weight:var(--dh-font-weight-bold); }
+    .head-actions { display:flex; gap:4px; }
+    .head-actions button { width:29px; height:34px; padding:0; border:0; background:transparent; color:#292929; font-size:16px; }
+    .messages { flex:1; min-height:0; overflow-y:auto; padding:15px 11px 22px; scrollbar-width:none; }
+    .messages::-webkit-scrollbar { display:none; }
+    .date { margin:0 0 15px; color:#777; font-size:9px; text-align:center; }
+    .empty { min-height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#8a8a8a; text-align:center; }
+    .empty img { width:64px; height:64px; object-fit:contain; opacity:.8; }
+    .empty b { margin-top:8px; color:#575757; font-size:12px; }
+    .empty span { margin-top:5px; font-size:9px; }
+    .message { display:flex; align-items:flex-start; gap:7px; margin:0 0 15px; }
+    .message.outgoing { flex-direction:row-reverse; }
+    .message-avatar { width:30px; height:30px; font-size:9px; }
+    .bubble { max-width:208px; padding:9px 11px; border-radius:13px; background:#fff; box-shadow:0 2px 7px rgba(0,0,0,.04); font-size:11px; line-height:1.45; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .outgoing .bubble { background:#d9f0ca; }
+    .home-share { width:194px; overflow:hidden; border-radius:11px; background:#fff; box-shadow:0 3px 12px rgba(0,0,0,.09); }
+    .home-card { display:block; color:inherit; text-decoration:none; }
+    .home-visual { position:relative; height:145px; overflow:hidden; background:linear-gradient(180deg,rgba(0,0,0,.02),rgba(30,24,18,.12)),linear-gradient(145deg,#e5d2b8 0 42%,#b4c1a8 43% 58%,#8d6a50 59% 100%); }
+    .home-visual img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+    .home-visual::before { content:""; position:absolute; left:22px; right:22px; bottom:21px; height:52px; border-radius:22px 22px 8px 8px; background:#f1e6d4; box-shadow:inset 0 -12px rgba(184,151,119,.26),0 13px 22px rgba(43,36,28,.16); }
+    .home-visual::after { content:""; position:absolute; right:24px; top:27px; width:48px; height:65px; border:6px solid rgba(255,255,255,.72); background:linear-gradient(180deg,#d9eaf0,#f3d6a8); box-shadow:0 5px 13px rgba(51,43,33,.12); }
+    .home-tag { position:absolute; z-index:2; left:8px; top:8px; padding:4px 6px; border-radius:4px; background:#f15f3e; color:#fff; font-size:7px; font-weight:var(--dh-font-weight-bold); }
+    .locked-tag { position:absolute; z-index:2; right:8px; top:8px; padding:4px 6px; border-radius:4px; background:rgba(255,255,255,.9); color:#71583a; font-size:7px; font-weight:var(--dh-font-weight-bold); }
+    .home-copy { height:55px; padding:8px 9px; display:grid; grid-template-columns:minmax(0,1fr) 14px; align-items:center; gap:5px; }
+    .home-copy span { min-width:0; }
+    .home-copy b,.home-copy small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .home-copy b { font-size:10px; }
+    .home-copy small { margin-top:4px; color:#898989; font-size:7px; }
+    .home-copy i { color:#8f8f8f; font-size:20px; font-style:normal; }
+    .share-note { margin:5px 2px 0; padding:8px 10px; border-radius:10px; background:#d9f0ca; font-size:10px; line-height:1.4; }
+    .read { margin-top:4px; color:#999; font-size:7px; text-align:right; }
+    .composer { min-height:60px; flex:none; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:7px; padding:8px 9px 17px; background:#f2f2f2; border-top:1px solid rgba(0,0,0,.04); }
+    .composer textarea { width:100%; height:36px; resize:none; border:0; border-radius:8px; outline:none; padding:10px 9px; background:#fff; color:#222; font-size:10px; line-height:16px; }
+    .composer button { height:34px; min-width:48px; padding:0 12px; border:0; border-radius:8px; background:#70886f; color:#fff; font-size:10px; font-weight:var(--dh-font-weight-bold); }
+    .composer button:disabled { opacity:.42; }
+    .dh-home-indicator { position:absolute; z-index:70; left:50%; bottom:7px; width:112px; height:4px; transform:translateX(-50%); border-radius:999px; background:rgba(16,17,20,.86); }
+    @media (max-width:420px) { .preview-stage { padding:0; } .chat-shell { width:100vw; height:100vh; padding:0; border-radius:0; background:transparent; box-shadow:none; } .chat-screen { border-radius:0; } }
+  </style>
+</head>
+<body>
+  <main class="preview-stage">
+    <section class="dh-phone-shell chat-shell" aria-label="DreamHome 好友消息">
+      <div class="dh-screen dh-root chat-screen">
+        <div class="dh-island" aria-hidden="true"></div>
+        <div class="dh-statusbar"><span class="status-time">9:41</span><div class="status-icons" aria-hidden="true"><div class="bars"><i></i><i></i><i></i></div><span>5G</span><div class="bat"></div></div></div>
+        <div class="chat-app">
+          <header class="chat-head">
+            <a class="back" id="chatBack" href="../my-home/index.html" aria-label="返回我的家">‹</a>
+            <span class="avatar" id="friendAvatar">A</span>
+            <b class="friend-name" id="friendName">Amber</b>
+            <div class="head-actions"><button aria-label="语音通话">⌕</button><button aria-label="更多">•••</button></div>
+          </header>
+          <main class="messages" id="messages" aria-live="polite"></main>
+          <form class="composer" id="composer">
+            <textarea id="messageInput" maxlength="120" rows="1" placeholder="发消息…" aria-label="消息内容"></textarea>
+            <button id="sendButton" type="submit" disabled>发送</button>
+          </form>
+        </div>
+        <div class="dh-home-indicator" aria-hidden="true"></div>
+      </div>
+    </section>
+  </main>
+  <script type="module">
+    import { getFriends, addMessage, getConversation } from '../shared/social-demo-data.js';
+
+    const params = new URLSearchParams(location.search);
+    const friends = getFriends();
+    const friend = friends.find((item) => item.id === params.get('friend')) || friends[0];
+    const ui = {
+      avatar: document.getElementById('friendAvatar'),
+      name: document.getElementById('friendName'),
+      back: document.getElementById('chatBack'),
+      messages: document.getElementById('messages'),
+      composer: document.getElementById('composer'),
+      input: document.getElementById('messageInput'),
+      send: document.getElementById('sendButton'),
+    };
+    const escapeText = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
+    const homePreview = (homeId) => {
+      try {
+        const store = JSON.parse(localStorage.getItem('dreamhome.my-home.homes.v1') || 'null');
+        const homes = Array.isArray(store?.homes) ? store.homes : [];
+        return homes.find((home) => home?.id === homeId)?.previewImage || '';
+      } catch {
+        return '';
+      }
+    };
+    const timeLabel = (value) => {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      return new Intl.DateTimeFormat('zh-CN', { hour:'2-digit', minute:'2-digit', hour12:false }).format(date);
+    };
+
+    ui.avatar.textContent = friend.avatar || friend.name.slice(0, 1);
+    ui.avatar.style.setProperty('--avatar', friend.accent || '#94ad9d');
+    ui.name.textContent = friend.name;
+    document.title = `DreamHome · ${friend.name}`;
+
+    function renderMessage(message) {
+      const outgoing = message.senderId === 'me';
+      const avatar = outgoing ? '我' : (friend.avatar || friend.name.slice(0, 1));
+      const avatarColor = outgoing ? '#c49a78' : (friend.accent || '#94ad9d');
+      if (message.type === 'home_share' && message.home?.id) {
+        const home = message.home;
+        const href = `../my-home/index.html?home=${encodeURIComponent(home.id)}&mode=locked`;
+        const preview = homePreview(home.id);
+        const count = Number(home.furnitureCount);
+        const meta = Number.isFinite(count) ? `${count} 件家具 · 可互动 3D` : '可互动 3D 空间';
+        return `<article class="message ${outgoing ? 'outgoing' : 'incoming'}"><span class="avatar message-avatar" style="--avatar:${escapeText(avatarColor)}">${escapeText(avatar)}</span><div><div class="home-share"><a class="home-card" href="${href}" aria-label="以锁定模式查看 ${escapeText(home.name || '我的家')}"><div class="home-visual">${preview?`<img src="${escapeText(preview)}" alt="${escapeText(home.name || '我的家')} 预览" />`:''}<span class="home-tag">DreamHome · 空间卡片</span><span class="locked-tag">仅查看</span></div><div class="home-copy"><span><b>${escapeText(home.name || '我的家')}</b><small>${escapeText(meta)}</small></span><i>›</i></div></a></div>${message.text ? `<p class="share-note">${escapeText(message.text)}</p>` : ''}<div class="read">${escapeText(timeLabel(message.createdAt))}${outgoing ? ' · 已送达' : ''}</div></div></article>`;
+      }
+      return `<article class="message ${outgoing ? 'outgoing' : 'incoming'}"><span class="avatar message-avatar" style="--avatar:${escapeText(avatarColor)}">${escapeText(avatar)}</span><div><div class="bubble">${escapeText(message.text)}</div><div class="read">${escapeText(timeLabel(message.createdAt))}</div></div></article>`;
+    }
+
+    function render() {
+      const conversation = getConversation(friend.id);
+      if (!conversation.length) {
+        ui.messages.innerHTML = '<div class="empty"><img src="../../assets/mascot/mascot-ui.png" alt="" /><b>还没有消息</b><span>从「我的家」分享一个空间给好友吧</span></div>';
+        return;
+      }
+      const latestDay = new Intl.DateTimeFormat('zh-CN', { month:'long', day:'numeric' }).format(new Date(conversation.at(-1).createdAt));
+      const latestHome = [...conversation].reverse().find((message) => message.type === 'home_share' && message.home?.id)?.home;
+      if (latestHome) ui.back.href = `../my-home/index.html?home=${encodeURIComponent(latestHome.id)}&mode=locked`;
+      ui.messages.innerHTML = `<div class="date">${escapeText(latestDay)}</div>${conversation.map(renderMessage).join('')}`;
+      requestAnimationFrame(() => { ui.messages.scrollTop = ui.messages.scrollHeight; });
+    }
+
+    ui.input.addEventListener('input', () => { ui.send.disabled = !ui.input.value.trim(); });
+    ui.composer.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const text = ui.input.value.trim();
+      if (!text) return;
+      addMessage({ friendId:friend.id, senderId:'me', type:'text', text });
+      ui.input.value = '';
+      ui.send.disabled = true;
+      render();
+    });
+    render();
+  </script>
+</body>
+</html>
