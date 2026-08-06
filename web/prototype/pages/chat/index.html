@@ -38,21 +38,21 @@
     .message-avatar { width:30px; height:30px; font-size:9px; }
     .bubble { max-width:208px; padding:9px 11px; border-radius:13px; background:#fff; box-shadow:0 2px 7px rgba(0,0,0,.04); font-size:11px; line-height:1.45; white-space:pre-wrap; overflow-wrap:anywhere; }
     .outgoing .bubble { background:#d9f0ca; }
-    .home-share { width:194px; overflow:hidden; border-radius:11px; background:#fff; box-shadow:0 3px 12px rgba(0,0,0,.09); }
-    .home-card { display:block; color:inherit; text-decoration:none; }
-    .home-visual { position:relative; height:145px; overflow:hidden; background:linear-gradient(180deg,rgba(0,0,0,.02),rgba(30,24,18,.12)),linear-gradient(145deg,#e5d2b8 0 42%,#b4c1a8 43% 58%,#8d6a50 59% 100%); }
+    .home-share { width:214px; overflow:hidden; border:1px solid rgba(176,145,103,.18); border-radius:18px; background:#fffaf2; box-shadow:0 9px 24px rgba(104,78,44,.11); }
+    .home-card { display:block; color:inherit; text-decoration:none; transition:transform .18s ease,box-shadow .18s ease; }
+    .home-card:active { transform:scale(.985); }
+    .home-card:focus-visible { outline:3px solid rgba(167,128,70,.34); outline-offset:-3px; }
+    .home-visual { position:relative; height:137px; overflow:hidden; background:linear-gradient(180deg,rgba(255,250,241,.02),rgba(73,53,33,.12)),linear-gradient(145deg,#eadac4 0 42%,#b9c3aa 43% 58%,#947259 59% 100%); }
     .home-visual img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
     .home-visual::before { content:""; position:absolute; left:22px; right:22px; bottom:21px; height:52px; border-radius:22px 22px 8px 8px; background:#f1e6d4; box-shadow:inset 0 -12px rgba(184,151,119,.26),0 13px 22px rgba(43,36,28,.16); }
     .home-visual::after { content:""; position:absolute; right:24px; top:27px; width:48px; height:65px; border:6px solid rgba(255,255,255,.72); background:linear-gradient(180deg,#d9eaf0,#f3d6a8); box-shadow:0 5px 13px rgba(51,43,33,.12); }
-    .home-tag { position:absolute; z-index:2; left:8px; top:8px; padding:4px 6px; border-radius:4px; background:#f15f3e; color:#fff; font-size:7px; font-weight:var(--dh-font-weight-bold); }
-    .locked-tag { position:absolute; z-index:2; right:8px; top:8px; padding:4px 6px; border-radius:4px; background:rgba(255,255,255,.9); color:#71583a; font-size:7px; font-weight:var(--dh-font-weight-bold); }
-    .home-copy { height:55px; padding:8px 9px; display:grid; grid-template-columns:minmax(0,1fr) 14px; align-items:center; gap:5px; }
+    .home-visual.has-preview::before,.home-visual.has-preview::after { display:none; }
+    .home-copy { min-height:91px; padding:13px 12px 12px; display:grid; grid-template-columns:minmax(0,1fr) 26px; align-items:center; gap:8px; background:linear-gradient(180deg,#fffdf8,#fff8ec); }
     .home-copy span { min-width:0; }
-    .home-copy b,.home-copy small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .home-copy b { font-size:10px; }
-    .home-copy small { margin-top:4px; color:#898989; font-size:7px; }
-    .home-copy i { color:#8f8f8f; font-size:20px; font-style:normal; }
-    .share-note { margin:5px 2px 0; padding:8px 10px; border-radius:10px; background:#d9f0ca; font-size:10px; line-height:1.4; }
+    .home-copy b,.home-copy small { display:block; }
+    .home-copy b { color:#3f3224; font-size:11px; line-height:1.4; font-weight:var(--dh-font-weight-heavy); letter-spacing:-.01em; }
+    .home-copy small { margin-top:7px; color:#88745b; font-size:8px; line-height:1.5; }
+    .home-copy i { width:26px; height:26px; display:grid; place-items:center; border-radius:50%; background:#f1e4d0; color:#947044; font-size:18px; font-style:normal; }
     .read { margin-top:4px; color:#999; font-size:7px; text-align:right; }
     .composer { min-height:60px; flex:none; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:7px; padding:8px 9px 17px; background:#f2f2f2; border-top:1px solid rgba(0,0,0,.04); }
     .composer textarea { width:100%; height:36px; resize:none; border:0; border-radius:8px; outline:none; padding:10px 9px; background:#fff; color:#222; font-size:10px; line-height:16px; }
@@ -129,9 +129,10 @@
         const home = message.home;
         const href = `../my-home/index.html?home=${encodeURIComponent(home.id)}&mode=locked`;
         const preview = homePreview(home.id);
-        const count = Number(home.furnitureCount);
-        const meta = Number.isFinite(count) ? `${count} 件家具 · 可互动 3D` : '可互动 3D 空间';
-        return `<article class="message ${outgoing ? 'outgoing' : 'incoming'}"><span class="avatar message-avatar" style="--avatar:${escapeText(avatarColor)}">${escapeText(avatar)}</span><div><div class="home-share"><a class="home-card" href="${href}" aria-label="以锁定模式查看 ${escapeText(home.name || '我的家')}"><div class="home-visual">${preview?`<img src="${escapeText(preview)}" alt="${escapeText(home.name || '我的家')} 预览" />`:''}<span class="home-tag">DreamHome · 空间卡片</span><span class="locked-tag">仅查看</span></div><div class="home-copy"><span><b>${escapeText(home.name || '我的家')}</b><small>${escapeText(meta)}</small></span><i>›</i></div></a></div>${message.text ? `<p class="share-note">${escapeText(message.text)}</p>` : ''}<div class="read">${escapeText(timeLabel(message.createdAt))}${outgoing ? ' · 已送达' : ''}</div></div></article>`;
+        const homeName = home.name || '我的家';
+        const title = `邀请你来参观我的「${homeName}」`;
+        const subtitle = '喜欢这里的家具或户型，可以收藏到你的灵感库';
+        return `<article class="message ${outgoing ? 'outgoing' : 'incoming'}"><span class="avatar message-avatar" style="--avatar:${escapeText(avatarColor)}">${escapeText(avatar)}</span><div><div class="home-share"><a class="home-card" href="${href}" aria-label="参观 ${escapeText(homeName)}，并收藏喜欢的家具或户型"><div class="home-visual${preview?' has-preview':''}">${preview?`<img src="${escapeText(preview)}" alt="${escapeText(homeName)} 预览" />`:''}</div><div class="home-copy"><span><b>${escapeText(title)}</b><small>${escapeText(subtitle)}</small></span><i>›</i></div></a></div><div class="read">${escapeText(timeLabel(message.createdAt))}${outgoing ? ' · 已送达' : ''}</div></div></article>`;
       }
       return `<article class="message ${outgoing ? 'outgoing' : 'incoming'}"><span class="avatar message-avatar" style="--avatar:${escapeText(avatarColor)}">${escapeText(avatar)}</span><div><div class="bubble">${escapeText(message.text)}</div><div class="read">${escapeText(timeLabel(message.createdAt))}</div></div></article>`;
     }
