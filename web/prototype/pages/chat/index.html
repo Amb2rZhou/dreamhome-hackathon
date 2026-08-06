@@ -38,21 +38,31 @@
     .message-avatar { width:30px; height:30px; font-size:9px; }
     .bubble { max-width:208px; padding:9px 11px; border-radius:13px; background:#fff; box-shadow:0 2px 7px rgba(0,0,0,.04); font-size:11px; line-height:1.45; white-space:pre-wrap; overflow-wrap:anywhere; }
     .outgoing .bubble { background:#d9f0ca; }
-    .home-share { width:214px; overflow:hidden; border:1px solid rgba(176,145,103,.18); border-radius:18px; background:#fffaf2; box-shadow:0 9px 24px rgba(104,78,44,.11); }
-    .home-card { display:block; color:inherit; text-decoration:none; transition:transform .18s ease,box-shadow .18s ease; }
+    .home-share { width:224px; overflow:hidden; border:1px solid rgba(178,135,70,.18); border-radius:20px; background:#fffaf0; box-shadow:0 10px 28px rgba(96,67,29,.14); }
+    .home-card { display:block; position:relative; padding:6px; color:inherit; text-decoration:none; background:linear-gradient(145deg,#fffdf8,#fff7e7); transition:transform .18s ease,box-shadow .18s ease; }
     .home-card:active { transform:scale(.985); }
-    .home-card:focus-visible { outline:3px solid rgba(167,128,70,.34); outline-offset:-3px; }
-    .home-visual { position:relative; height:137px; overflow:hidden; background:linear-gradient(180deg,rgba(255,250,241,.02),rgba(73,53,33,.12)),linear-gradient(145deg,#eadac4 0 42%,#b9c3aa 43% 58%,#947259 59% 100%); }
-    .home-visual img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-    .home-visual::before { content:""; position:absolute; left:22px; right:22px; bottom:21px; height:52px; border-radius:22px 22px 8px 8px; background:#f1e6d4; box-shadow:inset 0 -12px rgba(184,151,119,.26),0 13px 22px rgba(43,36,28,.16); }
-    .home-visual::after { content:""; position:absolute; right:24px; top:27px; width:48px; height:65px; border:6px solid rgba(255,255,255,.72); background:linear-gradient(180deg,#d9eaf0,#f3d6a8); box-shadow:0 5px 13px rgba(51,43,33,.12); }
-    .home-visual.has-preview::before,.home-visual.has-preview::after { display:none; }
-    .home-copy { min-height:91px; padding:13px 12px 12px; display:grid; grid-template-columns:minmax(0,1fr) 26px; align-items:center; gap:8px; background:linear-gradient(180deg,#fffdf8,#fff8ec); }
-    .home-copy span { min-width:0; }
-    .home-copy b,.home-copy small { display:block; }
-    .home-copy b { color:#3f3224; font-size:11px; line-height:1.4; font-weight:var(--dh-font-weight-heavy); letter-spacing:-.01em; }
-    .home-copy small { margin-top:7px; color:#88745b; font-size:8px; line-height:1.5; }
-    .home-copy i { width:26px; height:26px; display:grid; place-items:center; border-radius:50%; background:#f1e4d0; color:#947044; font-size:18px; font-style:normal; }
+    .home-card:focus-visible { outline:3px solid rgba(237,174,65,.5); outline-offset:-3px; }
+    .home-visual { position:relative; height:146px; overflow:hidden; border-radius:15px 15px 10px 10px; background:linear-gradient(145deg,#eadac4 0 42%,#b9c3aa 43% 58%,#947259 59% 100%); }
+    .home-visual > img:first-child { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+    .home-visual::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(56,38,18,.02) 50%,rgba(52,35,17,.12)); pointer-events:none; }
+    .home-brand { position:absolute; z-index:4; top:0; right:0; min-height:29px; padding:5px 8px 5px 7px; display:flex; align-items:center; gap:4px; border-radius:0 14px 0 16px; background:rgba(255,253,247,.96); color:#5c472e; box-shadow:0 3px 10px rgba(75,52,24,.12); }
+    .home-brand svg { width:17px; height:17px; flex:none; fill:#f5bd55; stroke:#806039; stroke-width:1.4; stroke-linejoin:round; }
+    .home-brand b { font-size:7px; line-height:1; white-space:nowrap; }
+    .home-spark { position:absolute; z-index:3; width:17px; height:17px; display:grid; place-items:center; border:2px solid rgba(255,255,255,.9); border-radius:50%; background:#ffc95e; color:#fff; box-shadow:0 2px 7px rgba(105,69,19,.2); font-size:9px; font-style:normal; }
+    .home-spark--one { left:27px; top:47px; }.home-spark--two { left:108px; bottom:44px; }.home-spark--three { right:52px; top:59px; }
+    .home-invite-bubble { position:absolute; z-index:4; right:10px; bottom:22px; min-width:70px; padding:8px 9px; border-radius:18px; background:rgba(255,253,248,.96); color:#493721; box-shadow:0 4px 12px rgba(69,45,18,.13); font-size:8px; font-weight:var(--dh-font-weight-bold); line-height:1.35; }
+    .home-invite-bubble::after { content:""; position:absolute; right:13px; bottom:-6px; width:13px; height:13px; background:inherit; transform:rotate(45deg); }
+    .home-invite-bubble em { position:relative; z-index:1; color:#efb34b; font-style:normal; }
+    .home-mascot { position:absolute; z-index:5; right:-3px; bottom:-24px; width:82px; height:82px; object-fit:contain; filter:drop-shadow(0 5px 6px rgba(62,42,20,.18)); pointer-events:none; }
+    .home-copy { position:relative; min-height:116px; padding:17px 10px 10px; border-radius:0 28px 15px 15px; background:linear-gradient(155deg,#fffdf8,#fff7e7); }
+    .home-eyebrow,.home-title,.home-copy small { display:block; }
+    .home-eyebrow { color:#48331f; font-size:10px; font-weight:var(--dh-font-weight-heavy); line-height:1.2; }
+    .home-title { position:relative; z-index:1; width:max-content; max-width:100%; margin-top:3px; color:#392615; font-size:var(--home-title-size,20px); font-weight:900; line-height:1.15; letter-spacing:-.045em; white-space:nowrap; }
+    .home-title::after { content:""; position:absolute; z-index:-1; left:-2px; right:-3px; bottom:-5px; height:7px; border-bottom:2px solid #f5bb48; border-radius:50%; transform:rotate(-1deg); }
+    .home-card-foot { margin-top:15px; display:flex; align-items:flex-end; justify-content:space-between; gap:6px; }
+    .home-copy small { max-width:115px; color:#836d53; font-size:7px; line-height:1.45; }
+    .home-cta { min-height:30px; padding:0 4px 0 10px; display:flex; align-items:center; gap:6px; border-radius:999px; background:linear-gradient(180deg,#ffd478,#f4b83f); color:#4c3519; box-shadow:0 5px 12px rgba(193,126,26,.22); font-size:8px; font-weight:var(--dh-font-weight-heavy); white-space:nowrap; }
+    .home-cta i { width:23px; height:23px; display:grid; place-items:center; border-radius:50%; background:#fffaf0; color:#5c4326; font-size:17px; font-style:normal; line-height:1; }
     .read { margin-top:4px; color:#999; font-size:7px; text-align:right; }
     .composer { min-height:60px; flex:none; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:7px; padding:8px 9px 17px; background:#f2f2f2; border-top:1px solid rgba(0,0,0,.04); }
     .composer textarea { width:100%; height:36px; resize:none; border:0; border-radius:8px; outline:none; padding:10px 9px; background:#fff; color:#222; font-size:10px; line-height:16px; }
@@ -115,6 +125,12 @@
       if (Number.isNaN(date.getTime())) return '';
       return new Intl.DateTimeFormat('zh-CN', { hour:'2-digit', minute:'2-digit', hour12:false }).format(date);
     };
+    const roomTypeLabel = (home) => {
+      if (home.roomType) return String(home.roomType);
+      const name = String(home.name || '');
+      return ['公寓','客厅','卧室','餐厅','书房','厨房','玄关','阳台'].find((word) => name.includes(word)) || '理想家';
+    };
+    const titleSize = (name) => Math.max(9, Math.min(20, Math.floor(190 / (String(name).length + 2))));
 
     ui.avatar.textContent = friend.avatar || friend.name.slice(0, 1);
     ui.avatar.style.setProperty('--avatar', friend.accent || '#94ad9d');
@@ -130,9 +146,9 @@
         const href = `../my-home/index.html?home=${encodeURIComponent(home.id)}&mode=locked`;
         const preview = homePreview(home.id);
         const homeName = home.name || '我的家';
-        const title = `邀请你来参观我的「${homeName}」`;
-        const subtitle = '喜欢这里的家具或户型，可以收藏到你的灵感库';
-        return `<article class="message ${outgoing ? 'outgoing' : 'incoming'}"><span class="avatar message-avatar" style="--avatar:${escapeText(avatarColor)}">${escapeText(avatar)}</span><div><div class="home-share"><a class="home-card" href="${href}" aria-label="参观 ${escapeText(homeName)}，并收藏喜欢的家具或户型"><div class="home-visual${preview?' has-preview':''}">${preview?`<img src="${escapeText(preview)}" alt="${escapeText(homeName)} 预览" />`:''}</div><div class="home-copy"><span><b>${escapeText(title)}</b><small>${escapeText(subtitle)}</small></span><i>›</i></div></a></div><div class="read">${escapeText(timeLabel(message.createdAt))}${outgoing ? ' · 已送达' : ''}</div></div></article>`;
+        const roomType = roomTypeLabel(home);
+        const subtitle = roomType === '理想家' ? '喜欢这里的家具或户型，可以收藏到你的灵感库' : `喜欢这个${roomType}的家具和布局，可以收藏到你的灵感库`;
+        return `<article class="message ${outgoing ? 'outgoing' : 'incoming'}"><span class="avatar message-avatar" style="--avatar:${escapeText(avatarColor)}">${escapeText(avatar)}</span><div><div class="home-share"><a class="home-card" href="${href}" aria-label="参观 ${escapeText(homeName)}，并收藏喜欢的家具或户型"><div class="home-visual">${preview?`<img src="${escapeText(preview)}" alt="${escapeText(homeName)} 预览" />`:''}<span class="home-brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8v9H3Z"/><path d="M9 20v-6h6v6" fill="#fff7df"/></svg><b>DreamHome理想家</b></span><i class="home-spark home-spark--one">✦</i><i class="home-spark home-spark--two">✦</i><i class="home-spark home-spark--three">✦</i><span class="home-invite-bubble">来我家<br>一起看看吧！ <em>♥</em></span><img class="home-mascot" src="../../assets/mascot/mascot-ui.png" alt="" aria-hidden="true" /></div><div class="home-copy"><span class="home-eyebrow">邀请你来参观我的</span><b class="home-title" style="--home-title-size:${titleSize(homeName)}px">「${escapeText(homeName)}」</b><div class="home-card-foot"><small>${escapeText(subtitle)}</small><span class="home-cta">一起看看 <i>›</i></span></div></div></a></div><div class="read">${escapeText(timeLabel(message.createdAt))}${outgoing ? ' · 已送达' : ''}</div></div></article>`;
       }
       return `<article class="message ${outgoing ? 'outgoing' : 'incoming'}"><span class="avatar message-avatar" style="--avatar:${escapeText(avatarColor)}">${escapeText(avatar)}</span><div><div class="bubble">${escapeText(message.text)}</div><div class="read">${escapeText(timeLabel(message.createdAt))}</div></div></article>`;
     }

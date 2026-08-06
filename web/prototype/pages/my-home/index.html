@@ -1027,7 +1027,9 @@
       const friend=getFriends().find((item)=>item.id===friendId);
       if(!friend)return;
       await persistProjectNow();
-      addMessage({friendId:friend.id,senderId:'me',type:'home_share',text:'分享了一个家的 3D 预览',home:{id:state.project.id,name:state.project.name,furnitureCount:state.project.placements.length}});
+      const roomNames=(state.project.rooms||[]).map((room)=>room.name).filter(Boolean);
+      const roomType=state.project.realScene?.cfg?.type||state.project.realScene?.cfg?.label||roomNames.join(' · ')||'';
+      addMessage({friendId:friend.id,senderId:'me',type:'home_share',text:'分享了一个家的 3D 预览',home:{id:state.project.id,name:state.project.name,roomType,roomNames,furnitureCount:state.project.placements.length}});
       closeShareSheet();
       tellSent(friend);
     }
