@@ -222,6 +222,9 @@
     .share-panel { position:relative; width:100%; min-height:0; box-sizing:border-box; padding:6px 16px calc(14px + env(safe-area-inset-bottom)); border-radius:24px 24px 0 0; background:#fff; box-shadow:0 -12px 30px rgba(44,59,45,.2); transform:translateY(100%); transition:transform .26s cubic-bezier(.32,.72,0,1); }.share-sheet.is-open .share-panel { transform:translateY(0); }
     .share-handle { width:40px; height:4px; margin:1px auto 7px; border-radius:999px; background:rgba(112,136,111,.35); }
     .share-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }.share-head b { font-size:15px; font-weight:var(--dh-font-weight-heavy); }.share-close { width:30px; height:30px; border:0; border-radius:50%; background:#f3eee5; color:var(--dh-fg-secondary); font-size:15px; cursor:pointer; }
+    .share-cover-head { display:flex; align-items:baseline; justify-content:space-between; margin:0 1px 7px; }.share-cover-head b { font-size:11px; }.share-cover-head span { color:var(--dh-fg-muted); font-size:8px; font-weight:var(--dh-font-weight-semibold); }
+    .share-cover-choices { display:flex; gap:8px; margin-bottom:11px; overflow-x:auto; scrollbar-width:none; }.share-cover-choices::-webkit-scrollbar { display:none; }
+    .share-cover-option { position:relative; flex:0 0 77px; width:77px; padding:3px; border:1px solid transparent; border-radius:12px; background:rgba(250,241,220,.74); color:var(--dh-fg-secondary); cursor:pointer; }.share-cover-option img { width:69px; height:39px; display:block; object-fit:cover; border-radius:8px; }.share-cover-option span { display:block; padding:4px 2px 1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:8px; font-weight:var(--dh-font-weight-semibold); }.share-cover-option.is-selected { border-color:#d8a13d; background:#fff8e9; box-shadow:0 3px 10px rgba(150,102,29,.12); }.share-cover-option.is-selected::after { content:"✓"; position:absolute; top:6px; right:6px; width:14px; height:14px; display:grid; place-items:center; border-radius:50%; background:#4a3824; color:white; font-size:8px; }
     .share-row { display:flex; gap:13px; overflow-x:auto; padding:0 1px 9px; scrollbar-width:none; }.share-row::-webkit-scrollbar { display:none; }
     .share-target { flex:0 0 auto; width:54px; padding:0; border:0; background:transparent; color:var(--dh-fg-secondary); cursor:pointer; }.share-target i { position:relative; display:grid; place-items:center; width:50px; height:50px; margin:0 auto; border-radius:50%; background:var(--c,#70886f); color:#fff; font-size:15px; font-style:normal; font-weight:var(--dh-font-weight-heavy); box-shadow:var(--dh-shadow-soft); }.share-target i::after { content:"↗"; position:absolute; right:-1px; bottom:-1px; width:17px; height:17px; display:grid; place-items:center; border:2px solid #fff; border-radius:50%; background:#fe2c55; color:#fff; font-size:8px; }.share-target b { display:block; margin-top:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:9px; font-weight:var(--dh-font-weight-semibold); }.share-target:active i { transform:scale(.94); }
     .share-divider { height:1px; margin:0 -16px 9px; background:#eee9e1; }
@@ -309,6 +312,8 @@
           <div class="share-panel" role="dialog" aria-modal="true" aria-label="分享我的家">
             <div class="share-handle" aria-hidden="true"></div>
             <div class="share-head"><b>分享给</b><button class="share-close" data-share-close aria-label="关闭">✕</button></div>
+            <div class="share-cover-head"><b>分享封面</b><span>已自动选择推荐视角</span></div>
+            <div class="share-cover-choices" id="shareCoverChoices" aria-label="选择分享封面"></div>
             <div class="share-row" id="shareFriendRow" aria-label="选择好友"></div>
             <div class="share-divider" aria-hidden="true"></div>
             <div class="share-tools" aria-label="其他转发方式">
@@ -393,9 +398,9 @@
       {id:'plant-moss',name:'龟背竹绿植',category:'软装',sourceType:'photo',defaultScale:1,accent:'#779b72'},
       {id:'cabinet-sage',name:'鼠尾草边柜',category:'收纳',sourceType:'draw',defaultScale:1,accent:'#8da184'}
     ];
-    const state = { phase:'setup', project:null, editorMode:'edit', selectedTemplateId:null, drawingFile:null, selectedRoomId:null, selectedPlacementId:null, activeAssetCategory:'全部', drawerMode:'furniture', drawerExpanded:false, selectedFloorPreset:'warm-long-plank', selectedWallColor:'#f3ecdc', selectedWindowStyle:'dark-grid', interaction:{mode:'orbit', pendingAssetId:null, pointerDown:null}, job:null, dirty:false, caseMode:false };
+    const state = { phase:'setup', project:null, editorMode:'edit', selectedTemplateId:null, drawingFile:null, selectedRoomId:null, selectedPlacementId:null, activeAssetCategory:'全部', drawerMode:'furniture', drawerExpanded:false, selectedFloorPreset:'warm-long-plank', selectedWallColor:'#f3ecdc', selectedWindowStyle:'dark-grid', interaction:{mode:'orbit', pendingAssetId:null, pointerDown:null}, job:null, dirty:false, coverDirty:false, coverCandidates:[], caseMode:false };
     const runtimeAssets = new Map();
-    const ui = Object.fromEntries(['videoSceneBox','videoSceneGrid','setupPhase','generationPhase','generationMascotStage','editorPhase','templateGrid','continueBox','homeGrid','confirmModal','drawingInput','uploadName','setupError','generateButton','generationTitle','generationCopy','progressBar','backToSetup','retryButton','sceneHost','editorHomeName','editorHomeMeta','editorBack','saveLockButton','editModeButton','shareButton','shareSheet','shareFriendRow','daylightButton','realTimeControl','realTimeSlider','realTimeOutput','transformConfirm','transformDelete','transformHeight','heightUp','heightDown','caseCollectAll','caseCollectOne','roomSelector','inspector','inspectorTitle','inspectorCopy','placementHint','modelLoadStatus','assetDrawer','drawerToggle','drawerSummary','drawerModes','categoryTabs','assetRail','toast','liveRegion','resetViewButton','rotateLeft','rotateRight','scaleDown','scaleUp','moveSelected','deleteSelected'].map((id) => [id, document.getElementById(id)]));
+    const ui = Object.fromEntries(['videoSceneBox','videoSceneGrid','setupPhase','generationPhase','generationMascotStage','editorPhase','templateGrid','continueBox','homeGrid','confirmModal','drawingInput','uploadName','setupError','generateButton','generationTitle','generationCopy','progressBar','backToSetup','retryButton','sceneHost','editorHomeName','editorHomeMeta','editorBack','saveLockButton','editModeButton','shareButton','shareSheet','shareFriendRow','shareCoverChoices','daylightButton','realTimeControl','realTimeSlider','realTimeOutput','transformConfirm','transformDelete','transformHeight','heightUp','heightDown','caseCollectAll','caseCollectOne','roomSelector','inspector','inspectorTitle','inspectorCopy','placementHint','modelLoadStatus','assetDrawer','drawerToggle','drawerSummary','drawerModes','categoryTabs','assetRail','toast','liveRegion','resetViewButton','rotateLeft','rotateRight','scaleDown','scaleUp','moveSelected','deleteSelected'].map((id) => [id, document.getElementById(id)]));
     const genVideo=document.getElementById('genVideo');
     const syncGenerationMascot=()=>ui.generationMascotStage.classList.toggle('is-video-ready',genVideo.readyState>=2);
     genVideo.addEventListener('loadeddata',syncGenerationMascot);
@@ -447,8 +452,8 @@
     const canEditProject = () => !state.caseMode && !isLocked();
     function tell(message) { ui.liveRegion.textContent = message; ui.toast.classList.remove('has-action');ui.toast.textContent = message; ui.toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => ui.toast.classList.remove('show'), 1800); }
     function tellSent(friend) { const href=`../chat/index.html?friend=${encodeURIComponent(friend.id)}`;ui.liveRegion.textContent=`已发送给 ${friend.name}`;ui.toast.classList.add('has-action');ui.toast.innerHTML=`<span>已发送给 ${escapeText(friend.name)}</span><a href="${href}">去看看</a>`;ui.toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>ui.toast.classList.remove('show','has-action'),4200); }
-    async function persistProjectNow(){if(!state.project||state.caseMode)return true;try{const previewImage=sceneRuntime?.capturePreview?.();if(previewImage)state.project.previewImage=previewImage;const project={...state.project,updatedAt:now()};homeSceneService.saveProject(project);const result=await homeSceneService.syncProject(project);if(result?.revision)state.project.revision=result.revision;state.dirty=false;ui.editorHomeMeta.textContent=HOME_USER_ID?'3D 布局已同步':'3D 布局已保存在本机';return true;}catch(error){state.dirty=true;ui.editorHomeMeta.textContent='布局同步失败';tell('布局已保存在本机，后端同步失败');return false;}}
-    function saveSoon() { if(!canEditProject())return;state.dirty = true; clearTimeout(saveTimer);ui.editorHomeMeta.textContent = '正在保存布局';saveTimer=setTimeout(persistProjectNow,360); }
+    async function persistProjectNow(){if(!state.project||state.caseMode)return true;try{const editorPreviewImage=sceneRuntime?.capturePreview?.();if(editorPreviewImage)state.project.editorPreviewImage=editorPreviewImage;state.project.previewImage=state.project.shareCover?.url||state.project.coverImage||editorPreviewImage||state.project.previewImage||'';const project={...state.project,updatedAt:now()};homeSceneService.saveProject(project);const result=await homeSceneService.syncProject(project);if(result?.revision)state.project.revision=result.revision;state.dirty=false;ui.editorHomeMeta.textContent=HOME_USER_ID?'3D 布局已同步':'3D 布局已保存在本机';return true;}catch(error){state.dirty=true;ui.editorHomeMeta.textContent='布局同步失败';tell('布局已保存在本机，后端同步失败');return false;}}
+    function saveSoon() { if(!canEditProject())return;state.dirty = true;state.coverDirty=true; clearTimeout(saveTimer);ui.editorHomeMeta.textContent = '正在保存布局';saveTimer=setTimeout(persistProjectNow,360); }
     const MockHomeSceneService = {
       async submitHomeGeneration({templateId, drawingFile}) { return { id: uid('job'), templateId: templateId || 'two-one', drawingName: drawingFile?.name || null, startedAt: Date.now() }; },
       async getJob(job) { const elapsed = Date.now() - job.startedAt; if (MOCK_FAILURE && elapsed > 1100) return {status:'failed', progress:64, error:'户型识别暂时中断，请重新尝试'}; if (elapsed < 850) return {status:'queued', progress:18}; if (elapsed < 1750) return {status:'processing', progress:48}; if (elapsed < 2650) return {status:'processing', progress:78}; return {status:'ready', progress:100, result: buildProject(job.templateId, job.drawingName)}; },
@@ -727,7 +732,7 @@
       try{if(!localStorage.getItem(sceneBaselineKey(sceneData.video_id)))localStorage.setItem(sceneBaselineKey(sceneData.video_id),JSON.stringify({...baseline,createdAt:now()}));const saved=homeSceneService.loadHomes().find(home=>home.id===baseline.id)||JSON.parse(localStorage.getItem(sceneProjectKey(sceneData.video_id))||'null');if(saved?.source?.videoId===sceneData.video_id&&Array.isArray(saved.placements)){const sources=new Map(baseline.placements.map(placement=>[placement.id,placement.sourceScale]));const placements=saved.placements.map(placement=>({...placement,sourceScale:placement.sourceScale||sources.get(placement.id)}));return normalizeHomeProject({...baseline,...saved,placements,id:baseline.id,source:baseline.source,realScene:baseline.realScene,envelope:baseline.envelope,walls:baseline.walls,rooms:baseline.rooms});}}catch{}
       return normalizeHomeProject({...baseline,createdAt:now(),updatedAt:now()});
     }
-    function enterProjectEditor(project,{loading=false,title=''}={}){state.project=normalizeHomeProject(project);if(!state.caseMode){state.project.locked=true;homeSceneService.saveProject(state.project);syncProjectInBackground(state.project);}state.editorMode=state.caseMode?'edit':'locked';state.selectedRoomId=null;state.selectedPlacementId=null;state.selectedWindowSlotId=null;state.interaction.mode='orbit';state.phase=loading?'scene-loading':'editor';if(loading)pendingSceneTitle=title||state.project.name;updatePhases();initEditor();}
+    function enterProjectEditor(project,{loading=false,title=''}={}){state.project=normalizeHomeProject(project);state.coverDirty=false;state.coverCandidates=[];if(!state.caseMode){state.project.locked=true;homeSceneService.saveProject(state.project);syncProjectInBackground(state.project);}state.editorMode=state.caseMode?'edit':'locked';state.selectedRoomId=null;state.selectedPlacementId=null;state.selectedWindowSlotId=null;state.interaction.mode='orbit';state.phase=loading?'scene-loading':'editor';if(loading)pendingSceneTitle=title||state.project.name;updatePhases();initEditor();}
     async function openVideoScene(videoId, title='视频户型重建', caseMode=false, requestedAssetId='') {
       state.caseMode=caseMode;
       disposeScene();
@@ -763,6 +768,7 @@
       state.editorMode='locked';
       updatePhases();
       renderAssetDrawer();
+      prepareShareCovers({force:true,persistDefault:true});
       await persistProjectNow();
       ui.editorHomeMeta.textContent='已保存 · 预览模式';
       tell('已保存并锁定，可以转发给好友');
@@ -905,14 +911,33 @@
       function applyRoomFocus() { groups.rooms.forEach((group,roomId)=>{ const emphasis=!state.selectedRoomId || roomId===state.selectedRoomId; group.traverse((object)=>{ if (object.material?.transparent !== undefined && object.userData.baseOpacity !== undefined) { object.material.transparent=!emphasis; object.material.opacity=emphasis?object.userData.baseOpacity:Math.min(object.userData.baseOpacity,.22); object.material.needsUpdate=true; } }); }); applyFinishesToGroups(project,groups); }
       function resetView() { const room=state.selectedRoomId ? findRoom(state.selectedRoomId) : null;if(project.realScene){const real=project.realScene.room,balconyDepth=project.realScene.balcony?.depth||0;controls.target.set(0,real.h*.36,-real.d*.1-balconyDepth*.16);camera.position.set(real.w*.18,real.h*.76,real.d*1.32);controls.update();updateViewOcclusion();return;} const target=room ? new THREE.Vector3(room.x,.7,room.z) : new THREE.Vector3(0,.7,0); const distance=room ? Math.max(room.width,room.depth)*1.65+3 : 15; controls.target.copy(target); camera.position.copy(target).add(new THREE.Vector3(distance*.72,distance*.42,distance*.78)); controls.update();updateViewOcclusion(); }
       function topView(){const room=project.realScene?.room,ceiling=root.getObjectByName('real-scene-ceiling');if(ceiling)ceiling.visible=false;if(room){const balconyDepth=project.realScene.balcony?.depth||0,totalDepth=room.d+balconyDepth,centerZ=-balconyDepth/2,verticalFov=THREE.MathUtils.degToRad(camera.fov),horizontalFov=2*Math.atan(Math.tan(verticalFov/2)*camera.aspect),fitDistance=Math.max(totalDepth/(2*Math.tan(verticalFov/2)),room.w/(2*Math.tan(horizontalFov/2)))*1.1;controls.target.set(0,0,centerZ);camera.position.set(0,fitDistance,centerZ+.001);}else{const target=state.selectedRoomId?findRoom(state.selectedRoomId):null,span=target?Math.max(target.width,target.depth):10;controls.target.set(target?.x||0,0,target?.z||0);camera.position.set(target?.x||0,span*1.6,(target?.z||0)+.001);}controls.update();tell('已适应窗口显示完整全景');}
-      function capturePreview(){try{const gizmoVisible=gizmo?.visible;if(gizmo)gizmo.visible=false;renderer.render(scene,camera);const output=document.createElement('canvas');output.width=320;output.height=180;const context=output.getContext('2d'),source=renderer.domElement,sourceAspect=source.width/source.height,targetAspect=output.width/output.height;let sx=0,sy=0,sw=source.width,sh=source.height;if(sourceAspect>targetAspect){sw=source.height*targetAspect;sx=(source.width-sw)/2;}else{sh=source.width/targetAspect;sy=(source.height-sh)/2;}context.drawImage(source,sx,sy,sw,sh,0,0,output.width,output.height);if(gizmo)gizmo.visible=gizmoVisible;return output.toDataURL('image/webp',.76);}catch{return '';}}
+      function capturePreview(){try{const gizmoVisible=gizmo?.visible;if(gizmo)gizmo.visible=false;renderer.render(scene,camera);const output=document.createElement('canvas');output.width=320;output.height=180;const context=output.getContext('2d'),source=renderer.domElement,sourceAspect=source.width/source.height,targetAspect=output.width/output.height;let sx=0,sy=0,sw=source.width,sh=source.height;if(sourceAspect>targetAspect){sw=source.height*targetAspect;sx=(source.width-sw)/2;}else{sh=source.width/targetAspect;sy=(source.height-sh)/2;}context.drawImage(source,sx,sy,sw,sh,0,0,output.width,output.height);if(gizmo)gizmo.visible=gizmoVisible;return output.toDataURL('image/webp',.8);}catch{return '';}}
+      function captureCoverCandidates(){
+        const originalPosition=camera.position.clone(),originalTarget=controls.target.clone(),room=project.realScene?.room;
+        const width=room?.w||project.envelope?.width||9,depth=room?.d||project.envelope?.depth||6,height=room?.h||2.8,balconyDepth=project.realScene?.balcony?.depth||0;
+        const target=new THREE.Vector3(0,room?height*.36:.7,room?-depth*.1-balconyDepth*.16:0);
+        const span=Math.max(width,depth),poses=room?[
+          {id:'front',label:'推荐视角',position:new THREE.Vector3(width*.18,height*.76,depth*1.32)},
+          {id:'left',label:'左侧视角',position:new THREE.Vector3(-width*.7,height*.7,depth*.94)},
+          {id:'right',label:'右侧视角',position:new THREE.Vector3(width*.72,height*.66,depth*.86)}
+        ]:[
+          {id:'front',label:'推荐视角',position:new THREE.Vector3(span*.72,span*.42,span*.78)},
+          {id:'left',label:'左侧视角',position:new THREE.Vector3(-span*.72,span*.4,span*.76)},
+          {id:'right',label:'右侧视角',position:new THREE.Vector3(span*.8,span*.36,-span*.58)}
+        ];
+        const covers=[];
+        try{
+          for(const pose of poses){controls.target.copy(target);camera.position.copy(pose.position);controls.update();updateViewOcclusion();const url=capturePreview();if(url)covers.push({...pose,url});}
+        }finally{controls.target.copy(originalTarget);camera.position.copy(originalPosition);controls.update();updateViewOcclusion();renderer.render(scene,camera);}
+        return covers;
+      }
       function dispose() { disposed=true; cancelAnimationFrame(frame); observer.disconnect(); renderer.domElement.removeEventListener('pointerdown',pointerDown); renderer.domElement.removeEventListener('pointermove',pointerMove); renderer.domElement.removeEventListener('pointerup',pointerUp);renderer.domElement.removeEventListener('pointercancel',pointerCancel);renderer.domElement.removeEventListener('wheel',wheelScale,true); controls.dispose(); root.traverse((object)=>{ object.geometry?.dispose?.(); if (Array.isArray(object.material)) object.material.forEach((material)=>material.dispose?.()); else object.material?.dispose?.(); }); renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove(); }
       renderer.domElement.addEventListener('pointerdown',pointerDown); renderer.domElement.addEventListener('pointermove',pointerMove); renderer.domElement.addEventListener('pointerup',pointerUp); renderer.domElement.addEventListener('pointercancel',pointerCancel);renderer.domElement.addEventListener('wheel',wheelScale,{passive:false,capture:true}); document.addEventListener('visibilitychange',()=>{ if (!document.hidden) renderer.render(scene,camera); });
       function applyFinishes() { applyFinishesToGroups(project,groups); }
       function applyFloorPreset(name,silent){const preset=FLOOR_PRESETS.find(item=>item.id===name)||FLOOR_PRESETS[0];state.selectedFloorPreset=preset.id;if(project.decor)project.decor.floorPreset=preset.id;groups.floors.forEach(mesh=>{mesh.material.color.set(preset.color);mesh.material.map=null;mesh.material.bumpMap=null;mesh.material.roughness=.76;mesh.material.needsUpdate=true;});renderAssetDrawer();getFloorTexture(preset,texture=>{groups.floors.forEach(mesh=>{mesh.material.color.set('#ffffff');mesh.material.map=texture;mesh.material.bumpMap=null;mesh.material.roughness=.74;mesh.material.needsUpdate=true;});});if(!silent)tell(`已切换为${preset.name}`);}
       function applyWallColor(color,silent){state.selectedWallColor=color;if(project.decor)project.decor.wallColor=color;groups.walls.forEach(mesh=>{mesh.material.map=null;mesh.material.color.set(color);mesh.material.needsUpdate=true;});renderAssetDrawer();if(!silent)tell('墙面颜色已更新');}
       function applyWindowStyle(name,silent){const colors={"dark-grid":'#30383e',"white-minimal":'#e6e3da',"wood-slim":'#8b684d'},color=colors[name]||colors['dark-grid'];state.selectedWindowStyle=colors[name]?name:'dark-grid';if(project.decor)project.decor.windowStyle=state.selectedWindowStyle;groups.windowParts.filter(part=>part.userData.windowRole==='frame').forEach(part=>{part.material.color.set(color);part.material.needsUpdate=true;});renderAssetDrawer();if(!silent)tell('窗户样式已更新');}
-      applyFloorPreset(state.selectedFloorPreset,true);applyWallColor(state.selectedWallColor,true);applyWindowStyle(state.selectedWindowStyle,true);resetView(); window.beginPlacement=beginPlacement; window.beginMove=beginMove; window.focusRoom=focusRoom; window.resetSceneView=resetView; window.clearSceneSelection=clearSelection; return {dispose,capturePreview,groups,root,controls,resetView,topView,focusRoom,selectPlacement,clearSelection,beginPlacement,beginMove,applyFinishes,applyFloorPreset,applyWallColor,applyWindowStyle,confirmTransform,scalePlacement,movePlacementHeight};
+      applyFloorPreset(state.selectedFloorPreset,true);applyWallColor(state.selectedWallColor,true);applyWindowStyle(state.selectedWindowStyle,true);resetView(); window.beginPlacement=beginPlacement; window.beginMove=beginMove; window.focusRoom=focusRoom; window.resetSceneView=resetView; window.clearSceneSelection=clearSelection; return {dispose,capturePreview,captureCoverCandidates,groups,root,controls,resetView,topView,focusRoom,selectPlacement,clearSelection,beginPlacement,beginMove,applyFinishes,applyFloorPreset,applyWallColor,applyWindowStyle,confirmTransform,scalePlacement,movePlacementHeight};
     }
 
     function addRealSceneShell(root, project, groups) {
@@ -1019,8 +1044,41 @@
     function renderShareFriends() {
       ui.shareFriendRow.innerHTML=getFriends().map((friend)=>`<button class="share-target" data-friend-id="${escapeText(friend.id)}" aria-label="发送给 ${escapeText(friend.name)}"><i style="--c:${escapeText(friend.accent||'#70886f')}">${escapeText(friend.avatar||friend.name.slice(0,1))}</i><b>${escapeText(friend.name)}</b></button>`).join('');
     }
+    function staticRecommendedCover(project) {
+      const videoId=project?.source?.type==='video_rebuild'&&project.source.videoId;
+      return videoId?`../../assets/scenes/${encodeURIComponent(videoId)}.jpg?v=2`:'';
+    }
+    function applyShareCover(candidate,{announce=false}={}) {
+      if(!state.project||!candidate?.url)return;
+      state.project.shareCover={version:1,preset:candidate.id,url:candidate.url,source:candidate.source||'deterministic-3d',capturedAt:now()};
+      state.project.coverImage=candidate.url;
+      state.project.previewImage=candidate.url;
+      state.coverDirty=false;
+      homeSceneService.saveProject(state.project);
+      syncProjectInBackground(state.project);
+      renderShareCovers();
+      if(announce)tell('已更换分享封面');
+    }
+    function prepareShareCovers({force=false,persistDefault=false}={}) {
+      if(!state.project||!sceneRuntime)return;
+      const candidates=[],staticCover=staticRecommendedCover(state.project);
+      if(staticCover)candidates.push({id:'source',label:'推荐封面',url:staticCover,source:'curated-scene'});
+      const captures=sceneRuntime.captureCoverCandidates?.()||[];
+      captures.forEach((cover,index)=>candidates.push({...cover,label:staticCover?(index===0?'正面视角':cover.label):(index===0?'推荐视角':cover.label),source:'deterministic-3d'}));
+      state.coverCandidates=candidates;
+      const savedPreset=!force&&state.project.shareCover?.preset;
+      const selected=candidates.find(item=>item.id===savedPreset)||candidates[0];
+      if(selected&&(persistDefault||force||!state.project.shareCover?.url||state.coverDirty))applyShareCover(selected);
+      else renderShareCovers();
+    }
+    function renderShareCovers() {
+      const selectedPreset=state.project?.shareCover?.preset;
+      ui.shareCoverChoices.innerHTML=state.coverCandidates.map((cover)=>`<button class="share-cover-option ${cover.id===selectedPreset?'is-selected':''}" data-cover-id="${escapeText(cover.id)}" aria-pressed="${cover.id===selectedPreset}"><img src="${escapeText(cover.url)}" alt="" /><span>${escapeText(cover.label)}</span></button>`).join('');
+      ui.shareCoverChoices.hidden=state.coverCandidates.length<2;
+      ui.shareCoverChoices.previousElementSibling.hidden=state.coverCandidates.length<2;
+    }
     // 转发闭环：选择好友后写入持久消息，再由 Toast 进入该好友会话。
-    function openShareSheet() { if(!isLocked())return;renderShareFriends();ui.shareSheet.hidden=false; requestAnimationFrame(()=>ui.shareSheet.classList.add('is-open')); }
+    function openShareSheet() { if(!isLocked())return;prepareShareCovers();renderShareFriends();ui.shareSheet.hidden=false; requestAnimationFrame(()=>ui.shareSheet.classList.add('is-open')); }
     function closeShareSheet() { ui.shareSheet.classList.remove('is-open'); setTimeout(()=>{ ui.shareSheet.hidden=true; }, 260); }
     async function sendHomeToFriend(friendId) {
       if(!state.project||!isLocked())return;
@@ -1029,7 +1087,10 @@
       await persistProjectNow();
       const roomNames=(state.project.rooms||[]).map((room)=>room.name).filter(Boolean);
       const roomType=state.project.realScene?.cfg?.type||state.project.realScene?.cfg?.label||roomNames.join(' · ')||'';
-      addMessage({friendId:friend.id,senderId:'me',type:'home_share',text:'分享了一个家的 3D 预览',home:{id:state.project.id,name:state.project.name,roomType,roomNames,furnitureCount:state.project.placements.length}});
+      const cover=state.project.shareCover||null;
+      const seenAssets=new Set();
+      const furniture=(state.project.placements||[]).map((placement)=>{const assetId=placement?.assetId;if(!assetId||seenAssets.has(assetId))return null;seenAssets.add(assetId);const asset=resolveAsset(assetId);return{id:assetId,name:asset?.name||placement.name||'家居单品',category:asset?.category||'家具',thumbnail:asset?.thumbnail||''};}).filter(Boolean);
+      addMessage({friendId:friend.id,senderId:'me',type:'home_share',text:'分享了一个家的 3D 预览',home:{id:state.project.id,name:state.project.name,roomType,roomNames,furnitureCount:state.project.placements.length,furniture,cover,coverImage:cover?.url||state.project.coverImage||state.project.previewImage||'',previewImage:cover?.url||state.project.previewImage||''}});
       closeShareSheet();
       tellSent(friend);
     }
@@ -1053,7 +1114,7 @@
     ui.caseCollectAll.addEventListener('click',collectAllCaseComponents);
     ui.caseCollectOne.addEventListener('click',()=>{ const id=state.selectedPlacementId; if(!id) return; const collect=!getFavorites().has(id); setCaseCollected(id,collect); tell(`${collect?'已收藏':'已取消收藏'} ${resolveAsset(id).name}`); updateCaseCollectOne(); });
     ui.daylightButton.addEventListener('click',()=>{ if(!canEditProject()||!state.project||state.project.source?.type==='video_rebuild') return; const next = state.project.daylight === 'night' ? 'day' : 'night'; state.project.daylight = next; ui.daylightButton.textContent = next === 'night' ? '🌙' : '☀'; saveSoon(); tell(next === 'night' ? '已切换到黑夜' : '已切换到白天'); }); ui.realTimeSlider.addEventListener('input',()=>applyRealTimeProgress(ui.realTimeSlider.value));ui.realTimeSlider.addEventListener('change',()=>{applyRealTimeProgress(ui.realTimeSlider.value,true);if(canEditProject()&&state.project?.decor){state.project.decor.timeValue=Number(ui.realTimeSlider.value);saveSoon();}}); ui.rotateLeft.addEventListener('click',()=>rotateSelected(-1)); ui.rotateRight.addEventListener('click',()=>rotateSelected(1)); ui.scaleDown.addEventListener('click',()=>scaleSelected(1/1.15)); ui.scaleUp.addEventListener('click',()=>scaleSelected(1.15)); ui.moveSelected.addEventListener('click',()=> sceneRuntime?.beginMove()); ui.deleteSelected.addEventListener('click',deleteSelected);ui.heightUp.addEventListener('click',()=>sceneRuntime?.movePlacementHeight(.1));ui.heightDown.addEventListener('click',()=>sceneRuntime?.movePlacementHeight(-.1));
-    ui.editorBack.addEventListener('click',returnToSetup);ui.saveLockButton.addEventListener('click',lockProject);ui.editModeButton.addEventListener('click',unlockProject); ui.shareButton.addEventListener('click',openShareSheet); ui.shareSheet.addEventListener('click',(event)=>{ if(event.target.closest('[data-share-close]')){ closeShareSheet(); return; } const friend=event.target.closest('[data-friend-id]');if(friend){sendHomeToFriend(friend.dataset.friendId);return;}const target=event.target.closest('[data-share]'); if(target){ closeShareSheet(); tell(`${target.querySelector('b')?.textContent || '转发'}即将接入`); } });
+    ui.editorBack.addEventListener('click',returnToSetup);ui.saveLockButton.addEventListener('click',lockProject);ui.editModeButton.addEventListener('click',unlockProject); ui.shareButton.addEventListener('click',openShareSheet); ui.shareSheet.addEventListener('click',(event)=>{ if(event.target.closest('[data-share-close]')){ closeShareSheet(); return; }const coverOption=event.target.closest('[data-cover-id]');if(coverOption){const cover=state.coverCandidates.find(item=>item.id===coverOption.dataset.coverId);if(cover)applyShareCover(cover,{announce:true});return;} const friend=event.target.closest('[data-friend-id]');if(friend){sendHomeToFriend(friend.dataset.friendId);return;}const target=event.target.closest('[data-share]'); if(target){ closeShareSheet(); tell(`${target.querySelector('b')?.textContent || '转发'}即将接入`); } });
     document.addEventListener('keydown',(event)=>{if(event.key==='Escape' && state.interaction.mode!=='orbit') exitInteraction();}); window.addEventListener('pagehide',()=>{clearTimeout(saveTimer);persistProjectNow();});window.addEventListener('beforeunload',()=>{clearTimeout(saveTimer);persistProjectNow();disposeScene();});
     state.phase='setup';renderTemplates();renderSavedHomes();renderVideoScenes();updatePhases();
     const requestedAssetId=QUERY.get('addAsset');

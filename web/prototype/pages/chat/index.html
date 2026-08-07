@@ -39,7 +39,7 @@
     .bubble { max-width:208px; padding:9px 11px; border-radius:13px; background:#fff; box-shadow:0 2px 7px rgba(0,0,0,.04); font-size:11px; line-height:1.45; white-space:pre-wrap; overflow-wrap:anywhere; }
     .outgoing .bubble { background:#d9f0ca; }
     .home-share { --share-glass:rgba(255,250,240,.74); width:224px; overflow:hidden; border:1px solid rgba(255,255,255,.74); border-radius:20px; background:var(--share-glass); box-shadow:0 12px 30px rgba(96,67,29,.15),inset 0 1px rgba(255,255,255,.76); -webkit-backdrop-filter:blur(18px) saturate(1.08); backdrop-filter:blur(18px) saturate(1.08); }
-    .home-card { display:block; position:relative; padding:6px; color:inherit; text-decoration:none; background:rgba(255,250,240,.58); transition:transform .18s ease,box-shadow .18s ease; -webkit-backdrop-filter:blur(16px) saturate(1.08); backdrop-filter:blur(16px) saturate(1.08); }
+    .home-card { display:block; position:relative; width:100%; padding:6px; border:0; color:inherit; text-align:left; background:rgba(255,250,240,.58); cursor:pointer; transition:transform .18s ease,box-shadow .18s ease; -webkit-backdrop-filter:blur(16px) saturate(1.08); backdrop-filter:blur(16px) saturate(1.08); }
     .home-card:active { transform:scale(.985); }
     .home-card:focus-visible { outline:3px solid rgba(237,174,65,.5); outline-offset:-3px; }
     .home-visual { position:relative; z-index:2; height:172px; overflow:visible; }
@@ -49,15 +49,23 @@
     .home-brand { position:absolute; z-index:4; top:5px; right:5px; min-height:20px; padding:3px 5px 3px 4px; display:flex; align-items:center; gap:3px; border:1px solid rgba(255,255,255,.68); border-radius:9px; background:var(--share-glass); color:#5c472e; box-shadow:0 3px 9px rgba(75,52,24,.09),inset 0 1px rgba(255,255,255,.66); -webkit-backdrop-filter:blur(14px) saturate(1.08); backdrop-filter:blur(14px) saturate(1.08); }
     .home-brand svg { width:12px; height:12px; flex:none; fill:none; stroke:#6f4c26; stroke-width:1.55; stroke-linecap:round; stroke-linejoin:round; }
     .home-brand b { font-size:5.8px; line-height:1; white-space:nowrap; }
-    .home-invite-bubble { position:absolute; z-index:4; right:58px; bottom:50px; min-width:70px; padding:8px 9px; border:1px solid rgba(255,255,255,.68); border-radius:18px; background:var(--share-glass); color:#493721; box-shadow:0 4px 12px rgba(69,45,18,.11); -webkit-backdrop-filter:blur(14px) saturate(1.08); backdrop-filter:blur(14px) saturate(1.08); font-size:8px; font-weight:var(--dh-font-weight-bold); line-height:1.35; }
-    .home-invite-bubble::after { content:""; position:absolute; right:13px; bottom:-6px; width:13px; height:13px; background:inherit; transform:rotate(45deg); }
+    .home-invite-bubble { position:absolute; z-index:4; left:75px; bottom:68px; width:67px; padding:7px 8px; border:1px solid rgba(255,255,255,.68); border-radius:17px; background:var(--share-glass); color:#493721; box-shadow:0 4px 12px rgba(69,45,18,.11); -webkit-backdrop-filter:blur(14px) saturate(1.08); backdrop-filter:blur(14px) saturate(1.08); font-size:7.5px; font-weight:var(--dh-font-weight-bold); line-height:1.35; }
+    .home-invite-bubble::after { content:""; position:absolute; right:8px; bottom:-5px; width:11px; height:11px; background:inherit; transform:rotate(45deg); }
     .home-invite-bubble em { position:relative; z-index:1; color:#efb34b; font-style:normal; }
-    .home-mascot { position:absolute; z-index:5; right:-13px; bottom:-34px; width:140px; height:140px; object-fit:contain; filter:drop-shadow(0 6px 7px rgba(62,42,20,.16)); pointer-events:none; }
+    .home-mascot-slot { position:absolute; z-index:5; right:0; bottom:0; width:75px; height:112px; overflow:hidden; pointer-events:none; }
+    .home-mascot { position:absolute; right:-22px; bottom:-29px; width:112px; height:112px; object-fit:contain; transform:rotate(-8deg); transform-origin:54% 100%; filter:drop-shadow(0 6px 7px rgba(62,42,20,.14)); }
     .home-copy { position:relative; z-index:1; min-height:123px; margin-top:-29px; padding:23px 10px 10px; border:1px solid rgba(255,255,255,.58); border-radius:0 0 15px 15px; background:var(--share-glass); box-shadow:inset 0 1px rgba(255,255,255,.5); -webkit-backdrop-filter:blur(18px) saturate(1.08); backdrop-filter:blur(18px) saturate(1.08); }
     .home-eyebrow,.home-title,.home-copy small { display:block; }
     .home-eyebrow { color:#48331f; font-size:10px; font-weight:var(--dh-font-weight-heavy); line-height:1.2; }
     .home-title { position:relative; z-index:1; width:max-content; max-width:100%; margin-top:3px; color:#392615; font-size:var(--home-title-size,20px); font-weight:900; line-height:1.15; letter-spacing:-.045em; white-space:nowrap; }
     .home-title::after { content:""; position:absolute; z-index:-1; left:-2px; right:-3px; bottom:-5px; height:7px; border-bottom:2px solid #f5bb48; border-radius:50%; transform:rotate(-1deg); }
+    .home-copy-mark { position:absolute; color:#efb548; pointer-events:none; }
+    .home-copy-mark.star { top:14px; right:55px; font-size:12px; transform:rotate(8deg); }
+    .home-copy-mark.heart { left:107px; bottom:11px; font-size:8px; }
+    .home-copy-mark.strokes { right:8px; bottom:45px; width:12px; height:11px; border-top:2px solid #efb548; transform:rotate(-22deg); }
+    .home-copy-mark.strokes::before,.home-copy-mark.strokes::after { content:""; position:absolute; width:5px; border-top:2px solid #efb548; }
+    .home-copy-mark.strokes::before { top:4px; right:-1px; transform:rotate(27deg); }
+    .home-copy-mark.strokes::after { top:-5px; left:2px; transform:rotate(70deg); }
     .home-card-foot { margin-top:15px; display:flex; align-items:flex-end; justify-content:space-between; gap:6px; }
     .home-copy small { max-width:115px; color:#836d53; font-size:7px; line-height:1.45; }
     .home-cta { min-height:30px; padding:0 4px 0 10px; display:flex; align-items:center; gap:6px; border-radius:999px; background:linear-gradient(180deg,#ffd478,#f4b83f); color:#4c3519; box-shadow:0 5px 12px rgba(193,126,26,.22); font-size:8px; font-weight:var(--dh-font-weight-heavy); white-space:nowrap; }
@@ -67,6 +75,41 @@
     .composer textarea { width:100%; height:36px; resize:none; border:0; border-radius:8px; outline:none; padding:10px 9px; background:#fff; color:#222; font-size:10px; line-height:16px; }
     .composer button { height:34px; min-width:48px; padding:0 12px; border:0; border-radius:8px; background:#70886f; color:#fff; font-size:10px; font-weight:var(--dh-font-weight-bold); }
     .composer button:disabled { opacity:.42; }
+    .detail-backdrop { position:absolute; z-index:80; inset:0; border:0; padding:0; background:rgba(37,29,21,.22); opacity:0; pointer-events:none; transition:opacity .24s ease; }
+    .detail-backdrop.is-open { opacity:1; pointer-events:auto; }
+    .home-detail-sheet { position:absolute; z-index:81; left:0; right:0; bottom:0; height:58%; min-height:360px; display:flex; flex-direction:column; overflow:hidden; border-radius:25px 25px 0 0; background:rgba(255,252,246,.94); box-shadow:0 -18px 48px rgba(69,47,24,.18); transform:translateY(102%); transition:transform .28s cubic-bezier(.2,.8,.2,1),height .28s ease,border-radius .28s ease; -webkit-backdrop-filter:blur(22px) saturate(1.06); backdrop-filter:blur(22px) saturate(1.06); }
+    .home-detail-sheet.is-open { transform:translateY(0); }
+    .home-detail-sheet.is-full { height:calc(100% - 50px); border-radius:0; }
+    .detail-grabber { width:38px; height:4px; flex:none; margin:7px auto 3px; border-radius:999px; background:#dbcdb8; }
+    .detail-head { min-height:42px; flex:none; display:grid; grid-template-columns:minmax(0,1fr) 34px 34px; align-items:center; gap:5px; padding:0 12px 4px 16px; }
+    .detail-head div { min-width:0; }
+    .detail-head small,.detail-head b { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .detail-head small { color:#9a8165; font-size:8px; }
+    .detail-head b { margin-top:2px; color:#392b1e; font-size:13px; }
+    .detail-icon { width:31px; height:31px; display:grid; place-items:center; padding:0; border:1px solid rgba(113,82,47,.1); border-radius:50%; background:#f5eee2; color:#5c4936; }
+    .detail-icon svg { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .detail-body { flex:1; min-height:0; overflow-y:auto; padding:0 12px 84px; scrollbar-width:none; }
+    .detail-body::-webkit-scrollbar { display:none; }
+    .detail-scene { position:relative; height:118px; overflow:hidden; border-radius:17px; background:linear-gradient(145deg,#eadac4,#b6c1ab 55%,#97735a); box-shadow:inset 0 0 0 1px rgba(255,255,255,.55); transition:height .28s ease; }
+    .is-full .detail-scene { height:205px; }
+    .detail-scene img { width:100%; height:100%; object-fit:cover; }
+    .detail-scene::after { content:"3D 空间预览"; position:absolute; left:9px; bottom:8px; padding:4px 7px; border-radius:999px; background:rgba(255,251,243,.78); color:#59442e; font-size:7px; font-weight:var(--dh-font-weight-bold); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); }
+    .furniture-head { margin:13px 2px 8px; display:flex; align-items:end; justify-content:space-between; }
+    .furniture-head b { color:#35291e; font-size:12px; }
+    .furniture-head span { color:#9a836b; font-size:8px; }
+    .furniture-list { display:grid; gap:7px; }
+    .furniture-item { min-height:52px; display:grid; grid-template-columns:45px minmax(0,1fr) auto; align-items:center; gap:9px; padding:6px 7px; border:1px solid rgba(126,92,53,.08); border-radius:14px; background:rgba(255,255,255,.66); }
+    .furniture-thumb { width:45px; height:40px; display:grid; place-items:center; overflow:hidden; border-radius:10px; background:#eee3d2; color:#8c704f; font-size:17px; }
+    .furniture-thumb img { width:100%; height:100%; object-fit:cover; }
+    .furniture-meta { min-width:0; }
+    .furniture-meta b,.furniture-meta small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .furniture-meta b { color:#463525; font-size:10px; }
+    .furniture-meta small { margin-top:3px; color:#9b846d; font-size:7px; }
+    .collect-button { min-width:51px; height:28px; padding:0 9px; border:1px solid #e9b850; border-radius:999px; background:#fffaf0; color:#7b5727; font-size:8px; font-weight:var(--dh-font-weight-bold); }
+    .collect-button.is-collected { border-color:#ddd3c4; background:#eee9e1; color:#8c8174; }
+    .detail-empty { padding:22px 10px; border-radius:14px; background:rgba(255,255,255,.52); color:#99836d; font-size:9px; text-align:center; }
+    .detail-actions { position:absolute; left:0; right:0; bottom:0; display:flex; gap:8px; padding:10px 13px 17px; background:linear-gradient(180deg,rgba(255,252,246,0),rgba(255,252,246,.98) 24%); }
+    .detail-actions a { height:42px; flex:1; display:flex; align-items:center; justify-content:center; border-radius:14px; background:#463524; color:#fff9ef; text-decoration:none; font-size:11px; font-weight:var(--dh-font-weight-bold); box-shadow:0 8px 18px rgba(70,53,36,.18); }
     .dh-home-indicator { position:absolute; z-index:70; left:50%; bottom:7px; width:112px; height:4px; transform:translateX(-50%); border-radius:999px; background:rgba(16,17,20,.86); }
     @media (max-width:420px) { .preview-stage { padding:0; } .chat-shell { width:100vw; height:100vh; padding:0; border-radius:0; background:transparent; box-shadow:none; } .chat-screen { border-radius:0; } }
   </style>
@@ -90,12 +133,20 @@
             <button id="sendButton" type="submit" disabled>发送</button>
           </form>
         </div>
+        <button class="detail-backdrop" id="detailBackdrop" type="button" aria-label="关闭家的详情"></button>
+        <section class="home-detail-sheet" id="homeDetailSheet" aria-label="家的详情" aria-hidden="true">
+          <div class="detail-grabber" aria-hidden="true"></div>
+          <header class="detail-head"><div><small>好友分享的理想家</small><b id="detailTitle">家的详情</b></div><button class="detail-icon" id="detailExpand" type="button" aria-label="扩大至整屏"><svg viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg></button><button class="detail-icon" id="detailClose" type="button" aria-label="关闭"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+          <div class="detail-body"><div class="detail-scene" id="detailScene"></div><div class="furniture-head"><b>这个家用了什么</b><span id="detailCount"></span></div><div class="furniture-list" id="detailFurniture"></div></div>
+          <div class="detail-actions"><a id="detailEnter3d" href="../my-home/index.html">进入 3D 参观</a></div>
+        </section>
         <div class="dh-home-indicator" aria-hidden="true"></div>
       </div>
     </section>
   </main>
   <script type="module">
     import { getFriends, addMessage, getConversation } from '../shared/social-demo-data.js';
+    import { getAsset, getFavorites, setFavorites } from '../shared/asset-library-data.js?v=20260722c';
 
     const params = new URLSearchParams(location.search);
     const friends = getFriends();
@@ -108,17 +159,27 @@
       composer: document.getElementById('composer'),
       input: document.getElementById('messageInput'),
       send: document.getElementById('sendButton'),
+      detailBackdrop: document.getElementById('detailBackdrop'),
+      detailSheet: document.getElementById('homeDetailSheet'),
+      detailTitle: document.getElementById('detailTitle'),
+      detailScene: document.getElementById('detailScene'),
+      detailCount: document.getElementById('detailCount'),
+      detailFurniture: document.getElementById('detailFurniture'),
+      detailEnter3d: document.getElementById('detailEnter3d'),
+      detailExpand: document.getElementById('detailExpand'),
+      detailClose: document.getElementById('detailClose'),
     };
     const escapeText = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
-    const homePreview = (homeId) => {
+    const homeProject = (homeId) => {
       try {
         const store = JSON.parse(localStorage.getItem('dreamhome.my-home.homes.v1') || 'null');
         const homes = Array.isArray(store?.homes) ? store.homes : [];
-        return homes.find((home) => home?.id === homeId)?.previewImage || '';
+        return homes.find((home) => home?.id === homeId) || null;
       } catch {
-        return '';
+        return null;
       }
     };
+    const homePreview = (homeId) => homeProject(homeId)?.previewImage || '';
     const timeLabel = (value) => {
       const date = new Date(value);
       if (Number.isNaN(date.getTime())) return '';
@@ -130,6 +191,67 @@
       return ['公寓','客厅','卧室','餐厅','书房','厨房','玄关','阳台'].find((word) => name.includes(word)) || '理想家';
     };
     const titleSize = (name) => Math.max(9, Math.min(20, Math.floor(190 / (String(name).length + 2))));
+    let detailHome = null;
+
+    const furnitureForHome = (home) => {
+      if (Array.isArray(home?.furniture) && home.furniture.length) return home.furniture;
+      const project = homeProject(home.id);
+      const placements = Array.isArray(project?.placements) ? project.placements : [];
+      const seen = new Set();
+      return placements.map((placement) => {
+        const assetId = placement?.assetId;
+        if (!assetId || seen.has(assetId)) return null;
+        seen.add(assetId);
+        const asset = getAsset(assetId);
+        return { id:assetId, name:asset?.name || placement.name || '家居单品', category:asset?.category || '家具', thumbnail:asset?.thumbnail || '' };
+      }).filter(Boolean);
+    };
+
+    function renderFurniture(home) {
+      const items = furnitureForHome(home);
+      const favorites = getFavorites();
+      ui.detailCount.textContent = items.length ? `${items.length} 件可收藏` : '清单同步中';
+      ui.detailFurniture.innerHTML = items.length ? items.map((item) => {
+        const collected = favorites.has(item.id);
+        return `<article class="furniture-item"><span class="furniture-thumb">${item.thumbnail ? `<img src="${escapeText(item.thumbnail)}" alt="" loading="lazy" />` : '⌑'}</span><span class="furniture-meta"><b>${escapeText(item.name)}</b><small>${escapeText(item.category)} · 来自这个空间</small></span><button class="collect-button${collected ? ' is-collected' : ''}" type="button" data-collect-asset="${escapeText(item.id)}">${collected ? '✓ 已收藏' : '+ 收藏'}</button></article>`;
+      }).join('') : '<div class="detail-empty">家具清单正在同步，仍可先进入 3D 参观这个家</div>';
+    }
+
+    function openHomeDetail(home) {
+      detailHome = home;
+      const project = homeProject(home.id);
+      const preview = home.cover?.url || home.coverImage || home.previewImage || project?.shareCover?.url || project?.coverImage || project?.previewImage || '';
+      const name = home.name || project?.name || '我的家';
+      ui.detailTitle.textContent = name;
+      ui.detailScene.innerHTML = preview ? `<img src="${escapeText(preview)}" alt="${escapeText(name)} 3D 缩略图" />` : '';
+      ui.detailEnter3d.href = `../my-home/index.html?home=${encodeURIComponent(home.id)}&mode=locked`;
+      renderFurniture(home);
+      ui.detailSheet.classList.remove('is-full');
+      ui.detailExpand.setAttribute('aria-label', '扩大至整屏');
+      ui.detailExpand.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>';
+      ui.detailSheet.setAttribute('aria-hidden', 'false');
+      requestAnimationFrame(() => {
+        ui.detailBackdrop.classList.add('is-open');
+        ui.detailSheet.classList.add('is-open');
+      });
+    }
+
+    function closeHomeDetail() {
+      ui.detailBackdrop.classList.remove('is-open');
+      ui.detailSheet.classList.remove('is-open', 'is-full');
+      setTimeout(() => {
+        ui.detailSheet.setAttribute('aria-hidden', 'true');
+        detailHome = null;
+      }, 280);
+    }
+
+    function toggleDetailSize() {
+      const full = ui.detailSheet.classList.toggle('is-full');
+      ui.detailExpand.setAttribute('aria-label', full ? '收回半屏' : '扩大至整屏');
+      ui.detailExpand.innerHTML = full
+        ? '<svg viewBox="0 0 24 24"><path d="M9 9H4V4M15 9h5V4M9 15H4v5M15 15h5v5"/></svg>'
+        : '<svg viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>';
+    }
 
     ui.avatar.textContent = friend.avatar || friend.name.slice(0, 1);
     ui.avatar.style.setProperty('--avatar', friend.accent || '#94ad9d');
@@ -142,12 +264,11 @@
       const avatarColor = outgoing ? '#c49a78' : (friend.accent || '#94ad9d');
       if (message.type === 'home_share' && message.home?.id) {
         const home = message.home;
-        const href = `../my-home/index.html?home=${encodeURIComponent(home.id)}&mode=locked`;
-        const preview = homePreview(home.id);
+        const preview = home.cover?.url || home.coverImage || home.previewImage || homePreview(home.id);
         const homeName = home.name || '我的家';
         const roomType = roomTypeLabel(home);
         const subtitle = roomType === '理想家' ? '喜欢这里的家具或户型，可以收藏到你的灵感库' : `喜欢这个${roomType}的家具和布局，可以收藏到你的灵感库`;
-        return `<article class="message ${outgoing ? 'outgoing' : 'incoming'}"><span class="avatar message-avatar" style="--avatar:${escapeText(avatarColor)}">${escapeText(avatar)}</span><div><div class="home-share"><a class="home-card" href="${href}" aria-label="参观 ${escapeText(homeName)}，并收藏喜欢的家具或户型"><div class="home-visual"><div class="home-photo">${preview?`<img src="${escapeText(preview)}" alt="${escapeText(homeName)} 预览" />`:''}</div><span class="home-brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 10.5 8-6.5 8 6.5"/><path d="M6.5 9.2V20h11V9.2"/><circle cx="10" cy="13" r=".8"/><circle cx="14" cy="13" r=".8"/><path d="M10.5 20v-4h3v4"/></svg><b>DreamHome理想家</b></span><span class="home-invite-bubble">来我家<br>一起看看吧！ <em>♥</em></span><img class="home-mascot" src="../../assets/mascot/dreamhome-master-share-v2.png" alt="" aria-hidden="true" /></div><div class="home-copy"><span class="home-eyebrow">邀请你来参观我的</span><b class="home-title" style="--home-title-size:${titleSize(homeName)}px">「${escapeText(homeName)}」</b><div class="home-card-foot"><small>${escapeText(subtitle)}</small><span class="home-cta">一起看看 <i>›</i></span></div></div></a></div><div class="read">${escapeText(timeLabel(message.createdAt))}${outgoing ? ' · 已送达' : ''}</div></div></article>`;
+        return `<article class="message ${outgoing ? 'outgoing' : 'incoming'}"><span class="avatar message-avatar" style="--avatar:${escapeText(avatarColor)}">${escapeText(avatar)}</span><div><div class="home-share"><button class="home-card" type="button" data-home-detail="${escapeText(home.id)}" aria-label="查看 ${escapeText(homeName)} 的详情，并收藏喜欢的家具"><div class="home-visual"><div class="home-photo">${preview?`<img src="${escapeText(preview)}" alt="${escapeText(homeName)} 预览" />`:''}</div><span class="home-brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 10.5 8-6.5 8 6.5"/><path d="M6.5 9.2V20h11V9.2"/><circle cx="10" cy="13" r=".8"/><circle cx="14" cy="13" r=".8"/><path d="M10.5 20v-4h3v4"/></svg><b>DreamHome理想家</b></span><span class="home-invite-bubble">来我家<br>一起看看吧！ <em>♥</em></span><span class="home-mascot-slot"><img class="home-mascot" src="../../assets/mascot/dreamhome-master-share-v2.png" alt="" aria-hidden="true" /></span></div><div class="home-copy"><span class="home-copy-mark star">✦</span><span class="home-copy-mark heart">♥</span><span class="home-copy-mark strokes"></span><span class="home-eyebrow">邀请你来参观我的</span><b class="home-title" style="--home-title-size:${titleSize(homeName)}px">「${escapeText(homeName)}」</b><div class="home-card-foot"><small>${escapeText(subtitle)}</small><span class="home-cta">一起看看 <i>›</i></span></div></div></button></div><div class="read">${escapeText(timeLabel(message.createdAt))}${outgoing ? ' · 已送达' : ''}</div></div></article>`;
       }
       return `<article class="message ${outgoing ? 'outgoing' : 'incoming'}"><span class="avatar message-avatar" style="--avatar:${escapeText(avatarColor)}">${escapeText(avatar)}</span><div><div class="bubble">${escapeText(message.text)}</div><div class="read">${escapeText(timeLabel(message.createdAt))}</div></div></article>`;
     }
@@ -166,6 +287,25 @@
     }
 
     ui.input.addEventListener('input', () => { ui.send.disabled = !ui.input.value.trim(); });
+    ui.messages.addEventListener('click', (event) => {
+      const card = event.target.closest('[data-home-detail]');
+      if (!card) return;
+      const home = [...getConversation(friend.id)].reverse().find((message) => message.type === 'home_share' && message.home?.id === card.dataset.homeDetail)?.home;
+      if (home) openHomeDetail(home);
+    });
+    ui.detailBackdrop.addEventListener('click', closeHomeDetail);
+    ui.detailClose.addEventListener('click', closeHomeDetail);
+    ui.detailExpand.addEventListener('click', toggleDetailSize);
+    ui.detailFurniture.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-collect-asset]');
+      if (!button || !detailHome) return;
+      const favorites = getFavorites();
+      const assetId = button.dataset.collectAsset;
+      if (favorites.has(assetId)) favorites.delete(assetId); else favorites.add(assetId);
+      setFavorites(favorites);
+      renderFurniture(detailHome);
+    });
+    document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && detailHome) closeHomeDetail(); });
     ui.composer.addEventListener('submit', (event) => {
       event.preventDefault();
       const text = ui.input.value.trim();
