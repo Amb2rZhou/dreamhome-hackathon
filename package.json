@@ -6,6 +6,8 @@
   "scripts": {
     "audit:assets": "node tools/audit-static-assets.mjs --write",
     "check:asset-paths": "node tools/audit-static-assets.mjs --check",
+    "check:performance-budget": "node tools/check-performance-budget.mjs",
+    "check:release-data": "node tools/check-release-data.mjs",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "build:discover": "tsc -b && vite build --config vite.discover.config.ts && cp -R public/. web/",

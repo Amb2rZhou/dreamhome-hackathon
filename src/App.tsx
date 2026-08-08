@@ -28,6 +28,11 @@ import {
 import { clientPointInElement } from './screenSpace'
 import { hasSeenFeedOnboarding, rememberFeedOnboarding } from './onboardingState'
 import { createFeedRuntimeState, feedRuntimeReducer, type FeedRuntimeState } from './feedState'
+import {
+  recordFeedMediaEvent,
+  recordFeedSwitchStart,
+  startDreamHomePerformanceMonitoring,
+} from './performanceMonitor'
 import './App.css'
 
 interface State {
@@ -780,6 +785,10 @@ function App() {
   }, [])
 
   useEffect(() => {
+    return startDreamHomePerformanceMonitoring()
+  }, [])
+
+  useEffect(() => {
     const v = videoRef.current
     if (!v) return
     if (state.videoPlaying) {
@@ -822,6 +831,7 @@ function App() {
     if (state.feed.phase !== 'browse' || state.feed.overlay !== 'none') return
     const nextIndex = (state.feed.index + direction + FEED_VIDEOS.length) % FEED_VIDEOS.length
     const nextVideo = FEED_VIDEOS[nextIndex]
+    recordFeedSwitchStart(activeFeedVideo.id, nextVideo.id)
     setCollectionMascotMode('none')
     dispatch({
       type: 'CHANGE_FEED_VIDEO',
@@ -1050,6 +1060,8 @@ function App() {
           playsInline
           autoPlay
           preload="metadata"
+          onLoadedData={() => recordFeedMediaEvent(activeFeedVideo.id, 'loadeddata')}
+          onCanPlay={() => recordFeedMediaEvent(activeFeedVideo.id, 'canplay')}
           onLoadedMetadata={(event) => {
             const target = pendingFeedTargetRef.current
             if (!target || target.videoId !== activeFeedVideo.id) return

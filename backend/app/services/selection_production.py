@@ -233,5 +233,5 @@ def start_selection_production(
         },
     )
     db.update_asset(asset_id, job_id=job.job_id)
-    db.bind_track_asset(track_id, asset_id)
+    db.bind_track_asset(track_id, asset_id, binding_source="production_generation")
     return asset_id, job

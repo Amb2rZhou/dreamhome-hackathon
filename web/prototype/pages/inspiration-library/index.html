@@ -53,7 +53,7 @@
     .visual--floorplan{background:linear-gradient(135deg,#f7ecd5,#fffdf6)}.visual--floorplan canvas{display:block;width:100%;height:100%;background-size:cover;background-position:center;background-repeat:no-repeat}
     .furniture-tabs { display:flex; gap:6px; overflow-x:auto; margin:0 -2px; padding:1px 3px 9px; scrollbar-width:none; }.furniture-tabs::-webkit-scrollbar{display:none}.furniture-tab{flex:0 0 auto;border:1px solid rgba(110,132,107,.2);border-radius:999px;padding:5px 9px;background:rgba(255,255,255,.62);color:var(--dh-fg-secondary);font:inherit;font-size:10px;font-weight:var(--dh-font-weight-bold);cursor:pointer}.furniture-tab[aria-selected="true"]{border-color:var(--dh-color-sage-600);background:var(--dh-color-sage-600);color:white}
     .furniture-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px 7px; }.furniture-card{min-width:0;border:0;padding:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.furniture-card .component-visual{height:62px}.furniture-card b{display:block;margin:5px 1px 0;overflow:hidden;font-size:9px;font-weight:var(--dh-font-weight-bold);text-overflow:ellipsis;white-space:nowrap}.visual--furniture{background:linear-gradient(145deg,#f7efe0,#fffaf2)}.object{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);background:var(--object);box-shadow:inset 0 8px rgba(255,255,255,.18)}.object--sofa{width:47px;height:22px;border-radius:12px 12px 5px 5px}.object--sofa::before{content:"";position:absolute;left:9px;top:-12px;width:29px;height:16px;border-radius:9px 9px 3px 3px;background:var(--accent)}.object--chair{width:25px;height:23px;border-radius:7px 7px 4px 4px}.object--chair::before{content:"";position:absolute;left:4px;top:-14px;width:17px;height:18px;border-radius:7px 7px 2px 2px;background:var(--accent)}.object--table{width:42px;height:15px;border-radius:50%;bottom:18px}.object--table::before{content:"";position:absolute;left:19px;top:12px;width:4px;height:20px;background:var(--accent)}.object--lamp{width:4px;height:36px;border-radius:2px;bottom:9px}.object--lamp::before{content:"";position:absolute;left:-10px;top:-10px;width:24px;height:13px;border-radius:50% 50% 3px 3px;background:var(--accent)}.object--bed{width:46px;height:25px;border-radius:5px}.object--bed::before{content:"";position:absolute;left:5px;top:4px;width:35px;height:10px;border-radius:4px;background:var(--accent)}.object--cabinet{width:39px;height:29px;border-radius:3px}.object--plant{width:22px;height:23px;border-radius:45% 55% 38% 62%;background:var(--accent)}.object--plant::before{content:"";position:absolute;left:-7px;top:-8px;width:15px;height:22px;border-radius:50% 0 50% 0;background:var(--object)}.all-card{display:grid;place-items:center;height:62px;align-self:start;border:1px dashed rgba(150,112,58,.5)!important;border-radius:8px!important;background:rgba(245,236,215,.52)!important;color:var(--dh-color-sage-800)!important;font-size:10px;font-weight:var(--dh-font-weight-heavy);text-align:center}.all-card span{max-width:46px}
-    .catalog-toolbar{display:grid;grid-template-columns:64px 1fr 64px;align-items:center}.catalog-toolbar h2{margin:0;font-size:16px;font-weight:var(--dh-font-weight-heavy);text-align:center;white-space:nowrap}.catalog-toolbar .catalog-back{justify-self:start;font-size:30px;line-height:1;padding:0 10px 0 2px;margin:-4px 0;color:var(--dh-color-sage-700)}.catalog-manage{justify-self:end;white-space:nowrap;border:1px solid rgba(110,132,107,.32);border-radius:999px;padding:5px 13px;background:rgba(255,255,255,.82);color:var(--dh-color-sage-700);font:inherit;font-size:11px;font-weight:var(--dh-font-weight-heavy);cursor:pointer}.catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px}.catalog-grid .component-card{min-width:0}.catalog-grid .component-visual{height:86px}.empty-state{padding:24px 10px;text-align:center;color:var(--dh-fg-secondary);font-size:12px}.toast{position:absolute;z-index:40;left:50%;bottom:78px;transform:translateX(-50%) translateY(8px);opacity:0;padding:9px 12px;border-radius:999px;background:rgba(29,36,31,.9);color:white;font-size:11px;font-weight:var(--dh-font-weight-semibold);pointer-events:none;transition:.2s ease}.toast.show{opacity:1;transform:translateX(-50%)}
+    .catalog-toolbar{display:grid;grid-template-columns:64px 1fr 64px;align-items:center}.catalog-toolbar h2{margin:0;font-size:16px;font-weight:var(--dh-font-weight-heavy);text-align:center;white-space:nowrap}.catalog-toolbar .catalog-back{justify-self:start;font-size:30px;line-height:1;padding:0 10px 0 2px;margin:-4px 0;color:var(--dh-color-sage-700)}.catalog-manage{justify-self:end;white-space:nowrap;border:1px solid rgba(110,132,107,.32);border-radius:999px;padding:5px 13px;background:rgba(255,255,255,.82);color:var(--dh-color-sage-700);font:inherit;font-size:11px;font-weight:var(--dh-font-weight-heavy);cursor:pointer}.catalog-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 12px}.catalog-filter{min-width:0;height:31px;padding:0 6px;border:1px solid rgba(110,132,107,.26);border-radius:9px;background:rgba(255,255,255,.92);color:var(--dh-fg-secondary);font:inherit;font-size:10px;font-weight:var(--dh-font-weight-semibold)}.catalog-result-count{grid-column:1/-1;margin:-1px 1px 0;color:var(--dh-fg-muted);font-size:9px}.catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px}.catalog-grid .component-card{min-width:0}.catalog-grid .component-visual{height:86px}.empty-state{padding:24px 10px;text-align:center;color:var(--dh-fg-secondary);font-size:12px}.toast{position:absolute;z-index:40;left:50%;bottom:78px;transform:translateX(-50%) translateY(8px);opacity:0;padding:9px 12px;border-radius:999px;background:rgba(29,36,31,.9);color:white;font-size:11px;font-weight:var(--dh-font-weight-semibold);pointer-events:none;transition:.2s ease}.toast.show{opacity:1;transform:translateX(-50%)}
     /* 选择模式：勾选框 + 平台资产禁用 */
     .component-card[data-selectable]{cursor:pointer}.select-check{position:absolute;z-index:4;right:4px;top:4px;width:20px;height:20px;border:2px solid #fff;border-radius:50%;background:rgba(29,36,31,.35);box-shadow:0 1px 4px rgba(44,59,45,.3);display:grid;place-items:center;color:#fff;font-size:12px;line-height:1}.component-card[data-selected="true"] .select-check{background:var(--dh-color-sage-600)}.component-card--locked{opacity:.4}.selecting .favorite-control{display:none}
     .select-bar{position:absolute;z-index:45;left:16px;right:16px;bottom:26px;display:flex;gap:10px}.select-bar[hidden]{display:none}.select-bar button{flex:1;height:42px;border-radius:13px;font:inherit;font-size:13px;font-weight:var(--dh-font-weight-bold);cursor:pointer}.select-cancel{border:1px solid rgba(110,132,107,.32);background:rgba(255,255,255,.94);color:var(--dh-fg-secondary)}.select-confirm{border:0;background:#be6959;color:#fff;box-shadow:0 8px 18px rgba(150,70,55,.3)}.select-confirm[disabled]{opacity:.45;box-shadow:none;cursor:not-allowed}
@@ -145,7 +145,7 @@
     let activeFurnitureCategory = 'all';
     let toastTimer = null;
     // 当前 catalog 上下文 + 选择模式状态（保持简洁：单一 state，渲染读它）
-    const view = { kind: '', category: '', favoriteOnly: false };
+    const view = { kind: '', category: '', favoriteOnly: false, filters: { color: '', material: '', style: '' } };
     const select = { on: false, ids: new Set() };
 
     // 仅供把当前浏览器的收藏选择固化为演示默认值；普通访问不会显示或触发。
@@ -178,6 +178,8 @@
       return `<article class="${className}" data-asset="${asset.id}" tabindex="0">${favoriteButton(asset)}${sourceBadge(asset)}${visual(asset)}<b>${asset.name}</b></article>`;
     };
     const openCatalog = (kind, category = '') => { location.hash = `catalog=${kind}${category ? `:${encodeURIComponent(category)}` : ''}`; }; // 中文子类需编码
+    const facetValues = (assets, key) => [...new Set(assets.flatMap((asset) => asset[key] || []).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'zh-CN'));
+    const facetSelect = (label, filterKey, values) => `<select class="catalog-filter" data-filter="${filterKey}" aria-label="按${label}筛选"><option value="">${label} · 全部</option>${values.map((value) => `<option value="${value}"${view.filters[filterKey] === value ? ' selected' : ''}>${value}</option>`).join('')}</select>`;
     // ---------- 顶部 banner 轮播（情绪引导卡 + 平台案例卡；真机用 <swiper circular>） ----------
     // 案例卡复用对应 1:1 重建场景的真实封面，确保入口预览与进入后的房间一致。
     const BANNER_CASES = [
@@ -251,6 +253,11 @@
       const { kind, category, favoriteOnly } = view;
       let assets = getAssets(kind, category);
       if (favoriteOnly) assets = assets.filter((asset) => getFavorites().has(asset.id));
+      const facetSource = assets;
+      if (kind === 'furniture') {
+        const { color, material, style } = view.filters;
+        assets = assets.filter((asset) => (!color || asset.colors?.includes(color)) && (!material || asset.materials?.includes(material)) && (!style || asset.styles?.includes(style)));
+      }
       const title = favoriteOnly ? '已收藏' : `${labelByKind[kind]}${category ? ` · ${FURNITURE_CATEGORIES.find((item) => item.id === category)?.label || ''}` : ''}`;
       // 管理按钮：仅家具类细分品类的全部页；选择模式下隐藏管理按钮，底部出现「取消/确认删除」
       const canManage = kind === 'furniture' && !favoriteOnly && !select.on; // 家具类「全部」页也可管理（category 为空时同样允许）
@@ -262,7 +269,9 @@
       libraryHeader.hidden = false; libraryHeader.classList.add('is-catalog'); libraryHeader.innerHTML = toolbar;
       mainTabbar.hidden = true;
       disposeTemplatePreviews(catalog);
-      catalog.innerHTML = assets.length ? `<div class="catalog-grid">${assets.map((asset) => card(asset)).join('')}</div>` : '<p class="empty-state">还没有收藏组件。点击心形即可收藏。</p>';
+      const filters = kind === 'furniture' ? `<div class="catalog-filters" aria-label="家具标签筛选">${facetSelect('颜色', 'color', facetValues(facetSource, 'colors'))}${facetSelect('材质', 'material', facetValues(facetSource, 'materials'))}${facetSelect('风格', 'style', facetValues(facetSource, 'styles'))}<span class="catalog-result-count">找到 ${assets.length} 件真实标签匹配组件</span></div>` : '';
+      const emptyCopy = favoriteOnly && !Object.values(view.filters).some(Boolean) ? '还没有收藏组件。点击心形即可收藏。' : '没有符合当前标签组合的组件。';
+      catalog.innerHTML = `${filters}${assets.length ? `<div class="catalog-grid">${assets.map((asset) => card(asset)).join('')}</div>` : `<p class="empty-state">${emptyCopy}</p>`}`;
       renderTemplatePreviews(catalog);
       selectBar.hidden = !select.on;
       confirmDelete.disabled = select.ids.size === 0;
@@ -513,6 +522,12 @@
       if (asset) openViewer(asset.dataset.asset);
     });
     window.addEventListener('hashchange', route);
+    catalog.addEventListener('change', (event) => {
+      const filter = event.target.closest('[data-filter]');
+      if (!filter) return;
+      view.filters[filter.dataset.filter] = filter.value;
+      renderCatalog();
+    });
     renderBanner();
     route();
   </script>

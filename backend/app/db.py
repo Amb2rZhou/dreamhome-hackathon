@@ -278,12 +278,31 @@ def get_track(track_id: str) -> Optional[dict]:
     return r
 
 
-def bind_track_asset(track_id: str, asset_id: str) -> None:
-    _exec("UPDATE tracks SET asset_id=? WHERE track_id=?", (asset_id, track_id))
+def bind_track_asset(track_id: str, asset_id: str, *,
+                     binding_review_status: str = "unreviewed",
+                     binding_source: str = "manual",
+                     binding_confidence: Optional[float] = None) -> None:
+    """Bind a track to a canonical asset and invalidate stale review metadata.
+
+    A binding is a versioned relation, not a property of the canonical asset.
+    Rebinding therefore bumps ``binding_version`` even when legacy callers do
+    not supply quality metadata.  Confidence is deliberately nullable: manual
+    confirmation is not an AI score.
+    """
+    _exec(
+        "UPDATE tracks SET asset_id=?,binding_confidence=?,"
+        "binding_review_status=?,binding_version=binding_version+1,"
+        "binding_source=? WHERE track_id=?",
+        (asset_id, binding_confidence, binding_review_status, binding_source, track_id),
+    )
 
 
 def rebind_tracks(from_asset: str, to_asset: str) -> None:
-    _exec("UPDATE tracks SET asset_id=? WHERE asset_id=?", (to_asset, from_asset))
+    _exec(
+        "UPDATE tracks SET asset_id=?,binding_version=binding_version+1,"
+        "binding_source='catalog_merge' WHERE asset_id=?",
+        (to_asset, from_asset),
+    )
 
 
 # ---- assets ----

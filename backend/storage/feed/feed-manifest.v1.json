@@ -15,6 +15,10 @@
   },
   "source_snapshot": [
     {
+      "path": "backend/storage/feed/supplemental-assets.v1.json",
+      "sha256": "1190e5bf029125e6a073ea4030cb84d134a8d6b83da679b7c846919bff27bfbf"
+    },
+    {
       "path": "backend/storage/scenes/vid_40734d7f2e6c.json",
       "sha256": "f3361be9580c1dd041c8ee7067a6e50013f065bcdcac1c5884bd77de83bb11c9"
     },
@@ -23,16 +27,20 @@
       "sha256": "5680884f10a42d44f95e7929d6e3fa8cf7b3eb711e4032dfe4566d06466f8c33"
     },
     {
+      "path": "backend/storage/scenes/vid_91fe552c5f7d.json",
+      "sha256": "110a73edebae18760e4794e2737e11b4abacae2b70ad4e3f21ee047ed5589bed"
+    },
+    {
       "path": "public/videos/home-1.mp4",
       "sha256": "1b15d4da5002889c9a88c95f5906cd98983cd30e59bcbdc16a07ffc6aeb61ec9"
     },
     {
       "path": "src/availableAssets.generated.ts",
-      "sha256": "b826d78b5500e133d6d3e8d2901f3f31fae1afce433fe2b4d8984a45075654a1"
+      "sha256": "3409f5a9c83ae3b5ec0d709626aa743391dc3bfeed9b9ae074d7c4413afe06d1"
     },
     {
       "path": "src/types.ts",
-      "sha256": "f2ca9fbb8a2d2817c73d7bce4756f40bd0f354819456fd9179359464bc075bca"
+      "sha256": "2ddf5c7cbc3f4698889f5106518fc3c817c0282595a0c41c8648577698144bac"
     },
     {
       "path": "web/prototype/assets/videos/vid_182cbf77954d.mp4",
@@ -151,7 +159,9 @@
       "feed_source": "amber",
       "duration": 14.034,
       "media_path": "web/prototype/assets/videos/vid_91fe552c5f7d.mp4",
-      "scene_refs": [],
+      "scene_refs": [
+        "scene:vid_91fe552c5f7d"
+      ],
       "same_home_template_refs": [
         "video-vid_91fe552c5f7d"
       ]
@@ -520,6 +530,264 @@
             ],
             "rotYDeg": -90,
             "targetW": 0.9
+          }
+        }
+      ]
+    },
+    {
+      "scene_id": "scene:vid_91fe552c5f7d",
+      "video_id": "vid_91fe552c5f7d",
+      "title": "48平长厅公寓",
+      "source_path": "backend/storage/scenes/vid_91fe552c5f7d.json",
+      "room": {
+        "w": 4.8,
+        "d": 9.2,
+        "h": 2.8
+      },
+      "configuration": {
+        "light": "day",
+        "view": "day_city",
+        "estimated": true,
+        "windows": [
+          {
+            "id": "main-floor-window",
+            "wall": "back",
+            "type": "floor",
+            "style": "plain",
+            "center": 0,
+            "width": 4.2,
+            "height": 2.55,
+            "sill": 0
+          }
+        ]
+      },
+      "items": [
+        {
+          "asset_id": "ast_7a6844fdf7e6",
+          "track_id": null,
+          "source_track_label": null,
+          "t_best": null,
+          "placement": {
+            "pos": [
+              -0.55,
+              0,
+              2.65
+            ],
+            "rotYDeg": 0,
+            "targetW": 1.45
+          }
+        },
+        {
+          "asset_id": "ast_717c98fe0e21",
+          "track_id": null,
+          "source_track_label": null,
+          "t_best": null,
+          "placement": {
+            "pos": [
+              -0.55,
+              0,
+              2.05
+            ],
+            "rotYDeg": 0,
+            "targetW": 0.48
+          }
+        },
+        {
+          "asset_id": "ast_b914f61b3e04",
+          "track_id": null,
+          "source_track_label": null,
+          "t_best": null,
+          "placement": {
+            "pos": [
+              -0.55,
+              0,
+              3.25
+            ],
+            "rotYDeg": 180,
+            "targetW": 0.48
+          }
+        },
+        {
+          "asset_id": "ast_ec05acc016d9",
+          "track_id": null,
+          "source_track_label": null,
+          "t_best": null,
+          "placement": {
+            "pos": [
+              0.15,
+              2.72,
+              -1.35
+            ],
+            "rotYDeg": 0,
+            "targetW": 1.05,
+            "mount": "ceiling"
+          }
+        },
+        {
+          "asset_id": "ast_febb8b909137",
+          "track_id": null,
+          "source_track_label": null,
+          "t_best": null,
+          "placement": {
+            "pos": [
+              -2.12,
+              0,
+              2.65
+            ],
+            "rotYDeg": 90,
+            "targetW": 1.1
+          }
+        },
+        {
+          "asset_id": "ast_e8e7b81eba5c",
+          "track_id": null,
+          "source_track_label": null,
+          "t_best": null,
+          "placement": {
+            "pos": [
+              -1.78,
+              0,
+              -1.35
+            ],
+            "rotYDeg": 90,
+            "targetW": 2.25
+          }
+        },
+        {
+          "asset_id": "ast_c0274a819f34",
+          "track_id": null,
+          "source_track_label": null,
+          "t_best": null,
+          "placement": {
+            "pos": [
+              0.1,
+              0,
+              -1.35
+            ],
+            "rotYDeg": 0,
+            "targetW": 1.05
+          }
+        },
+        {
+          "asset_id": "ast_5229f072c636",
+          "track_id": null,
+          "source_track_label": null,
+          "t_best": null,
+          "placement": {
+            "pos": [
+              0.1,
+              0.01,
+              -1.35
+            ],
+            "rotYDeg": 0,
+            "targetW": 1.7
+          }
+        },
+        {
+          "asset_id": "ast_eea00f986e60",
+          "track_id": null,
+          "source_track_label": null,
+          "t_best": null,
+          "placement": {
+            "pos": [
+              2.12,
+              0,
+              -1.35
+            ],
+            "rotYDeg": -90,
+            "targetW": 1.9
+          }
+        },
+        {
+          "asset_id": "ast_4aec4a8b4da8",
+          "track_id": null,
+          "source_track_label": null,
+          "t_best": null,
+          "placement": {
+            "pos": [
+              1.85,
+              0,
+              -2.85
+            ],
+            "rotYDeg": 0,
+            "targetW": 0.65
+          }
+        },
+        {
+          "asset_id": "ast_55361e0c8415",
+          "track_id": "trk_44e1f964cc97",
+          "source_track_label": "trk_44e1f964cc97",
+          "t_best": 4.5,
+          "placement": {
+            "pos": [
+              -1.85,
+              0,
+              -1.25
+            ],
+            "rotYDeg": 0,
+            "targetW": 0.7
+          }
+        },
+        {
+          "asset_id": "ast_3ae34f96cd4e",
+          "track_id": "trk_880f00d3c289",
+          "source_track_label": "trk_880f00d3c289",
+          "t_best": 5.0,
+          "placement": {
+            "pos": [
+              1.88,
+              0.55,
+              0.75
+            ],
+            "rotYDeg": 0,
+            "targetW": 0.4,
+            "mount": "surface"
+          }
+        },
+        {
+          "asset_id": "ast_8016d7db99e3",
+          "track_id": "trk_aaa04eb1a03a",
+          "source_track_label": "trk_aaa04eb1a03a",
+          "t_best": 10.0,
+          "placement": {
+            "pos": [
+              1.75,
+              0,
+              -3.25
+            ],
+            "rotYDeg": 0,
+            "targetW": 0.55
+          }
+        },
+        {
+          "asset_id": "ast_42a4923c5286",
+          "track_id": "trk_e4ec96242f0a",
+          "source_track_label": "trk_e4ec96242f0a",
+          "t_best": 10.5,
+          "placement": {
+            "pos": [
+              -1.75,
+              0,
+              -4.0
+            ],
+            "rotYDeg": 0,
+            "targetW": 0.7
+          }
+        },
+        {
+          "asset_id": "ast_0b091395b9c2",
+          "track_id": null,
+          "source_track_label": null,
+          "t_best": null,
+          "placement": {
+            "pos": [
+              1.82,
+              0.72,
+              1.15
+            ],
+            "rotYDeg": 0,
+            "targetW": 0.5,
+            "mount": "surface"
           }
         }
       ]
@@ -1715,6 +1983,29 @@
       "record_source": "web/prototype/pages/shared/library-assets.generated.js"
     },
     {
+      "asset_id": "ast_339dc6e870de",
+      "name": "吊扇",
+      "status": "ready",
+      "labels": {
+        "category": "家电",
+        "sub": "吊扇",
+        "colors": [],
+        "materials": [],
+        "styles": []
+      },
+      "media": {
+        "model_3d": "/prototype/assets/demo-backend/models-v1/e91ce9b7d8744192b417d119b280c536.glb",
+        "thumbnail": "/prototype/assets/renders/ast_339dc6e870de.png"
+      },
+      "source": {
+        "source_type": "video_selection",
+        "video_id": "vid_5f32a0ac954a",
+        "track_id": "trk_8ea596ed91bc",
+        "t_best": 6.0
+      },
+      "record_source": "backend/storage/feed/supplemental-assets.v1.json"
+    },
+    {
       "asset_id": "ast_365d3a551e24",
       "name": "餐椅",
       "status": "ready",
@@ -2822,6 +3113,31 @@
       "record_source": "web/prototype/pages/shared/library-assets.generated.js"
     },
     {
+      "asset_id": "ast_6410374831cb",
+      "name": "小收纳柜",
+      "status": "ready",
+      "labels": {
+        "category": "柜子",
+        "sub": "收纳柜",
+        "colors": [
+          "白色"
+        ],
+        "materials": [],
+        "styles": []
+      },
+      "media": {
+        "model_3d": "/prototype/assets/demo-backend/models-v1/cb8f0bfd04684544a011c1bd521184ae.glb",
+        "thumbnail": "/prototype/assets/renders/ast_6410374831cb.png"
+      },
+      "source": {
+        "source_type": "video_selection",
+        "video_id": "vid_40734d7f2e6c",
+        "track_id": null,
+        "t_best": 6.7
+      },
+      "record_source": "backend/storage/feed/supplemental-assets.v1.json"
+    },
+    {
       "asset_id": "ast_655a4e7f4daf",
       "name": "落地灯",
       "status": "ready",
@@ -2855,6 +3171,31 @@
         "t_best": 11
       },
       "record_source": "web/prototype/pages/shared/library-assets.generated.js"
+    },
+    {
+      "asset_id": "ast_665e55cee687",
+      "name": "原木色衣柜",
+      "status": "ready",
+      "labels": {
+        "category": "柜子",
+        "sub": "衣柜",
+        "colors": [
+          "原木色"
+        ],
+        "materials": [],
+        "styles": []
+      },
+      "media": {
+        "model_3d": "/prototype/assets/demo-backend/models-v1/c09fb8cb849e46b99085b51d5a1baa87.glb",
+        "thumbnail": "/prototype/assets/renders/ast_665e55cee687.png"
+      },
+      "source": {
+        "source_type": "video_selection",
+        "video_id": "vid_40734d7f2e6c",
+        "track_id": null,
+        "t_best": 0.0
+      },
+      "record_source": "backend/storage/feed/supplemental-assets.v1.json"
     },
     {
       "asset_id": "ast_670765d4c8c6",
@@ -3568,6 +3909,29 @@
         "t_best": 9
       },
       "record_source": "web/prototype/pages/shared/library-assets.generated.js"
+    },
+    {
+      "asset_id": "ast_87dc36b29526",
+      "name": "空调",
+      "status": "ready",
+      "labels": {
+        "category": "家电",
+        "sub": "空调",
+        "colors": [],
+        "materials": [],
+        "styles": []
+      },
+      "media": {
+        "model_3d": "/prototype/assets/demo-backend/models-v1/f13554299f7643eb872e1a36fa4e462d.glb",
+        "thumbnail": "/prototype/assets/renders/ast_87dc36b29526.png"
+      },
+      "source": {
+        "source_type": "video_selection",
+        "video_id": "vid_5f32a0ac954a",
+        "track_id": "trk_ec91648826f0",
+        "t_best": 5.0
+      },
+      "record_source": "backend/storage/feed/supplemental-assets.v1.json"
     },
     {
       "asset_id": "ast_88ceb53354e6",
@@ -4813,6 +5177,31 @@
       "record_source": "web/prototype/pages/shared/library-assets.generated.js"
     },
     {
+      "asset_id": "ast_c0274a819f34",
+      "name": "圆桌",
+      "status": "ready",
+      "labels": {
+        "category": "桌子",
+        "sub": "圆桌",
+        "colors": [],
+        "materials": [
+          "玻璃"
+        ],
+        "styles": []
+      },
+      "media": {
+        "model_3d": "/prototype/assets/demo-backend/models-v1/8ee9151906624333a88a62ab954a4560.glb",
+        "thumbnail": "/prototype/assets/renders/ast_c0274a819f34.png"
+      },
+      "source": {
+        "source_type": "video_selection",
+        "video_id": "vid_5f32a0ac954a",
+        "track_id": "trk_f8f885731e10",
+        "t_best": 7.5
+      },
+      "record_source": "backend/storage/feed/supplemental-assets.v1.json"
+    },
+    {
       "asset_id": "ast_c2313401d014",
       "name": "户外木椅",
       "status": "ready",
@@ -5150,6 +5539,29 @@
         "t_best": 25
       },
       "record_source": "web/prototype/pages/shared/library-assets.generated.js"
+    },
+    {
+      "asset_id": "ast_cf21f0f0a02c",
+      "name": "飘窗沙发",
+      "status": "ready",
+      "labels": {
+        "category": "沙发",
+        "sub": "飘窗沙发",
+        "colors": [],
+        "materials": [],
+        "styles": []
+      },
+      "media": {
+        "model_3d": "/prototype/assets/demo-backend/models-v1/0ce5dfb3406241c8b790a2426fcbacc7.glb",
+        "thumbnail": "/prototype/assets/renders/ast_cf21f0f0a02c.png"
+      },
+      "source": {
+        "source_type": "video_selection",
+        "video_id": "vid_40734d7f2e6c",
+        "track_id": null,
+        "t_best": 2.6
+      },
+      "record_source": "backend/storage/feed/supplemental-assets.v1.json"
     },
     {
       "asset_id": "ast_d1831cd30c87",
@@ -5759,6 +6171,29 @@
       "record_source": "web/prototype/pages/shared/library-assets.generated.js"
     },
     {
+      "asset_id": "ast_ec05acc016d9",
+      "name": "吊灯",
+      "status": "ready",
+      "labels": {
+        "category": "灯具",
+        "sub": "吊灯",
+        "colors": [],
+        "materials": [],
+        "styles": []
+      },
+      "media": {
+        "model_3d": "/prototype/assets/demo-backend/models-v1/6c6cbb1474d048419dfebd047cc66b7b.glb",
+        "thumbnail": "/prototype/assets/renders/ast_ec05acc016d9.png"
+      },
+      "source": {
+        "source_type": "video_selection",
+        "video_id": "vid_91fe552c5f7d",
+        "track_id": null,
+        "t_best": 0.0
+      },
+      "record_source": "backend/storage/feed/supplemental-assets.v1.json"
+    },
+    {
       "asset_id": "ast_ec839451b7ac",
       "name": "吊灯",
       "status": "ready",
@@ -6135,6 +6570,29 @@
       "record_source": "web/prototype/pages/shared/library-assets.generated.js"
     },
     {
+      "asset_id": "ast_f7189ad0a9a2",
+      "name": "电视柜",
+      "status": "ready",
+      "labels": {
+        "category": "柜子",
+        "sub": "电视柜",
+        "colors": [],
+        "materials": [],
+        "styles": []
+      },
+      "media": {
+        "model_3d": "/prototype/assets/demo-backend/models-v1/d9dd02fc30de42a2b4ee55865e45279d.glb",
+        "thumbnail": "/prototype/assets/renders/ast_f7189ad0a9a2.png"
+      },
+      "source": {
+        "source_type": "video_selection",
+        "video_id": "vid_5f32a0ac954a",
+        "track_id": "trk_0d0dd79677ca",
+        "t_best": 6.5
+      },
+      "record_source": "backend/storage/feed/supplemental-assets.v1.json"
+    },
+    {
       "asset_id": "ast_fa4fe463a624",
       "name": "边柜",
       "status": "ready",
@@ -6233,6 +6691,29 @@
         "t_best": 55.5
       },
       "record_source": "web/prototype/pages/shared/library-assets.generated.js"
+    },
+    {
+      "asset_id": "ast_febb8b909137",
+      "name": "边柜",
+      "status": "ready",
+      "labels": {
+        "category": "柜子",
+        "sub": "边柜",
+        "colors": [],
+        "materials": [],
+        "styles": []
+      },
+      "media": {
+        "model_3d": "/prototype/assets/demo-backend/models-v1/411a1f771e0f480ea14cf41592cab811.glb",
+        "thumbnail": "/prototype/assets/renders/ast_febb8b909137.png"
+      },
+      "source": {
+        "source_type": "video_selection",
+        "video_id": "vid_91fe552c5f7d",
+        "track_id": null,
+        "t_best": 0.0
+      },
+      "record_source": "backend/storage/feed/supplemental-assets.v1.json"
     },
     {
       "asset_id": "ast_ff3bb7d4a5ec",
@@ -9635,5 +10116,5 @@
       ]
     }
   ],
-  "content_version": "8aea10d756befa32eb3f9352217716f2d3b0a3f3a3a87a048d471a76d8f34d88"
+  "content_version": "03e24fa28f0b46e1c70d6a7fd06aacb97bd73c7358ddc4926e3510d23724815c"
 }

@@ -41,10 +41,17 @@ class FeedManifestTests(unittest.TestCase):
 
         self.assertEqual(first, second)
         self.assertFalse(first["source_policy"]["runtime_database_available"])
-        self.assertEqual(len(first["canonical_assets"]), 169)
+        self.assertEqual(len(first["canonical_assets"]), 178)
         self.assertEqual(len(first["appearances"]), 195)
         self.assertEqual(len(first["tracks"]), 0)
         self.assertEqual(len(first["same_home_templates"]), 2)
+        self.assertEqual(len(first["scenes"]), 3)
+        canonical_ids = {item["asset_id"] for item in first["canonical_assets"]}
+        self.assertTrue({
+            "ast_665e55cee687", "ast_cf21f0f0a02c", "ast_6410374831cb",
+            "ast_87dc36b29526", "ast_339dc6e870de", "ast_f7189ad0a9a2",
+            "ast_ec05acc016d9", "ast_febb8b909137",
+        }.issubset(canonical_ids))
 
     def test_validator_finds_all_required_quality_failures(self):
         manifest = {

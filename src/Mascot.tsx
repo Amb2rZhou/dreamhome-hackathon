@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { MascotState } from './types'
-import { BlackKeyImage, BlackKeyVideo } from './BlackKeyMedia'
+import { BlackKeyVideo } from './BlackKeyMedia'
 import { hasSeenFeedOnboarding } from './onboardingState'
 import './Mascot.css'
 
@@ -331,21 +331,15 @@ export function Mascot({
         </div>
       )}
       <div className={`mascot-media-frame ${collectionMode !== 'none' ? 'is-collecting' : ''}`}>
-        {collectionMode !== 'none' ? (
-          <BlackKeyImage
-            key={collectionMode === 'collecting' ? 'collect' : 'collect-ready'}
-            className="mascot-collection-figure"
-            src={collectionMode === 'collecting' ? '/mascot-motion/collect.png' : '/mascot-motion/collect-ready.png'}
-            alt={collectionMode === 'collecting' ? '包工球推着购物车' : '包工球准备接收家具'}
-          />
-        ) : !videoFailed ? (
+        {!videoFailed ? (
           <BlackKeyVideo
             key={`${motion}-${clip.src}`}
             className="mascot-motion-layer mascot-motion-layer--incoming"
             src={clip.src}
             loop={clip.loop}
-            // Exactly one dynamic mascot is mounted. The current clip is
-            // replaced atomically so transitions cannot double the character.
+            // Collection state is expressed by the surrounding overlay and
+            // copy. It deliberately does not replace this media node, so a
+            // drag cannot remount or duplicate the animated mascot.
             preload="metadata"
             onEnded={onMotionEnded}
             onError={() => setVideoFailed(true)}

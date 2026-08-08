@@ -6,7 +6,6 @@ vi.mock('./BlackKeyMedia', () => ({
   BlackKeyVideo: ({ onError }: { onError?: () => void }) => (
     <button type="button" data-testid="animated-mascot" onClick={onError}>animated</button>
   ),
-  BlackKeyImage: ({ alt }: { alt: string }) => <span role="img" aria-label={alt} />,
 }))
 
 const props = {
@@ -44,5 +43,19 @@ describe('Mascot media fallback', () => {
 
     expect(screen.queryByTestId('animated-mascot')).not.toBeInTheDocument()
     expect(screen.getByAltText('包工球')).toHaveAttribute('data-media', 'fallback')
+  })
+
+  it('keeps the same single animated mascot through every collection state', () => {
+    const view = render(<Mascot {...props} />)
+    const animatedMascot = screen.getByTestId('animated-mascot')
+
+    for (const collectionMode of ['collecting', 'ready', 'receiving', 'none'] as const) {
+      view.rerender(<Mascot {...props} collectionMode={collectionMode} />)
+
+      expect(screen.getAllByTestId('animated-mascot')).toHaveLength(1)
+      expect(screen.getByTestId('animated-mascot')).toBe(animatedMascot)
+      expect(screen.queryByAltText('包工球推着购物车')).not.toBeInTheDocument()
+      expect(screen.queryByAltText('包工球准备接收家具')).not.toBeInTheDocument()
+    }
   })
 })

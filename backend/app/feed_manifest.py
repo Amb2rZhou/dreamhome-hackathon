@@ -22,6 +22,7 @@ MANIFEST_VERSION = 1
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB = REPO_ROOT / "backend/storage/dreamhome.db"
 DEFAULT_CATALOG = REPO_ROOT / "web/prototype/pages/shared/library-assets.generated.js"
+DEFAULT_SUPPLEMENTAL_CATALOG = REPO_ROOT / "backend/storage/feed/supplemental-assets.v1.json"
 DEFAULT_AVAILABLE_ASSETS = REPO_ROOT / "src/availableAssets.generated.ts"
 DEFAULT_FEED_SOURCE = REPO_ROOT / "src/types.ts"
 DEFAULT_SCENE_DIR = REPO_ROOT / "backend/storage/scenes"
@@ -175,6 +176,30 @@ def _catalog_assets(path: Path) -> list[dict[str, Any]]:
     return assets
 
 
+def _supplemental_assets(path: Path) -> list[dict[str, Any]]:
+    """Load reviewed scene-only assets that are not part of the bulk catalog.
+
+    These records still describe canonical, ready assets; keeping them in a
+    checked-in JSON document lets backend validation and the static demo share
+    the same IDs without teaching the validator how to execute TypeScript.
+    """
+    if not path.exists():
+        return []
+    items = json.loads(path.read_text(encoding="utf-8"))
+    assets = []
+    for item in items:
+        assets.append({
+            "asset_id": str(item["asset_id"]),
+            "name": item.get("name") or "",
+            "status": "ready",
+            "labels": item.get("labels") or {},
+            "media": item.get("media") or {},
+            "source": item.get("source") or {},
+            "record_source": _rel(path),
+        })
+    return assets
+
+
 def _database_assets(rows: Iterable[dict[str, Any]], db_path: Path) -> list[dict[str, Any]]:
     result = []
     for row in rows:
@@ -281,15 +306,18 @@ def _source_snapshot(paths: Iterable[Path]) -> list[dict[str, Any]]:
 
 
 def build_manifest(*, db_path: Path = DEFAULT_DB, catalog_path: Path = DEFAULT_CATALOG,
+                   supplemental_catalog_path: Path = DEFAULT_SUPPLEMENTAL_CATALOG,
                    available_assets_path: Path = DEFAULT_AVAILABLE_ASSETS,
                    feed_source_path: Path = DEFAULT_FEED_SOURCE,
                    scene_dir: Path = DEFAULT_SCENE_DIR,
                    home_templates_path: Path = DEFAULT_HOME_TEMPLATES) -> dict[str, Any]:
     database = _read_database(db_path)
     catalog = _catalog_assets(catalog_path)
+    supplemental_assets = _supplemental_assets(supplemental_catalog_path)
     db_assets = _database_assets(database["assets"], db_path)
     # Published catalog is a fallback projection. Runtime rows always win.
     assets_by_id = {asset["asset_id"]: asset for asset in catalog}
+    assets_by_id.update({asset["asset_id"]: asset for asset in supplemental_assets})
     assets_by_id.update({asset["asset_id"]: asset for asset in db_assets})
     assets = sorted(assets_by_id.values(), key=lambda item: item["asset_id"])
 
@@ -389,7 +417,8 @@ def build_manifest(*, db_path: Path = DEFAULT_DB, catalog_path: Path = DEFAULT_C
         item["video_id"], item.get("start_sec") or 0, item["asset_id"], item["appearance_id"]
     ))
 
-    source_paths = [catalog_path, available_assets_path, feed_source_path, home_templates_path]
+    source_paths = [catalog_path, supplemental_catalog_path, available_assets_path,
+                    feed_source_path, home_templates_path]
     source_paths.extend(media_paths)
     source_paths.extend(Path(scene["source_path"]) if Path(scene["source_path"]).is_absolute()
                         else REPO_ROOT / scene["source_path"] for scene in scenes)

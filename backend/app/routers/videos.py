@@ -395,7 +395,12 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
                     [{"t": sel["t"], "bbox": sel["bbox"]}],
                     t_start=sel["t"], t_end=sel["t"], best_frame_t=sel["t"],
                 )
-            db.bind_track_asset(track_id, exact_asset_id)
+            db.bind_track_asset(
+                track_id,
+                exact_asset_id,
+                binding_review_status="approved",
+                binding_source="user_confirmed_reuse",
+            )
             return SelectConfirmResponse(
                 asset_id=exact_asset_id,
                 track_id=track_id,
@@ -441,7 +446,12 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
                                    t_start=sel["t"], t_end=sel["t"], best_frame_t=sel["t"])
 
     if req.use_asset_id:
-        db.bind_track_asset(track_id, req.use_asset_id)
+        db.bind_track_asset(
+            track_id,
+            req.use_asset_id,
+            binding_review_status="approved",
+            binding_source="user_confirmed_reuse",
+        )
         _SELECTS.pop(req.select_id, None)
         return SelectConfirmResponse(asset_id=req.use_asset_id, track_id=track_id,
                                      quality_mode="reuse")
@@ -480,7 +490,7 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
         source={"video_id": video_id, "track_id": track_id, "t_best": sel["t"]},
         status="generating", job_id=job.job_id, created_by="user",
     )
-    db.bind_track_asset(track_id, asset_id)
+    db.bind_track_asset(track_id, asset_id, binding_source="generated_asset")
     _SELECTS.pop(req.select_id, None)
     return SelectConfirmResponse(asset_id=asset_id, job_id=job.job_id, track_id=track_id,
                                  quality_mode="fast")

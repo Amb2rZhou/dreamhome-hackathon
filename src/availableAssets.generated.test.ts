@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { AVAILABLE_ASSETS } from './availableAssets.generated'
+import { AVAILABLE_ASSETS_BY_VIDEO } from './availableAssets.generated'
+import { FEED_VIDEOS } from './types'
 
 describe('reviewed asset delivery paths', () => {
   it('maps every canonical asset to the bundled prototype media', () => {
@@ -12,5 +14,11 @@ describe('reviewed asset delivery paths', () => {
       expect(asset.modelUrl).toBe(`/prototype/assets/models/${asset.id}.glb`)
       expect(asset.sourceVideo?.frameImg).toBe(`/prototype/assets/frames/${asset.id}.jpg`)
     }
+  })
+
+  it('starts the Feed with a video that has reviewed component data', () => {
+    const firstVideo = FEED_VIDEOS[0]
+    expect(firstVideo.id).not.toBe('home-1')
+    expect(AVAILABLE_ASSETS_BY_VIDEO[firstVideo.id]?.length).toBeGreaterThan(0)
   })
 })
