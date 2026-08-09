@@ -350,6 +350,7 @@
     import { DEFAULT_HOMES } from '../shared/default-homes.generated.js';
     import { restoreApprovedHomes } from '../shared/home-project-defaults.js';
     import { inferRuntimePrimitive, isModelBackedHome } from '../shared/home-model-loading.js';
+    import { decodeAssemblyAssetIds } from '../shared/library-tag-flow.js';
 
     const STORAGE_KEY = 'dreamhome.my-home.v1';
     const HOMES_KEY = 'dreamhome.my-home.homes.v1';
@@ -400,7 +401,7 @@
       {id:'plant-moss',name:'龟背竹绿植',category:'软装',sourceType:'photo',defaultScale:1,accent:'#779b72'},
       {id:'cabinet-sage',name:'鼠尾草边柜',category:'收纳',sourceType:'draw',defaultScale:1,accent:'#8da184'}
     ];
-    const state = { phase:'setup', project:null, selectedTemplateId:null, drawingFile:null, selectedRoomId:null, selectedPlacementId:null, activeAssetCategory:'全部', drawerMode:'furniture', drawerExpanded:false, selectedFloorPreset:'warm-long-plank', selectedWallColor:'#f3ecdc', selectedWindowStyle:'dark-grid', interaction:{mode:'orbit', pendingAssetId:null, pointerDown:null}, job:null, dirty:false, caseMode:false };
+    const state = { phase:'setup', project:null, selectedTemplateId:null, drawingFile:null, selectedRoomId:null, selectedPlacementId:null, activeAssetCategory:'全部', drawerMode:'furniture', drawerExpanded:false, assemblyAssetIds:[], selectedFloorPreset:'warm-long-plank', selectedWallColor:'#f3ecdc', selectedWindowStyle:'dark-grid', interaction:{mode:'orbit', pendingAssetId:null, pointerDown:null}, job:null, dirty:false, caseMode:false };
     const runtimeAssets = new Map();
     const ui = Object.fromEntries(['videoSceneBox','videoSceneGrid','setupPhase','generationPhase','generationMascotStage','editorPhase','templateGrid','continueBox','homeGrid','confirmModal','drawingInput','uploadName','setupError','generateButton','customWidth','customDepth','customWindowEdge','customPlanButton','generationTitle','generationCopy','progressBar','backToSetup','retryButton','sceneHost','homeCompanion','editorHomeName','editorHomeMeta','editorBack','shareButton','shareSheet','daylightButton','realTimeControl','realTimeSlider','realTimeOutput','transformConfirm','transformDelete','transformHeight','heightUp','heightDown','caseCollectAll','caseCollectOne','caseLayoutActions','caseSaveLayout','caseApplyLayout','roomSelector','inspector','inspectorTitle','inspectorCopy','placementHint','modelLoadStatus','assetDrawer','drawerToggle','drawerSummary','drawerModes','categoryTabs','assetRail','toast','liveRegion','resetViewButton','rotateLeft','rotateRight','scaleDown','scaleUp','moveSelected','deleteSelected'].map((id) => [id, document.getElementById(id)]));
     const genVideo=document.getElementById('genVideo');
@@ -436,6 +437,7 @@
     const uid = (prefix) => `${prefix}-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)}`;
     const now = () => new Date().toISOString();
     const QUERY = new URLSearchParams(location.search);
+    const requestedAssemblyAssetIds = decodeAssemblyAssetIds(QUERY.get('addAssets'));
     const BACKEND = QUERY.get('apiBase')?.trim() || window.DREAMHOME_API_BASE_URL || 'http://127.0.0.1:8000';
     const HOME_USER_KEY = 'dreamhome.home-user-id.v1';
     const queryHomeUserId = QUERY.get('userId')?.trim();
@@ -665,12 +667,26 @@
         history.replaceState(null,'',location.pathname);
       }));
     }
-    async function openHome(id, requestedAssetId='') {
+    function activateAssemblyTray(assetIds) {
+      const ids = assetIds.filter((id) => getAsset(id)?.kind === 'furniture');
+      if (!ids.length) { tell('没有找到可拼装的家具'); return; }
+      state.assemblyAssetIds = ids;
+      state.drawerExpanded = true;
+      state.drawerMode = 'furniture';
+      state.activeAssetCategory = '全部';
+      renderAssetDrawer();
+      tell(`拼装清单已就位 · ${ids.length} 件，点家具后放入房间`);
+      const cleanUrl = new URL(location.href);
+      cleanUrl.searchParams.delete('addAssets');
+      history.replaceState(null, '', `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
+    }
+    async function openHome(id, requestedAssetId='', assemblyIds=[]) {
       const home = homeSceneService.loadHomes().find((item) => item.id === id);
       if (!home) return;
-      if(home.source?.type==='video_rebuild'){await openVideoScene(home.source.videoId,home.name,false,requestedAssetId);return;}
+      if(home.source?.type==='video_rebuild'){await openVideoScene(home.source.videoId,home.name,false,requestedAssetId,assemblyIds);return;}
       enterProjectEditor(home);
       if(requestedAssetId)beginRequestedAssetPlacement(requestedAssetId);
+      else if(assemblyIds.length)activateAssemblyTray(assemblyIds);
     }
     const sceneDataCache=new Map();
     const DEFAULT_DEMO_SCENE_IDS=['vid_40734d7f2e6c','vid_91fe552c5f7d'];
@@ -754,7 +770,7 @@
       return normalizeHomeProject({...baseline,createdAt:now(),updatedAt:now()});
     }
     function enterProjectEditor(project,{loading=false,title=''}={}){state.project=normalizeHomeProject(project);state.selectedRoomId=null;state.selectedPlacementId=null;state.selectedWindowSlotId=null;state.interaction.mode='orbit';state.phase=loading?'scene-loading':'editor';if(loading)pendingSceneTitle=title||state.project.name;updatePhases();initEditor();}
-    async function openVideoScene(videoId, title='视频户型重建', caseMode=false, requestedAssetId='') {
+    async function openVideoScene(videoId, title='视频户型重建', caseMode=false, requestedAssetId='', assemblyIds=[]) {
       state.caseMode=caseMode;
       disposeScene();
       delete document.documentElement.dataset.sceneLoadMs;
@@ -770,6 +786,7 @@
         if(caseMode)enterProjectEditor(project,{loading:true,title:project.name});
         else{homeSceneService.saveProject(project);syncProjectInBackground(project);updateGeneration('processing',58);enterProjectEditor(project,{loading:true,title});}
         if(requestedAssetId)beginRequestedAssetPlacement(requestedAssetId);
+        else if(assemblyIds.length)activateAssemblyTray(assemblyIds);
       } catch(error) { pendingSceneStartedAt=0;pendingSceneTitle='';state.phase='setup'; updatePhases(); tell(error.message); }
     }
     function updatePhases() { const root=document.querySelector('.dh-root'),sceneLoading=state.phase==='scene-loading',generating=['submitting','polling','error'].includes(state.phase)||sceneLoading,editor=state.phase==='editor'||sceneLoading,real=editor&&!!state.project?.realScene,roomTemplate=editor&&TEMPLATES.find(item=>item.id===state.project?.source?.templateId)?.scope==='room';ui.setupPhase.style.display=state.phase==='setup'?'flex':'none';ui.generationPhase.classList.toggle('is-visible',generating);ui.editorPhase.classList.toggle('is-visible',editor);root.classList.toggle('is-editor',editor);root.classList.toggle('is-real-scene',real);root.classList.toggle('is-scene-editor',real||roomTemplate);root.classList.toggle('is-case',editor&&state.caseMode);if(generating)genVideo?.play().catch(()=>{});else genVideo?.pause(); }
@@ -795,7 +812,10 @@
     }
     function renderRooms() { ui.roomSelector.innerHTML = `<button class="room-pill ${state.selectedRoomId === null ? 'is-active' : ''}" data-room-id="">全屋</button>${state.project.rooms.map((room) => `<button class="room-pill ${state.selectedRoomId === room.id ? 'is-active' : ''}" data-room-id="${room.id}">${room.name}</button>`).join('')}`; }
     function getFavoriteAssets(kind) { const favorites=getFavorites(); return getAssets(kind).filter((asset)=>favorites.has(asset.id)); }
-    function getDrawerAssets() { return getFavoriteAssets('furniture'); }
+    function getDrawerAssets() {
+      if (state.assemblyAssetIds.length) return state.assemblyAssetIds.map((id) => getAsset(id)).filter((asset) => asset?.kind === 'furniture');
+      return getFavoriteAssets('furniture');
+    }
     function refreshTransformActions() { const placement=state.selectedPlacementId&&state.project?.placements.find((item)=>item.id===state.selectedPlacementId),show=Boolean(placement&&!state.drawerExpanded&&!state.caseMode);ui.transformConfirm.classList.toggle('is-visible',show);ui.transformDelete.classList.toggle('is-visible',show);ui.transformHeight.classList.toggle('is-visible',show); }
     function assetCategoryLabel(asset) { return FURNITURE_CATEGORIES.find((category)=>category.id===asset.category)?.label || '其他'; }
     function finishLabel(kind) { return kind==='floor' ? '地板' : '墙纸'; }
@@ -839,7 +859,7 @@
         ui.categoryTabs.innerHTML=categories.map((category)=>`<button class="category-tab ${state.activeAssetCategory === category ? 'is-active' : ''}" data-category="${category}">${category}</button>`).join('');
         const assets=favoriteAssets.filter((asset)=>state.activeAssetCategory==='全部' || assetCategoryLabel(asset)===state.activeAssetCategory);
         ui.assetRail.innerHTML=assets.length ? assets.map((asset)=>`<button class="asset-option" data-asset-id="${escapeText(asset.id)}" aria-label="放置${escapeText(asset.name)}"><div class="asset-preview">${asset.thumbnail?`<img src="${escapeText(asset.thumbnail)}" alt="" loading="lazy" />`:`<i class="asset-silhouette ${silhouetteType(asset)}"></i>`}</div><b>${escapeText(shortAssetName(asset.name))}</b><span>${assetCategoryLabel(asset)}</span></button>`).join('') : '<p class="asset-empty">暂未有收藏可用的家具组件，请先在灵感库挑选收藏～</p>';
-        ui.drawerSummary.textContent=state.drawerExpanded ? (assets.length ? '已收藏家具 · 点选后放入房间' : '收藏家具会显示在这里') : '家具 · 地板 · 墙面 · 窗户';
+        ui.drawerSummary.textContent=state.drawerExpanded ? (assets.length ? (state.assemblyAssetIds.length ? `拼装清单 · ${assets.length} 件` : '已收藏家具 · 点选后放入房间') : '收藏家具会显示在这里') : '家具 · 地板 · 墙面 · 窗户';
       } else if(state.drawerMode==='floor') {
         ui.assetRail.innerHTML=FLOOR_PRESETS.map(({id,name,color,url})=>`<button class="decor-option ${state.selectedFloorPreset===id?'is-selected':''}" data-floor-preset="${id}" aria-label="选择${name}地板" aria-pressed="${state.selectedFloorPreset===id}"><div class="decor-preview" data-kind="floor" style="--preview:${color};--floor-image:url('${url}')"></div><b>${name}</b></button>`).join('');
         ui.drawerSummary.textContent=state.drawerExpanded?'选择地板 · 即时预览':'家具 · 地板 · 墙面 · 窗户';
@@ -1088,21 +1108,21 @@
     const requestedAssetId=QUERY.get('addAsset');
     homeSceneService.hydrate().then(async()=>{
       renderSavedHomes();renderVideoScenes();
-      if(requestedAssetId){
+      if(requestedAssetId || requestedAssemblyAssetIds.length){
         const home=homeSceneService.loadHomes()[0];
-        if(home)await openHome(home.id,requestedAssetId);
+        if(home)await openHome(home.id,requestedAssetId,requestedAssemblyAssetIds);
         else tell('请先生成一个家，再加入组件');
       }
     }).catch(async(error)=>{
       console.warn('[DreamHome] 后端项目暂不可用，继续使用本地布局',error);
-      if(requestedAssetId){
+      if(requestedAssetId || requestedAssemblyAssetIds.length){
         const home=homeSceneService.loadHomes()[0];
-        if(home)await openHome(home.id,requestedAssetId);
+        if(home)await openHome(home.id,requestedAssetId,requestedAssemblyAssetIds);
       }
     });
     // 从灵感库 banner 案例卡进入：只读案例模式（复用拼装编辑器，去掉抽屉与移动/调整，加收藏）
     const caseVideoId=QUERY.get('case');
-    if(caseVideoId&&!requestedAssetId){ openVideoScene(caseVideoId,'案例空间',true); }
+    if(caseVideoId&&!requestedAssetId&&!requestedAssemblyAssetIds.length){ openVideoScene(caseVideoId,'案例空间',true); }
     if(new URLSearchParams(location.search).get('focus')==='templates'){requestAnimationFrame(()=>requestAnimationFrame(()=>{document.getElementById('templateBox')?.scrollIntoView({block:'center'});history.replaceState(null,'',location.pathname);}));}
   </script>
 </body>
