@@ -147,6 +147,16 @@
     .dh-root.is-real-scene .drawer-content { margin-top:3px; }
     .dh-root.is-real-scene .drawer-modes { gap:4px; padding-bottom:4px; }
     .dh-root.is-real-scene .drawer-mode { min-height:25px; font-size:8px; }
+    /* 风格触发胶囊：sticky 钉在品类行最左，品类横滑时不跟着跑掉 */
+    .style-trigger { position:sticky; left:0; z-index:2; flex:0 0 auto; display:inline-flex; align-items:center; gap:2px; min-height:23px; margin-right:2px; padding:0 8px; border:1px solid rgba(181,140,70,.34); border-radius:999px; background:#fdf7ea; color:#8a6f47; font:inherit; font-size:8px; font-weight:var(--dh-font-weight-heavy); white-space:nowrap; cursor:pointer; box-shadow:2px 0 6px rgba(255,255,255,.9); }
+    .style-trigger .st-caret { font-size:7px; font-style:normal; opacity:.7; }
+    .style-trigger.is-active { border-color:#deb08c; background:#fbf3e1; color:#8a5f2e; }
+    .dh-root.is-real-scene .style-trigger { min-height:21px; padding:0 6px; font-size:7px; }
+    .style-tabs { display:flex; flex-wrap:nowrap; gap:5px; overflow-x:auto; overscroll-behavior-x:contain; padding:0 0 6px; scrollbar-width:none; }.style-tabs::-webkit-scrollbar{display:none}.style-tabs:empty{display:none}
+    .style-tab { flex:0 0 auto; display:inline-flex; align-items:center; gap:3px; min-height:21px; padding:0 8px; border:1px solid rgba(181,140,70,.3); border-radius:999px; background:rgba(255,255,255,.72); color:#8a6f47; font:inherit; font-size:9px; font-weight:var(--dh-font-weight-bold); white-space:nowrap; cursor:pointer; }
+    .style-tab .st-n { font-size:8px; font-weight:var(--dh-font-weight-semibold); opacity:.62; font-variant-numeric:tabular-nums; }
+    .style-tab.is-active { border-color:#deb08c; background:#fbf3e1; color:#8a5f2e; }
+    .dh-root.is-real-scene .style-tabs { gap:3px; padding-bottom:3px; }.dh-root.is-real-scene .style-tab { min-height:19px; padding:0 6px; font-size:7.5px; }
     .dh-root.is-real-scene .category-tabs { gap:4px; padding-bottom:4px; }
     .dh-root.is-real-scene .category-tab { min-height:23px; padding:0 8px; font-size:7.5px; }
     .dh-root.is-real-scene .asset-rail { gap:7px; padding:1px; }
@@ -291,7 +301,7 @@
             <div class="room-selector" id="roomSelector" aria-label="选择查看空间"></div>
             <div class="inspector" id="inspector"><div class="inspector-copy"><b id="inspectorTitle">胡桃木单椅</b><span id="inspectorCopy">已选中 · 可拖动摆放</span></div><div class="inspector-actions"><button class="mini-tool" id="rotateLeft" aria-label="向左旋转">↶</button><button class="mini-tool" id="rotateRight" aria-label="向右旋转">↷</button><button class="mini-tool" id="scaleDown" aria-label="缩小组件">－</button><button class="mini-tool" id="scaleUp" aria-label="放大组件">＋</button><button class="mini-tool" id="moveSelected" aria-label="移动组件">↔</button><button class="mini-tool is-danger" id="deleteSelected" aria-label="删除组件">×</button></div></div>
             <div class="placement-hint" id="placementHint"></div><div class="model-load-status" id="modelLoadStatus" role="status" aria-live="polite"></div>
-            <section class="asset-drawer" id="assetDrawer" aria-label="装修与收藏组件抽屉"><button class="drawer-toggle" id="drawerToggle" aria-expanded="false" aria-label="展开装修抽屉">⌃</button><div class="drawer-summary"><b>装修</b><span id="drawerSummary">家具 · 地板 · 墙面 · 窗户</span></div><div class="drawer-content"><div class="drawer-modes" id="drawerModes" aria-label="装修类型"><button class="drawer-mode is-active" data-drawer-mode="furniture">家具</button><button class="drawer-mode" data-drawer-mode="floor">地板</button><button class="drawer-mode" data-drawer-mode="wall">墙面</button><button class="drawer-mode" data-drawer-mode="window">窗户</button></div><div class="category-tabs" id="categoryTabs" aria-label="资产品类"></div><div class="asset-rail" id="assetRail" aria-label="可用装修选项"></div></div></section>
+            <section class="asset-drawer" id="assetDrawer" aria-label="装修与收藏组件抽屉"><button class="drawer-toggle" id="drawerToggle" aria-expanded="false" aria-label="展开装修抽屉">⌃</button><div class="drawer-summary"><b>装修</b><span id="drawerSummary">家具 · 地板 · 墙面 · 窗户</span></div><div class="drawer-content"><div class="drawer-modes" id="drawerModes" aria-label="装修类型"><button class="drawer-mode is-active" data-drawer-mode="furniture">家具</button><button class="drawer-mode" data-drawer-mode="floor">地板</button><button class="drawer-mode" data-drawer-mode="wall">墙面</button><button class="drawer-mode" data-drawer-mode="window">窗户</button></div><div class="category-tabs" id="categoryTabs" aria-label="资产品类"></div><div class="style-tabs" id="styleTabs" aria-label="按风格筛选"></div><div class="asset-rail" id="assetRail" aria-label="可用装修选项"></div></div></section>
           </section>
         </div>
         <nav class="dh-tabbar dh-tabbar--main" id="mainTabbar" aria-label="主功能导航"><a class="dh-tab" href="../capture/index.html" aria-label="拍一张"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8.7 4.6c-.6 0-1.15.32-1.44.84l-.7 1.24H4.6A2.6 2.6 0 0 0 2 9.32v8.28a2.6 2.6 0 0 0 2.6 2.6h14.8a2.6 2.6 0 0 0 2.6-2.6V9.32a2.6 2.6 0 0 0-2.6-2.6h-1.96l-.7-1.24a1.65 1.65 0 0 0-1.44-.84H8.7Zm3.3 5.1a3.55 3.55 0 1 0 0 7.1 3.55 3.55 0 0 0 0-7.1Z"/></svg></span></a><a class="dh-tab" href="../discover/index.html" aria-label="刷一刷"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M6.4 3.2h11.2A3.4 3.4 0 0 1 21 6.6v10.8a3.4 3.4 0 0 1-3.4 3.4H6.4A3.4 3.4 0 0 1 3 17.4V6.6a3.4 3.4 0 0 1 3.4-3.4Zm3.5 5.05c-.5-.3-1.14.06-1.14.65v6.3c0 .59.64.95 1.14.65l5.2-3.15c.48-.29.48-1.01 0-1.3l-5.2-3.15Z"/></svg></span></a><a class="dh-tab" href="../inspiration-library/index.html" aria-label="灵感库"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12 2.6a6.4 6.4 0 0 0-3.9 11.48c.46.36.74.9.82 1.48l.13.94h5.84l.13-.94c.08-.58.36-1.12.82-1.48A6.4 6.4 0 0 0 12 2.6Z"/><rect x="8.7" y="17.4" width="6.6" height="1.9" rx=".95"/><rect x="9.6" y="20" width="4.8" height="1.9" rx=".95"/></svg></span></a><a class="dh-tab" href="../my-favorites/index.html" aria-label="我的收藏"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7 3.6h10a2.2 2.2 0 0 1 2.2 2.2v13.9c0 .86-.94 1.38-1.66.92L12 17.2l-5.54 3.42c-.72.46-1.66-.06-1.66-.92V5.8A2.2 2.2 0 0 1 7 3.6Z"/></svg></span></a><a class="dh-tab dh-tab--active" href="./index.html" aria-label="我的家" aria-current="page"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10.7 3.3a2 2 0 0 1 2.6 0l6.8 5.86c.44.38.7.94.7 1.53v7.71a2 2 0 0 1-2 2h-2.8a1 1 0 0 1-1-1v-4.4a1 1 0 0 0-1-1h-2.4a1 1 0 0 0-1 1v4.4a1 1 0 0 1-1 1H6.2a2 2 0 0 1-2-2V10.7c0-.59.26-1.15.7-1.53L10.7 3.3Z"/></svg></span></a></nav>
@@ -350,7 +360,6 @@
     import { DEFAULT_HOMES } from '../shared/default-homes.generated.js';
     import { restoreApprovedHomes } from '../shared/home-project-defaults.js';
     import { inferRuntimePrimitive, isModelBackedHome } from '../shared/home-model-loading.js';
-    import { decodeAssemblyAssetIds } from '../shared/library-tag-flow.js';
 
     const STORAGE_KEY = 'dreamhome.my-home.v1';
     const HOMES_KEY = 'dreamhome.my-home.homes.v1';
@@ -401,9 +410,9 @@
       {id:'plant-moss',name:'龟背竹绿植',category:'软装',sourceType:'photo',defaultScale:1,accent:'#779b72'},
       {id:'cabinet-sage',name:'鼠尾草边柜',category:'收纳',sourceType:'draw',defaultScale:1,accent:'#8da184'}
     ];
-    const state = { phase:'setup', project:null, selectedTemplateId:null, drawingFile:null, selectedRoomId:null, selectedPlacementId:null, activeAssetCategory:'全部', drawerMode:'furniture', drawerExpanded:false, assemblyAssetIds:[], selectedFloorPreset:'warm-long-plank', selectedWallColor:'#f3ecdc', selectedWindowStyle:'dark-grid', interaction:{mode:'orbit', pendingAssetId:null, pointerDown:null}, job:null, dirty:false, caseMode:false };
+    const state = { phase:'setup', project:null, selectedTemplateId:null, drawingFile:null, selectedRoomId:null, selectedPlacementId:null, activeAssetCategory:'全部', activeAssetStyle:'', styleRowOpen:false, drawerMode:'furniture', drawerExpanded:false, selectedFloorPreset:'warm-long-plank', selectedWallColor:'#f3ecdc', selectedWindowStyle:'dark-grid', interaction:{mode:'orbit', pendingAssetId:null, pointerDown:null}, job:null, dirty:false, caseMode:false };
     const runtimeAssets = new Map();
-    const ui = Object.fromEntries(['videoSceneBox','videoSceneGrid','setupPhase','generationPhase','generationMascotStage','editorPhase','templateGrid','continueBox','homeGrid','confirmModal','drawingInput','uploadName','setupError','generateButton','customWidth','customDepth','customWindowEdge','customPlanButton','generationTitle','generationCopy','progressBar','backToSetup','retryButton','sceneHost','homeCompanion','editorHomeName','editorHomeMeta','editorBack','shareButton','shareSheet','daylightButton','realTimeControl','realTimeSlider','realTimeOutput','transformConfirm','transformDelete','transformHeight','heightUp','heightDown','caseCollectAll','caseCollectOne','caseLayoutActions','caseSaveLayout','caseApplyLayout','roomSelector','inspector','inspectorTitle','inspectorCopy','placementHint','modelLoadStatus','assetDrawer','drawerToggle','drawerSummary','drawerModes','categoryTabs','assetRail','toast','liveRegion','resetViewButton','rotateLeft','rotateRight','scaleDown','scaleUp','moveSelected','deleteSelected'].map((id) => [id, document.getElementById(id)]));
+    const ui = Object.fromEntries(['videoSceneBox','videoSceneGrid','setupPhase','generationPhase','generationMascotStage','editorPhase','templateGrid','continueBox','homeGrid','confirmModal','drawingInput','uploadName','setupError','generateButton','customWidth','customDepth','customWindowEdge','customPlanButton','generationTitle','generationCopy','progressBar','backToSetup','retryButton','sceneHost','homeCompanion','editorHomeName','editorHomeMeta','editorBack','shareButton','shareSheet','daylightButton','realTimeControl','realTimeSlider','realTimeOutput','transformConfirm','transformDelete','transformHeight','heightUp','heightDown','caseCollectAll','caseCollectOne','caseLayoutActions','caseSaveLayout','caseApplyLayout','roomSelector','inspector','inspectorTitle','inspectorCopy','placementHint','modelLoadStatus','assetDrawer','drawerToggle','drawerSummary','drawerModes','categoryTabs','styleTabs','assetRail','toast','liveRegion','resetViewButton','rotateLeft','rotateRight','scaleDown','scaleUp','moveSelected','deleteSelected'].map((id) => [id, document.getElementById(id)]));
     const genVideo=document.getElementById('genVideo');
     const syncGenerationMascot=()=>ui.generationMascotStage.classList.toggle('is-video-ready',genVideo.readyState>=2);
     genVideo.addEventListener('loadeddata',syncGenerationMascot);
@@ -437,7 +446,6 @@
     const uid = (prefix) => `${prefix}-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)}`;
     const now = () => new Date().toISOString();
     const QUERY = new URLSearchParams(location.search);
-    const requestedAssemblyAssetIds = decodeAssemblyAssetIds(QUERY.get('addAssets'));
     const BACKEND = QUERY.get('apiBase')?.trim() || window.DREAMHOME_API_BASE_URL || 'http://127.0.0.1:8000';
     const HOME_USER_KEY = 'dreamhome.home-user-id.v1';
     const queryHomeUserId = QUERY.get('userId')?.trim();
@@ -667,26 +675,12 @@
         history.replaceState(null,'',location.pathname);
       }));
     }
-    function activateAssemblyTray(assetIds) {
-      const ids = assetIds.filter((id) => getAsset(id)?.kind === 'furniture');
-      if (!ids.length) { tell('没有找到可拼装的家具'); return; }
-      state.assemblyAssetIds = ids;
-      state.drawerExpanded = true;
-      state.drawerMode = 'furniture';
-      state.activeAssetCategory = '全部';
-      renderAssetDrawer();
-      tell(`拼装清单已就位 · ${ids.length} 件，点家具后放入房间`);
-      const cleanUrl = new URL(location.href);
-      cleanUrl.searchParams.delete('addAssets');
-      history.replaceState(null, '', `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
-    }
-    async function openHome(id, requestedAssetId='', assemblyIds=[]) {
+    async function openHome(id, requestedAssetId='') {
       const home = homeSceneService.loadHomes().find((item) => item.id === id);
       if (!home) return;
-      if(home.source?.type==='video_rebuild'){await openVideoScene(home.source.videoId,home.name,false,requestedAssetId,assemblyIds);return;}
+      if(home.source?.type==='video_rebuild'){await openVideoScene(home.source.videoId,home.name,false,requestedAssetId);return;}
       enterProjectEditor(home);
       if(requestedAssetId)beginRequestedAssetPlacement(requestedAssetId);
-      else if(assemblyIds.length)activateAssemblyTray(assemblyIds);
     }
     const sceneDataCache=new Map();
     const DEFAULT_DEMO_SCENE_IDS=['vid_40734d7f2e6c','vid_91fe552c5f7d'];
@@ -761,7 +755,7 @@
         const fallbackModelUrl=staticDemo&&modelId?`${STATIC_FALLBACK_MODEL_ROOT}/${modelId}.glb`:modelId?`${BACKEND}/api/scenes/model/${modelId}`:new URL(item.glb,BACKEND).href;
         const modelUrl=modelId&&USE_OSS_MODELS?`${OSS_MODEL_ROOT}/${modelId}.glb`:fallbackModelUrl;
         const sizePrior=sizePriors.get(item.id)||item.sizePrior||null;
-        runtimeAssets.set(item.id,{id:item.id,name:item.name,category:'真实组件',tags:item.tags||[],primitive:inferRuntimePrimitive(item),modelUrl,fallbackModelUrl:modelUrl===fallbackModelUrl?'':fallbackModelUrl,dimensions:sizePrior?[sizePrior.w,sizePrior.h,sizePrior.d]:[item.targetW||.7,item.targetW||.7,item.targetW||.7],sizePrior,mount:item.mount||'floor',rawModel:true});
+        runtimeAssets.set(item.id,{id:item.id,name:item.name,category:'真实组件',tags:item.tags||[],primitive:inferRuntimePrimitive(item),modelUrl,fallbackModelUrl:modelUrl===fallbackModelUrl?'':fallbackModelUrl,staticFallbackModelUrl:modelId?`${STATIC_FALLBACK_MODEL_ROOT}/${modelId}.glb`:'',dimensions:sizePrior?[sizePrior.w,sizePrior.h,sizePrior.d]:[item.targetW||.7,item.targetW||.7,item.targetW||.7],sizePrior,mount:item.mount||'floor',rawModel:true});
         const scale=Array.isArray(item.scale)?item.scale:[1,1,1];
         return {id:item.id,homeId:`video-${sceneData.video_id}`,assetId:item.id,roomId:room.id,position:{x:item.pos[0],y:item.pos[1],z:item.pos[2]},rotation:{x:0,y:THREE.MathUtils.degToRad(item.rotYDeg||0),z:0},scale:{x:scale[0],y:scale[1],z:scale[2]},sourceScale:{x:scale[0],y:scale[1],z:scale[2]}};
       });
@@ -770,7 +764,7 @@
       return normalizeHomeProject({...baseline,createdAt:now(),updatedAt:now()});
     }
     function enterProjectEditor(project,{loading=false,title=''}={}){state.project=normalizeHomeProject(project);state.selectedRoomId=null;state.selectedPlacementId=null;state.selectedWindowSlotId=null;state.interaction.mode='orbit';state.phase=loading?'scene-loading':'editor';if(loading)pendingSceneTitle=title||state.project.name;updatePhases();initEditor();}
-    async function openVideoScene(videoId, title='视频户型重建', caseMode=false, requestedAssetId='', assemblyIds=[]) {
+    async function openVideoScene(videoId, title='视频户型重建', caseMode=false, requestedAssetId='') {
       state.caseMode=caseMode;
       disposeScene();
       delete document.documentElement.dataset.sceneLoadMs;
@@ -786,7 +780,6 @@
         if(caseMode)enterProjectEditor(project,{loading:true,title:project.name});
         else{homeSceneService.saveProject(project);syncProjectInBackground(project);updateGeneration('processing',58);enterProjectEditor(project,{loading:true,title});}
         if(requestedAssetId)beginRequestedAssetPlacement(requestedAssetId);
-        else if(assemblyIds.length)activateAssemblyTray(assemblyIds);
       } catch(error) { pendingSceneStartedAt=0;pendingSceneTitle='';state.phase='setup'; updatePhases(); tell(error.message); }
     }
     function updatePhases() { const root=document.querySelector('.dh-root'),sceneLoading=state.phase==='scene-loading',generating=['submitting','polling','error'].includes(state.phase)||sceneLoading,editor=state.phase==='editor'||sceneLoading,real=editor&&!!state.project?.realScene,roomTemplate=editor&&TEMPLATES.find(item=>item.id===state.project?.source?.templateId)?.scope==='room';ui.setupPhase.style.display=state.phase==='setup'?'flex':'none';ui.generationPhase.classList.toggle('is-visible',generating);ui.editorPhase.classList.toggle('is-visible',editor);root.classList.toggle('is-editor',editor);root.classList.toggle('is-real-scene',real);root.classList.toggle('is-scene-editor',real||roomTemplate);root.classList.toggle('is-case',editor&&state.caseMode);if(generating)genVideo?.play().catch(()=>{});else genVideo?.pause(); }
@@ -813,11 +806,20 @@
     function renderRooms() { ui.roomSelector.innerHTML = `<button class="room-pill ${state.selectedRoomId === null ? 'is-active' : ''}" data-room-id="">全屋</button>${state.project.rooms.map((room) => `<button class="room-pill ${state.selectedRoomId === room.id ? 'is-active' : ''}" data-room-id="${room.id}">${room.name}</button>`).join('')}`; }
     function getFavoriteAssets(kind) { const favorites=getFavorites(); return getAssets(kind).filter((asset)=>favorites.has(asset.id)); }
     function getDrawerAssets() {
-      if (state.assemblyAssetIds.length) return state.assemblyAssetIds.map((id) => getAsset(id)).filter((asset) => asset?.kind === 'furniture');
       return getFavoriteAssets('furniture');
     }
     function refreshTransformActions() { const placement=state.selectedPlacementId&&state.project?.placements.find((item)=>item.id===state.selectedPlacementId),show=Boolean(placement&&!state.drawerExpanded&&!state.caseMode);ui.transformConfirm.classList.toggle('is-visible',show);ui.transformDelete.classList.toggle('is-visible',show);ui.transformHeight.classList.toggle('is-visible',show); }
     function assetCategoryLabel(asset) { return FURNITURE_CATEGORIES.find((category)=>category.id===asset.category)?.label || '其他'; }
+    // 风格分面：完全由当前资产集算出，不硬编码任何风格名单——风格 tag 体系归 Amber，她增删风格后这里自动跟着变。
+    // ⚠️ 与 inspiration-library / my-favorites 保持同一套规则，改一处要同步三页。
+    function styleFacets(assets) {
+      const count=new Map();
+      assets.forEach((asset)=>(asset.styles||[]).forEach((style)=>count.set(style,(count.get(style)||0)+1)));
+      return [...count.entries()]
+        .filter(([,n])=>n<assets.length) // 覆盖全集的风格等于没筛，去掉避免给用户假选项
+        .map(([name,n])=>({name,n}))
+        .sort((a,b)=>b.n-a.n || a.name.localeCompare(b.name,'zh'));
+    }
     function finishLabel(kind) { return kind==='floor' ? '地板' : '墙纸'; }
     function finishPattern(asset) { return asset.finish?.pattern || 'solid'; }
     function finishColor(asset) { return asset.finish?.color || asset.accent || '#e5eee2'; }
@@ -852,14 +854,29 @@
     function renderAssetDrawer() {
       ui.drawerModes?.querySelectorAll('[data-drawer-mode]').forEach((button)=>button.classList.toggle('is-active',button.dataset.drawerMode===state.drawerMode));
       ui.categoryTabs.innerHTML='';
+      ui.styleTabs.innerHTML='';
       if (state.drawerMode==='furniture') {
         const favoriteAssets=getDrawerAssets();
         const categories=['全部', ...FURNITURE_CATEGORIES.map((category)=>category.label)];
         if (!categories.includes(state.activeAssetCategory)) state.activeAssetCategory='全部';
-        ui.categoryTabs.innerHTML=categories.map((category)=>`<button class="category-tab ${state.activeAssetCategory === category ? 'is-active' : ''}" data-category="${category}">${category}</button>`).join('');
-        const assets=favoriteAssets.filter((asset)=>state.activeAssetCategory==='全部' || assetCategoryLabel(asset)===state.activeAssetCategory);
+        const inCategory=favoriteAssets.filter((asset)=>state.activeAssetCategory==='全部' || assetCategoryLabel(asset)===state.activeAssetCategory);
+        // 风格精筛：与灵感库/我的收藏同一套规则（分面按当前品类实际存货动态生成，不硬编码风格名单）
+        const facets=styleFacets(inCategory);
+        if (state.activeAssetStyle && !facets.some((facet)=>facet.name===state.activeAssetStyle)) state.activeAssetStyle='';
+        const showStyles=facets.length>=2; // 只有一个风格可选＝没得选，整条不出
+        if (!showStyles) { state.activeAssetStyle=''; state.styleRowOpen=false; }
+        // 风格触发胶囊 sticky 钉在品类行最左：平时抽屉只占 2 排，点开才临时出第 3 排，选完自动收起。
+        // 胶囊上常驻显示当前风格，所以收起态也看得见筛选状态（AI 推荐搭配可直接写 state.activeAssetStyle）。
+        const styleTrigger=showStyles
+          ? `<button class="style-trigger ${state.activeAssetStyle?'is-active':''}" data-style-trigger type="button" aria-expanded="${state.styleRowOpen}">${state.activeAssetStyle?escapeText(state.activeAssetStyle):'风格'}<i class="st-caret" aria-hidden="true">${state.styleRowOpen?'▴':'▾'}</i></button>`
+          : '';
+        ui.categoryTabs.innerHTML=styleTrigger+categories.map((category)=>`<button class="category-tab ${state.activeAssetCategory === category ? 'is-active' : ''}" data-category="${category}">${category}</button>`).join('');
+        ui.styleTabs.innerHTML=(showStyles && state.styleRowOpen)
+          ? `<button class="style-tab ${state.activeAssetStyle?'':'is-active'}" data-style="">全部<span class="st-n">${inCategory.length}</span></button>`+facets.map((facet)=>`<button class="style-tab ${facet.name===state.activeAssetStyle?'is-active':''}" data-style="${escapeText(facet.name)}">${escapeText(facet.name)}<span class="st-n">${facet.n}</span></button>`).join('')
+          : '';
+        const assets=state.activeAssetStyle ? inCategory.filter((asset)=>(asset.styles||[]).includes(state.activeAssetStyle)) : inCategory;
         ui.assetRail.innerHTML=assets.length ? assets.map((asset)=>`<button class="asset-option" data-asset-id="${escapeText(asset.id)}" aria-label="放置${escapeText(asset.name)}"><div class="asset-preview">${asset.thumbnail?`<img src="${escapeText(asset.thumbnail)}" alt="" loading="lazy" />`:`<i class="asset-silhouette ${silhouetteType(asset)}"></i>`}</div><b>${escapeText(shortAssetName(asset.name))}</b><span>${assetCategoryLabel(asset)}</span></button>`).join('') : '<p class="asset-empty">暂未有收藏可用的家具组件，请先在灵感库挑选收藏～</p>';
-        ui.drawerSummary.textContent=state.drawerExpanded ? (assets.length ? (state.assemblyAssetIds.length ? `拼装清单 · ${assets.length} 件` : '已收藏家具 · 点选后放入房间') : '收藏家具会显示在这里') : '家具 · 地板 · 墙面 · 窗户';
+        ui.drawerSummary.textContent=state.drawerExpanded ? (assets.length ? '已收藏家具 · 点选后放入房间' : '收藏家具会显示在这里') : '家具 · 地板 · 墙面 · 窗户';
       } else if(state.drawerMode==='floor') {
         ui.assetRail.innerHTML=FLOOR_PRESETS.map(({id,name,color,url})=>`<button class="decor-option ${state.selectedFloorPreset===id?'is-selected':''}" data-floor-preset="${id}" aria-label="选择${name}地板" aria-pressed="${state.selectedFloorPreset===id}"><div class="decor-preview" data-kind="floor" style="--preview:${color};--floor-image:url('${url}')"></div><b>${name}</b></button>`).join('');
         ui.drawerSummary.textContent=state.drawerExpanded?'选择地板 · 即时预览':'家具 · 地板 · 墙面 · 窗户';
@@ -1022,7 +1039,9 @@
     async function downloadModelBuffer(url,attempts=1){let lastError;for(let attempt=0;attempt<attempts;attempt+=1){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),18000);try{const response=await fetch(url,{mode:'cors',cache:'force-cache',signal:controller.signal});if(!response.ok)throw new Error(`HTTP ${response.status}`);return await response.arrayBuffer();}catch(error){lastError=error;if(attempt+1<attempts)await new Promise(resolve=>setTimeout(resolve,500*(attempt+1)));}finally{clearTimeout(timer);}}throw lastError;}
     function fetchModelBuffer(url,attempts=1){const absoluteUrl=new URL(url,location.href).href;if(modelBufferCache.has(absoluteUrl))return modelBufferCache.get(absoluteUrl);const task=downloadModelBuffer(absoluteUrl,attempts).catch(error=>{modelBufferCache.delete(absoluteUrl);throw error;});modelBufferCache.set(absoluteUrl,task);return task;}
     function parseModel(buffer,url){return new Promise((resolve,reject)=>{let settled=false;const finish=(callback,value)=>{if(settled)return;settled=true;clearTimeout(timer);callback(value);},timer=setTimeout(()=>finish(reject,new Error('3D 模型解析超时')),6000);gltfLoader.parse(buffer,new URL('.',new URL(url,location.href)).href,(value)=>finish(resolve,value),(error)=>finish(reject,error));});}
-    async function fetchAndParseModel(asset){const urls=[asset.modelUrl,asset.fallbackModelUrl].filter((url,index,list)=>url&&list.indexOf(url)===index);let lastError;for(let index=0;index<urls.length;index+=1){try{const buffer=await fetchModelBuffer(urls[index],index===0&&urls.length>1?2:1);return await parseModel(buffer,urls[index]);}catch(error){lastError=error;}}throw lastError;}
+    async function fetchAndParseModel(asset){// 候选链最后永远兜一层 models-v1（随仓库入库）：本地起不了后端时，fallbackModelUrl 会指向 127.0.0.1:8000 而被拒，
+    // 此前就直接判失败、家具不显示——即便同一个模型就躺在 models-v1/ 里。去重后重复项会被自动丢弃。
+    const urls=[asset.modelUrl,asset.fallbackModelUrl,asset.staticFallbackModelUrl].filter((url,index,list)=>url&&list.indexOf(url)===index);let lastError;for(let index=0;index<urls.length;index+=1){try{const buffer=await fetchModelBuffer(urls[index],index===0&&urls.length>1?2:1);return await parseModel(buffer,urls[index]);}catch(error){lastError=error;}}throw lastError;}
     function sameScale(a,b,tolerance=.015){return a&&b&&Math.abs((a.x||1)-(b.x||1))<tolerance&&Math.abs((a.y||1)-(b.y||1))<tolerance&&Math.abs((a.z||1)-(b.z||1))<tolerance;}
     function applyLoadedModel(asset,placement,fallback,gltf){const model=gltf.scene;model.traverse((node)=>{if(node.isMesh){node.castShadow=true;node.receiveShadow=true;}});if(asset.rawModel){if(asset.mount==='wall'){const pre=new THREE.Box3().setFromObject(model),size=pre.getSize(new THREE.Vector3());if(size.y<=size.x&&size.y<=size.z)model.rotation.x=Math.PI/2;else if(size.x<=size.y&&size.x<=size.z)model.rotation.y=Math.PI/2;model.updateMatrixWorld(true);}const box=new THREE.Box3().setFromObject(model),center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3());model.position.set(-center.x,asset.mount==='ceiling'?-box.max.y:-box.min.y,-center.z);if(asset.sizePrior?.w&&size.x&&size.y&&size.z){const normalized={x:asset.sizePrior.w/size.x,y:asset.sizePrior.h/size.y,z:asset.sizePrior.d/size.z},current=placement.scale||{x:1,y:1,z:1},untouchedSource=placement.sourceScale&&sameScale(current,placement.sourceScale),untouchedAdded=placement.userAdded===true&&sameScale(current,{x:1,y:1,z:1}),needsAspectMigration=asset.sizePriorVersion===2&&placement.modelScaleNormalized===true&&placement.sizeNormalizationVersion!==2;if(needsAspectMigration&&asset.legacySizePrior){const legacy={x:asset.legacySizePrior.w/size.x,y:asset.legacySizePrior.h/size.y,z:asset.legacySizePrior.d/size.z},ratios=[current.x/legacy.x,current.y/legacy.y,current.z/legacy.z].filter(Number.isFinite).sort((a,b)=>a-b),userFactor=THREE.MathUtils.clamp(ratios[1]||1,.35,3),corrected={x:normalized.x*userFactor,y:normalized.y*userFactor,z:normalized.z*userFactor};placement.scale=corrected;fallback.scale.set(corrected.x,corrected.y,corrected.z);placement.sizeNormalizationVersion=2;saveSoon();}else if(!placement.modelScaleNormalized&&(untouchedSource||untouchedAdded)){placement.scale=normalized;fallback.scale.set(normalized.x,normalized.y,normalized.z);placement.sizeNormalizationVersion=asset.sizePriorVersion||1;}placement.modelBaseScale=normalized;placement.modelScaleNormalized=true;}}while(fallback.children.length)fallback.remove(fallback.children[0]);fallback.add(model);fallback.visible=true;}
     function processModelQueue(){while(activeModelLoads<MAX_MODEL_LOADS&&modelLoadQueue.length){const task=modelLoadQueue.shift();activeModelLoads+=1;fetchAndParseModel(task.asset).then(gltf=>{if(task.session===modelLoadProgress.session&&task.fallback.parent){applyLoadedModel(task.asset,task.placement,task.fallback,gltf);modelLoadProgress.done+=1;updateModelLoadStatus();}}).catch(error=>{if(task.session===modelLoadProgress.session){task.fallback.visible=true;modelLoadProgress.done+=1;modelLoadProgress.failed+=1;updateModelLoadStatus();console.error(`真实组件加载失败: ${task.asset.name}`,error);}}).finally(()=>{activeModelLoads-=1;processModelQueue();});}}
@@ -1092,7 +1111,7 @@
     ui.generateButton.addEventListener('click',startGeneration); ui.backToSetup.addEventListener('click',returnToSetup); ui.retryButton.addEventListener('click',startGeneration);
     ui.editorHomeName.addEventListener('change',()=>{ if(!state.project) return; const name=ui.editorHomeName.value.trim(); if(!name){ ui.editorHomeName.value=state.project.name; return; } state.project.name=name; ui.editorHomeName.value=name; if(state.project.source?.type==='video_rebuild')localStorage.setItem(sceneNameKey(state.project.source.videoId),name);saveSoon();tell('家的名称已更新'); });
     ui.editorHomeName.addEventListener('keydown',(event)=>{ if(event.key==='Enter'){ event.preventDefault(); ui.editorHomeName.blur(); } });
-    ui.drawerToggle.addEventListener('click',()=>{state.drawerExpanded=!state.drawerExpanded; renderAssetDrawer();}); ui.drawerModes?.addEventListener('click',(event)=>{const button=event.target.closest('[data-drawer-mode]');if(!button)return;state.drawerMode=button.dataset.drawerMode;state.activeAssetCategory='全部';renderAssetDrawer();}); ui.categoryTabs.addEventListener('click',(event)=>{const button=event.target.closest('[data-category]');if(!button)return;state.activeAssetCategory=button.dataset.category;renderAssetDrawer();}); ui.assetRail.addEventListener('click',(event)=>{const floor=event.target.closest('[data-floor-preset]');if(floor){sceneRuntime?.applyFloorPreset(floor.dataset.floorPreset);saveSoon();return;}const wallColor=event.target.closest('[data-wall-color]');if(wallColor){sceneRuntime?.applyWallColor(wallColor.dataset.wallColor);saveSoon();return;}const windowStyle=event.target.closest('[data-window-style]');if(windowStyle){sceneRuntime?.applyWindowStyle(windowStyle.dataset.windowStyle);saveSoon();return;}const asset=event.target.closest('[data-asset-id]');if(asset)sceneRuntime?.beginPlacement(asset.dataset.assetId);});
+    ui.drawerToggle.addEventListener('click',()=>{state.drawerExpanded=!state.drawerExpanded; renderAssetDrawer();}); ui.drawerModes?.addEventListener('click',(event)=>{const button=event.target.closest('[data-drawer-mode]');if(!button)return;state.drawerMode=button.dataset.drawerMode;state.activeAssetCategory='全部';state.activeAssetStyle='';state.styleRowOpen=false;renderAssetDrawer();}); ui.categoryTabs.addEventListener('click',(event)=>{if(event.target.closest('[data-style-trigger]')){state.styleRowOpen=!state.styleRowOpen;renderAssetDrawer();return;}const button=event.target.closest('[data-category]');if(!button)return;state.activeAssetCategory=button.dataset.category;state.activeAssetStyle='';state.styleRowOpen=false;renderAssetDrawer();}); ui.styleTabs.addEventListener('click',(event)=>{const button=event.target.closest('[data-style]');if(!button)return;state.activeAssetStyle=button.dataset.style;state.styleRowOpen=false;renderAssetDrawer();}); ui.assetRail.addEventListener('click',(event)=>{const floor=event.target.closest('[data-floor-preset]');if(floor){sceneRuntime?.applyFloorPreset(floor.dataset.floorPreset);saveSoon();return;}const wallColor=event.target.closest('[data-wall-color]');if(wallColor){sceneRuntime?.applyWallColor(wallColor.dataset.wallColor);saveSoon();return;}const windowStyle=event.target.closest('[data-window-style]');if(windowStyle){sceneRuntime?.applyWindowStyle(windowStyle.dataset.windowStyle);saveSoon();return;}const asset=event.target.closest('[data-asset-id]');if(asset)sceneRuntime?.beginPlacement(asset.dataset.assetId);});
     let resetViewClickTimer=null;
     ui.resetViewButton.addEventListener('click',()=>{clearTimeout(resetViewClickTimer);resetViewClickTimer=setTimeout(()=>{sceneRuntime?.resetView();tell('已回到默认视角');},240);});
     ui.resetViewButton.addEventListener('dblclick',(event)=>{event.preventDefault();clearTimeout(resetViewClickTimer);resetViewClickTimer=null;sceneRuntime?.topView();});
@@ -1108,21 +1127,21 @@
     const requestedAssetId=QUERY.get('addAsset');
     homeSceneService.hydrate().then(async()=>{
       renderSavedHomes();renderVideoScenes();
-      if(requestedAssetId || requestedAssemblyAssetIds.length){
+      if(requestedAssetId){
         const home=homeSceneService.loadHomes()[0];
-        if(home)await openHome(home.id,requestedAssetId,requestedAssemblyAssetIds);
+        if(home)await openHome(home.id,requestedAssetId);
         else tell('请先生成一个家，再加入组件');
       }
     }).catch(async(error)=>{
       console.warn('[DreamHome] 后端项目暂不可用，继续使用本地布局',error);
-      if(requestedAssetId || requestedAssemblyAssetIds.length){
+      if(requestedAssetId){
         const home=homeSceneService.loadHomes()[0];
-        if(home)await openHome(home.id,requestedAssetId,requestedAssemblyAssetIds);
+        if(home)await openHome(home.id,requestedAssetId);
       }
     });
     // 从灵感库 banner 案例卡进入：只读案例模式（复用拼装编辑器，去掉抽屉与移动/调整，加收藏）
     const caseVideoId=QUERY.get('case');
-    if(caseVideoId&&!requestedAssetId&&!requestedAssemblyAssetIds.length){ openVideoScene(caseVideoId,'案例空间',true); }
+    if(caseVideoId&&!requestedAssetId){ openVideoScene(caseVideoId,'案例空间',true); }
     if(new URLSearchParams(location.search).get('focus')==='templates'){requestAnimationFrame(()=>requestAnimationFrame(()=>{document.getElementById('templateBox')?.scrollIntoView({block:'center'});history.replaceState(null,'',location.pathname);}));}
   </script>
 </body>

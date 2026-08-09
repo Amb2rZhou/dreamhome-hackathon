@@ -33,10 +33,12 @@
     .hero-case-foot{margin-top:auto;color:#fff}.hero-case-blogger{font-size:13px;font-weight:var(--dh-font-weight-heavy);text-shadow:0 1px 4px rgba(0,0,0,.3)}.hero-case-cta{margin-top:1px;font-size:10px;font-weight:var(--dh-font-weight-semibold);opacity:.92}
     .hero-dots{display:flex;justify-content:center;gap:6px;margin-top:8px}.hero-dots i{width:6px;height:6px;border-radius:50%;background:rgba(93,115,91,.28);transition:.2s ease}.hero-dots i.is-active{width:16px;border-radius:3px;background:var(--dh-color-sage-600)}
     .viewer-actions{margin-top:10px;display:flex;align-items:center;justify-content:center;gap:10px}
-    .viewer-fav,.viewer-home{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:32px;padding:0 15px;border:1px solid rgba(190,105,89,.4);border-radius:999px;background:#fff4ef;color:#be6959;font:inherit;font-size:12px;font-weight:var(--dh-font-weight-bold);cursor:pointer;transition:background .15s ease,color .15s ease}
+    .viewer-fav{display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 15px;border:1px solid rgba(190,105,89,.4);border-radius:999px;background:#fff4ef;color:#be6959;font:inherit;font-size:12px;font-weight:var(--dh-font-weight-bold);cursor:pointer;transition:background .15s ease,color .15s ease}
     .viewer-fav .vf-heart{font-size:13px;line-height:1}
     .viewer-fav[aria-pressed="true"]{background:#be6959;color:#fff;border-color:#be6959}
-    .viewer-home{border-color:#293127;background:#293127;color:#fff}.viewer-home[hidden]{display:none}
+    /* 弹窗左上角风格标识：文案即 tag 原文，不加「风格」字样。资产最多 2 个风格标签 */
+    .viewer-styles{position:absolute;z-index:2;left:22px;top:22px;display:flex;gap:4px;pointer-events:none}.viewer-styles:empty{display:none}
+    .vs-tag{padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.92);color:#8a5f2e;font-size:9px;font-weight:var(--dh-font-weight-heavy);line-height:1;letter-spacing:.01em;box-shadow:0 1px 4px rgba(44,59,45,.16)}
     .viewer-source{width:32px;height:32px;padding:0;border:1px solid rgba(110,132,107,.3);border-radius:50%;background:#fff;color:var(--dh-color-sage-700);display:inline-grid;place-items:center;cursor:pointer}.viewer-source svg{width:16px;height:16px}.viewer-source[hidden]{display:none}
     .confirm-modal{position:absolute;inset:0;z-index:64;display:flex;align-items:center;justify-content:center;padding:0 28px}.confirm-modal[hidden]{display:none}
     .confirm-backdrop{position:absolute;inset:0;background:rgba(20,26,21,.5);opacity:0;transition:opacity .2s ease}.confirm-modal.is-open .confirm-backdrop{opacity:1}
@@ -54,6 +56,11 @@
     .visual--floorplan{background:linear-gradient(135deg,#f7ecd5,#fffdf6)}.visual--floorplan canvas{display:block;width:100%;height:100%;background-size:cover;background-position:center;background-repeat:no-repeat}
     .furniture-tabs { display:flex; gap:6px; overflow-x:auto; margin:0 -2px; padding:1px 3px 9px; scrollbar-width:none; }.furniture-tabs::-webkit-scrollbar{display:none}.furniture-tab{flex:0 0 auto;border:1px solid rgba(110,132,107,.2);border-radius:999px;padding:5px 9px;background:rgba(255,255,255,.62);color:var(--dh-fg-secondary);font:inherit;font-size:10px;font-weight:var(--dh-font-weight-bold);cursor:pointer}.furniture-tab[aria-selected="true"]{border-color:var(--dh-color-sage-600);background:var(--dh-color-sage-600);color:white}
     .furniture-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px 7px; }.furniture-card{min-width:0;border:0;padding:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.furniture-card .component-visual{height:62px}.furniture-card b{display:block;margin:5px 1px 0;overflow:hidden;font-size:9px;font-weight:var(--dh-font-weight-bold);text-overflow:ellipsis;white-space:nowrap}.visual--furniture{background:linear-gradient(145deg,#f7efe0,#fffaf2)}.object{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);background:var(--object);box-shadow:inset 0 8px rgba(255,255,255,.18)}.object--sofa{width:47px;height:22px;border-radius:12px 12px 5px 5px}.object--sofa::before{content:"";position:absolute;left:9px;top:-12px;width:29px;height:16px;border-radius:9px 9px 3px 3px;background:var(--accent)}.object--chair{width:25px;height:23px;border-radius:7px 7px 4px 4px}.object--chair::before{content:"";position:absolute;left:4px;top:-14px;width:17px;height:18px;border-radius:7px 7px 2px 2px;background:var(--accent)}.object--table{width:42px;height:15px;border-radius:50%;bottom:18px}.object--table::before{content:"";position:absolute;left:19px;top:12px;width:4px;height:20px;background:var(--accent)}.object--lamp{width:4px;height:36px;border-radius:2px;bottom:9px}.object--lamp::before{content:"";position:absolute;left:-10px;top:-10px;width:24px;height:13px;border-radius:50% 50% 3px 3px;background:var(--accent)}.object--bed{width:46px;height:25px;border-radius:5px}.object--bed::before{content:"";position:absolute;left:5px;top:4px;width:35px;height:10px;border-radius:4px;background:var(--accent)}.object--cabinet{width:39px;height:29px;border-radius:3px}.object--plant{width:22px;height:23px;border-radius:45% 55% 38% 62%;background:var(--accent)}.object--plant::before{content:"";position:absolute;left:-7px;top:-8px;width:15px;height:22px;border-radius:50% 0 50% 0;background:var(--object)}.all-card{display:grid;place-items:center;height:62px;align-self:start;border:1px dashed rgba(150,112,58,.5)!important;border-radius:8px!important;background:rgba(245,236,215,.52)!important;color:var(--dh-color-sage-800)!important;font-size:10px;font-weight:var(--dh-font-weight-heavy);text-align:center}.all-card span{max-width:46px}
+    /* 风格精筛（全部页）：视觉权重刻意低于类目 tab——类目是主轴，风格是主轴内的二级筛选。与 inspiration-library 同步 */
+    .style-filter{display:flex;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;margin:0 -2px 12px;padding:1px 3px 3px;scrollbar-width:none}.style-filter::-webkit-scrollbar{display:none}
+    .style-chip{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(181,140,70,.28);border-radius:999px;padding:5px 10px;background:rgba(255,255,255,.7);color:var(--dh-fg-secondary);font:inherit;font-size:10px;font-weight:var(--dh-font-weight-bold);white-space:nowrap;cursor:pointer;transition:background .15s ease,border-color .15s ease,color .15s ease}
+    .style-chip .sc-n{font-size:9px;font-weight:var(--dh-font-weight-semibold);opacity:.6;font-variant-numeric:tabular-nums}
+    .style-chip[aria-selected="true"]{border-color:var(--dh-color-sage-700);background:var(--dh-color-sage-100);color:var(--dh-color-sage-800)}.style-chip[aria-selected="true"] .sc-n{opacity:.75}
     .catalog-toolbar{display:grid;grid-template-columns:64px 1fr 64px;align-items:center}.catalog-toolbar h2{margin:0;font-size:16px;font-weight:var(--dh-font-weight-heavy);text-align:center;white-space:nowrap}.catalog-toolbar .catalog-back{justify-self:start;font-size:30px;line-height:1;padding:0 10px 0 2px;margin:-4px 0;color:var(--dh-color-sage-700)}.catalog-manage{justify-self:end;white-space:nowrap;border:1px solid rgba(110,132,107,.32);border-radius:999px;padding:5px 13px;background:rgba(255,255,255,.82);color:var(--dh-color-sage-700);font:inherit;font-size:11px;font-weight:var(--dh-font-weight-heavy);cursor:pointer}.catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px}.catalog-grid .component-card{min-width:0}.catalog-grid .component-visual{height:86px}.empty-state{padding:24px 10px;text-align:center;color:var(--dh-fg-secondary);font-size:12px}.toast{position:absolute;z-index:40;left:50%;bottom:78px;transform:translateX(-50%) translateY(8px);opacity:0;padding:9px 12px;border-radius:999px;background:rgba(29,36,31,.9);color:white;font-size:11px;font-weight:var(--dh-font-weight-semibold);pointer-events:none;transition:.2s ease}.toast.show{opacity:1;transform:translateX(-50%)}
     /* 选择模式：勾选框 + 平台资产禁用 */
     .component-card[data-selectable]{cursor:pointer}.select-check{position:absolute;z-index:4;right:4px;top:4px;width:20px;height:20px;border:2px solid #fff;border-radius:50%;background:rgba(29,36,31,.35);box-shadow:0 1px 4px rgba(44,59,45,.3);display:grid;place-items:center;color:#fff;font-size:12px;line-height:1}.component-card[data-selected="true"] .select-check{background:var(--dh-color-sage-600)}.component-card--locked{opacity:.4}.selecting .favorite-control{display:none}
@@ -98,13 +105,13 @@
           <div class="viewer-backdrop" data-viewer-close></div>
           <div class="viewer-card" role="dialog" aria-modal="true" aria-label="组件查看">
             <button class="viewer-close" id="viewerClose" type="button" aria-label="关闭">✕</button>
+            <div class="viewer-styles" id="viewerStyles" aria-label="风格标签"></div>
             <div class="viewer-stage" id="viewerStage"><span class="viewer-hint">拖动可 360° 查看</span></div>
             <div class="viewer-foot">
               <div class="viewer-name-row"><span class="viewer-name-wrap"><input class="viewer-name" id="viewerName" maxlength="16" aria-label="组件名称" /></span></div>
               <p class="viewer-meta" id="viewerMeta"></p>
               <div class="viewer-actions">
                 <button class="viewer-fav" id="viewerFav" type="button" aria-pressed="false"><span class="vf-heart" aria-hidden="true">♡</span><span class="vf-text">收藏</span></button>
-                <button class="viewer-home" id="viewerHome" type="button">加入我的家</button>
                 <button class="viewer-source" id="viewerSource" type="button" aria-label="查看原视频" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
               </div>
               <button class="viewer-delete" id="viewerDelete" type="button" hidden>删除</button>
@@ -148,6 +155,20 @@
     let toastTimer = null;
     // 当前 catalog 上下文 + 选择模式状态（保持简洁：单一 state，渲染读它）
     const view = { kind: '', category: '', favoriteOnly: false };
+    let activeStyle = ''; // 全部页的风格精筛；'' = 不筛。切类目/换页时由 styleFacets 校验后重置
+
+    // 风格分面：完全由当前资产集算出，不硬编码任何风格名单——
+    // 风格 tag 体系归 Amber，她增删风格后这里自动跟着变，前端不做同义词合并等数据判断。
+    // ⚠️ 与 inspiration-library 保持同步：两页是同套代码，改一页必须改另一页。
+    const styleFacets = (assets) => {
+      const count = new Map();
+      assets.forEach((asset) => (asset.styles || []).forEach((style) => count.set(style, (count.get(style) || 0) + 1)));
+      return [...count.entries()]
+        // 覆盖全集的风格等于没筛（如「家电」10 件全是现代），去掉避免给用户假选项
+        .filter(([, n]) => n < assets.length)
+        .map(([name, n]) => ({ name, n }))
+        .sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, 'zh'));
+    };
     const select = { on: false, ids: new Set() };
 
     const labelByKind = Object.fromEntries(COMPONENT_FAMILIES.map((family) => [family.id, family.label]));
@@ -245,6 +266,17 @@
       const { kind, category, favoriteOnly } = view;
       let assets = getAssets(kind, category);
       if (favoriteOnly) assets = assets.filter((asset) => getFavorites().has(asset.id));
+      // 重渲染会重建 chip 行，先存住横向滚动位置，否则每次点都会弹回最左（与 renderHome 里 furniture-tabs 同一处理）
+      const prevFilterScroll = catalog.querySelector('.style-filter')?.scrollLeft || 0;
+      // 风格精筛：分面从「未按风格过滤」的集合算，切换风格时计数才稳定不跳
+      const facets = kind === 'furniture' && !select.on ? styleFacets(assets) : [];
+      if (activeStyle && !facets.some((facet) => facet.name === activeStyle)) activeStyle = ''; // 换类目后旧风格可能不存在
+      const showFilter = facets.length >= 2; // 只有一个风格可选＝没得选，整条不出
+      if (!showFilter) activeStyle = '';
+      const filtered = activeStyle ? assets.filter((asset) => (asset.styles || []).includes(activeStyle)) : assets;
+      const chips = showFilter
+        ? `<div class="style-filter" role="tablist" aria-label="按风格筛选"><button class="style-chip" data-style="" role="tab" aria-selected="${!activeStyle}">全部<span class="sc-n">${assets.length}</span></button>${facets.map((facet) => `<button class="style-chip" data-style="${facet.name}" role="tab" aria-selected="${facet.name === activeStyle}">${facet.name}<span class="sc-n">${facet.n}</span></button>`).join('')}</div>`
+        : '';
       const title = `${labelByKind[kind]}${category ? ` · ${FURNITURE_CATEGORIES.find((item) => item.id === category)?.label || ''}` : ''}`;
       // 管理按钮：仅家具类细分品类的全部页；选择模式下隐藏管理按钮，底部出现「取消/确认删除」
       const canManage = kind === 'furniture' && !select.on; // 家具类「全部」页也可管理（category 为空时同样允许）
@@ -256,14 +288,26 @@
       libraryHeader.hidden = false; libraryHeader.classList.add('is-catalog'); libraryHeader.innerHTML = toolbar;
       mainTabbar.hidden = true;
       disposeTemplatePreviews(catalog);
-      catalog.innerHTML = assets.length ? `<div class="catalog-grid">${assets.map((asset) => card(asset)).join('')}</div>` : '<p class="empty-state">还没有收藏组件。点击心形即可收藏。</p>';
+      catalog.innerHTML = `${chips}${filtered.length ? `<div class="catalog-grid">${filtered.map((asset) => card(asset)).join('')}</div>` : '<p class="empty-state">还没有收藏组件。点击心形即可收藏。</p>'}`;
       renderTemplatePreviews(catalog);
+      const nextFilter = catalog.querySelector('.style-filter');
+      if (nextFilter) {
+        nextFilter.scrollLeft = prevFilterScroll;
+        const selectedChip = nextFilter.querySelector('[aria-selected="true"]');
+        if (selectedChip) { // 选中项被挤出可视区时才微调，避免无谓跳动
+          const barRect = nextFilter.getBoundingClientRect();
+          const chipRect = selectedChip.getBoundingClientRect();
+          if (chipRect.left < barRect.left) nextFilter.scrollLeft += chipRect.left - barRect.left;
+          if (chipRect.right > barRect.right) nextFilter.scrollLeft += chipRect.right - barRect.right;
+        }
+      }
       selectBar.hidden = !select.on;
       confirmDelete.disabled = select.ids.size === 0;
     };
     const rerender = () => { if (!catalog.hidden) renderCatalog(); else renderHome(); };
     const route = () => {
       if (select.on) exitSelect(true);
+      activeStyle = ''; // 每次进/出全部页都从「全部风格」开始，避免带着上一页的筛选进来
       const matched = location.hash.match(/^#catalog=([^:]+)(?::(.+))?$/);
       if (!matched && location.hash !== '#favorites') { home.hidden = false; catalog.hidden = true; libraryBanner.hidden = true; libraryHeader.hidden = false; libraryHeader.classList.remove('is-catalog'); libraryHeader.innerHTML = '<h1 class="library-title">我的收藏</h1>'; mainTabbar.hidden = false; screenEl.classList.add('dh-topwhite'); renderHome(); libraryContent.scrollTop = 0; requestAnimationFrame(() => { libraryContent.scrollTop = 0; }); return; } // 返回主页始终从顶部展示
       if (location.hash === '#favorites') { const favorites = getFavorites(); const first = [...favorites][0]; const asset = first ? getAssets().find((item) => item.id === first) : null; Object.assign(view, { kind: asset?.kind || 'furniture', category: '', favoriteOnly: true }); renderCatalog(); libraryContent.scrollTop = 0; return; }
@@ -281,7 +325,7 @@
     const viewerDelete = document.getElementById('viewerDelete');
     const viewerSource = document.getElementById('viewerSource');
     const viewerFav = document.getElementById('viewerFav');
-    const viewerHome = document.getElementById('viewerHome');
+    const viewerStyles = document.getElementById('viewerStyles');
     let viewer3D = null; // { dispose } · 小程序侧对应 WebGL canvas 适配层
     let viewerAssetId = null;
 
@@ -375,13 +419,13 @@
       viewerName.value = asset.name;
       viewerName.readOnly = !editable;
       viewerDelete.hidden = !editable;
-      viewerHome.hidden = asset.kind !== 'furniture';
       viewerSource.hidden = editable || asset.sourceType === 'offline_photo' || !asset.videoUrl; // 拍照资产没有虚构的视频跳转
       syncViewerFav();
       fitViewerName();
       const catLabel = asset.category ? FURNITURE_CATEGORIES.find((c) => c.id === asset.category)?.label || '' : '';
       const provenance = ['offline_photo','capture'].includes(asset.sourceType) ? '拍照生成 · 本机收藏' : (editable ? '我的组件' : '平台组件');
       viewerMeta.textContent = `${labelByKind[asset.kind]}${catLabel ? ` · ${catLabel}` : ''} · ${provenance}`;
+      viewerStyles.innerHTML = (asset.styles || []).map((style) => `<span class="vs-tag">${style}</span>`).join(''); // 无风格标签时 :empty 自动隐藏
       viewer.hidden = false;
       disposeTemplatePreviews(viewerStage);
       const showPhoto = () => {
@@ -421,10 +465,6 @@
     // 收藏（所有组件都可收藏）
     const syncViewerFav = () => { const on = viewerAssetId && getFavorites().has(viewerAssetId); viewerFav.setAttribute('aria-pressed', on ? 'true' : 'false'); viewerFav.querySelector('.vf-heart').textContent = on ? '♥' : '♡'; viewerFav.querySelector('.vf-text').textContent = on ? '已收藏' : '收藏'; };
     viewerFav.addEventListener('click', () => { if (!viewerAssetId) return; toggle(viewerAssetId); syncViewerFav(); });
-    viewerHome.addEventListener('click', () => {
-      if (!viewerAssetId) return;
-      location.href = `../my-home/index.html?addAsset=${encodeURIComponent(viewerAssetId)}`;
-    });
     // 删除（仅用户组件）→ 先弹「删除后不可恢复」二次确认
     viewerDelete.addEventListener('click', () => { if (!viewerAssetId) return; openDelConfirm({ type: 'single', id: viewerAssetId }); });
     viewerSource.addEventListener('click', () => {
@@ -504,6 +544,8 @@
       if (favorite) { event.stopPropagation(); toggle(favorite.dataset.favorite); return; }
       const all = event.target.closest('[data-all]');
       if (all) { const [kind, category] = all.dataset.all.split(':'); openCatalog(kind, category); return; }
+      const styleChip = event.target.closest('[data-style]');
+      if (styleChip) { activeStyle = styleChip.dataset.style; renderCatalog(); return; } // 不重置纵向滚动：筛选是原地收窄，不是换页
       const tab = event.target.closest('[data-category]');
       if (tab) { activeFurnitureCategory = tab.dataset.category; renderHome(); return; }
       if (event.target.closest('#catalogBack')) { const fromMyHome = new URLSearchParams(location.search).get('from') === 'myhome'; if (fromMyHome && view.kind === 'floorplan' && !view.favoriteOnly) { location.href = '../my-home/index.html'; return; } if (location.hash) location.hash = ''; else route(); return; } // 唯一例外：从「我的家」进来的户型全部页返回我的家；其余回灵感库主页

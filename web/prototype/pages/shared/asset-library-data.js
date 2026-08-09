@@ -34,7 +34,7 @@ export const CATEGORY_PRIMITIVE = {
   灯具: 'lamp', 柜子: 'cabinet', 绿植: 'plant', 桌子: 'table', 单椅: 'chair',
   装饰: 'plant', 地毯: 'cabinet', 沙发: 'sofa', 家电: 'cabinet', 床: 'bed', 卫浴: 'cabinet',
 };
-// size_missing（162/169 件无真实米制尺寸）时的每类兜底尺寸 [宽,高,深]（米）
+// 真实尺寸缺失时的每类展示兜底尺寸 [宽,高,深]（米）；只用于编辑器缩放，不冒充物理测量值。
 export const CATEGORY_DIMENSIONS = {
   灯具: [.4, 1.4, .4], 柜子: [1.0, 1.2, .45], 绿植: [.4, .7, .4], 桌子: [1.2, .75, .7], 单椅: [.55, .9, .55],
   装饰: [.3, .4, .3], 地毯: [1.6, .02, 2.2], 沙发: [1.9, .82, .9], 家电: [.6, 1.0, .6], 床: [1.6, .5, 2.0], 卫浴: [.6, .8, .5],
@@ -91,6 +91,7 @@ export const adaptBackendAsset = (rec) => {
     modelUrl: rec.model_url || null, frameUrl: rec.frame_url || null,
     videoUrl: rec.video_url || null, videoSec: rec.representative_sec ?? null,
     colors: rec.labels?.colors ?? [], materials: rec.labels?.materials ?? [], styles: rec.labels?.styles ?? [],
+    tagProvenance: rec.tag_provenance ?? null,
   };
 };
 
@@ -112,7 +113,7 @@ export const COMPONENT_ASSETS = [
   asset('wallpaper-sage', 'wallpaper', '苔藓绿植感', { finish: { color: '#bbcab4', accent: '#7f9677', pattern: 'leaf' } }),
   asset('wallpaper-grid', 'wallpaper', '米灰细格', { finish: { color: '#dfddd5', accent: '#aaa99f', pattern: 'grid' } }),
   asset('wallpaper-rust', 'wallpaper', '砖红手作纹', { finish: { color: '#c6846e', accent: '#9e5f4c', pattern: 'woven' } }),
-  // 家具类：来自后端真实资产数据集（169 件：149 件视频资产 + 20 件线下拍照资产），经 adaptBackendAsset 适配。
+  // 家具类：来自后端 canonical feed manifest，经 adaptBackendAsset 适配。
   ...BACKEND_ASSETS.map(adaptBackendAsset),
 ];
 

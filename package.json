@@ -11,6 +11,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "build:asset-catalog": "node tools/build-structured-asset-catalog.mjs",
+    "build:frontend-asset-catalog": "node tools/sync-frontend-asset-catalog.mjs",
     "build:discover": "tsc -b && vite build --config vite.discover.config.ts && cp -R public/. web/ && node tools/finalize-discover-entry.mjs",
     "lint": "oxlint src",
     "test": "vitest run",

@@ -101,6 +101,7 @@
     .result-body { flex:1; min-width:0; text-align:left; }
     .result-name { width:100%; margin:0; padding:6px 9px; border:1px solid rgba(199,143,42,.28); border-radius:10px; background:rgba(252,246,233,.95); color:var(--dh-fg-primary); font:inherit; font-size:13px; font-weight:var(--dh-font-weight-bold); box-sizing:border-box; }
     .result-meta { margin:6px 0 0 2px; font-size:10px; font-weight:var(--dh-font-weight-semibold); color:var(--dh-fg-muted); }
+    .style-pick.is-on { border-color:#deb08c; background:#fbf3e1; color:#8a5f2e; }
     .result-actions { display:flex; flex-direction:column; gap:9px; width:100%; max-width:264px; margin-top:14px; }
     .result-actions .primary-button { margin-top:0; height:44px; box-shadow:none; }
     .link-row { display:flex; flex-direction:column; gap:9px; }
@@ -152,6 +153,10 @@
                 <span class="category-label">这是什么家具？</span>
                 <div class="category-tabs" id="categoryTabs" role="group" aria-label="家具品类"></div>
               </div>
+              <div class="category-row">
+                <span class="category-label">这是什么风格？</span>
+                <div class="category-tabs" id="styleTabs" role="group" aria-label="家具风格"></div>
+              </div>
               <button class="primary-button" id="generateBtn" type="button" disabled>生成</button>
             </section>
 
@@ -196,7 +201,7 @@
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
     import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-    import { FURNITURE_CATEGORIES, CATEGORY_PRIMITIVE, CATEGORY_DIMENSIONS, addUserAsset } from '../shared/asset-library-data.js';
+    import { FURNITURE_CATEGORIES, CATEGORY_PRIMITIVE, CATEGORY_DIMENSIONS, addUserAsset, getAssets } from '../shared/asset-library-data.js';
 
     const photoEmpty = document.getElementById('photoEmpty');
     const photoPreview = document.getElementById('photoPreview');
@@ -205,6 +210,7 @@
     const cameraInput = document.getElementById('cameraInput');
     const galleryInput = document.getElementById('galleryInput');
     const categoryTabs = document.getElementById('categoryTabs');
+    const styleTabs = document.getElementById('styleTabs');
     const generateBtn = document.getElementById('generateBtn');
     const toast = document.getElementById('toast');
     const serviceStatus = document.getElementById('serviceStatus');
@@ -224,7 +230,7 @@
     const DEFAULT_CATEGORY = FURNITURE_CATEGORIES[0].id; // 默认选中首个真实分类（列表首位、可见即高亮）
     const ACTIVE_JOB_KEY = 'dreamhome.capture.active-job.v1';
     const ACTIVE_JOB_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
-    const state = { categories:[DEFAULT_CATEGORY], photoUrl:null, photoFile:null, hasPhoto:false, backendReady:false, photoColor:'#9a8163', pollTimer:null, pollFailures:0, job:null, generatedAssets:[] };
+    const state = { categories:[], styles:[], photoUrl:null, photoFile:null, hasPhoto:false, backendReady:false, photoColor:'#9a8163', pollTimer:null, pollFailures:0, job:null, generatedAssets:[] };
     const dracoLoader = new DRACOLoader().setDecoderPath('/vendor/three-addons/libs/draco/');
     const generatedModelLoader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).setDRACOLoader(dracoLoader);
     const resultPreviewDisposers = [];
@@ -253,6 +259,7 @@
         status:job.status || previous?.status || 'queued',
         progress:Number(job.progress || previous?.progress || 0),
         categoryId:state.categories[0] || previous?.categoryId || DEFAULT_CATEGORY,
+        styles:state.styles.length ? [...state.styles] : (previous?.styles || []),
         photoColor:state.photoColor || previous?.photoColor || '#9a8163',
         submittedAt:previous?.jobId === job.job_id ? previous.submittedAt : Date.now(),
         updatedAt:Date.now(),
@@ -297,7 +304,7 @@
       photoEmpty.classList.add('is-hidden');
       photoReset.hidden = false;
       state.hasPhoto = true;
-      generateBtn.disabled = !state.backendReady;
+      syncGenerateBtn();
     }
     async function onMediaChosen(file) {
       if (!file) return;
@@ -325,6 +332,7 @@
     function resetPhoto() {
       if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
       state.photoUrl = null; state.photoFile = null; state.hasPhoto = false;
+      state.categories = []; state.styles = []; syncCategoryTabs(); syncStyleTabs();
       photoPreview.hidden = true; photoPreview.removeAttribute('src');
       videoPreview.hidden = true; videoPreview.pause(); videoPreview.removeAttribute('src');
       photoEmpty.classList.remove('is-hidden');
@@ -344,8 +352,34 @@
     categoryTabs.addEventListener('click', (event) => {
       const tab = event.target.closest('[data-category]');
       if (!tab) return;
-      state.categories = [tab.dataset.category]; // 单选：选中即替换，始终恰好一个
+      state.categories = [tab.dataset.category]; // 单选：选中即替换
       syncCategoryTabs();
+      syncGenerateBtn();
+    });
+
+    // 风格控件（多选，上限 2，可全不选）。放在生成前：用户线下看着实物拍，
+    // 那一刻对风格最有判断；生成完再问反而要重新回忆。
+    // 选项＝平台资产实际在用的词表，不开放自由输入：词表归 Amber，自由输入会把标签体系打散。
+    const STYLE_VOCAB = () => {
+      const count = new Map();
+      getAssets('furniture').forEach((asset) => (asset.styles || []).forEach((style) => count.set(style, (count.get(style) || 0) + 1)));
+      return [...count.entries()].sort((a, b) => b[1] - a[1]).map(([name]) => name);
+    };
+    // 生成可用条件集中在一处：有照片 + 后端就绪 + 选了品类 + 选了风格。
+    // 品类与风格都必填且无默认值——默认选中会让用户直接略过，错的标签比没标签更难查。
+    function syncGenerateBtn() {
+      generateBtn.disabled = !state.hasPhoto || !state.backendReady || !state.categories.length || !state.styles.length;
+    }
+    styleTabs.innerHTML = STYLE_VOCAB().map((style) => `<button class="category-tab" data-style="${style}" type="button" aria-pressed="false">${style}</button>`).join('');
+    function syncStyleTabs() {
+      styleTabs.querySelectorAll('[data-style]').forEach((el) => el.setAttribute('aria-pressed', String(state.styles.includes(el.dataset.style))));
+    }
+    styleTabs.addEventListener('click', (event) => {
+      const tab = event.target.closest('[data-style]');
+      if (!tab) return;
+      state.styles = [tab.dataset.style]; // 单选：选中即替换，与品类同构
+      syncStyleTabs();
+      syncGenerateBtn();
     });
 
     function setPhase(name) { Object.entries(phases).forEach(([key, el]) => el.classList.toggle('is-active', key === name)); }
@@ -381,7 +415,7 @@
         serviceStatus.dataset.state = 'failed';
         serviceStatus.textContent = '3D 服务暂不可用';
       }
-      generateBtn.disabled = !state.hasPhoto || !state.backendReady;
+      syncGenerateBtn();
     }
     checkBackend();
     window.addEventListener('focus', checkBackend);
@@ -447,6 +481,7 @@
         color:state.photoColor,
         accent:lighten(state.photoColor, .3),
         dimensions,
+        sizeStatus:Array.isArray(job.estimated_size_m) && job.estimated_size_m.length === 3 ? 'estimated' : 'missing',
         sizePrior:{ w:dimensions[0], h:dimensions[1], d:dimensions[2] },
         sizePriorVersion:2,
         modelUrl,
@@ -456,6 +491,20 @@
         libraryAttached:false,
         thumbnail:null,
         backendCategory:job.category || null,
+        // 与平台资产同构：平台侧是 labels.styles 数组（经适配器成为 asset.styles），
+        // 用户组件此前只存单数 style 字符串，导致在风格筛选/图鉴里完全隐形。
+        // 后端若回了 style 且命中现有词表，作为默认选中；否则留空等用户选。
+        // 风格只认用户在生成前选的那一个。后端的 job.style 不参与填充：
+        // 识别可能不准，而组件弹窗里没有补录/修改入口，错了就永久错在库里。
+        // 后端原值仍存在下面的 style 字段里备查，只是不作为用户可见标签。
+        styles:[...state.styles],
+        materials:job.material ? [job.material] : ['待确认材质'],
+        tagProvenance:{
+          source:'user_declared',
+          confidence:1,
+          humanReviewStatus:'reviewed',
+          reviewedAt:new Date().toISOString(),
+        },
         style:job.style || null,
         material:job.material || null,
         source:'user',
@@ -602,6 +651,10 @@
         state.categories = [active.categoryId];
         syncCategoryTabs();
       }
+      if (Array.isArray(active.styles) && active.styles.length) {
+        state.styles = active.styles.slice(0, 1);
+        syncStyleTabs();
+      }
       state.photoColor = active.photoColor || state.photoColor;
       state.job = { job_id:active.jobId, status:active.status, progress:active.progress };
       state.pollFailures = 0;
@@ -621,7 +674,9 @@
       disposeResultPreviews();
       resultList.innerHTML = assets.map((asset) => {
         const category = FURNITURE_CATEGORIES.find((item) => item.id === asset.category);
-        return `<div class="result-item"><div class="result-visual"><canvas class="result-model-viewer" data-model-preview="${asset.id}"></canvas><span class="result-model-hint">拖动查看</span></div><div class="result-body"><input class="result-name" maxlength="16" value="${asset.name}" data-name="${asset.id}" aria-label="组件名称" /><p class="result-meta">家具类 · ${category.label} · 真实 GLB · 本机收藏</p></div></div>`;
+        // 风格在生成前已选好，这里只回显，不再给第二处编辑入口
+        const styleText = (asset.styles || []).length ? ` · ${asset.styles.join(' / ')}` : '';
+        return `<div class="result-item"><div class="result-visual"><canvas class="result-model-viewer" data-model-preview="${asset.id}"></canvas><span class="result-model-hint">拖动查看</span></div><div class="result-body"><input class="result-name" maxlength="16" value="${asset.name}" data-name="${asset.id}" aria-label="组件名称" /><p class="result-meta">家具类 · ${category.label}${styleText} · 真实 GLB · 本机收藏</p></div></div>`;
       }).join('');
       const canvas = resultList.querySelector('[data-model-preview]');
       if (canvas && gltf?.scene) mountResultModel(canvas, gltf.scene, assets[0].name);
@@ -638,7 +693,7 @@
     });
 
     // 前进按钮只负责跳转（已入库）；查看我的收藏直达首个组件所属细分标签全部页
-    generateBtn.addEventListener('click', () => { if (state.hasPhoto) startGeneration(); });
+    generateBtn.addEventListener('click', () => { if (state.hasPhoto && state.categories.length && state.styles.length) startGeneration(); });
     genBack.addEventListener('click', () => { clearTimeout(state.pollTimer); setPhase('capture'); });
     genRetry.addEventListener('click', () => {
       if (state.photoFile) {

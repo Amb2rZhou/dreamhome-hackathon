@@ -1463,20 +1463,65 @@ const VIDEO_SCENES: Record<string, string> = {
 
 function SceneActions({ videoId }: { videoId: string }) {
   const sceneName = VIDEO_SCENES[videoId]
+  const favoritesKey = 'dreamhome.case-layout-favorites.v1'
+  const [saved, setSaved] = useState(false)
+  const [notice, setNotice] = useState('')
+
+  useEffect(() => {
+    if (!sceneName) return
+    try {
+      const ids = JSON.parse(window.localStorage.getItem(favoritesKey) || '[]')
+      setSaved(Array.isArray(ids) && ids.includes(videoId))
+    } catch {
+      setSaved(false)
+    }
+  }, [sceneName, videoId])
+
+  useEffect(() => {
+    if (!notice) return
+    const timer = window.setTimeout(() => setNotice(''), 2200)
+    return () => window.clearTimeout(timer)
+  }, [notice])
 
   if (!sceneName) return null
 
+  const toggleFavorite = () => {
+    let ids: string[] = []
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem(favoritesKey) || '[]')
+      ids = Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : []
+    } catch {
+      ids = []
+    }
+    const nextSaved = !ids.includes(videoId)
+    const next = nextSaved ? Array.from(new Set([...ids, videoId])) : ids.filter((id) => id !== videoId)
+    window.localStorage.setItem(favoritesKey, JSON.stringify(next))
+    setSaved(nextSaved)
+    setNotice(nextSaved ? `已收藏 ${sceneName}` : '已取消收藏布局')
+  }
+
   return (
-    <section className="scene-actions-inline" aria-label={`${sceneName}的同款小家`}>
-      <a
-        className="scene-action-inline scene-action-inline--primary"
-        href={`/prototype/pages/same-home/index.html?case=${encodeURIComponent(videoId)}`}
-        target="_top"
-        aria-label={`查看${sceneName}的 1:1 同款小家`}
-      >
-        查看同款小家
-      </a>
-    </section>
+    <>
+      <section className="scene-actions-inline" aria-label={`${sceneName}的同款小家`}>
+        <a
+          className="scene-action-inline scene-action-inline--primary"
+          href={`/prototype/pages/inspiration-library/index.html#case=${encodeURIComponent(videoId)}`}
+          target="_top"
+          aria-label={`查看${sceneName}的 1:1 同款小家`}
+        >
+          查看同款小家
+        </a>
+        <button
+          type="button"
+          className="scene-action-inline"
+          aria-pressed={saved}
+          onClick={toggleFavorite}
+        >
+          {saved ? '✓ 已收藏布局' : '收藏布局'}
+        </button>
+      </section>
+      {notice && <div className="scene-action-notice" role="status">{notice}</div>}
+    </>
   )
 }
 
