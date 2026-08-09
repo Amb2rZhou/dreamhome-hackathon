@@ -1293,7 +1293,7 @@ function SceneActions({ videoId }: { videoId: string }) {
       <section className="scene-actions-inline" aria-label={`${sceneName}的同款小家`}>
         <a
           className="scene-action-inline scene-action-inline--primary"
-          href={`/prototype/pages/my-home/index.html?case=${encodeURIComponent(videoId)}`}
+          href={`/prototype/pages/inspiration-library/index.html#case=${encodeURIComponent(videoId)}`}
           target="_top"
           aria-label={`查看${sceneName}的 1:1 同款小家`}
         >

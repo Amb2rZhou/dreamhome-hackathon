@@ -56,11 +56,68 @@
     .visual--floorplan{background:linear-gradient(135deg,#f7ecd5,#fffdf6)}.visual--floorplan canvas{display:block;width:100%;height:100%;background-size:cover;background-position:center;background-repeat:no-repeat}
     .furniture-tabs { display:flex; gap:6px; overflow-x:auto; margin:0 -2px; padding:1px 3px 9px; scrollbar-width:none; }.furniture-tabs::-webkit-scrollbar{display:none}.furniture-tab{flex:0 0 auto;border:1px solid rgba(110,132,107,.2);border-radius:999px;padding:5px 9px;background:rgba(255,255,255,.62);color:var(--dh-fg-secondary);font:inherit;font-size:10px;font-weight:var(--dh-font-weight-bold);cursor:pointer}.furniture-tab[aria-selected="true"]{border-color:var(--dh-color-sage-600);background:var(--dh-color-sage-600);color:white}
     .furniture-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px 7px; }.furniture-card{min-width:0;border:0;padding:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.furniture-card .component-visual{height:62px}.furniture-card b{display:block;margin:5px 1px 0;overflow:hidden;font-size:9px;font-weight:var(--dh-font-weight-bold);text-overflow:ellipsis;white-space:nowrap}.visual--furniture{background:linear-gradient(145deg,#f7efe0,#fffaf2)}.object{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);background:var(--object);box-shadow:inset 0 8px rgba(255,255,255,.18)}.object--sofa{width:47px;height:22px;border-radius:12px 12px 5px 5px}.object--sofa::before{content:"";position:absolute;left:9px;top:-12px;width:29px;height:16px;border-radius:9px 9px 3px 3px;background:var(--accent)}.object--chair{width:25px;height:23px;border-radius:7px 7px 4px 4px}.object--chair::before{content:"";position:absolute;left:4px;top:-14px;width:17px;height:18px;border-radius:7px 7px 2px 2px;background:var(--accent)}.object--table{width:42px;height:15px;border-radius:50%;bottom:18px}.object--table::before{content:"";position:absolute;left:19px;top:12px;width:4px;height:20px;background:var(--accent)}.object--lamp{width:4px;height:36px;border-radius:2px;bottom:9px}.object--lamp::before{content:"";position:absolute;left:-10px;top:-10px;width:24px;height:13px;border-radius:50% 50% 3px 3px;background:var(--accent)}.object--bed{width:46px;height:25px;border-radius:5px}.object--bed::before{content:"";position:absolute;left:5px;top:4px;width:35px;height:10px;border-radius:4px;background:var(--accent)}.object--cabinet{width:39px;height:29px;border-radius:3px}.object--plant{width:22px;height:23px;border-radius:45% 55% 38% 62%;background:var(--accent)}.object--plant::before{content:"";position:absolute;left:-7px;top:-8px;width:15px;height:22px;border-radius:50% 0 50% 0;background:var(--object)}.all-card{display:grid;place-items:center;height:62px;align-self:start;border:1px dashed rgba(150,112,58,.5)!important;border-radius:8px!important;background:rgba(245,236,215,.52)!important;color:var(--dh-color-sage-800)!important;font-size:10px;font-weight:var(--dh-font-weight-heavy);text-align:center}.all-card span{max-width:46px}
-    /* 风格精筛（全部页）：视觉权重刻意低于类目 tab——类目是主轴，风格是主轴内的二级筛选 */
-    .style-filter{display:flex;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;margin:0 -2px 12px;padding:1px 3px 3px;scrollbar-width:none}.style-filter::-webkit-scrollbar{display:none}
-    .style-chip{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(181,140,70,.28);border-radius:999px;padding:5px 10px;background:rgba(255,255,255,.7);color:var(--dh-fg-secondary);font:inherit;font-size:10px;font-weight:var(--dh-font-weight-bold);white-space:nowrap;cursor:pointer;transition:background .15s ease,border-color .15s ease,color .15s ease}
-    .style-chip .sc-n{font-size:9px;font-weight:var(--dh-font-weight-semibold);opacity:.6;font-variant-numeric:tabular-nums}
-    .style-chip[aria-selected="true"]{border-color:var(--dh-color-sage-700);background:var(--dh-color-sage-100);color:var(--dh-color-sage-800)}.style-chip[aria-selected="true"] .sc-n{opacity:.75}
+    /* ---- 全部页筛选条：只展示已选标签，条件在半屏 sheet 里改 ---- */
+    .filter-bar{display:flex;align-items:center;gap:8px;margin:0 -2px 12px;padding:1px 2px}
+    .filter-open{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;min-height:30px;padding:0 11px;border:1px solid rgba(181,140,70,.32);border-radius:999px;background:#fdf7ea;color:#8a5f2e;font:inherit;font-size:11px;font-weight:var(--dh-font-weight-heavy);cursor:pointer}
+    .filter-open svg{width:14px;height:14px}.filter-open em{font-style:normal;min-width:15px;height:15px;display:grid;place-items:center;border-radius:999px;background:#be6959;color:#fff;font-size:9px}
+    .filter-tags{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}.filter-tags::-webkit-scrollbar{display:none}
+    .filter-tag{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;min-height:26px;padding:0 9px;border:1px solid #deb08c;border-radius:999px;background:#fbf3e1;color:#8a5f2e;font:inherit;font-size:10px;font-weight:var(--dh-font-weight-bold);white-space:nowrap;cursor:pointer}
+    .filter-tag i{font-style:normal;font-size:9px;opacity:.7}
+    .filter-hint{color:var(--dh-fg-muted);font-size:10px;font-weight:var(--dh-font-weight-semibold);white-space:nowrap;align-self:center}
+    .filter-clear{flex:0 0 auto;border:0;padding:4px 2px;background:transparent;color:var(--dh-color-sage-700);font:inherit;font-size:10px;font-weight:var(--dh-font-weight-heavy);cursor:pointer}
+    /* ---- 筛选 sheet ---- */
+    .fs-scroll{max-height:46vh;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}.fs-scroll::-webkit-scrollbar{display:none}
+    .fs-group{margin-bottom:14px}.fs-label{margin-bottom:8px;color:var(--dh-fg-secondary);font-size:11px;font-weight:var(--dh-font-weight-heavy)}
+    .fs-opts{display:flex;flex-wrap:wrap;gap:7px}
+    .fs-opt{display:inline-flex;align-items:center;gap:5px;min-height:30px;padding:0 11px;border:1px solid rgba(117,139,113,.22);border-radius:999px;background:rgba(255,255,255,.9);color:var(--dh-fg-secondary);font:inherit;font-size:11px;font-weight:var(--dh-font-weight-bold);cursor:pointer}
+    .fs-opt span{color:var(--dh-fg-muted);font-size:9px;font-weight:var(--dh-font-weight-semibold);font-variant-numeric:tabular-nums}
+    .fs-opt.is-on{border-color:#deb08c;background:#fbf3e1;color:#8a5f2e}.fs-opt.is-on span{color:#b58c46}
+    .fs-opt[disabled]{opacity:.34;cursor:not-allowed}
+    .fs-actions{display:flex;gap:10px;margin-top:6px;padding-top:12px;border-top:1px solid rgba(117,139,113,.14)}
+    .fs-reset{flex:0 0 88px;min-height:44px;border:1px solid rgba(117,139,113,.3);border-radius:13px;background:#fff;color:var(--dh-fg-secondary);font:inherit;font-size:13px;font-weight:var(--dh-font-weight-bold);cursor:pointer}.fs-reset[disabled]{opacity:.4;cursor:not-allowed}
+    .fs-apply{flex:1;min-height:44px;border:0;border-radius:13px;background:#be6959;color:#fff;font:inherit;font-size:13px;font-weight:var(--dh-font-weight-bold);cursor:pointer;box-shadow:0 8px 18px rgba(150,70,55,.28)}.fs-apply[disabled]{opacity:.45;box-shadow:none;cursor:not-allowed}
+    /* ---- 主页功能图标栏（参考酷家乐主入口）---- */
+    .fn-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:0 0 16px;padding:12px 4px;border-radius:16px;background:rgba(255,255,255,.86);border:1px solid rgba(117,139,113,.16);box-shadow:0 5px 14px rgba(69,89,67,.07)}
+    .fn-item{display:flex;flex-direction:column;align-items:center;gap:5px;border:0;padding:0;background:transparent;color:inherit;font:inherit;cursor:pointer}
+    .fn-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;color:#8a5f2e;background:linear-gradient(150deg,#fdf3dd,#f6e6c4)}.fn-icon svg{width:23px;height:23px}
+    .fn-icon--cases{background:linear-gradient(150deg,#fce9dc,#f7d8c2)}.fn-icon--floorplan{background:linear-gradient(150deg,#e7efe4,#d6e5d2);color:#5f7a5c}
+    .fn-icon--furniture{background:linear-gradient(150deg,#fdf3dd,#f4e3bd)}.fn-icon--styles{background:linear-gradient(150deg,#ece7f5,#ddd4ee);color:#6d5b96}
+    .fn-item b{font-size:11px;font-weight:var(--dh-font-weight-heavy);letter-spacing:.01em}
+    .fn-n{color:var(--dh-fg-muted);font-size:8.5px;font-weight:var(--dh-font-weight-semibold);font-variant-numeric:tabular-nums}
+
+    /* ---- 找案例列表 ---- */
+    .case-list{display:flex;flex-direction:column;gap:12px}
+    .case-tile{position:relative;height:132px;border:0;padding:0;border-radius:14px;background-size:cover;background-position:center;box-shadow:0 5px 14px rgba(69,89,67,.12);cursor:pointer;overflow:hidden;display:flex;align-items:flex-end}
+    .case-tile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,26,21,0) 46%,rgba(20,26,21,.66))}
+    .case-tile-foot{position:relative;z-index:1;width:100%;padding:10px 13px;text-align:left;color:#fff}.case-tile-foot b{display:block;font-size:13px;font-weight:var(--dh-font-weight-heavy);text-shadow:0 1px 4px rgba(0,0,0,.35)}.case-tile-foot span{font-size:10px;font-weight:var(--dh-font-weight-semibold);opacity:.92}.case-tile-foot i{font-style:normal}
+
+    /* ---- 找风格列表 ---- */
+    .style-list{display:flex;flex-direction:column;gap:8px}
+    .style-tile{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 14px;border:1px solid rgba(117,139,113,.16);border-radius:13px;background:rgba(255,255,255,.9);color:inherit;font:inherit;text-align:left;cursor:pointer;box-shadow:0 3px 10px rgba(69,89,67,.06)}
+    .style-tile b{flex:1;font-size:13px;font-weight:var(--dh-font-weight-heavy)}
+    .style-tile span{color:var(--dh-fg-muted);font-size:11px;font-weight:var(--dh-font-weight-bold);font-variant-numeric:tabular-nums}
+    .style-tile i{color:var(--dh-color-sage-700);font-size:17px;font-style:normal}
+
+    /* ---- 整套案例：主页横滑卡 + 详情页 ---- */
+    .section-note{color:var(--dh-fg-muted);font-size:10px;font-weight:var(--dh-font-weight-semibold)}
+    .case-rail{display:flex;gap:10px;overflow-x:auto;overscroll-behavior-x:contain;margin:0 -2px;padding:3px 3px 6px;scrollbar-width:none}.case-rail::-webkit-scrollbar{display:none}
+    .case-card{flex:0 0 132px;min-width:0;border:0;padding:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
+    .case-cover{position:relative;display:block;height:82px;border-radius:11px;background-size:cover;background-position:center;box-shadow:var(--dh-shadow-soft);border:var(--dh-card-border)}
+    .case-count{position:absolute;right:5px;bottom:5px;padding:2px 7px;border-radius:999px;background:rgba(29,36,31,.62);color:#fff;font-size:8px;font-weight:var(--dh-font-weight-heavy);line-height:1.4}
+    .case-card b{display:block;margin:6px 1px 0;overflow:hidden;font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+    .case-blogger{display:block;margin:1px 1px 0;color:var(--dh-fg-muted);font-size:9px;font-weight:var(--dh-font-weight-semibold)}
+    .case-hero{position:relative;height:150px;margin-bottom:12px;border-radius:14px;background-size:cover;background-position:center;box-shadow:0 5px 14px rgba(69,89,67,.12);display:flex;align-items:flex-end}
+    .case-hero::after{content:"";position:absolute;inset:0;border-radius:14px;background:linear-gradient(180deg,rgba(20,26,21,0) 44%,rgba(20,26,21,.62))}
+    .case-hero-foot{position:relative;z-index:1;padding:11px 13px;color:#fff}.case-hero-foot b{display:block;font-size:14px;font-weight:var(--dh-font-weight-heavy);text-shadow:0 1px 4px rgba(0,0,0,.35)}.case-hero-foot span{font-size:10px;font-weight:var(--dh-font-weight-semibold);opacity:.92}
+    .case-summary{margin:0 0 14px;color:var(--dh-fg-secondary);font-size:11px;font-weight:var(--dh-font-weight-semibold);line-height:1.6}.case-summary b{color:var(--dh-color-sage-800)}
+    .case-group{margin-bottom:16px}.case-group-head{display:flex;align-items:center;gap:7px;margin-bottom:8px}.case-group-n{color:var(--dh-fg-muted);font-size:10px;font-weight:var(--dh-font-weight-bold)}
+    .component-card--readonly{opacity:.62;cursor:default}.case-placeholder{position:absolute;left:50%;top:50%;width:26px;height:26px;transform:translate(-50%,-50%);border-radius:6px;border:1.5px dashed rgba(150,112,58,.55)}
+    .case-readonly-note{display:block;margin:2px 1px 0;color:var(--dh-fg-muted);font-size:8px;font-weight:var(--dh-font-weight-semibold)}
+    .library-content.is-case{padding-bottom:10px}
+    .case-actions{position:sticky;bottom:0;z-index:5;display:flex;gap:9px;margin-top:8px;padding:12px 0 8px;background:linear-gradient(180deg,rgba(254,253,248,0),rgba(254,253,248,.97) 42%,#fefdf8)}
+    .case-save-all,.case-apply{flex:1;display:inline-flex;align-items:center;justify-content:center;min-height:42px;border-radius:13px;font:inherit;font-size:12px;font-weight:var(--dh-font-weight-bold);text-decoration:none;cursor:pointer}
+    .case-save-all{border:1px solid rgba(190,105,89,.45);background:#fff4ef;color:#be6959}.case-save-all[disabled]{opacity:.45;cursor:not-allowed}
+    .case-apply{border:0;background:#be6959;color:#fff;box-shadow:0 8px 18px rgba(150,70,55,.28)}
     .catalog-toolbar{display:grid;grid-template-columns:64px 1fr 64px;align-items:center}.catalog-toolbar h2{margin:0;font-size:16px;font-weight:var(--dh-font-weight-heavy);text-align:center;white-space:nowrap}.catalog-toolbar .catalog-back{justify-self:start;font-size:30px;line-height:1;padding:0 10px 0 2px;margin:-4px 0;color:var(--dh-color-sage-700)}.catalog-manage{justify-self:end;white-space:nowrap;border:1px solid rgba(110,132,107,.32);border-radius:999px;padding:5px 13px;background:rgba(255,255,255,.82);color:var(--dh-color-sage-700);font:inherit;font-size:11px;font-weight:var(--dh-font-weight-heavy);cursor:pointer}.catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px}.catalog-grid .component-card{min-width:0}.catalog-grid .component-visual{height:86px}.empty-state{padding:24px 10px;text-align:center;color:var(--dh-fg-secondary);font-size:12px}.toast{position:absolute;z-index:40;left:50%;bottom:78px;transform:translateX(-50%) translateY(8px);opacity:0;padding:9px 12px;border-radius:999px;background:rgba(29,36,31,.9);color:white;font-size:11px;font-weight:var(--dh-font-weight-semibold);pointer-events:none;transition:.2s ease}.toast.show{opacity:1;transform:translateX(-50%)}
     /* 选择模式：勾选框 + 平台资产禁用 */
     .component-card[data-selectable]{cursor:pointer}.select-check{position:absolute;z-index:4;right:4px;top:4px;width:20px;height:20px;border:2px solid #fff;border-radius:50%;background:rgba(29,36,31,.35);box-shadow:0 1px 4px rgba(44,59,45,.3);display:grid;place-items:center;color:#fff;font-size:12px;line-height:1}.component-card[data-selected="true"] .select-check{background:var(--dh-color-sage-600)}.component-card--locked{opacity:.4}.selecting .favorite-control{display:none}
@@ -154,8 +211,13 @@
     let activeFurnitureCategory = 'all';
     let toastTimer = null;
     // 当前 catalog 上下文 + 选择模式状态（保持简洁：单一 state，渲染读它）
-    const view = { kind: '', category: '', favoriteOnly: false };
-    let activeStyle = ''; // 全部页的风格精筛；'' = 不筛。切类目/换页时由 styleFacets 校验后重置
+    const view = { kind: '', category: '', favoriteOnly: false, caseId: '' };
+    // 全部页筛选：品类与风格两组，组内多选取并集、组间取交集（手机端标准筛选器语义）。
+    // 用筛选器而非 chip 栏，是因为手机端两排 chip 太挤，且 chip 栏无法在「全部」页切品类。
+    const filter = { categories: new Set(), styles: new Set() };
+    const filterEmpty = () => !filter.categories.size && !filter.styles.size;
+    const applyFilter = (assets, cats = filter.categories, styles = filter.styles) => assets.filter((asset) =>
+      (!cats.size || cats.has(asset.category)) && (!styles.size || (asset.styles || []).some((style) => styles.has(style))));
 
     // 风格分面：完全由当前资产集算出，不硬编码任何风格名单——
     // 风格 tag 体系归 Amber，她增删风格后这里自动跟着变，前端不做同义词合并等数据判断。
@@ -169,6 +231,45 @@
         .sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, 'zh'));
     };
     const select = { on: false, ids: new Set() };
+
+    // ---------- 整套案例（承接「刷一刷」的「查看同款小家」）----------
+    // 数据源就是我的家在用的那批场景 JSON，不另造数据；items[].id 即资产库的 ast_*，
+    // 所以案例里的组件能直接复用卡片渲染与收藏链路。
+    const CASE_INDEX = [
+      { videoId: 'vid_91fe552c5f7d', cover: '../../assets/scenes/vid_91fe552c5f7d.jpg', tag: '长厅公寓 · 48㎡', blogger: '@云上的小路' },
+      { videoId: 'vid_40734d7f2e6c', cover: '../../assets/scenes/vid_40734d7f2e6c.jpg?v=approved-room', tag: '原木侘寂 · 45㎡', blogger: '@鸡蛋灌饼的家' },
+      { videoId: 'vid_5f32a0ac954a', cover: '../../assets/scenes/vid_5f32a0ac954a.jpg', tag: '奶油风 · 78㎡', blogger: '@栗子设计日记' },
+    ];
+    const SCENE_ROOT = '../../assets/demo-backend/scenes';
+    // 主页功能图标栏：灵感库能逛的四类内容各一个入口。件数在渲染时实时算，不写死。
+    const FN_ENTRIES = [
+      { id: 'cases', label: '找案例', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 9.8 12 4l8.4 5.8v9a1.4 1.4 0 0 1-1.4 1.4H5a1.4 1.4 0 0 1-1.4-1.4Z"/><path d="M9.2 20.2v-6.4h5.6v6.4"/></svg>' },
+      { id: 'floorplan', label: '找户型', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="3.4" width="17.2" height="17.2" rx="2"/><path d="M3.4 12.6h6.2V3.4M9.6 12.6v8M20.6 12.6h-11"/></svg>' },
+      { id: 'furniture', label: '找家具', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11V7.6A1.6 1.6 0 0 1 5.6 6h12.8A1.6 1.6 0 0 1 20 7.6V11"/><path d="M3 11.4h18a1 1 0 0 1 1 1V17H2v-4.6a1 1 0 0 1 1-1Z"/><path d="M4.6 17v2.4M19.4 17v2.4"/></svg>' },
+      { id: 'styles', label: '找风格', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.4a8.6 8.6 0 1 0 0 17.2c1.3 0 1.9-.9 1.9-1.8 0-1.1-.9-1.7-.9-2.6 0-.8.7-1.5 1.6-1.5h1.4a4.6 4.6 0 0 0 4.6-4.6C20.6 6.5 16.8 3.4 12 3.4Z"/><circle cx="7.6" cy="11" r="1.1" fill="currentColor" stroke="none"/><circle cx="11" cy="7.4" r="1.1" fill="currentColor" stroke="none"/><circle cx="15.6" cy="8.6" r="1.1" fill="currentColor" stroke="none"/></svg>' },
+    ];
+    const fnCounts = () => ({
+      cases: `${CASE_INDEX.length} 套`,
+      floorplan: `${getAssets('floorplan').length} 个`,
+      furniture: `${getAssets('furniture').length} 件`,
+      styles: `${styleFacets(getAssets('furniture')).length} 种`,
+    });    const caseCache = new Map();
+    const caseMetaOf = (videoId) => CASE_INDEX.find((item) => item.videoId === videoId) || null;
+    // 场景 JSON 惰性拉取：主页只用得到组件件数，详情页才需要全量
+    const loadCase = (videoId) => {
+      if (!caseCache.has(videoId)) {
+        caseCache.set(videoId, fetch(`${SCENE_ROOT}/${videoId}.json`).then((response) => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.json();
+        }).catch((error) => { caseCache.delete(videoId); throw error; }));
+      }
+      return caseCache.get(videoId);
+    };
+    // 案例组件：能在资产库匹配到的走真实资产（可收藏），匹配不到的降级为只读占位
+    const caseItems = (scene) => (scene?.items || []).map((item) => {
+      const asset = getAsset(item.id);
+      return { id: item.id, name: item.name, tags: item.tags || [], asset, inLibrary: Boolean(asset) };
+    });
 
     // 仅供把当前浏览器的收藏选择固化为演示默认值；普通访问不会显示或触发。
     if (new URLSearchParams(location.search).get('exportFavorites') === '1') {
@@ -245,20 +346,20 @@
       libraryBanner.querySelector('#heroDots').addEventListener('click', (event) => { const i = [...libraryBanner.querySelectorAll('#heroDots i')].indexOf(event.target); if (i >= 0 && !bannerAnimating && i + 1 !== bannerPos) { bannerPos = i + 1; bannerAnimating = true; paintBanner(true); } });
     };
     const renderHome = () => {
+      libraryContent.classList.remove('is-case');
       const previousTabs = home.querySelector('.furniture-tabs');
       const previousTabScrollLeft = previousTabs?.scrollLeft || 0;
       disposeTemplatePreviews(home);
-      const rails = ['floorplan'].map((kind) => { // 地板/墙纸类不在灵感库覆盖，改由「我的家」直接选（后端联调）；此处仅留户型类
-        const assets = getAssets(kind).slice(0, 5);
-        const cardClass = kind === 'floorplan' ? 'component-card component-card--floorplan' : 'component-card';
-        return `<section class="catalog-section"><div class="section-head"><span class="section-tag">${labelByKind[kind]}</span><button class="all-button" data-all="${kind}">全部</button></div><div class="component-rail">${assets.map((asset) => card(asset, cardClass)).join('')}</div></section>`;
-      }).join('');
+      // 主入口感：顶部 banner 承担案例大图，紧接着是功能图标栏（案例/户型/家具/风格四个入口），
+      // 内容流只留精选家具。案例与户型原来的横滑 rail 收进图标，页面短一大截。
+      const fnGrid = `<nav class="fn-grid" aria-label="灵感库功能入口">${FN_ENTRIES.map((entry) => `<button class="fn-item" data-fn="${entry.id}" aria-label="${entry.label}"><span class="fn-icon fn-icon--${entry.id}">${entry.svg}</span><b>${entry.label}</b><span class="fn-n">${fnCounts()[entry.id] || ''}</span></button>`).join('')}</nav>`;
+
       const isAllFurniture = activeFurnitureCategory === 'all';
       const furniture = (isAllFurniture ? getAssets('furniture') : getAssets('furniture', activeFurnitureCategory)).slice(0, 11);
       const tabs = [`<button class="furniture-tab" data-category="all" role="tab" aria-selected="${isAllFurniture}">全部</button>`, ...FURNITURE_CATEGORIES.map((category) => `<button class="furniture-tab" data-category="${category.id}" role="tab" aria-selected="${category.id === activeFurnitureCategory}">${category.label}</button>`)].join('');
       const allData = isAllFurniture ? 'furniture' : `furniture:${activeFurnitureCategory}`;
       const allLabel = isAllFurniture ? '家具' : FURNITURE_CATEGORIES.find((item) => item.id === activeFurnitureCategory).label;
-      home.innerHTML = `${rails}<section class="catalog-section"><div class="section-head"><span class="section-tag">家具类</span></div><div class="furniture-tabs" role="tablist" aria-label="家具子类">${tabs}</div><div class="furniture-grid">${furniture.map((asset) => card(asset, 'furniture-card')).join('')}<button class="furniture-card all-card" data-all="${allData}" aria-label="查看全部${allLabel}"><span>查看全部</span></button></div></section>`;
+      home.innerHTML = `${fnGrid}<section class="catalog-section"><div class="section-head"><span class="section-tag">精选家具</span><button class="all-button" data-all="furniture">全部</button></div><div class="furniture-tabs" role="tablist" aria-label="家具子类">${tabs}</div><div class="furniture-grid">${furniture.map((asset) => card(asset, 'furniture-card')).join('')}<button class="furniture-card all-card" data-all="${allData}" aria-label="查看全部${allLabel}"><span>查看全部</span></button></div></section>`;
       renderTemplatePreviews(home);
       const nextTabs = home.querySelector('.furniture-tabs');
       const selectedTab = nextTabs?.querySelector('[aria-selected="true"]');
@@ -269,20 +370,138 @@
       if (tabRect.left < railRect.left) nextTabs.scrollLeft += tabRect.left - railRect.left;
       if (tabRect.right > railRect.right) nextTabs.scrollLeft += tabRect.right - railRect.right;
     };
+    // 主页案例卡上的「N 件组件」：场景 JSON 异步到达后回填，失败就留空不报错
+    const paintCaseCounts = (root = catalog) => {
+      root.querySelectorAll('[data-case-count]').forEach((node) => {
+        loadCase(node.dataset.caseCount)
+          .then((scene) => { node.textContent = `${(scene.items || []).length} 件组件`; })
+          .catch(() => { node.textContent = ''; });
+      });
+    };
+
+    // ---------- 筛选器（底部半屏 sheet）----------
+    // 草稿态：sheet 里的勾选先落在 draft，点「查看 N 件」才提交到 filter，取消/关闭即丢弃。
+    const draft = { categories: new Set(), styles: new Set() };
+    const renderFilterSheet = () => {
+      const base = getAssets('furniture');
+      const hit = applyFilter(base, draft.categories, draft.styles);
+      // 每个选项的计数按「对面那组的当前选择」算，选出来必然非空；算出 0 的选项置灰不可点
+      const catRow = FURNITURE_CATEGORIES.map((category) => {
+        const n = applyFilter(base, new Set([category.id]), draft.styles).length;
+        const on = draft.categories.has(category.id);
+        return `<button class="fs-opt ${on ? 'is-on' : ''}" data-fs-cat="${category.id}" ${n ? '' : 'disabled'}>${category.label}<span>${n}</span></button>`;
+      }).join('');
+      const styleRow = styleFacets(base).map((facet) => {
+        const n = applyFilter(base, draft.categories, new Set([facet.name])).length;
+        const on = draft.styles.has(facet.name);
+        return `<button class="fs-opt ${on ? 'is-on' : ''}" data-fs-style="${facet.name}" ${n ? '' : 'disabled'}>${facet.name}<span>${n}</span></button>`;
+      }).join('');
+      sheetBody.innerHTML = `<div class="sheet-head"><span class="sheet-spacer" aria-hidden="true"></span><b>筛选</b><button class="sheet-close" data-sheet-close aria-label="关闭">✕</button></div>
+        <div class="fs-scroll">
+          <div class="fs-group"><div class="fs-label">品类</div><div class="fs-opts">${catRow}</div></div>
+          <div class="fs-group"><div class="fs-label">风格</div><div class="fs-opts">${styleRow}</div></div>
+        </div>
+        <div class="fs-actions"><button class="fs-reset" id="fsReset" type="button" ${draft.categories.size || draft.styles.size ? '' : 'disabled'}>重置</button><button class="fs-apply" id="fsApply" type="button" ${hit.length ? '' : 'disabled'}>查看 ${hit.length} 件</button></div>`;
+    };
+    const openFilterSheet = () => {
+      draft.categories = new Set(filter.categories);
+      draft.styles = new Set(filter.styles);
+      renderFilterSheet();
+      manageSheet.hidden = false;
+      requestAnimationFrame(() => manageSheet.classList.add('is-open'));
+    };
+    const applyFilterSheet = () => {
+      filter.categories = new Set(draft.categories);
+      filter.styles = new Set(draft.styles);
+      closeSheet();
+      renderCatalog();
+    };
+
+    // 次级页公共外壳：隐藏 banner/tabbar，标题栏换成带返回的工具条
+    const enterSecondary = (title) => {
+      home.hidden = true; catalog.hidden = false; catalog.classList.remove('selecting');
+      screenEl.classList.remove('dh-topwhite');
+      libraryBanner.hidden = true; mainTabbar.hidden = true; selectBar.hidden = true;
+      libraryHeader.hidden = false; libraryHeader.classList.add('is-catalog');
+      libraryHeader.innerHTML = `<div class="catalog-toolbar"><button class="catalog-back" id="catalogBack" aria-label="返回">‹</button><h2>${title}</h2></div>`;
+      disposeTemplatePreviews(catalog);
+    };
+
+    // 找案例：整套案例列表（竖排大卡，件数异步回填）
+    const renderCases = () => {
+      libraryContent.classList.remove('is-case');
+      enterSecondary('整套案例');
+      catalog.innerHTML = `<p class="case-summary">博主视频里被完整还原的空间，可以单件收藏，也能整套套用到我的家。</p><div class="case-list">${CASE_INDEX.map((item) => `<button class="case-tile" data-case-open="${item.videoId}" aria-label="查看案例 ${item.tag}" style="background-image:url('${item.cover}')"><span class="case-tile-foot"><b>${item.tag}</b><span>${item.blogger} · <i data-case-count="${item.videoId}">…</i></span></span></button>`).join('')}</div>`;
+      paintCaseCounts(catalog);
+    };
+
+    // 找风格：把风格做成可逛的入口（每种风格 + 件数），点进去就是按该风格筛好的家具全部页
+    const renderStyles = () => {
+      libraryContent.classList.remove('is-case');
+      enterSecondary('找风格');
+      const facets = styleFacets(getAssets('furniture'));
+      catalog.innerHTML = `<p class="case-summary">共 <b>${facets.length}</b> 种风格。选一种，家具组件会按它筛好。</p><div class="style-list">${facets.map((facet) => `<button class="style-tile" data-style-open="${facet.name}"><b>${facet.name}</b><span>${facet.n} 件</span><i aria-hidden="true">›</i></button>`).join('')}</div>`;
+    };
+
+    // 整套收藏：已全收则不做取消（避免误触一键清空），只补齐未收藏的
+    const saveWholeCase = async () => {
+      if (!view.caseId) return;
+      let scene;
+      try { scene = await loadCase(view.caseId); } catch { return; }
+      const savable = caseItems(scene).filter((item) => item.inLibrary);
+      const favorites = getFavorites();
+      const pending = savable.filter((item) => !favorites.has(item.id));
+      if (!pending.length) { showToast('这套组件都已在收藏里'); return; }
+      pending.forEach((item) => toggleFavorite(item.id));
+      showToast(`已收藏 ${pending.length} 件，可在我的家调用`);
+      renderCase(view.caseId);
+    };
+
+    // 案例详情页：顶部封面 + 整套组件（按品类分组）+ 底部两个动作
+    const renderCase = async (videoId) => {
+      const meta = caseMetaOf(videoId);
+      enterSecondary('整套案例');
+      libraryContent.classList.add('is-case');
+      catalog.innerHTML = '<p class="empty-state">正在载入案例…</p>';
+      let scene;
+      try { scene = await loadCase(videoId); }
+      catch { catalog.innerHTML = '<p class="empty-state">案例暂时载入失败，返回重试～</p>'; return; }
+      if (view.caseId !== videoId) return; // 载入期间用户已经离开
+      const items = caseItems(scene);
+      const favorites = getFavorites();
+      const savable = items.filter((item) => item.inLibrary);
+      const allSaved = savable.length > 0 && savable.every((item) => favorites.has(item.id));
+      // 按品类分组：组内顺序沿用场景里的摆放顺序，读起来像一份清单
+      const groups = new Map();
+      items.forEach((item) => {
+        const label = item.asset?.category ? FURNITURE_CATEGORIES.find((c) => c.id === item.asset.category)?.label || '其他' : (item.tags[0] || '其他');
+        if (!groups.has(label)) groups.set(label, []);
+        groups.get(label).push(item);
+      });
+      const room = scene.room ? `${scene.room.w} × ${scene.room.d} m` : '';
+      const groupHtml = [...groups.entries()].map(([label, list]) => `<div class="case-group"><div class="case-group-head"><span class="section-tag">${label}</span><span class="case-group-n">${list.length}</span></div><div class="catalog-grid">${list.map((item) => item.inLibrary
+        ? card(item.asset)
+        : `<div class="component-card component-card--readonly"><div class="component-visual visual--furniture"><i class="case-placeholder" aria-hidden="true"></i></div><b>${item.name}</b><span class="case-readonly-note">暂未入库</span></div>`).join('')}</div></div>`).join('');
+      catalog.innerHTML = `<section class="case-hero" style="background-image:url('${meta?.cover || ''}')"><div class="case-hero-foot"><b>${meta?.tag || scene.title || '整套案例'}</b><span>${meta?.blogger || ''}${room ? ` · ${room}` : ''}</span></div></section>
+        <p class="case-summary">这套空间共 <b>${items.length}</b> 件组件${savable.length < items.length ? `，其中 ${savable.length} 件可收藏` : ''}。可以单件收藏，也可以整套套用到我的家。</p>
+        ${groupHtml}
+        <div class="case-actions"><button class="case-save-all" id="caseSaveAll" type="button" ${savable.length ? '' : 'disabled'}>${allSaved ? '✓ 已全部收藏' : `全部收藏（${savable.length}）`}</button><a class="case-apply" href="../my-home/index.html?case=${encodeURIComponent(videoId)}">用这套布置我的家</a></div>`;
+      renderTemplatePreviews(catalog);
+    };
+
     const renderCatalog = () => {
-      const { kind, category, favoriteOnly } = view;
+      libraryContent.classList.remove('is-case');      const { kind, category, favoriteOnly } = view;
       let assets = getAssets(kind, category);
       if (favoriteOnly) assets = assets.filter((asset) => getFavorites().has(asset.id));
-      // 重渲染会重建 chip 行，先存住横向滚动位置，否则每次点都会弹回最左（与 renderHome 里 furniture-tabs 同一处理）
-      const prevFilterScroll = catalog.querySelector('.style-filter')?.scrollLeft || 0;
-      // 风格精筛：分面从「未按风格过滤」的集合算，切换风格时计数才稳定不跳
-      const facets = kind === 'furniture' && !select.on ? styleFacets(assets) : [];
-      if (activeStyle && !facets.some((facet) => facet.name === activeStyle)) activeStyle = ''; // 换类目后旧风格可能不存在
-      const showFilter = facets.length >= 2; // 只有一个风格可选＝没得选，整条不出
-      if (!showFilter) activeStyle = '';
-      const filtered = activeStyle ? assets.filter((asset) => (asset.styles || []).includes(activeStyle)) : assets;
-      const chips = showFilter
-        ? `<div class="style-filter" role="tablist" aria-label="按风格筛选"><button class="style-chip" data-style="" role="tab" aria-selected="${!activeStyle}">全部<span class="sc-n">${assets.length}</span></button>${facets.map((facet) => `<button class="style-chip" data-style="${facet.name}" role="tab" aria-selected="${facet.name === activeStyle}">${facet.name}<span class="sc-n">${facet.n}</span></button>`).join('')}</div>`
+      // 筛选器只在家具全部页开放（户型/收藏页维度太少，开筛选器反而多一步）
+      const canFilter = kind === 'furniture' && !select.on && !favoriteOnly;
+      if (!canFilter) { filter.categories.clear(); filter.styles.clear(); }
+      const filtered = canFilter ? applyFilter(assets) : assets;
+      // 顶栏只展示已选标签，每个可单独 ✕ 掉；没选时只有一个「筛选」入口
+      const tagChips = [...filter.categories].map((id) => `<button class="filter-tag" data-untag-cat="${id}">${FURNITURE_CATEGORIES.find((c) => c.id === id)?.label || id}<i aria-hidden="true">✕</i></button>`)
+        .concat([...filter.styles].map((name) => `<button class="filter-tag" data-untag-style="${name}">${name}<i aria-hidden="true">✕</i></button>`)).join('');
+      const chips = canFilter
+        ? `<div class="filter-bar"><button class="filter-open" id="filterOpen" type="button" aria-label="打开筛选器"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3.5 6.5h17M6.5 12h11M10 17.5h4"/></svg>筛选${filterEmpty() ? '' : `<em>${filter.categories.size + filter.styles.size}</em>`}</button><div class="filter-tags">${tagChips || '<span class="filter-hint">全部 ' + assets.length + ' 件</span>'}</div>${filterEmpty() ? '' : '<button class="filter-clear" id="filterClear" type="button">清空</button>'}</div>`
         : '';
       const title = favoriteOnly ? '已收藏' : `${labelByKind[kind]}${category ? ` · ${FURNITURE_CATEGORIES.find((item) => item.id === category)?.label || ''}` : ''}`;
       // 管理按钮：仅家具类细分品类的全部页；选择模式下隐藏管理按钮，底部出现「取消/确认删除」
@@ -297,28 +516,31 @@
       disposeTemplatePreviews(catalog);
       catalog.innerHTML = `${chips}${filtered.length ? `<div class="catalog-grid">${filtered.map((asset) => card(asset)).join('')}</div>` : '<p class="empty-state">还没有收藏组件。点击心形即可收藏。</p>'}`;
       renderTemplatePreviews(catalog);
-      const nextFilter = catalog.querySelector('.style-filter');
-      if (nextFilter) {
-        nextFilter.scrollLeft = prevFilterScroll;
-        const selectedChip = nextFilter.querySelector('[aria-selected="true"]');
-        if (selectedChip) { // 选中项被挤出可视区时才微调，避免无谓跳动
-          const barRect = nextFilter.getBoundingClientRect();
-          const chipRect = selectedChip.getBoundingClientRect();
-          if (chipRect.left < barRect.left) nextFilter.scrollLeft += chipRect.left - barRect.left;
-          if (chipRect.right > barRect.right) nextFilter.scrollLeft += chipRect.right - barRect.right;
-        }
-      }
       selectBar.hidden = !select.on;
       confirmDelete.disabled = select.ids.size === 0;
     };
-    const rerender = () => { if (!catalog.hidden) renderCatalog(); else renderHome(); };
+    const rerender = () => { if (view.caseId) renderCase(view.caseId); else if (!catalog.hidden) renderCatalog(); else renderHome(); };
     const route = () => {
       if (select.on) exitSelect(true);
-      activeStyle = ''; // 每次进/出全部页都从「全部风格」开始，避免带着上一页的筛选进来
+      filter.categories.clear(); filter.styles.clear(); // 每次换页都从无筛选开始，避免带着上一页的条件进来
+      if (location.hash === '#cases') { view.caseId = ''; renderCases(); libraryContent.scrollTop = 0; return; }
+      if (location.hash === '#styles') { view.caseId = ''; renderStyles(); libraryContent.scrollTop = 0; return; }
+      const styleMatched = location.hash.match(/^#style=(.+)$/);
+      if (styleMatched) { // 从「找风格」进来的家具全部页，预置好该风格
+        view.caseId = '';
+        Object.assign(view, { kind: 'furniture', category: '', favoriteOnly: false });
+        filter.categories.clear(); filter.styles = new Set([decodeURIComponent(styleMatched[1])]);
+        renderCatalog(); libraryContent.scrollTop = 0; return;
+      }
+      const caseMatched = location.hash.match(/^#case=(.+)$/);
+      if (caseMatched) { view.caseId = decodeURIComponent(caseMatched[1]); renderCase(view.caseId); libraryContent.scrollTop = 0; return; }
+      view.caseId = '';
       const matched = location.hash.match(/^#catalog=([^:]+)(?::(.+))?$/);
       if (!matched && location.hash !== '#favorites') { home.hidden = false; catalog.hidden = true; libraryBanner.hidden = false; libraryHeader.hidden = false; libraryHeader.classList.remove('is-catalog'); libraryHeader.innerHTML = '<h1 class="library-title">灵感库</h1>'; mainTabbar.hidden = false; screenEl.classList.add('dh-topwhite'); renderHome(); libraryContent.scrollTop = 0; requestAnimationFrame(() => { libraryContent.scrollTop = 0; }); return; } // 返回主页始终从顶部展示
       if (location.hash === '#favorites') { const favorites = getFavorites(); const first = [...favorites][0]; const asset = first ? getAssets().find((item) => item.id === first) : null; Object.assign(view, { kind: asset?.kind || 'furniture', category: '', favoriteOnly: true }); renderCatalog(); libraryContent.scrollTop = 0; return; }
-      Object.assign(view, { kind: matched[1], category: matched[2] ? decodeURIComponent(matched[2]) : '', favoriteOnly: false });
+      Object.assign(view, { kind: matched[1], category: '', favoriteOnly: false });
+      // 品类不再锁死在 hash 里，而是预置成筛选条件——进去之后照样能在筛选器里换
+      if (matched[1] === 'furniture' && matched[2]) filter.categories = new Set([decodeURIComponent(matched[2])]);
       renderCatalog();
       libraryContent.scrollTop = 0; // 进入全部页始终从顶部展示，不沿用主页滚动位置
     };
@@ -551,13 +773,34 @@
       if (favorite) { event.stopPropagation(); toggle(favorite.dataset.favorite); return; }
       const all = event.target.closest('[data-all]');
       if (all) { const [kind, category] = all.dataset.all.split(':'); openCatalog(kind, category); return; }
-      const styleChip = event.target.closest('[data-style]');
-      if (styleChip) { activeStyle = styleChip.dataset.style; renderCatalog(); return; } // 不重置纵向滚动：筛选是原地收窄，不是换页
+      const fnItem = event.target.closest('[data-fn]');
+      if (fnItem) {
+        const id = fnItem.dataset.fn;
+        location.hash = id === 'cases' ? 'cases' : id === 'styles' ? 'styles' : `catalog=${id}`;
+        return;
+      }
+      const styleOpen = event.target.closest('[data-style-open]');
+      if (styleOpen) { location.hash = `style=${encodeURIComponent(styleOpen.dataset.styleOpen)}`; return; }
+      const caseOpen = event.target.closest('[data-case-open]');
+      if (caseOpen) { location.hash = `case=${encodeURIComponent(caseOpen.dataset.caseOpen)}`; return; }
+      if (event.target.closest('#caseSaveAll')) { saveWholeCase(); return; }
+      if (event.target.closest('#filterOpen')) { openFilterSheet(); return; }
+      if (event.target.closest('#filterClear')) { filter.categories.clear(); filter.styles.clear(); renderCatalog(); return; }
+      const untagCat = event.target.closest('[data-untag-cat]');
+      if (untagCat) { filter.categories.delete(untagCat.dataset.untagCat); renderCatalog(); return; }
+      const untagStyle = event.target.closest('[data-untag-style]');
+      if (untagStyle) { filter.styles.delete(untagStyle.dataset.untagStyle); renderCatalog(); return; }
+      const fsCat = event.target.closest('[data-fs-cat]');
+      if (fsCat) { const id = fsCat.dataset.fsCat; draft.categories.has(id) ? draft.categories.delete(id) : draft.categories.add(id); renderFilterSheet(); return; }
+      const fsStyle = event.target.closest('[data-fs-style]');
+      if (fsStyle) { const name = fsStyle.dataset.fsStyle; draft.styles.has(name) ? draft.styles.delete(name) : draft.styles.add(name); renderFilterSheet(); return; }
+      if (event.target.closest('#fsReset')) { draft.categories.clear(); draft.styles.clear(); renderFilterSheet(); return; }
+      if (event.target.closest('#fsApply')) { applyFilterSheet(); return; }
       const tab = event.target.closest('[data-category]');
       if (tab) { activeFurnitureCategory = tab.dataset.category; renderHome(); return; }
-      if (event.target.closest('#catalogBack')) { const fromMyHome = new URLSearchParams(location.search).get('from') === 'myhome'; if (fromMyHome && view.kind === 'floorplan' && !view.favoriteOnly) { location.href = '../my-home/index.html'; return; } if (location.hash) location.hash = ''; else route(); return; } // 唯一例外：从「我的家」进来的户型全部页返回我的家；其余回灵感库主页
+      if (event.target.closest('#catalogBack')) { if (view.caseId || ['#cases','#styles'].includes(location.hash) || location.hash.startsWith('#style=')) { location.hash = ''; return; } const fromMyHome = new URLSearchParams(location.search).get('from') === 'myhome'; if (fromMyHome && view.kind === 'floorplan' && !view.favoriteOnly) { location.href = '../my-home/index.html'; return; } if (location.hash) location.hash = ''; else route(); return; } // 唯一例外：从「我的家」进来的户型全部页返回我的家；其余回灵感库主页
       const caseSlide = event.target.closest('[data-case]');
-      if (caseSlide) { if (bannerDragged) { bannerDragged = false; return; } const videoId = caseSlide.dataset.video; if (videoId) location.href = `../my-home/index.html?case=${encodeURIComponent(videoId)}`; return; } // 跳「我的家」案例只读模式（复用拼装编辑器）
+      if (caseSlide) { if (bannerDragged) { bannerDragged = false; return; } const videoId = caseSlide.dataset.video; if (videoId) location.hash = `case=${encodeURIComponent(videoId)}`; return; } // 先进灵感库案例详情页；要套用再从那里跳我的家
       const asset = event.target.closest('[data-asset]');
       if (asset) openViewer(asset.dataset.asset);
     });
