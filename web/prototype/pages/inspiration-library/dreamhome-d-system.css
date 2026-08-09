@@ -152,6 +152,9 @@
   width: 320px;
   height: 694px;
   padding: 12px;
+  /* 与 React 端 .iphone-device 保持同一套缩放：窗口装不下整机时等比缩小，
+     避免从「刷一刷」跳静态页时手机边框突然变大。56/36 = preview-stage 的上下/左右留白。 */
+  zoom: min(1, calc((100dvh - 56px) / 694px), calc((100vw - 36px) / 320px));
   border-radius: var(--dh-phone-radius);
   background: var(--dh-phone-bg);
   box-shadow: 0 28px 60px rgba(24,34,42,.28), inset 0 0 0 2px rgba(255,255,255,.12), inset 0 0 0 6px #0a0c0e;
