@@ -104,7 +104,10 @@ export interface LibraryComponent {
 
 export interface FeedVideo {
   id: string
-  src: string
+  mediaType?: 'video' | 'image-carousel'
+  src?: string
+  images?: string[]
+  audioSrc?: string
   poster: string
   author: string
   authorBadge?: string
@@ -120,6 +123,10 @@ export interface FeedVideo {
 // This lets Vercel/browser caches retain the large MP4s without hiding future
 // media replacements: bump this value whenever a source video changes.
 const FEED_MEDIA_VERSION = '20260723b'
+
+const imagePostMedia = (postId: string, filename: string) => (
+  `/image-posts/${postId}/${filename}?v=image-post-20260808`
+)
 
 const amberFeedVideo = (
   id: string,
@@ -146,6 +153,19 @@ export const FEED_VIDEOS: FeedVideo[] = [
     caption: '我说幸福万万岁！ #治愈系小窝 #宅家 #卧室布置',
     music: '原声 - 鸡蛋灌饼',
   }),
+  {
+    id: 'imgpost_178d69ed78142afc',
+    mediaType: 'image-carousel',
+    images: Array.from({ length: 10 }, (_, index) => (
+      imagePostMedia('imgpost_178d69ed78142afc', `${String(index + 1).padStart(2, '0')}.webp`)
+    )),
+    poster: imagePostMedia('imgpost_178d69ed78142afc', '01.webp'),
+    author: '@嘉基基基基',
+    captionBadge: '图文',
+    caption: '假如你也喜欢我家。那我们审美同频了 #自己装修',
+    music: 'Beanie Beanie Beanie',
+    source: 'amber',
+  },
   {
     id: 'home-1',
     src: `/videos/home-1.mp4?v=${FEED_MEDIA_VERSION}`,
@@ -207,7 +227,7 @@ export const FEED_VIDEOS: FeedVideo[] = [
 ]
 
 // 兼容仍依赖单视频常量的旧模块；Feed 主界面使用 FEED_VIDEOS。
-export const VIDEO_SRC = FEED_VIDEOS[0].src
+export const VIDEO_SRC = FEED_VIDEOS[0].src ?? ''
 
 export const MOCK_OBJECTS = [
   { label: '沙发', thumbnail: '🛋️' },

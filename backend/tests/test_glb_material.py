@@ -5,7 +5,12 @@ import unittest
 
 from PIL import Image
 
-from app.services.glb_material import _decode_glb, _encode_glb, postprocess_glb_bytes
+from app.services.glb_material import (
+    _decode_glb,
+    _encode_glb,
+    postprocess_glb_bytes,
+    retone_postprocessed_glb_bytes,
+)
 
 
 def _textured_triangle_glb(color=(36, 49, 62, 255)) -> bytes:
@@ -68,6 +73,21 @@ class GlbMaterialTests(unittest.TestCase):
         document["materials"] = [{}]
         with self.assertRaisesRegex(ValueError, "base-color texture"):
             postprocess_glb_bytes(_encode_glb(document, binary), gamma=0.7)
+
+    def test_explicit_retone_changes_existing_gamma_without_double_correction(self):
+        source = _textured_triangle_glb()
+        processed, _ = postprocess_glb_bytes(source, gamma=0.7)
+        retuned, metadata = retone_postprocessed_glb_bytes(
+            processed, target_gamma=0.85,
+        )
+        self.assertNotEqual(retuned, processed)
+        self.assertEqual(metadata["previous_gamma"], 0.7)
+        self.assertEqual(metadata["gamma"], 0.85)
+        same, repeated = retone_postprocessed_glb_bytes(
+            retuned, target_gamma=0.85,
+        )
+        self.assertEqual(same, retuned)
+        self.assertTrue(repeated["already_processed"])
 
 
 if __name__ == "__main__":

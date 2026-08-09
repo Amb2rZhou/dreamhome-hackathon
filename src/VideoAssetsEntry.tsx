@@ -12,6 +12,7 @@ export function VideoAssetsEntry({
   open,
   onOpen,
   onClose,
+  contentLabel = '视频',
 }: {
   videoId: string
   assets: LibraryComponent[]
@@ -21,6 +22,7 @@ export function VideoAssetsEntry({
   open: boolean
   onOpen: () => void
   onClose: () => void
+  contentLabel?: '视频' | '图文'
 }) {
   const [savedNotice, setSavedNotice] = useState(false)
   const savedNoticeTimerRef = useRef<number | null>(null)
@@ -51,8 +53,8 @@ export function VideoAssetsEntry({
         className="video-assets-entry"
         aria-haspopup="dialog"
         aria-label={assets.length > 0
-          ? `查看本条视频的全部 ${assets.length} 个 3D 组件`
-          : '查看本条视频的全部 3D 组件'}
+          ? `查看本条${contentLabel}的全部 ${assets.length} 个 3D 组件`
+          : `查看本条${contentLabel}的全部 3D 组件`}
         onClick={onOpen}
       >
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -60,7 +62,7 @@ export function VideoAssetsEntry({
           <path d="m4.4 7.4 7.6 4.4 7.6-4.4M12 11.8v8.7" />
         </svg>
         <span>全部 3D 组件</span>
-        <b>{assets.length}</b>
+        <b>{assets.length > 0 ? assets.length : '待识别'}</b>
         <i aria-hidden="true">›</i>
       </button>
 
@@ -77,9 +79,11 @@ export function VideoAssetsEntry({
           onFavorite={onFavorite}
           onFavoriteAll={favoriteAll}
           onClose={onClose}
-          title={`本条视频 · 全部 ${assets.length} 个 3D 组件`}
-          subtitle="按整条视频汇总，不受当前播放帧限制"
-          ariaLabel="本条视频全部 3D 组件"
+          title={`本条${contentLabel} · 全部 ${assets.length} 个 3D 组件`}
+          subtitle={contentLabel === '图文'
+            ? '按整组图文汇总，不受当前图片限制'
+            : '按整条视频汇总，不受当前播放帧限制'}
+          ariaLabel={`本条${contentLabel}全部 3D 组件`}
         />
       )}
     </>

@@ -18,7 +18,7 @@
     },
     {
       "source": "/dreamhome-api/:path*",
-      "destination": "http://218.244.156.128:8000/:path*"
+      "destination": "https://api.dreamhouse.top/:path*"
     }
   ],
   "functions": {

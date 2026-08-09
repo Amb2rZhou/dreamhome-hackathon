@@ -1,5 +1,6 @@
 import type { LibraryComponent } from './types'
 import { SCENE_SUPPLEMENTAL_ASSETS } from './sceneSupplementalAssets'
+import { IMAGE_POST_ASSETS } from './imagePostAssets'
 
 // Generated from the reviewed available-assets-v1 dataset (149 assets).
 // Card art is the completed 2D input; detail pages load the matching GLB model.
@@ -6315,14 +6316,14 @@ for (const asset of AVAILABLE_ASSETS) {
   }
 }
 
-export const AVAILABLE_ASSETS_BY_VIDEO = [...AVAILABLE_ASSETS, ...SCENE_SUPPLEMENTAL_ASSETS].reduce<Record<string, LibraryComponent[]>>((groups, asset) => {
+export const AVAILABLE_ASSETS_BY_VIDEO = [...AVAILABLE_ASSETS, ...SCENE_SUPPLEMENTAL_ASSETS, ...IMAGE_POST_ASSETS].reduce<Record<string, LibraryComponent[]>>((groups, asset) => {
   const key = asset.sourceVideo?.videoId ?? 'unknown'
   ;(groups[key] ??= []).push(asset)
   return groups
 }, {})
 
 export function assetsForVideoFrame(videoId: string, frameTime: number): LibraryComponent[] {
-  return (AVAILABLE_ASSETS_BY_VIDEO[videoId] ?? []).flatMap((asset) => {
+  let assets: LibraryComponent[] = (AVAILABLE_ASSETS_BY_VIDEO[videoId] ?? []).flatMap((asset) => {
     const appearance = (asset.sourceVideo?.appearances ?? []).find((candidate) =>
       frameTime >= candidate.startSec && frameTime <= candidate.endSec
     )
@@ -6341,6 +6342,36 @@ export function assetsForVideoFrame(videoId: string, frameTime: number): Library
       },
     }]
   })
+
+  // Reviewed correction for the black living-room shot. The old timeline
+  // treated two reconstructions of the same visible sofa as two instances and
+  // started the coffee-table appearance several seconds too late.
+  if (videoId === 'vid_58a7a1504281' && frameTime >= 3.5 && frameTime <= 12.5) {
+    assets = assets.filter((asset) => asset.id !== 'ast_a1018a9c3c29')
+    const coffeeTable = AVAILABLE_ASSETS_BY_VIDEO[videoId]?.find(
+      (asset) => asset.id === 'ast_a50c067b4bee',
+    )
+    if (coffeeTable && !assets.some((asset) => asset.id === coffeeTable.id)) {
+      assets.push({
+        ...coffeeTable,
+        source: `${coffeeTable.sourceVideo?.blogger ?? '@sweet安宅'} · ${videoId} · 当前客厅画面`,
+      })
+    }
+  }
+
+  return assets
+}
+
+export function detectedFurnitureForVideoFrame(
+  videoId: string,
+  frameTime: number,
+  readyAssets: LibraryComponent[],
+): string[] {
+  const labels = readyAssets.map((asset) => asset.name)
+  if (videoId === 'vid_58a7a1504281' && frameTime >= 3.5 && frameTime <= 12.5) {
+    labels.push('落地灯', '书桌')
+  }
+  return Array.from(new Set(labels))
 }
 
 export function defaultAssetFrame(videoId: string): number {

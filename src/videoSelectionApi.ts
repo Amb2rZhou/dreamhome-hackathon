@@ -1,4 +1,4 @@
-import type { VideoSelectionUpload } from './segmentApi'
+import type { ImageSelectionGeometry, VideoSelectionUpload } from './segmentApi'
 import { dreamHomeApiUrl } from './dreamHomeApi'
 
 export interface SelectionLabels {
@@ -153,6 +153,44 @@ export async function confirmVideoSelection(input: {
       generate_new: input.generateNew ?? false,
       reject_matched_asset: input.rejectMatchedAsset ?? false,
       quality_mode: input.qualityMode || 'production',
+    }),
+  })
+  return responseJson<VideoSelectConfirmResponse>(response)
+}
+
+export async function submitImagePostSelection(input: {
+  postId: string
+  slideIndex: number
+  geometry: ImageSelectionGeometry
+  categoryHint?: string
+}): Promise<VideoSelectResponse> {
+  const response = await fetch(dreamHomeApiUrl(`/api/image-posts/${encodeURIComponent(input.postId)}/select`), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      slide_index: input.slideIndex,
+      bbox: input.geometry.bbox,
+      polygon: input.geometry.polygon,
+      category_hint: input.categoryHint || '',
+    }),
+  })
+  return responseJson<VideoSelectResponse>(response)
+}
+
+export async function confirmImagePostSelection(input: {
+  postId: string
+  selectId: string
+  useAssetId?: string
+  generateNew?: boolean
+}): Promise<VideoSelectConfirmResponse> {
+  const response = await fetch(dreamHomeApiUrl(`/api/image-posts/${encodeURIComponent(input.postId)}/select/confirm`), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      select_id: input.selectId,
+      use_asset_id: input.useAssetId || null,
+      generate_new: input.generateNew ?? false,
+      quality_mode: 'production',
     }),
   })
   return responseJson<VideoSelectConfirmResponse>(response)

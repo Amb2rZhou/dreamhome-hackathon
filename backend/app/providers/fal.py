@@ -43,8 +43,6 @@ class FalTrellisProvider(Gen3DProvider):
     name = "fal"
 
     def __init__(self) -> None:
-        endpoint = settings.FAL_TRELLIS_ENDPOINT.strip("/")
-        self._submit_url = f"https://queue.fal.run/{endpoint}"
         self._headers = {
             "Authorization": f"Key {settings.FAL_KEY}",
             "Content-Type": "application/json",
@@ -60,14 +58,18 @@ class FalTrellisProvider(Gen3DProvider):
         }
         image_paths = [image_path, *(extra_image_paths or [])]
         if len(image_paths) > 1:
+            endpoint = settings.FAL_TRELLIS_MULTI_ENDPOINT.strip("/")
             payload["image_urls"] = [_to_data_uri(path) for path in image_paths]
             payload["multiimage_algo"] = settings.TRELLIS_MULTIIMAGE_ALGO
         else:
+            endpoint = settings.FAL_TRELLIS_ENDPOINT.strip("/")
             payload["image_url"] = _to_data_uri(image_path)
         if prompt:
             payload["prompt"] = prompt
         async with httpx.AsyncClient(timeout=60, trust_env=False) as client:
-            r = await client.post(self._submit_url, headers=self._headers, json=payload)
+            r = await client.post(
+                f"https://queue.fal.run/{endpoint}", headers=self._headers, json=payload
+            )
             r.raise_for_status()
             data = r.json()
         return json.dumps({

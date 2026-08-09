@@ -92,6 +92,71 @@ export async function captureBbox(
   return canvas.toDataURL('image/png')
 }
 
+// 从图文原图截取圈选区域，仅用于本地暂停态预览。
+// 图文的正式识别/生成仍需后端提供独立的静态多物体生产接口。
+export async function captureImageBbox(
+  image: HTMLImageElement,
+  box: { x: number; y: number; w: number; h: number },
+): Promise<string | null> {
+  const screen = image.closest('.screen') as HTMLElement | null
+  if (!screen || !image.naturalWidth || !image.naturalHeight) return null
+
+  const screenRect = screen.getBoundingClientRect()
+  const imageRect = image.getBoundingClientRect()
+  const scaleX = screenRect.width / (screen.clientWidth || screenRect.width)
+  const scaleY = screenRect.height / (screen.clientHeight || screenRect.height)
+  const elementX = (imageRect.left - screenRect.left) / scaleX
+  const elementY = (imageRect.top - screenRect.top) / scaleY
+  const elementWidth = imageRect.width / scaleX
+  const elementHeight = imageRect.height / scaleY
+  const containScale = Math.min(
+    elementWidth / image.naturalWidth,
+    elementHeight / image.naturalHeight,
+  )
+  const renderedWidth = image.naturalWidth * containScale
+  const renderedHeight = image.naturalHeight * containScale
+  const renderedX = elementX + (elementWidth - renderedWidth) / 2
+  const renderedY = elementY + (elementHeight - renderedHeight) / 2
+
+  const sourceLeft = Math.max(0, Math.floor((box.x - renderedX) / containScale))
+  const sourceTop = Math.max(0, Math.floor((box.y - renderedY) / containScale))
+  const sourceRight = Math.min(
+    image.naturalWidth,
+    Math.ceil((box.x + box.w - renderedX) / containScale),
+  )
+  const sourceBottom = Math.min(
+    image.naturalHeight,
+    Math.ceil((box.y + box.h - renderedY) / containScale),
+  )
+  if (sourceRight <= sourceLeft || sourceBottom <= sourceTop) return null
+
+  try {
+    const sourceWidth = sourceRight - sourceLeft
+    const sourceHeight = sourceBottom - sourceTop
+    const previewScale = Math.min(1, 1024 / Math.max(sourceWidth, sourceHeight))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(sourceWidth * previewScale))
+    canvas.height = Math.max(1, Math.round(sourceHeight * previewScale))
+    const context = canvas.getContext('2d')
+    if (!context) return null
+    context.drawImage(
+      image,
+      sourceLeft,
+      sourceTop,
+      sourceWidth,
+      sourceHeight,
+      0,
+      0,
+      canvas.width,
+      canvas.height,
+    )
+    return canvas.toDataURL('image/jpeg', 0.9)
+  } catch (error) {
+    console.warn('[image-selection] unable to prepare current image crop', error)
+    return null
+  }
+}
+
 // object-fit: cover 几何：视频等比放大填满，居中，超出裁切。
 // 返回 screen 坐标 → 视频原始像素坐标的映射参数。
 export function coverTransform(video: HTMLVideoElement) {
@@ -125,6 +190,48 @@ export interface VideoSelectionUpload {
   frameHeight: number
   bbox: [number, number, number, number]
   polygon: Array<[number, number]>
+}
+
+export interface ImageSelectionGeometry {
+  bbox: [number, number, number, number]
+  polygon: Array<[number, number]>
+}
+
+export function captureImageSelectionGeometry(
+  image: HTMLImageElement,
+  box: { x: number; y: number; w: number; h: number },
+  path: Array<{ x: number; y: number }>,
+): ImageSelectionGeometry | null {
+  const screen = image.closest('.screen') as HTMLElement | null
+  if (!screen || !image.naturalWidth || !image.naturalHeight) return null
+  const screenRect = screen.getBoundingClientRect()
+  const imageRect = image.getBoundingClientRect()
+  const scaleX = screenRect.width / (screen.clientWidth || screenRect.width)
+  const scaleY = screenRect.height / (screen.clientHeight || screenRect.height)
+  const elementX = (imageRect.left - screenRect.left) / scaleX
+  const elementY = (imageRect.top - screenRect.top) / scaleY
+  const elementWidth = imageRect.width / scaleX
+  const elementHeight = imageRect.height / scaleY
+  const containScale = Math.min(
+    elementWidth / image.naturalWidth,
+    elementHeight / image.naturalHeight,
+  )
+  const renderedWidth = image.naturalWidth * containScale
+  const renderedHeight = image.naturalHeight * containScale
+  const renderedX = elementX + (elementWidth - renderedWidth) / 2
+  const renderedY = elementY + (elementHeight - renderedHeight) / 2
+  const normalize = (point: { x: number; y: number }): [number, number] => [
+    clamp01((point.x - renderedX) / renderedWidth),
+    clamp01((point.y - renderedY) / renderedHeight),
+  ]
+  const [left, top] = normalize({ x: box.x, y: box.y })
+  const [right, bottom] = normalize({ x: box.x + box.w, y: box.y + box.h })
+  if (right <= left || bottom <= top) return null
+  const polygon = path.map(normalize)
+  return {
+    bbox: [left, top, right - left, bottom - top],
+    polygon,
+  }
 }
 
 export async function sourceCropDataUrl(

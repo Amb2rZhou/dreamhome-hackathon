@@ -50,7 +50,7 @@ async def check_solo(enhanced_path: str, name: str, *, strict: bool = False) -> 
         }
         async with httpx.AsyncClient(timeout=60, trust_env=False) as client:
             r = await client.post(
-                "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+                f"{settings.DASHSCOPE_BASE_URL}/compatible-mode/v1/chat/completions",
                 headers={"Authorization": f"Bearer {settings.DASHSCOPE_API_KEY}"},
                 json=payload)
             r.raise_for_status()
@@ -92,7 +92,7 @@ async def check_consistency(original_path: str, enhanced_path: str, *,
         }
         async with httpx.AsyncClient(timeout=60, trust_env=False) as client:
             r = await client.post(
-                "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+                f"{settings.DASHSCOPE_BASE_URL}/compatible-mode/v1/chat/completions",
                 headers={"Authorization": f"Bearer {settings.DASHSCOPE_API_KEY}"},
                 json=payload)
             r.raise_for_status()

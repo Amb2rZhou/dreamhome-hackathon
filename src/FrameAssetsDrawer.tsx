@@ -16,6 +16,7 @@ export function FrameAssetsDrawer({
   title,
   subtitle,
   ariaLabel,
+  detectedLabels = [],
 }: {
   assets: LibraryComponent[]
   favoriteIds?: string[]
@@ -25,6 +26,7 @@ export function FrameAssetsDrawer({
   title?: string
   subtitle?: string
   ariaLabel?: string
+  detectedLabels?: string[]
 }) {
   const [activeId, setActiveId] = useState(assets[0]?.id ?? '')
   const activeIndex = useMemo(() => {
@@ -80,7 +82,11 @@ export function FrameAssetsDrawer({
           type="button"
           className="frame-assets-drawer-close"
           aria-label="关闭全部 3D 组件"
-          onClick={onClose}
+          onClick={(event) => {
+            event.preventDefault()
+            event.stopPropagation()
+            onClose()
+          }}
         >
           ×
         </button>
@@ -95,12 +101,26 @@ export function FrameAssetsDrawer({
               type="button"
               className={`frame-assets-favorite-all ${allFavorited ? 'is-favorite' : ''}`}
               disabled={allFavorited}
-              onClick={onFavoriteAll}
+              onClick={(event) => {
+                event.stopPropagation()
+                onFavoriteAll()
+              }}
             >
               {allFavorited ? '✓ 已全部收藏' : '一键收藏全部'}
             </button>
           )}
         </header>
+
+        {detectedLabels.length > assets.length && (
+          <div className="frame-assets-detected" aria-label="当前画面识别结果">
+            {detectedLabels.map((label) => {
+              const ready = assets.some((asset) => asset.name === label)
+              return <span key={label} className={ready ? 'is-ready' : ''}>
+                {label}<i>{ready ? '已有 3D' : '待生成'}</i>
+              </span>
+            })}
+          </div>
+        )}
 
         {!active ? (
           <div className="frame-assets-drawer-empty" role="status">
@@ -134,7 +154,10 @@ export function FrameAssetsDrawer({
               aria-selected={index === activeIndex}
               aria-label={`查看${asset.name}`}
               className={index === activeIndex ? 'is-active' : ''}
-              onClick={() => setActiveId(asset.id)}
+              onClick={(event) => {
+                event.stopPropagation()
+                setActiveId(asset.id)
+              }}
             >
               <span><FurnitureAssetThumbnail component={asset} /></span>
               <small>{asset.name}</small>
@@ -156,7 +179,10 @@ export function FrameAssetsDrawer({
               type="button"
               className={`frame-assets-favorite ${favoriteIds.includes(active.id) ? 'is-favorite' : ''}`}
               aria-pressed={favoriteIds.includes(active.id)}
-              onClick={() => onFavorite(active.id)}
+              onClick={(event) => {
+                event.stopPropagation()
+                onFavorite(active.id)
+              }}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M20.8 4.7a5.5 5.5 0 0 0-7.8 0L12 5.8l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.4 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />

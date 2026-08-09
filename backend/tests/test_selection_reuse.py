@@ -72,7 +72,12 @@ class SelectionReuseTests(unittest.TestCase):
             self.assertEqual(result["asset_id"], "ast_existing")
             self.assertEqual(result["quality_mode"], "reuse")
             self.assertIsNone(result["job_id"])
-            bind.assert_called_once_with("trk_existing", "ast_existing")
+            bind.assert_called_once_with(
+                "trk_existing",
+                "ast_existing",
+                binding_review_status="approved",
+                binding_source="user_confirmed_reuse",
+            )
 
     def test_non_ready_asset_cannot_be_reused(self):
         videos._SELECTS["sel"] = {

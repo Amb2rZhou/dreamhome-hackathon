@@ -1,0 +1,28 @@
+[Unit]
+Description=DreamHome API-only service (Hong Kong)
+After=network-online.target dreamhome-segment.service
+Wants=network-online.target dreamhome-segment.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/dreamhome/backend
+EnvironmentFile=-/etc/dreamhome/backend.env
+Environment=PYTHONPATH=/opt/dreamhome/backend
+Environment=GEN3D_PROVIDER=fal
+Environment=DETECT_PROVIDER=dashscope
+Environment=LABELS_PROVIDER=dashscope
+Environment=ENHANCE_PROVIDER=module
+Environment=SEGMENT_API_URL=http://127.0.0.1:8002
+Environment=JOB_MAX_CONCURRENCY=2
+Environment=JOB_QUEUE_MAX=20
+Environment=REQUIRE_IMAGE_POST_IMPORT_TOKEN=1
+Environment=DB_PATH=/opt/dreamhome/data/dreamhome.db
+Environment=STORAGE_DIR=/opt/dreamhome/data/storage
+Environment=PUBLIC_BASE_URL=https://api.dreamhouse.top
+ExecStart=/opt/dreamhome/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=3
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target

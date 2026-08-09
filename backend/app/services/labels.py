@@ -183,7 +183,7 @@ async def _dashscope(image_path: str, category_hint: str = "", framed: bool = Fa
     }
     async with httpx.AsyncClient(timeout=60) as client:
         r = await client.post(
-            "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+            f"{settings.DASHSCOPE_BASE_URL}/compatible-mode/v1/chat/completions",
             headers={"Authorization": f"Bearer {settings.DASHSCOPE_API_KEY}"},
             json=payload,
         )

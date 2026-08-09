@@ -116,7 +116,7 @@ def _gamma_image(data: bytes, gamma: float) -> bytes:
     return encoded.getvalue()
 
 
-def postprocess_glb_bytes(data: bytes, *, gamma: float = 0.7) -> tuple[bytes, dict]:
+def postprocess_glb_bytes(data: bytes, *, gamma: float = 0.95) -> tuple[bytes, dict]:
     """Apply the DreamHome material policy to a GLB exactly once."""
     if gamma <= 0 or gamma > 1:
         raise ValueError("TRELLIS albedo gamma must be in (0, 1]")
@@ -179,6 +179,81 @@ def postprocess_glb_bytes(data: bytes, *, gamma: float = 0.7) -> tuple[bytes, di
     }
     return _encode_glb(document, binary), {
         "gamma": gamma,
+        "textures_corrected": corrected_count,
+        "already_processed": False,
+        **geometry,
+    }
+
+
+def retone_postprocessed_glb_bytes(
+    data: bytes, *, target_gamma: float,
+) -> tuple[bytes, dict]:
+    """Create a color-tuning variant from an already processed GLB.
+
+    If the stored texture is ``original ** current_gamma``, applying
+    ``target_gamma / current_gamma`` produces ``original ** target_gamma``.
+    This makes A/B tuning possible without calling the 3D provider again or
+    silently double-applying the normal production postprocessor.
+    """
+    if target_gamma <= 0 or target_gamma > 1:
+        raise ValueError("TRELLIS target gamma must be in (0, 1]")
+    document, binary = _decode_glb(data)
+    geometry = _validate_meshes(document)
+    extras = document.setdefault("asset", {}).setdefault("extras", {})
+    previous = extras.get(_MARKER)
+    if not isinstance(previous, dict):
+        raise ValueError("GLB has not passed DreamHome material postprocess")
+    current_gamma = float(previous.get("albedo_gamma") or 0)
+    if current_gamma <= 0 or current_gamma > 1:
+        raise ValueError("GLB has invalid material postprocess metadata")
+    if current_gamma == target_gamma:
+        return data, {
+            "gamma": target_gamma,
+            "previous_gamma": current_gamma,
+            "textures_corrected": int(previous.get("textures_corrected") or 0),
+            "already_processed": True,
+            **geometry,
+        }
+
+    views = document.get("bufferViews") or []
+    corrected_count = 0
+    adjustment_gamma = target_gamma / current_gamma
+    images = sorted(
+        _base_color_images(document),
+        key=lambda item: int(views[item[1]].get("byteOffset") or 0),
+        reverse=True,
+    )
+    for image_index, view_index in images:
+        view = views[view_index]
+        start = int(view.get("byteOffset") or 0)
+        old_length = int(view["byteLength"])
+        old_end = start + old_length
+        image_bytes = _gamma_image(binary[start:old_end], adjustment_gamma)
+        padded = image_bytes + b"\0" * ((4 - len(image_bytes) % 4) % 4)
+        binary = binary[:start] + padded + binary[old_end:]
+        delta = len(padded) - old_length
+        view["byteLength"] = len(image_bytes)
+        document["images"][image_index]["mimeType"] = "image/png"
+        for other_index, other in enumerate(views):
+            if other_index == view_index:
+                continue
+            offset = int(other.get("byteOffset") or 0)
+            if offset >= old_end:
+                other["byteOffset"] = offset + delta
+        corrected_count += 1
+    if not corrected_count:
+        raise ValueError("GLB has no embedded base-color texture")
+
+    extras[_MARKER] = {
+        "version": 2,
+        "albedo_gamma": target_gamma,
+        "retone_from_gamma": current_gamma,
+        "textures_corrected": corrected_count,
+    }
+    return _encode_glb(document, binary), {
+        "gamma": target_gamma,
+        "previous_gamma": current_gamma,
+        "adjustment_gamma": adjustment_gamma,
         "textures_corrected": corrected_count,
         "already_processed": False,
         **geometry,

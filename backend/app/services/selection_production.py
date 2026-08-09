@@ -69,6 +69,8 @@ async def _produce(
     polygon: Optional[list[list[float]]] = None,
     isolation_mode: str = "bbox",
     completion_path: Optional[list[tuple[int, int]]] = None,
+    source_overrides: Optional[dict[str, Any]] = None,
+    library_via: str = "feed-selection",
 ) -> None:
     source = {
         "video_id": video_id,
@@ -80,6 +82,8 @@ async def _produce(
         "completion_input": "context_with_polygon_hint",
         "pipeline": "feed-selection-production",
     }
+    if source_overrides:
+        source.update(source_overrides)
     desc = _description(labels)
 
     try:
@@ -155,7 +159,7 @@ async def _produce(
             status="ready",
         )
         if user_id:
-            db.library_add(user_id, [asset_id], "feed-selection")
+            db.library_add(user_id, [asset_id], library_via)
             job.library_attached = True
 
         job.status = JobStatus.succeeded
@@ -234,4 +238,81 @@ def start_selection_production(
     )
     db.update_asset(asset_id, job_id=job.job_id)
     db.bind_track_asset(track_id, asset_id, binding_source="production_generation")
+    return asset_id, job
+
+
+def start_image_selection_production(
+    *,
+    post_id: str,
+    slide_index: int,
+    bbox: list[float],
+    polygon: list[list[float]],
+    isolation_mode: str,
+    cutout_path: str,
+    labels: dict[str, Any],
+    user_id: str,
+    completion_path: Optional[list[tuple[int, int]]] = None,
+) -> tuple[str, Job]:
+    """Run a still-image selection through the canonical production gates.
+
+    Image posts have no video track.  Their provenance is the immutable post,
+    slide index and selection geometry; they must never be registered as a
+    synthetic video merely to reuse the provider pipeline.
+    """
+    source = {
+        "source_type": "image_post_selection",
+        "image_post_id": post_id,
+        "slide_index": slide_index,
+        "bbox": bbox,
+        "polygon": polygon,
+        "isolation_mode": isolation_mode,
+        "pipeline": "image-post-selection-production",
+        "pipeline_status": "queued",
+    }
+    asset_id = db.insert_asset(
+        name=labels.get("sub") or labels.get("category") or "新资产",
+        labels=labels,
+        thumb_url="",
+        source=source,
+        status="generating",
+        created_by="image_selection_pipeline",
+    )
+
+    async def runner(job: Job) -> None:
+        await _produce(
+            job,
+            asset_id=asset_id,
+            track_id="",
+            video_id="",
+            t=float(slide_index),
+            bbox=bbox,
+            cutout_path=cutout_path,
+            labels=labels,
+            user_id=user_id,
+            polygon=polygon,
+            isolation_mode=isolation_mode,
+            completion_path=completion_path,
+            source_overrides=source,
+            library_via="image-post-selection",
+        )
+
+    styles = labels.get("styles") or []
+    materials = labels.get("materials") or []
+    job = create_workflow_job(
+        # Image-post selections share the persisted photo job kind.  The
+        # workflow runner still owns completion/QC/TRELLIS, so this does not
+        # route through the raw photo fast path.
+        "photo",
+        runner,
+        meta={
+            "asset_id": asset_id,
+            "image_post_id": post_id,
+            "slide_index": slide_index,
+            "category": labels.get("category") or None,
+            "style": styles[0] if styles else None,
+            "material": materials[0] if materials else None,
+            "quality_mode": "production",
+        },
+    )
+    db.update_asset(asset_id, job_id=job.job_id)
     return asset_id, job

@@ -22,8 +22,22 @@ export default defineConfig({
   ],
   server: {
     proxy: {
+      '/dreamhome-api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/dreamhome-api/, ''),
+      },
       '/api/photo-to-3d': 'http://localhost:8001',
       '/api/jobs': 'http://localhost:8001',
+    },
+  },
+  preview: {
+    proxy: {
+      '/dreamhome-api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/dreamhome-api/, ''),
+      },
     },
   },
 })

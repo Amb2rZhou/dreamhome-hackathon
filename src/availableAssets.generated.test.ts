@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { AVAILABLE_ASSETS } from './availableAssets.generated'
-import { AVAILABLE_ASSETS_BY_VIDEO } from './availableAssets.generated'
+import { AVAILABLE_ASSETS_BY_VIDEO, assetsForVideoFrame, detectedFurnitureForVideoFrame } from './availableAssets.generated'
 import { FEED_VIDEOS } from './types'
 
 describe('reviewed asset delivery paths', () => {
@@ -16,9 +16,18 @@ describe('reviewed asset delivery paths', () => {
     }
   })
 
+  it('deduplicates the reviewed black living-room sofa and exposes missing detections', () => {
+    const assets = assetsForVideoFrame('vid_58a7a1504281', 9)
+    expect(assets.filter((asset) => asset.name === '三人沙发')).toHaveLength(1)
+    expect(assets.some((asset) => asset.name === '茶几')).toBe(true)
+    expect(detectedFurnitureForVideoFrame('vid_58a7a1504281', 9, assets)).toEqual(
+      expect.arrayContaining(['三人沙发', '茶几', '落地灯', '书桌']),
+    )
+  })
+
   it('starts the Feed with a video that has reviewed component data', () => {
     const firstVideo = FEED_VIDEOS[0]
     expect(firstVideo.id).not.toBe('home-1')
-    expect(AVAILABLE_ASSETS_BY_VIDEO[firstVideo.id]?.length).toBeGreaterThan(0)
+    expect(firstVideo.mediaType === 'image-carousel' || AVAILABLE_ASSETS_BY_VIDEO[firstVideo.id]?.length).toBeTruthy()
   })
 })

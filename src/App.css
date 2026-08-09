@@ -215,6 +215,179 @@ textarea { font-family: inherit; }
   object-fit: cover;
 }
 
+.image-feed-carousel,
+.image-feed-empty {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: #17130f;
+  overflow: hidden;
+}
+
+.image-feed-empty {
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, .72);
+  font-size: 14px;
+}
+
+.image-feed-media {
+  position: absolute;
+  top: 96px;
+  left: 0;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #0d0c0b;
+}
+
+.image-feed-slide {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+  animation: image-feed-crossfade 240ms ease-out both;
+}
+
+.image-feed-hotspots {
+  position: absolute;
+  /* A hotspot is attached to the pictured object, so its compact 44px target
+     wins only at that coordinate over Feed rails such as pause or mascot. */
+  z-index: 125;
+  inset: 0;
+  pointer-events: none;
+}
+
+.image-feed-hotspot {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.image-feed-hotspot-halo {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255, 215, 128, .14);
+  box-shadow: 0 0 8px rgba(255, 209, 108, .78);
+  animation: image-feed-hotspot-pulse 1.8s ease-in-out infinite;
+}
+
+.image-feed-hotspot:nth-child(2n) .image-feed-hotspot-halo { animation-delay: -.55s; }
+.image-feed-hotspot:nth-child(3n) .image-feed-hotspot-halo { animation-delay: -1.05s; }
+
+.image-feed-hotspot-core {
+  position: relative;
+  z-index: 1;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff7dd;
+  box-shadow: 0 0 3px #fff, 0 0 9px rgba(255, 198, 73, .95);
+}
+
+.image-feed-hotspot-label {
+  position: absolute;
+  top: 33px;
+  left: 50%;
+  max-width: 88px;
+  padding: 4px 7px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .4);
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(24, 22, 18, .74);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0;
+  transform: translate(-50%, -3px);
+  transition: opacity .18s ease, transform .18s ease;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.image-feed-hotspot:hover .image-feed-hotspot-label,
+.image-feed-hotspot:focus-visible .image-feed-hotspot-label {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.image-feed-hotspot:focus-visible { outline: none; }
+.image-feed-hotspot:focus-visible .image-feed-hotspot-core {
+  box-shadow: 0 0 0 3px #fff, 0 0 0 6px #a16207, 0 0 12px rgba(255, 198, 73, .95);
+}
+.image-feed-hotspot:active .image-feed-hotspot-core { transform: scale(.9); }
+
+@keyframes image-feed-hotspot-pulse {
+  0%, 100% { opacity: .38; transform: scale(.72); }
+  50% { opacity: .9; transform: scale(1.22); }
+}
+
+.image-feed-dots {
+  position: absolute;
+  left: 16px;
+  right: 72px;
+  bottom: 178px;
+  z-index: 130;
+  display: flex;
+  gap: 4px;
+}
+
+.image-feed-dot {
+  height: 4px;
+  flex: 1;
+  min-width: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .3);
+  padding: 0;
+}
+
+.image-feed-dot.is-active { background: #fff; }
+
+@keyframes image-feed-crossfade {
+  from { opacity: .35; transform: scale(.997); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image-feed-slide { animation: none; }
+  .image-feed-hotspot-halo { animation: none; opacity: .9; }
+}
+
+.image-feed-audio {
+  position: absolute;
+  top: 54px;
+  right: 16px;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, .28);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .32);
+  color: #fff;
+  font-size: 19px;
+  backdrop-filter: blur(8px);
+}
+
 .feed-video-enter {
   animation: feed-video-enter 260ms cubic-bezier(.2,.78,.25,1) both;
 }

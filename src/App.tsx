@@ -1,10 +1,11 @@
 import { useReducer, useRef, useEffect, useMemo, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { FEED_VIDEOS, MOCK_OBJECTS, LIBRARY_SEED, CATEGORY_COLOR, CURRENT_BLOGGER, type FeedVideo, type SelectedObject, type LibraryComponent, type FurnitureCategory, type MascotState, type CraftJob, type CraftBatch, type TraceEntry } from './types'
+import { ImageFeedCarousel } from './ImageFeedCarousel'
 import { genSticker } from './stickerGen'
-import { captureBbox, captureVideoSelectionUpload, saveTraceToBackend, loadTracesFromBackend, traceImageUrl, type VideoSelectionUpload } from './segmentApi'
+import { captureBbox, captureImageBbox, captureImageSelectionGeometry, captureVideoSelectionUpload, saveTraceToBackend, loadTracesFromBackend, traceImageUrl, type ImageSelectionGeometry, type VideoSelectionUpload } from './segmentApi'
 import { falJobToComponent, getFalJob } from './falGenerationApi'
-import { confirmVideoSelection, submitVideoSelection } from './videoSelectionApi'
+import { confirmImagePostSelection, confirmVideoSelection, submitImagePostSelection, submitVideoSelection } from './videoSelectionApi'
 import type { SelectionMatchCandidate } from './videoSelectionApi'
 import { AssetReuseDialog } from './AssetReuseDialog'
 import { labelsToCategory, reusableAssetToComponent } from './assetReuse'
@@ -14,7 +15,14 @@ import { FrameAssetsDrawer } from './FrameAssetsDrawer'
 import { FurnitureAssetThumbnail } from './FurnitureAssetThumbnail'
 import { VideoAssetsEntry } from './VideoAssetsEntry'
 import { workshopFromAppState } from './workshopModel'
-import { AVAILABLE_ASSETS_BY_VIDEO, assetsForVideoFrame, defaultAssetFrame } from './availableAssets.generated'
+import { AVAILABLE_ASSETS_BY_VIDEO, assetsForVideoFrame, defaultAssetFrame, detectedFurnitureForVideoFrame } from './availableAssets.generated'
+import {
+  IMAGE_POST_ASSETS,
+  IMAGE_POST_HOTSPOTS,
+  IMAGE_POST_ID,
+  fetchImagePostAssetBindings,
+  mergeImagePostAssetBindings,
+} from './imagePostAssets'
 import {
   CommentIcon,
   HeartIcon as DouyinHeartIcon,
@@ -73,6 +81,7 @@ interface GuideTarget {
 type SessionGuideStage = 'idle' | 'pause' | 'recognize' | 'drag' | 'progress' | 'waiting' | 'complete' | 'done'
 
 type PendingSelectionRequests = Map<string, {
+  mediaType: 'video' | 'image-carousel'
   videoId: string
   time: number
   // Encoding the untouched full frame is allowed to finish in the
@@ -80,6 +89,7 @@ type PendingSelectionRequests = Map<string, {
   // on a full-resolution JPEG while still guaranteeing that production waits
   // for the exact frame before it submits.
   uploadPromise: Promise<VideoSelectionUpload | null>
+  imageGeometryPromise: Promise<ImageSelectionGeometry | null>
   labelPromise: Promise<string>
 }>
 
@@ -676,10 +686,14 @@ function App() {
   const pendingFeedTargetRef = useRef<FeedDeepLink | null>(initialFeedTargetRef.current)
   const [collectionMascotMode, setCollectionMascotMode] = useState<CollectionMascotMode>('none')
   const [reuseCandidate, setReuseCandidate] = useState<SelectionMatchCandidate | null>(null)
+  const [activeImageHotspotAssetId, setActiveImageHotspotAssetId] = useState<string | null>(null)
+  const [imagePostHotspots, setImagePostHotspots] = useState(IMAGE_POST_HOTSPOTS)
+  const [imagePostAssets, setImagePostAssets] = useState(IMAGE_POST_ASSETS)
   const reuseDecisionRef = useRef<((reuse: boolean) => void) | null>(null)
   // 教学只由冷启动气泡的“开始逛逛”启动；普通暂停不会擅自拉起新手引导。
   const [sessionGuideStage, setSessionGuideStage] = useState<SessionGuideStage>('idle')
   const videoRef = useRef<HTMLVideoElement>(null)
+  const imageSlideIndexRef = useRef(0)
   const selectionRequestsRef = useRef<PendingSelectionRequests>(new Map())
   const feedTouchStartY = useRef<number | null>(null)
   const suppressPause = useRef(false)
@@ -690,10 +704,40 @@ function App() {
     () => assetsForVideoFrame(pausedFrame.videoId, pausedFrame.time),
     [pausedFrame],
   )
+  const activeFrameDetectedLabels = useMemo(
+    () => detectedFurnitureForVideoFrame(
+      pausedFrame.videoId,
+      pausedFrame.time,
+      activeFrameAssets,
+    ),
+    [activeFrameAssets, pausedFrame],
+  )
   const activeVideoAssets = useMemo(
     () => AVAILABLE_ASSETS_BY_VIDEO[activeFeedVideo.id] ?? [],
     [activeFeedVideo.id],
   )
+  const activeImageHotspotAsset = useMemo(
+    () => imagePostAssets.find((asset) => asset.id === activeImageHotspotAssetId) ?? null,
+    [activeImageHotspotAssetId, imagePostAssets],
+  )
+  const refreshImagePostBindings = useCallback(async () => {
+    try {
+      const bindings = await fetchImagePostAssetBindings(IMAGE_POST_ID)
+      const merged = mergeImagePostAssetBindings(bindings)
+      setImagePostHotspots(merged.hotspots)
+      setImagePostAssets(merged.assets)
+    } catch (error) {
+      // Static verified bindings remain the offline/demo fallback. The next
+      // successful task poll or page load retries the authoritative backend.
+      console.warn('[DreamHome API] image-post bindings unavailable; keeping verified baseline', error)
+    }
+  }, [])
+  useEffect(() => {
+    void refreshImagePostBindings()
+  }, [refreshImagePostBindings])
+  useEffect(() => {
+    setActiveImageHotspotAssetId(null)
+  }, [activeFeedVideo.id])
   useEffect(() => {
     // The entry button renders at most four thumbnails.  Preloading every
     // asset in the paused frame made a single pause fan out into dozens of
@@ -801,20 +845,30 @@ function App() {
   useEffect(() => {
     const next = FEED_VIDEOS[(state.feed.index + 1) % FEED_VIDEOS.length]
     const active = videoRef.current
-    const preload = document.createElement('video')
+    const preloadVideo = next.mediaType === 'image-carousel'
+      ? null
+      : document.createElement('video')
+    const preloadImage = next.mediaType === 'image-carousel' ? new Image() : null
     let warmTimer = 0
     const warmNext = () => {
       warmTimer = window.setTimeout(() => {
-        preload.muted = true
-        preload.playsInline = true
+        if (preloadImage) {
+          preloadImage.src = next.images?.[0] ?? next.poster
+          return
+        }
+        if (!preloadVideo || !next.src) return
+        preloadVideo.muted = true
+        preloadVideo.playsInline = true
         // Only warm the next video's metadata. `auto` could download the
         // complete 8–14 MB MP4 while the current video was still starting.
-        preload.preload = 'metadata'
-        preload.src = next.src
-        preload.load()
+        preloadVideo.preload = 'metadata'
+        preloadVideo.src = next.src
+        preloadVideo.load()
       }, 1500)
     }
-    if (active?.readyState && active.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+    if (activeFeedVideo.mediaType === 'image-carousel') {
+      warmNext()
+    } else if (active?.readyState && active.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
       warmNext()
     } else {
       active?.addEventListener('canplay', warmNext, { once: true })
@@ -822,10 +876,11 @@ function App() {
     return () => {
       window.clearTimeout(warmTimer)
       active?.removeEventListener('canplay', warmNext)
-      preload.removeAttribute('src')
-      preload.load()
+      preloadVideo?.removeAttribute('src')
+      preloadVideo?.load()
+      if (preloadImage) preloadImage.src = ''
     }
-  }, [state.feed.index])
+  }, [state.feed.index, activeFeedVideo.mediaType])
 
   const changeFeedVideo = (direction: 1 | -1) => {
     if (state.feed.phase !== 'browse' || state.feed.overlay !== 'none') return
@@ -887,28 +942,52 @@ function App() {
               ? selectionRequestsRef.current.get(craft.sourceSelectionId)
               : null
             if (!pendingSelection) throw new Error('原始帧和圈选已丢失，请保持页面打开后重试')
-            const upload = await pendingSelection.uploadPromise
-            if (!upload) throw new Error('原始帧准备失败，请保持页面打开后重试')
-            const selected = await submitVideoSelection({
-              videoId: pendingSelection.videoId,
-              time: pendingSelection.time,
-              upload,
-              categoryHint: craft.name === '待分类家具' ? '' : craft.name,
-            })
+            const categoryHint = craft.name === '待分类家具' ? '' : craft.name
+            const selected = pendingSelection.mediaType === 'image-carousel'
+              ? await (async () => {
+                  const geometry = await pendingSelection.imageGeometryPromise
+                  if (!geometry) throw new Error('图文圈选坐标准备失败，请重新圈选')
+                  return submitImagePostSelection({
+                    postId: pendingSelection.videoId,
+                    slideIndex: Math.round(pendingSelection.time),
+                    geometry,
+                    categoryHint,
+                  })
+                })()
+              : await (async () => {
+                  const upload = await pendingSelection.uploadPromise
+                  if (!upload) throw new Error('原始帧准备失败，请保持页面打开后重试')
+                  return submitVideoSelection({
+                    videoId: pendingSelection.videoId,
+                    time: pendingSelection.time,
+                    upload,
+                    categoryHint,
+                  })
+                })()
             const candidate = selected.exact_match ?? selected.candidates[0]
             // Even an exact backend match must be visually confirmed: the user
             // needs to inspect the canonical GLB from every angle before binding it.
             const shouldReuse = candidate ? await requestReuseDecision(candidate) : false
             if (cancelled) return
             if (candidate && shouldReuse) {
-              const reused = await confirmVideoSelection({
-                videoId: pendingSelection.videoId,
-                selectId: selected.select_id,
-                useAssetId: candidate.asset.asset_id,
-                generateNew: false,
-              })
+              const reused = pendingSelection.mediaType === 'image-carousel'
+                ? await confirmImagePostSelection({
+                    postId: pendingSelection.videoId,
+                    selectId: selected.select_id,
+                    useAssetId: candidate.asset.asset_id,
+                    generateNew: false,
+                  })
+                : await confirmVideoSelection({
+                    videoId: pendingSelection.videoId,
+                    selectId: selected.select_id,
+                    useAssetId: candidate.asset.asset_id,
+                    generateNew: false,
+                  })
               if (!reused.asset_id) throw new Error('同款资产复用失败，请稍后重试')
               if (cancelled) return
+              if (pendingSelection.mediaType === 'image-carousel') {
+                await refreshImagePostBindings()
+              }
               dispatch({
                 type: 'CRAFT_DONE',
                 id: craft.id,
@@ -917,13 +996,19 @@ function App() {
               dispatch({ type: 'SHOW_TOAST', msg: '找到已有同款 3D，已直接复用，没有重复生成。' })
               return
             }
-            const submitted = await confirmVideoSelection({
-              videoId: pendingSelection.videoId,
-              selectId: selected.select_id,
-              generateNew: true,
-              rejectMatchedAsset: Boolean(candidate),
-              qualityMode: 'production',
-            })
+            const submitted = pendingSelection.mediaType === 'image-carousel'
+              ? await confirmImagePostSelection({
+                  postId: pendingSelection.videoId,
+                  selectId: selected.select_id,
+                  generateNew: true,
+                })
+              : await confirmVideoSelection({
+                  videoId: pendingSelection.videoId,
+                  selectId: selected.select_id,
+                  generateNew: true,
+                  rejectMatchedAsset: Boolean(candidate),
+                  qualityMode: 'production',
+                })
             if (!submitted.job_id) throw new Error('正式生产后端未返回 3D 任务')
             if (cancelled) return
             const productionName = selected.labels.sub || selected.labels.category || craft.name
@@ -957,6 +1042,13 @@ function App() {
             if (cancelled) return
             dispatch({ type: 'CRAFT_PROGRESS', id: craft.id, progress: job.progress ?? 0, stage: 'generate_3d' })
             if (job.status === 'succeeded') {
+              const pendingSelection = craft.sourceSelectionId
+                ? selectionRequestsRef.current.get(craft.sourceSelectionId)
+                : null
+              if (pendingSelection?.mediaType === 'image-carousel') {
+                await refreshImagePostBindings()
+                if (cancelled) return
+              }
               dispatch({
                 type: 'CRAFT_DONE',
                 id: craft.id,
@@ -1007,7 +1099,7 @@ function App() {
       }, 15_000)
       return () => clearTimeout(t)
     }
-  }, [craft, requestReuseDecision])
+  }, [craft, refreshImagePostBindings, requestReuseDecision])
 
   return (
     <div
@@ -1049,29 +1141,42 @@ function App() {
               window.setTimeout(() => { suppressPause.current = false }, 320)
             }}
           >
-        <video
-          key={activeFeedVideo.id}
-          ref={videoRef}
-          src={activeFeedVideo.src}
-          poster={activeFeedVideo.poster}
-          className="video feed-video-enter"
-          loop
-          muted
-          playsInline
-          autoPlay
-          preload="metadata"
-          onLoadedData={() => recordFeedMediaEvent(activeFeedVideo.id, 'loadeddata')}
-          onCanPlay={() => recordFeedMediaEvent(activeFeedVideo.id, 'canplay')}
-          onLoadedMetadata={(event) => {
-            const target = pendingFeedTargetRef.current
-            if (!target || target.videoId !== activeFeedVideo.id) return
-            event.currentTarget.currentTime = Math.min(
-              target.time,
-              Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : target.time,
-            )
-            pendingFeedTargetRef.current = null
-          }}
-        />
+        {activeFeedVideo.mediaType === 'image-carousel' ? (
+          <ImageFeedCarousel
+            images={activeFeedVideo.images ?? []}
+            title={activeFeedVideo.caption}
+            audioSrc={activeFeedVideo.audioSrc}
+            playing={state.videoPlaying && !activeImageHotspotAsset}
+            onMediaReady={() => recordFeedMediaEvent(activeFeedVideo.id, 'loadeddata')}
+            onIndexChange={(index) => { imageSlideIndexRef.current = index }}
+            hotspots={activeFeedVideo.id === IMAGE_POST_ID ? imagePostHotspots : []}
+            onHotspotActivate={(hotspot) => setActiveImageHotspotAssetId(hotspot.assetId)}
+          />
+        ) : (
+          <video
+            key={activeFeedVideo.id}
+            ref={videoRef}
+            src={activeFeedVideo.src}
+            poster={activeFeedVideo.poster}
+            className="video feed-video-enter"
+            loop
+            muted
+            playsInline
+            autoPlay
+            preload="metadata"
+            onLoadedData={() => recordFeedMediaEvent(activeFeedVideo.id, 'loadeddata')}
+            onCanPlay={() => recordFeedMediaEvent(activeFeedVideo.id, 'canplay')}
+            onLoadedMetadata={(event) => {
+              const target = pendingFeedTargetRef.current
+              if (!target || target.videoId !== activeFeedVideo.id) return
+              event.currentTarget.currentTime = Math.min(
+                target.time,
+                Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : target.time,
+              )
+              pendingFeedTargetRef.current = null
+            }}
+          />
+        )}
 
         {state.feed.phase === 'browse' && (
           <BrowseLayer
@@ -1085,6 +1190,11 @@ function App() {
             onCloseAssets={() => dispatch({ type: 'CLOSE_VIDEO_ASSETS' })}
             onPause={() => {
               if (suppressPause.current || state.feed.overlay !== 'none') return
+              if (activeFeedVideo.mediaType === 'image-carousel') {
+                dispatch({ type: 'PAUSE', videoId: activeFeedVideo.id, time: imageSlideIndexRef.current })
+                setSessionGuideStage((current) => current === 'pause' ? 'recognize' : current)
+                return
+              }
               const video = videoRef.current
               if (video) {
                 video.pause()
@@ -1092,6 +1202,18 @@ function App() {
               }
               setSessionGuideStage((current) => current === 'pause' ? 'recognize' : current)
             }}
+          />
+        )}
+
+        {state.feed.phase === 'browse' && activeImageHotspotAsset && (
+          <FrameAssetsDrawer
+            assets={[activeImageHotspotAsset]}
+            favoriteIds={favoriteAssetIds}
+            onFavorite={toggleFavoriteAsset}
+            onClose={() => setActiveImageHotspotAssetId(null)}
+            title={`${activeImageHotspotAsset.name} · 原图定位`}
+            subtitle={`${activeImageHotspotAsset.source}，拖动可旋转查看 3D`}
+            ariaLabel={`${activeImageHotspotAsset.name} 3D 资产`}
           />
         )}
 
@@ -1120,7 +1242,13 @@ function App() {
             : null}
           progressGuideActive={sessionGuideStage === 'progress'}
           notice={state.toast ?? (state.showFailHint ? '这件家具还没完整露出来，换一帧或圈近一点再试试。' : null)}
-          onOpenCollection={() => dispatch({ type: 'SHOW_COLLECTION_DETAIL' })}
+          onOpenCollection={() => {
+            // A closing modal can disappear between pointer-up and the
+            // synthetic click.  Keep the mascot inert while any Feed overlay
+            // is active so that close taps cannot click through into it.
+            if (state.feed.overlay !== 'none' || activeImageHotspotAsset) return
+            dispatch({ type: 'SHOW_COLLECTION_DETAIL' })
+          }}
           onBeginOnboarding={() => {
             if (hasSeenFeedOnboarding()) return
             rememberFeedOnboarding()
@@ -1141,6 +1269,7 @@ function App() {
             pausedTime={pausedFrame.time}
             selectionRequests={selectionRequestsRef.current}
             frameAssets={activeFrameAssets}
+            detectedLabels={activeFrameDetectedLabels}
             favoriteAssetIds={favoriteAssetIds}
             onToggleFavoriteAsset={toggleFavoriteAsset}
             onMascotModeChange={setCollectionMascotMode}
@@ -1416,9 +1545,10 @@ function BrowseLayer({
         onFavorite={onToggleFavoriteAsset}
         onFavoriteAll={onFavoriteAllAssets}
         open={assetsOpen}
-        onOpen={onOpenAssets}
-        onClose={onCloseAssets}
-      />
+            onOpen={onOpenAssets}
+            onClose={onCloseAssets}
+            contentLabel={video.mediaType === 'image-carousel' ? '图文' : '视频'}
+          />
       <BottomInfo video={video} />
       <SceneActions videoId={video.id} />
       <DreamHomeBottomNav />
@@ -1681,6 +1811,7 @@ function SessionLayer({
   pausedTime,
   selectionRequests,
   frameAssets,
+  detectedLabels,
   favoriteAssetIds,
   onToggleFavoriteAsset,
   onMascotModeChange,
@@ -1696,6 +1827,7 @@ function SessionLayer({
   pausedTime: number
   selectionRequests: PendingSelectionRequests
   frameAssets: LibraryComponent[]
+  detectedLabels: string[]
   favoriteAssetIds: string[]
   onToggleFavoriteAsset: (id: string) => void
   onMascotModeChange: (mode: CollectionMascotMode) => void
@@ -2046,6 +2178,7 @@ function SessionLayer({
       // several seconds to initialise ONNX/WASM.
       await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()))
       const video = document.querySelector<HTMLVideoElement>('.video')
+      const image = document.querySelector<HTMLImageElement>('.image-feed-slide')
       const selectionTime = video?.currentTime ?? pausedTime
       const realtimeLabelPromise = video
         ? import('./objectGuide').then(({ detectGuideFurniture }) => (
@@ -2063,12 +2196,17 @@ function SessionLayer({
             return null
           })
         : Promise.resolve(null)
+      const imageGeometryPromise = image
+        ? Promise.resolve(captureImageSelectionGeometry(image, box, path))
+        : Promise.resolve(null)
       // The contextual bbox is an immediate, temporary preview. The original
       // full frame remains the production input and EdgeSAM can refine this
       // preview asynchronously without blocking the gesture.
       let bboxDataUrl = ''
       if (video && path.length > 2) {
         bboxDataUrl = (await captureBbox(video, box)) ?? ''
+      } else if (image && path.length > 2) {
+        bboxDataUrl = (await captureImageBbox(image, box)) ?? ''
       }
       const objId = `obj-${Date.now()}`
       const recognizedItem = { label: '识别中…', thumbnail: '✦' }
@@ -2110,9 +2248,11 @@ function SessionLayer({
       // user can continue immediately; production awaits this promise only
       // after the object is fed to the mascot.
       selectionRequests.set(objId, {
+        mediaType: image ? 'image-carousel' : 'video',
         videoId,
         time: selectionTime,
         uploadPromise: selectionUploadPromise,
+        imageGeometryPromise,
         labelPromise: realtimeLabelPromise,
       })
       dispatch({ type: 'OBJECT_RECOGNIZED', obj })
@@ -2415,11 +2555,11 @@ function SessionLayer({
         ✕
       </button>
 
-      {frameAssets.length > 0 && (
+      {detectedLabels.length > 0 && (
         <button
           type="button"
           className="frame-assets-batch"
-          aria-label={`查看本次发现的 ${frameAssets.length} 件现成家具`}
+          aria-label={`查看本次识别的 ${detectedLabels.length} 件家具，其中 ${frameAssets.length} 件已有 3D`}
           aria-haspopup="dialog"
           onClick={() => setFrameAssetsOpen(true)}
         >
@@ -2429,8 +2569,8 @@ function SessionLayer({
             <path d="M31.5 4.5c.7 4.2 2.5 6 6.7 6.7-4.2.7-6 2.5-6.7 6.7-.7-4.2-2.5-6-6.7-6.7 4.2-.7 6-2.5 6.7-6.7Z" />
           </svg>
           <div className="frame-assets-copy">
-            <strong>本次发现 {frameAssets.length} 件现成家具</strong>
-            <span>点开看看这批灵感，稍后一起收进灵感库</span>
+            <strong>本次识别 {detectedLabels.length} 件家具</strong>
+            <span>{frameAssets.length} 件已有 3D · 其余可圈选生成</span>
           </div>
           <div className="frame-assets-thumbs" aria-hidden="true">
             {frameAssets.slice(0, 4).map((component) => (
@@ -2445,6 +2585,7 @@ function SessionLayer({
       {frameAssetsOpen && (
         <FrameAssetsDrawer
           assets={frameAssets}
+          detectedLabels={detectedLabels}
           favoriteIds={favoriteAssetIds}
           onFavorite={onToggleFavoriteAsset}
           onClose={() => setFrameAssetsOpen(false)}

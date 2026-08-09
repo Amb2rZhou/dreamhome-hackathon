@@ -1,4 +1,4 @@
-const DEFAULT_BACKEND = "http://218.244.156.128:8000";
+const DEFAULT_BACKEND = "https://api.dreamhouse.top";
 
 const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
