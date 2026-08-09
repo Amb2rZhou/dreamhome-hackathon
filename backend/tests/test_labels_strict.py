@@ -34,6 +34,13 @@ class StrictLabelsTests(unittest.IsolatedAsyncioTestCase):
             payload = await labels.extract_labels(None, category_hint="桌子")
         self.assertEqual(payload["category"], "桌子")
 
+    def test_framed_prompt_forbids_invented_structure_and_keeps_category_hint(self):
+        prompt = labels._prompt_for("柜子", framed=True)
+
+        self.assertIn("上游品类是「柜子」", prompt)
+        self.assertIn("直接看见的证据", prompt)
+        self.assertIn("不能用“玻璃门”", prompt)
+
 
 if __name__ == "__main__":
     unittest.main()

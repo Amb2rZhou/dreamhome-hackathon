@@ -486,6 +486,7 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
             polygon=sel["polygon"],
             isolation_mode=sel["isolation_mode"],
             cutout_path=sel["source_crop"],
+            identity_reference_path=sel.get("recognition_context"),
             labels=sel["labels"],
             user_id=req.user_id,
             completion_path=sel.get("completion_path") or [],

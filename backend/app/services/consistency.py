@@ -13,11 +13,48 @@ import httpx
 
 from ..config import settings
 
-_PROMPT = """图1是从家装视频截取的家具原图(可能残缺/被遮挡),图2是AI补全后的产品图。
-判断图2是否忠实还原了图1中的同一件家具本体:品类相同、本体颜色材质一致、没有凭空新增主体。
+_PROMPT = """图1是从家装视频截取的家具原图(可能残缺/被遮挡,目标可能有圈选边界),图2是AI补全后的产品图。
+判断图2是否忠实还原了图1中的同一件家具本体。不要只判断是否同品类，必须逐项比较可见结构：
+- 外轮廓和高宽比例；
+- 开放格、门、抽屉、腿、扶手、靠背等部件的数量、位置和开闭形式；
+- 图1中已经可见的边、隔板、孔洞和连接关系是否原样保留；
+- 主体颜色材质是否一致；
+- 图2是否凭空增加了图1没有证据支持的门、抽屉、柜腿或其他结构。
 注意:补全会刻意清空家具上/内的杂物摆件(桌面物品、柜内收纳、床品褶皱整理),
 这属于预期行为,**不算不一致** —— 只看家具本体是否还是同一件。
-只输出 JSON: {"same": true/false, "reason": "一句话"}"""
+如果原图太模糊、遮挡太多，无法确认关键结构，必须降低 confidence，不能猜测为一致。
+只输出 JSON: {"same": true/false, "category_match": true/false,
+"proportion_match": true/false, "topology_match": true/false,
+"visible_parts_preserved": true/false, "material_color_match": true/false,
+"confidence": 0到1, "conflicts": ["结构冲突"], "reason": "一句话"}"""
+
+_IDENTITY_REQUIRED = (
+    "same", "category_match", "proportion_match", "topology_match",
+    "visible_parts_preserved",
+)
+_IDENTITY_MIN_CONFIDENCE = 0.78
+
+
+def _identity_verdict(data: dict) -> tuple[bool, str]:
+    """Fail closed unless every structure-critical field is explicitly true."""
+    missing = [key for key in _IDENTITY_REQUIRED if not isinstance(data.get(key), bool)]
+    try:
+        confidence = float(data.get("confidence"))
+    except (TypeError, ValueError):
+        confidence = -1.0
+    failed = [key for key in _IDENTITY_REQUIRED if data.get(key) is False]
+    conflicts = data.get("conflicts") if isinstance(data.get("conflicts"), list) else []
+    reason = str(data.get("reason") or "").strip()
+    if missing:
+        return False, f"identity response missing: {','.join(missing)}"
+    if not 0 <= confidence <= 1:
+        return False, "identity response missing confidence"
+    if failed:
+        detail = "、".join(str(item) for item in conflicts[:3] if item)
+        return False, detail or reason or f"identity mismatch: {','.join(failed)}"
+    if confidence < _IDENTITY_MIN_CONFIDENCE:
+        return False, reason or f"identity confidence too low ({confidence:.2f})"
+    return True, reason or f"structure match ({confidence:.2f})"
 
 
 def _uri(p: str) -> str:
@@ -57,7 +94,8 @@ async def check_solo(enhanced_path: str, name: str, *, strict: bool = False) -> 
             text = r.json()["choices"][0]["message"]["content"]
         m = re.search(r"\{.*\}", text, re.S)
         data = json.loads(m.group(0)) if m else {}
-        solo = bool(data.get("solo", True))
+        # A malformed/ambiguous answer must not approve a paid 3D job.
+        solo = data.get("solo") is True
         reason = str(data.get("reason", ""))[:120]
         cache.put("consistency", key, {"solo": solo, "reason": reason})
         return solo, reason
@@ -74,7 +112,7 @@ async def check_consistency(original_path: str, enhanced_path: str, *,
     from . import cache
     key = cache.content_key(
         original_path, enhanced_path,
-        extra=f"consistency-v3|{target_name}",
+        extra=f"consistency-structure-v4|{target_name}",
     )
     hit = cache.get("consistency", key)
     if hit:
@@ -99,8 +137,8 @@ async def check_consistency(original_path: str, enhanced_path: str, *,
             text = r.json()["choices"][0]["message"]["content"]
         m = re.search(r"\{.*\}", text, re.S)
         data = json.loads(m.group(0)) if m else {}
-        same = bool(data.get("same", True))
-        reason = str(data.get("reason", ""))[:120]
+        same, reason = _identity_verdict(data)
+        reason = reason[:240]
         cache.put("consistency", key, {"same": same, "reason": reason})
         return same, reason
     except Exception as e:  # noqa: BLE001

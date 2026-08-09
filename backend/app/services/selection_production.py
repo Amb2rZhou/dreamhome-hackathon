@@ -66,6 +66,7 @@ async def _produce(
     cutout_path: str,
     labels: dict[str, Any],
     user_id: str,
+    identity_reference_path: Optional[str] = None,
     polygon: Optional[list[list[float]]] = None,
     isolation_mode: str = "bbox",
     completion_path: Optional[list[tuple[int, int]]] = None,
@@ -130,7 +131,10 @@ async def _produce(
         job.stage = "identity_qc"
         job.progress = 50
         same, identity_reason = await check_consistency(
-            cutout_path, completed, target_name=desc, strict=True,
+            identity_reference_path or cutout_path,
+            completed,
+            target_name=desc,
+            strict=True,
         )
         if not same:
             raise SelectionProductionError(f"identity_qc: {identity_reason}")
@@ -189,6 +193,7 @@ def start_selection_production(
     cutout_path: str,
     labels: dict[str, Any],
     user_id: str,
+    identity_reference_path: Optional[str] = None,
     completion_path: Optional[list[tuple[int, int]]] = None,
 ) -> tuple[str, Job]:
     """登记 canonical asset，并异步运行与批量生产一致的自动质量链。"""
@@ -220,6 +225,7 @@ def start_selection_production(
             t=t,
             bbox=bbox,
             cutout_path=cutout_path,
+            identity_reference_path=identity_reference_path,
             labels=labels,
             user_id=user_id,
             polygon=polygon,
@@ -257,6 +263,7 @@ def start_image_selection_production(
     cutout_path: str,
     labels: dict[str, Any],
     user_id: str,
+    identity_reference_path: Optional[str] = None,
     completion_path: Optional[list[tuple[int, int]]] = None,
 ) -> tuple[str, Job]:
     """Run a still-image selection through the canonical production gates.
@@ -293,6 +300,7 @@ def start_image_selection_production(
             t=float(slide_index),
             bbox=bbox,
             cutout_path=cutout_path,
+            identity_reference_path=identity_reference_path,
             labels=labels,
             user_id=user_id,
             polygon=polygon,

@@ -15,8 +15,11 @@ class SelectionProductionTests(unittest.IsolatedAsyncioTestCase):
 
         with tempfile.TemporaryDirectory() as temp_dir:
             cutout = os.path.join(temp_dir, "cutout.png")
+            identity_reference = os.path.join(temp_dir, "identity-reference.png")
             with open(cutout, "wb") as image:
                 image.write(b"source-image")
+            with open(identity_reference, "wb") as image:
+                image.write(b"identity-image")
 
             async def fake_enhance(source, output, category="", selection_path=None):
                 with open(source, "rb") as src, open(output, "wb") as dst:
@@ -29,6 +32,7 @@ class SelectionProductionTests(unittest.IsolatedAsyncioTestCase):
 
             async def fake_identity(source, completed, target_name="", strict=False):
                 self.assertTrue(strict)
+                self.assertEqual(source, identity_reference)
                 self.assertEqual(target_name, "双人沙发(沙发)")
                 return True, "ok"
 
@@ -73,6 +77,7 @@ class SelectionProductionTests(unittest.IsolatedAsyncioTestCase):
                     cutout_path=cutout,
                     labels=labels,
                     user_id="user-1",
+                    identity_reference_path=identity_reference,
                 )
 
         self.assertEqual(job.status, JobStatus.succeeded)
