@@ -7,7 +7,7 @@ const SPECS = {
   'square-lounge': { width:6.5, depth:6.5, shape:'rect', windows:['back','left'] },
   'l-living': { width:8, depth:7, shape:'l', windows:['back-large'] },
   'bay-bedroom': { width:6, depth:5, shape:'rect', windows:['back-bay'] },
-  'corner-bedroom': { width:7, depth:5, shape:'rect', windows:['back','left'] },
+  'standard-bedroom': { width:7, depth:5, shape:'rect', windows:['back','left'] }, // key 必须与资产的 templateId 一致；贴图仍用 corner-bedroom.png（见下方 FALLBACKS）
 };
 const FALLBACKS=Object.fromEntries(Object.keys(SPECS).map(id=>[id,new URL(`../../assets/scenes/templates/${id==='standard-bedroom'?'corner-bedroom':id}.png`,import.meta.url).href]));
 

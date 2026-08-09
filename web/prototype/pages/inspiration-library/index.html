@@ -83,7 +83,6 @@
     .fn-icon--cases{background:linear-gradient(150deg,#fce9dc,#f7d8c2)}.fn-icon--floorplan{background:linear-gradient(150deg,#e7efe4,#d6e5d2);color:#5f7a5c}
     .fn-icon--furniture{background:linear-gradient(150deg,#fdf3dd,#f4e3bd)}.fn-icon--styles{background:linear-gradient(150deg,#ece7f5,#ddd4ee);color:#6d5b96}
     .fn-item b{font-size:11px;font-weight:var(--dh-font-weight-heavy);letter-spacing:.01em}
-    .fn-n{color:var(--dh-fg-muted);font-size:8.5px;font-weight:var(--dh-font-weight-semibold);font-variant-numeric:tabular-nums}
 
     /* ---- 找案例列表 ---- */
     .case-list{display:flex;flex-direction:column;gap:12px}
@@ -91,12 +90,28 @@
     .case-tile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,26,21,0) 46%,rgba(20,26,21,.66))}
     .case-tile-foot{position:relative;z-index:1;width:100%;padding:10px 13px;text-align:left;color:#fff}.case-tile-foot b{display:block;font-size:13px;font-weight:var(--dh-font-weight-heavy);text-shadow:0 1px 4px rgba(0,0,0,.35)}.case-tile-foot span{font-size:10px;font-weight:var(--dh-font-weight-semibold);opacity:.92}.case-tile-foot i{font-style:normal}
 
-    /* ---- 找风格列表 ---- */
-    .style-list{display:flex;flex-direction:column;gap:8px}
-    .style-tile{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 14px;border:1px solid rgba(117,139,113,.16);border-radius:13px;background:rgba(255,255,255,.9);color:inherit;font:inherit;text-align:left;cursor:pointer;box-shadow:0 3px 10px rgba(69,89,67,.06)}
-    .style-tile b{flex:1;font-size:13px;font-weight:var(--dh-font-weight-heavy)}
-    .style-tile span{color:var(--dh-fg-muted);font-size:11px;font-weight:var(--dh-font-weight-bold);font-variant-numeric:tabular-nums}
-    .style-tile i{color:var(--dh-color-sage-700);font-size:17px;font-style:normal}
+    /* ---- 风格图鉴：内容页，不列商品 ---- */
+    .sg-list{display:flex;flex-direction:column;gap:10px}
+    .sg-card{display:flex;align-items:center;gap:11px;padding:9px;border:1px solid rgba(117,139,113,.16);border-radius:14px;background:rgba(255,255,255,.92);color:inherit;font:inherit;text-align:left;cursor:pointer;box-shadow:0 4px 12px rgba(69,89,67,.07)}
+    .sg-cover{flex:0 0 62px;height:62px;border-radius:11px;background:#f7efe0 center/78% auto no-repeat;box-shadow:inset 0 0 0 1px rgba(150,112,58,.12)}
+    .sg-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+    .sg-body b{font-size:13px;font-weight:var(--dh-font-weight-heavy)}
+    .sg-desc{overflow:hidden;color:var(--dh-fg-secondary);font-size:10px;font-weight:var(--dh-font-weight-semibold);line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+    .sg-n{color:var(--dh-fg-muted);font-size:9.5px;font-weight:var(--dh-font-weight-bold);font-variant-numeric:tabular-nums}
+    .sg-card i{flex:none;color:var(--dh-color-sage-700);font-size:17px;font-style:normal}
+    .sg-more{margin-top:14px}.sg-more summary{padding:9px 2px;color:var(--dh-color-sage-800);font-size:11px;font-weight:var(--dh-font-weight-heavy);cursor:pointer}.sg-more summary::marker{color:var(--dh-color-sage-600)}.sg-more .sg-list{margin-top:8px}
+
+    /* ---- 风格详情页 ---- */
+    .sg-intro{margin:0 0 14px;color:var(--dh-fg-secondary);font-size:13px;font-weight:var(--dh-font-weight-bold);line-height:1.55}
+    .sd-count{margin:0 0 10px;color:var(--dh-fg-muted);font-size:11px;font-weight:var(--dh-font-weight-bold);font-variant-numeric:tabular-nums}
+    .sd-hero{margin-bottom:13px;padding:15px 15px 16px;border-radius:14px;box-shadow:0 4px 12px rgba(69,89,67,.08)}
+    .sd-hero b{display:block;margin-bottom:5px;font-size:19px;font-weight:var(--dh-font-weight-heavy);letter-spacing:.01em;color:#3f382f}
+    .sd-hero > span{display:block;color:#5d5347;font-size:11.5px;font-weight:var(--dh-font-weight-semibold);line-height:1.6}
+    .sd-facts{display:flex;flex-wrap:wrap;gap:7px 16px;margin-top:11px;padding-top:10px;border-top:1px solid rgba(63,56,47,.13)}
+    .sd-fact{display:flex;align-items:center;gap:6px}
+    .sd-fact-k{color:#6b6153;font-size:9.5px;font-weight:var(--dh-font-weight-heavy)}
+    .sd-fact-v{color:#3f382f;font-size:10.5px;font-weight:var(--dh-font-weight-bold)}
+    .sd-swatches{display:inline-flex;gap:3px}.sd-swatches i{width:13px;height:13px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(63,56,47,.18)}
 
     /* ---- 整套案例：主页横滑卡 + 详情页 ---- */
     .section-note{color:var(--dh-fg-muted);font-size:10px;font-weight:var(--dh-font-weight-semibold)}
@@ -211,7 +226,7 @@
     let activeFurnitureCategory = 'all';
     let toastTimer = null;
     // 当前 catalog 上下文 + 选择模式状态（保持简洁：单一 state，渲染读它）
-    const view = { kind: '', category: '', favoriteOnly: false, caseId: '' };
+    const view = { kind: '', category: '', favoriteOnly: false, caseId: '', styleId: '' };
     // 全部页筛选：品类与风格两组，组内多选取并集、组间取交集（手机端标准筛选器语义）。
     // 用筛选器而非 chip 栏，是因为手机端两排 chip 太挤，且 chip 栏无法在「全部」页切品类。
     const filter = { categories: new Set(), styles: new Set() };
@@ -352,7 +367,7 @@
       disposeTemplatePreviews(home);
       // 主入口感：顶部 banner 承担案例大图，紧接着是功能图标栏（案例/户型/家具/风格四个入口），
       // 内容流只留精选家具。案例与户型原来的横滑 rail 收进图标，页面短一大截。
-      const fnGrid = `<nav class="fn-grid" aria-label="灵感库功能入口">${FN_ENTRIES.map((entry) => `<button class="fn-item" data-fn="${entry.id}" aria-label="${entry.label}"><span class="fn-icon fn-icon--${entry.id}">${entry.svg}</span><b>${entry.label}</b><span class="fn-n">${fnCounts()[entry.id] || ''}</span></button>`).join('')}</nav>`;
+      const fnGrid = `<nav class="fn-grid" aria-label="灵感库功能入口">${FN_ENTRIES.map((entry) => `<button class="fn-item" data-fn="${entry.id}" aria-label="${entry.label}"><span class="fn-icon fn-icon--${entry.id}">${entry.svg}</span><b>${entry.label}</b></button>`).join('')}</nav>`;
 
       const isAllFurniture = activeFurnitureCategory === 'all';
       const furniture = (isAllFurniture ? getAssets('furniture') : getAssets('furniture', activeFurnitureCategory)).slice(0, 11);
@@ -417,6 +432,71 @@
       renderCatalog();
     };
 
+    // ---------- 风格图鉴 ----------
+    // ⚠️ 占位文案：先起草一版让页面跑起来，口径未定，后续由产品统一重写。
+    // 风格名单归 Amber，这里只是「有就配文案、没有就走兜底」，新增风格不会漏渲染。
+    const STYLE_COPY = {
+      现代: '干净利落的直线条，收纳藏起来，视觉不添乱',
+      北欧: '浅木色打底，留白多，暖而不腻',
+      复古: '深木与旧铜，有年代感的物件混搭',
+      工业风: '金属与裸色，灯具常常是主角',
+      自然风: '绿植和原生材质，像把户外搬进屋',
+      简约: '少即是多，只留必需品',
+      奶油风: '米白与燕麦色，柔光感的家',
+      极简: '近乎留白，只保留一两件焦点',
+      卡通: '圆润造型和跳色，带点玩心',
+      中式: '对称与木作，含蓄的东方感',
+      可爱风: '小尺寸、软轮廓，讨喜的细节',
+      卡通风: '明快配色，像走进插画里',
+      温馨风: '暖光和织物，回家就想窝着',
+    };
+    const styleCopyOf = (name) => STYLE_COPY[name] || `${name}的家具组件`;
+
+    // 配色与材质都是从该风格资产的 labels.colors / labels.materials 实时统计出来的，
+    // 不是给每个风格手写一套主题色——Amber 增删资产或改标签，这里自动跟着变。
+    // 只做「中文色名 → 十六进制」的显示映射；认不出的词跳过，不猜。
+    const COLOR_HEX = {
+      白色:'#f5f4f0', 米白:'#f0e8da', 米白色:'#f0e8da', 米色:'#e3d3b6', 米黄:'#ecd9ae',
+      浅木色:'#dcc0a0', 原木色:'#c79a63', 棕色:'#8a6647', 深棕色:'#5c4130', 深褐色:'#4a3325',
+      黑色:'#2f2f2f', 深灰色:'#6b6b68', 灰色:'#9a9a97', 浅灰:'#c7c7c4', 浅灰色:'#c7c7c4', 银色:'#c0c3c6',
+      绿色:'#6a8f5f', 浅绿色:'#a8c49a', 蓝色:'#5b7fa6', 浅蓝:'#a8c4d9',
+      黄色:'#e0b64a', 金色:'#c9a44c', 橙色:'#d98a4a', 红色:'#b5544c', 粉色:'#e3b3ba',
+    };
+    const topOf = (list, key, n) => {
+      const count = new Map();
+      list.forEach((asset) => (asset[key] || []).forEach((value) => count.set(value, (count.get(value) || 0) + 1)));
+      return [...count.entries()].sort((a, b) => b[1] - a[1]).slice(0, n).map(([value]) => value);
+    };
+    const stylePalette = (name) => topOf(styleAssets(name), 'colors', 6).map((word) => COLOR_HEX[word]).filter(Boolean).slice(0, 4);
+    const styleMaterials = (name) => topOf(styleAssets(name), 'materials', 3);
+    // 兑白：直接拿原色当卡片底会压住文字，混到 ~80% 白度只留色相
+    const tint = (hex, ratio = .8) => {
+      const n = parseInt(hex.slice(1), 16);
+      const mix = (c) => Math.round(c + (255 - c) * ratio);
+      return `rgb(${mix(n >> 16 & 255)},${mix(n >> 8 & 255)},${mix(n & 255)})`;
+    };
+    // 代表图：不做美术资源，从资产里挑。两个讲究：
+    // ①标签越少的资产越专一（只挂「北欧」的比同时挂「现代+北欧」的更能代表北欧）；
+    // ②跨风格去重，否则多风格资产会让几个风格共用同一张图（现代/自然风曾同用一张绿植）。
+    const coverCache = new Map();
+    const buildCovers = () => {
+      coverCache.clear();
+      const used = new Set();
+      styleFacets(getAssets('furniture')).forEach(({ name }) => {
+        const pick = getAssets('furniture')
+          .filter((asset) => asset.thumbnail && (asset.styles || []).includes(name))
+          .sort((a, b) => (a.styles || []).length - (b.styles || []).length)
+          .find((asset) => !used.has(asset.thumbnail));
+        if (pick) { used.add(pick.thumbnail); coverCache.set(name, pick.thumbnail); }
+      });
+    };
+    const styleCover = (name) => {
+      if (!coverCache.size) buildCovers();
+      return coverCache.get(name) || '';
+    };
+    const styleAssets = (name) => getAssets('furniture').filter((asset) => (asset.styles || []).includes(name));
+    const GALLERY_MIN = 3; // 显示阈值（不是改数据）：不足 3 件的风格收进「更多风格」，Amber 清理标签后自动变好
+
     // 次级页公共外壳：隐藏 banner/tabbar，标题栏换成带返回的工具条
     const enterSecondary = (title) => {
       home.hidden = true; catalog.hidden = false; catalog.classList.remove('selecting');
@@ -435,12 +515,39 @@
       paintCaseCounts(catalog);
     };
 
-    // 找风格：把风格做成可逛的入口（每种风格 + 件数），点进去就是按该风格筛好的家具全部页
+    // 找风格：风格图鉴。它是内容页而不是筛选捷径——本页不列商品，只把人分流到「找家具」和「找案例」。
     const renderStyles = () => {
       libraryContent.classList.remove('is-case');
-      enterSecondary('找风格');
+      enterSecondary('风格图鉴');
       const facets = styleFacets(getAssets('furniture'));
-      catalog.innerHTML = `<p class="case-summary">共 <b>${facets.length}</b> 种风格。选一种，家具组件会按它筛好。</p><div class="style-list">${facets.map((facet) => `<button class="style-tile" data-style-open="${facet.name}"><b>${facet.name}</b><span>${facet.n} 件</span><i aria-hidden="true">›</i></button>`).join('')}</div>`;
+      const main = facets.filter((facet) => facet.n >= GALLERY_MIN);
+      const tail = facets.filter((facet) => facet.n < GALLERY_MIN);
+      const cardOf = (facet) => `<button class="sg-card" data-style-open="${facet.name}" aria-label="查看${facet.name}"><span class="sg-cover" style="background-image:url('${styleCover(facet.name)}')"></span><span class="sg-body"><b>${facet.name}</b><span class="sg-desc">${styleCopyOf(facet.name)}</span><span class="sg-n">${facet.n} 件家具</span></span><i aria-hidden="true">›</i></button>`;
+      catalog.innerHTML = `<p class="sg-intro">先找到梦想中的风格，再挑选喜欢的家具。</p>
+        <div class="sg-list">${main.map(cardOf).join('')}</div>
+        ${tail.length ? `<details class="sg-more"><summary>更多风格</summary><div class="sg-list">${tail.map(cardOf).join('')}</div></details>` : ''}`;
+    };
+
+    // 风格详情页：讲清楚这个风格是什么，再给两个出口（该风格的家具 / 该风格的案例）
+    const renderStyleDetail = (name) => {
+      libraryContent.classList.remove('is-case');
+      enterSecondary(name);
+      // 只列该风格的全部家具。不列案例——案例往往混着多种风格，挂在单一风格下会误导。
+      const list = styleAssets(name);
+      const palette = stylePalette(name);
+      const materials = styleMaterials(name);
+      // 卡片底色用该风格自己的配色兑白后铺开，每个风格长得不一样；认不出颜色时退回原来的暖色
+      // 第三个色标取调色板末位而不是第 3 位：北欧与复古的前两色都是棕+米，
+      // 只用前三色两者会撞成同一张卡；末位才是拉开差异的那个（复古有绿、北欧有白）。
+      const heroBg = palette.length >= 2
+        ? `linear-gradient(125deg, ${tint(palette[0], .66)}, ${tint(palette[1], .58)} 58%, ${tint(palette[palette.length - 1], .5)})`
+        : 'linear-gradient(125deg,#fdf6e6,#f6e8cd 62%,#f2dfbc)';
+      // 配色与材质是风格详情页独有的信息，「找家具」的筛选结果页给不了
+      const facts = `${palette.length ? `<div class="sd-fact"><span class="sd-fact-k">常见配色</span><span class="sd-swatches">${palette.map((hex) => `<i style="background:${hex}"></i>`).join('')}</span></div>` : ''}${materials.length ? `<div class="sd-fact"><span class="sd-fact-k">常用材质</span><span class="sd-fact-v">${materials.join(' · ')}</span></div>` : ''}`;
+      catalog.innerHTML = `<section class="sd-hero" style="background:${heroBg}"><b>${name}</b><span>${styleCopyOf(name)}</span>${facts ? `<div class="sd-facts">${facts}</div>` : ''}</section>
+        <div class="sd-count">${list.length} 件家具</div>
+        <div class="catalog-grid">${list.map((asset) => card(asset)).join('')}</div>`;
+      renderTemplatePreviews(catalog);
     };
 
     // 整套收藏：已全收则不做取消（避免误触一键清空），只补齐未收藏的
@@ -519,18 +626,16 @@
       selectBar.hidden = !select.on;
       confirmDelete.disabled = select.ids.size === 0;
     };
-    const rerender = () => { if (view.caseId) renderCase(view.caseId); else if (!catalog.hidden) renderCatalog(); else renderHome(); };
+    const rerender = () => { if (view.caseId) renderCase(view.caseId); else if (location.hash.startsWith('#style=')) renderStyleDetail(view.styleId); else if (!catalog.hidden) renderCatalog(); else renderHome(); };
     const route = () => {
       if (select.on) exitSelect(true);
       filter.categories.clear(); filter.styles.clear(); // 每次换页都从无筛选开始，避免带着上一页的条件进来
-      if (location.hash === '#cases') { view.caseId = ''; renderCases(); libraryContent.scrollTop = 0; return; }
-      if (location.hash === '#styles') { view.caseId = ''; renderStyles(); libraryContent.scrollTop = 0; return; }
+      if (location.hash === '#cases') { view.caseId = ''; view.styleId = ''; renderCases(); libraryContent.scrollTop = 0; return; }
+      if (location.hash === '#styles') { view.caseId = ''; view.styleId = ''; renderStyles(); libraryContent.scrollTop = 0; return; }
       const styleMatched = location.hash.match(/^#style=(.+)$/);
-      if (styleMatched) { // 从「找风格」进来的家具全部页，预置好该风格
-        view.caseId = '';
-        Object.assign(view, { kind: 'furniture', category: '', favoriteOnly: false });
-        filter.categories.clear(); filter.styles = new Set([decodeURIComponent(styleMatched[1])]);
-        renderCatalog(); libraryContent.scrollTop = 0; return;
+      if (styleMatched) { // 风格详情页（内容页，不列商品）
+        view.caseId = ''; view.styleId = decodeURIComponent(styleMatched[1]);
+        renderStyleDetail(view.styleId); libraryContent.scrollTop = 0; return;
       }
       const caseMatched = location.hash.match(/^#case=(.+)$/);
       if (caseMatched) { view.caseId = decodeURIComponent(caseMatched[1]); renderCase(view.caseId); libraryContent.scrollTop = 0; return; }
@@ -798,7 +903,10 @@
       if (event.target.closest('#fsApply')) { applyFilterSheet(); return; }
       const tab = event.target.closest('[data-category]');
       if (tab) { activeFurnitureCategory = tab.dataset.category; renderHome(); return; }
-      if (event.target.closest('#catalogBack')) { if (view.caseId || ['#cases','#styles'].includes(location.hash) || location.hash.startsWith('#style=')) { location.hash = ''; return; } const fromMyHome = new URLSearchParams(location.search).get('from') === 'myhome'; if (fromMyHome && view.kind === 'floorplan' && !view.favoriteOnly) { location.href = '../my-home/index.html'; return; } if (location.hash) location.hash = ''; else route(); return; } // 唯一例外：从「我的家」进来的户型全部页返回我的家；其余回灵感库主页
+      if (event.target.closest('#catalogBack')) {
+        // 逐级退回：家具列表 → 风格详情 → 风格图鉴 → 主页，不一路弹回首页
+        if (location.hash.startsWith('#style=')) { location.hash = 'styles'; return; }
+        if (view.caseId || ['#cases','#styles'].includes(location.hash)) { location.hash = ''; return; } const fromMyHome = new URLSearchParams(location.search).get('from') === 'myhome'; if (fromMyHome && view.kind === 'floorplan' && !view.favoriteOnly) { location.href = '../my-home/index.html'; return; } if (location.hash) location.hash = ''; else route(); return; } // 唯一例外：从「我的家」进来的户型全部页返回我的家；其余回灵感库主页
       const caseSlide = event.target.closest('[data-case]');
       if (caseSlide) { if (bannerDragged) { bannerDragged = false; return; } const videoId = caseSlide.dataset.video; if (videoId) location.hash = `case=${encodeURIComponent(videoId)}`; return; } // 先进灵感库案例详情页；要套用再从那里跳我的家
       const asset = event.target.closest('[data-asset]');
