@@ -195,6 +195,7 @@ def _supplemental_assets(path: Path) -> list[dict[str, Any]]:
             "labels": item.get("labels") or {},
             "media": item.get("media") or {},
             "source": item.get("source") or {},
+            "tag_provenance": item.get("tag_provenance") or {},
             "record_source": _rel(path),
         })
     return assets

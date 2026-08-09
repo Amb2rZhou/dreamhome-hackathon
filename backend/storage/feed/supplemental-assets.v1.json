@@ -2,63 +2,72 @@
   {
     "asset_id": "ast_665e55cee687",
     "name": "原木色衣柜",
-    "labels": {"category": "柜子", "sub": "衣柜", "colors": ["原木色"], "materials": [], "styles": []},
+    "labels": {"category": "柜子", "sub": "衣柜", "colors": ["原木色", "米白色"], "materials": ["木质", "板材"], "styles": ["北欧", "简约"]},
+    "tag_provenance": {"source": "manual_visual_review", "confidence": null, "human_review_status": "reviewed", "reviewed_at": "2026-08-09"},
     "media": {"model_3d": "/prototype/assets/demo-backend/models-v1/c09fb8cb849e46b99085b51d5a1baa87.glb", "thumbnail": "/prototype/assets/renders/ast_665e55cee687.png"},
     "source": {"source_type": "video_selection", "video_id": "vid_40734d7f2e6c", "track_id": null, "t_best": 0.0}
   },
   {
     "asset_id": "ast_cf21f0f0a02c",
     "name": "飘窗沙发",
-    "labels": {"category": "沙发", "sub": "飘窗沙发", "colors": [], "materials": [], "styles": []},
+    "labels": {"category": "沙发", "sub": "飘窗沙发", "colors": ["米白色"], "materials": ["布艺", "棉麻"], "styles": ["奶油风", "现代"]},
+    "tag_provenance": {"source": "manual_visual_review", "confidence": null, "human_review_status": "reviewed", "reviewed_at": "2026-08-09"},
     "media": {"model_3d": "/prototype/assets/demo-backend/models-v1/0ce5dfb3406241c8b790a2426fcbacc7.glb", "thumbnail": "/prototype/assets/renders/ast_cf21f0f0a02c.png"},
     "source": {"source_type": "video_selection", "video_id": "vid_40734d7f2e6c", "track_id": null, "t_best": 2.6}
   },
   {
     "asset_id": "ast_6410374831cb",
     "name": "小收纳柜",
-    "labels": {"category": "柜子", "sub": "收纳柜", "colors": ["白色"], "materials": [], "styles": []},
+    "labels": {"category": "柜子", "sub": "收纳柜", "colors": ["白色"], "materials": ["板材", "金属"], "styles": ["现代", "简约"]},
+    "tag_provenance": {"source": "manual_visual_review", "confidence": null, "human_review_status": "reviewed", "reviewed_at": "2026-08-09"},
     "media": {"model_3d": "/prototype/assets/demo-backend/models-v1/cb8f0bfd04684544a011c1bd521184ae.glb", "thumbnail": "/prototype/assets/renders/ast_6410374831cb.png"},
     "source": {"source_type": "video_selection", "video_id": "vid_40734d7f2e6c", "track_id": null, "t_best": 6.7}
   },
   {
     "asset_id": "ast_87dc36b29526",
     "name": "空调",
-    "labels": {"category": "家电", "sub": "空调", "colors": [], "materials": [], "styles": []},
+    "labels": {"category": "家电", "sub": "空调", "colors": ["白色"], "materials": ["塑料", "金属"], "styles": ["现代"]},
+    "tag_provenance": {"source": "manual_visual_review", "confidence": null, "human_review_status": "reviewed", "reviewed_at": "2026-08-09"},
     "media": {"model_3d": "/prototype/assets/demo-backend/models-v1/f13554299f7643eb872e1a36fa4e462d.glb", "thumbnail": "/prototype/assets/renders/ast_87dc36b29526.png"},
     "source": {"source_type": "video_selection", "video_id": "vid_5f32a0ac954a", "track_id": "trk_ec91648826f0", "t_best": 5.0}
   },
   {
     "asset_id": "ast_339dc6e870de",
     "name": "吊扇",
-    "labels": {"category": "家电", "sub": "吊扇", "colors": [], "materials": [], "styles": []},
+    "labels": {"category": "家电", "sub": "吊扇", "colors": ["白色"], "materials": ["金属", "塑料"], "styles": ["现代", "简约"]},
+    "tag_provenance": {"source": "manual_visual_review", "confidence": null, "human_review_status": "reviewed", "reviewed_at": "2026-08-09"},
     "media": {"model_3d": "/prototype/assets/demo-backend/models-v1/e91ce9b7d8744192b417d119b280c536.glb", "thumbnail": "/prototype/assets/renders/ast_339dc6e870de.png"},
     "source": {"source_type": "video_selection", "video_id": "vid_5f32a0ac954a", "track_id": "trk_8ea596ed91bc", "t_best": 6.0}
   },
   {
     "asset_id": "ast_c0274a819f34",
     "name": "圆桌",
-    "labels": {"category": "桌子", "sub": "圆桌", "colors": [], "materials": ["玻璃"], "styles": []},
+    "labels": {"category": "桌子", "sub": "圆桌", "colors": ["白色", "黑色", "银色"], "materials": ["玻璃", "金属"], "styles": ["现代", "简约"]},
+    "tag_provenance": {"source": "manual_visual_review", "confidence": null, "human_review_status": "reviewed", "reviewed_at": "2026-08-09"},
     "media": {"model_3d": "/prototype/assets/demo-backend/models-v1/8ee9151906624333a88a62ab954a4560.glb", "thumbnail": "/prototype/assets/renders/ast_c0274a819f34.png"},
     "source": {"source_type": "video_selection", "video_id": "vid_5f32a0ac954a", "track_id": "trk_f8f885731e10", "t_best": 7.5}
   },
   {
     "asset_id": "ast_f7189ad0a9a2",
     "name": "电视柜",
-    "labels": {"category": "柜子", "sub": "电视柜", "colors": [], "materials": [], "styles": []},
+    "labels": {"category": "柜子", "sub": "电视柜", "colors": ["浅木色", "米白色"], "materials": ["木质", "板材"], "styles": ["北欧", "现代"]},
+    "tag_provenance": {"source": "manual_visual_review", "confidence": null, "human_review_status": "reviewed", "reviewed_at": "2026-08-09"},
     "media": {"model_3d": "/prototype/assets/demo-backend/models-v1/d9dd02fc30de42a2b4ee55865e45279d.glb", "thumbnail": "/prototype/assets/renders/ast_f7189ad0a9a2.png"},
     "source": {"source_type": "video_selection", "video_id": "vid_5f32a0ac954a", "track_id": "trk_0d0dd79677ca", "t_best": 6.5}
   },
   {
     "asset_id": "ast_ec05acc016d9",
     "name": "吊灯",
-    "labels": {"category": "灯具", "sub": "吊灯", "colors": [], "materials": [], "styles": []},
+    "labels": {"category": "灯具", "sub": "吊灯", "colors": ["白色", "黑色"], "materials": ["玻璃", "金属"], "styles": ["现代", "简约"]},
+    "tag_provenance": {"source": "manual_visual_review", "confidence": null, "human_review_status": "reviewed", "reviewed_at": "2026-08-09"},
     "media": {"model_3d": "/prototype/assets/demo-backend/models-v1/6c6cbb1474d048419dfebd047cc66b7b.glb", "thumbnail": "/prototype/assets/renders/ast_ec05acc016d9.png"},
     "source": {"source_type": "video_selection", "video_id": "vid_91fe552c5f7d", "track_id": null, "t_best": 0.0}
   },
   {
     "asset_id": "ast_febb8b909137",
     "name": "边柜",
-    "labels": {"category": "柜子", "sub": "边柜", "colors": [], "materials": [], "styles": []},
+    "labels": {"category": "柜子", "sub": "边柜", "colors": ["黑色"], "materials": ["金属", "木质"], "styles": ["现代", "工业风"]},
+    "tag_provenance": {"source": "manual_visual_review", "confidence": null, "human_review_status": "reviewed", "reviewed_at": "2026-08-09"},
     "media": {"model_3d": "/prototype/assets/demo-backend/models-v1/411a1f771e0f480ea14cf41592cab811.glb", "thumbnail": "/prototype/assets/renders/ast_febb8b909137.png"},
     "source": {"source_type": "video_selection", "video_id": "vid_91fe552c5f7d", "track_id": null, "t_best": 0.0}
   }

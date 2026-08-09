@@ -32,4 +32,15 @@ describe('structured asset catalog', () => {
     expect(catalog.assets[0].tags.provenance.human_review_status).toBe('unreviewed');
     expect(catalog.tag_review_queue.map((item) => item.asset_id)).toEqual(['ast_b']);
   });
+
+  it('carries explicit tag-review provenance independently', () => {
+    const reviewedFeed = structuredClone(feed);
+    reviewedFeed.canonical_assets[0].tag_provenance = {
+      source: 'manual_visual_review', human_review_status: 'reviewed', reviewed_at: '2026-08-09',
+    };
+    const catalog = buildStructuredAssetCatalog(reviewedFeed, { results: [] }, []);
+    expect(catalog.assets[0].tags.provenance).toMatchObject({
+      source: 'manual_visual_review', human_review_status: 'reviewed', reviewed_at: '2026-08-09',
+    });
+  });
 });

@@ -38,6 +38,7 @@ export function buildStructuredAssetCatalog(feed, reviews, detailedAssets = BACK
     const missing = ['colors', 'materials', 'styles'].filter((key) => raw[key].length === 0);
     const detail = detailById.get(asset.asset_id);
     const review = reviewById.get(asset.asset_id);
+    const tagProvenance = asset.tag_provenance || {};
     return {
       asset_id: asset.asset_id,
       name: asset.name,
@@ -57,9 +58,10 @@ export function buildStructuredAssetCatalog(feed, reviews, detailedAssets = BACK
         completeness: missing.length ? 'needs_review' : 'complete',
         missing_fields: missing,
         provenance: {
-          source: 'imported_structured_labels',
-          confidence: null,
-          human_review_status: 'unreviewed',
+          source: tagProvenance.source || 'imported_structured_labels',
+          confidence: tagProvenance.confidence ?? null,
+          human_review_status: tagProvenance.human_review_status || 'unreviewed',
+          reviewed_at: tagProvenance.reviewed_at || null,
           record_source: asset.record_source || '',
         },
       },

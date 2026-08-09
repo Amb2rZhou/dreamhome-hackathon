@@ -1,7 +1,7 @@
 {
   "schema_version": "dreamhome-feed-validation/v1",
   "manifest_schema_version": "dreamhome-feed-manifest/v1",
-  "manifest_content_version": "03e24fa28f0b46e1c70d6a7fd06aacb97bd73c7358ddc4926e3510d23724815c",
+  "manifest_content_version": "bf061121058e0224d101c12ef7ff90810fc09af1ea400219cb6841acfe5fcdde",
   "mode": "read_only",
   "valid": true,
   "summary": {

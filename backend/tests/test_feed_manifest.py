@@ -52,6 +52,11 @@ class FeedManifestTests(unittest.TestCase):
             "ast_87dc36b29526", "ast_339dc6e870de", "ast_f7189ad0a9a2",
             "ast_ec05acc016d9", "ast_febb8b909137",
         }.issubset(canonical_ids))
+        for asset in first["canonical_assets"]:
+            with self.subTest(asset_id=asset["asset_id"]):
+                self.assertTrue(asset["labels"].get("colors"))
+                self.assertTrue(asset["labels"].get("materials"))
+                self.assertTrue(asset["labels"].get("styles"))
 
     def test_validator_finds_all_required_quality_failures(self):
         manifest = {

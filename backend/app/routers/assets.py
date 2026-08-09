@@ -5,12 +5,13 @@ from pydantic import BaseModel
 from typing import List, Optional
 
 from .. import db, matching
+from ..config import settings
 from ..structured_catalog import StructuredCatalogError, load_structured_catalog
 from ..schemas_lib import AssetOut, MergeRequest
 from ..store import get_job
 
 router = APIRouter(prefix="/api/assets", tags=["assets"])
-STRUCTURED_CATALOG_PATH = Path(__file__).resolve().parents[2] / "storage" / "catalog" / "structured-assets.v1.json"
+STRUCTURED_CATALOG_PATH = Path(settings.STORAGE_DIR) / "catalog" / "structured-assets.v1.json"
 
 # 专项库品类(T6 服务端化):窗户/吊顶/地板/光线/窗外景观,默认不进常规资产库列表
 SPECIAL_CATEGORIES = {"窗户", "吊顶", "地板", "光线", "窗外景观"}
