@@ -5,22 +5,36 @@ Production entry points:
 - `https://dreamhouse.top/`
 - `https://www.dreamhouse.top/`
 
-Both domains use Alibaba Cloud CDN with a private Hong Kong OSS origin. CDN is
-granted read-only OSS access through `AliyunCDNAccessingPrivateOSSRole`; the
-bucket itself must remain private.
+Both domains currently resolve directly to the Hong Kong ECS instance. Nginx
+serves the static build from `/srv/dreamhouse-web`; the API remains isolated on
+`api.dreamhouse.top` on the same instance.
+
+The Alibaba Cloud overseas CDN and private Hong Kong OSS origin are retained as
+a warm rollback path, but they are not the active DNS target. On 2026-08-09 the
+overseas-only CDN route timed out for both a mainland mobile connection and the
+project owner's US VPN, while the ECS origin remained reachable. Do not point
+the apex or `www` records back to the CDN CNAME without testing those user
+routes first.
 
 ## Cache policy
 
-- HTML and JSON: one-second CDN TTL while preserving origin no-cache headers.
+- HTML: `no-cache` so a release is visible without a stale shell.
 - Versioned JS, CSS, media, fonts, ONNX, WASM, and GLB: one year.
-- MP4 and GLB requests support HTTP Range origin fetch.
+- MP4 and GLB requests support HTTP Range responses from Nginx.
 - HTTP redirects to HTTPS; HTTPS uses HTTP/2 and TLS 1.2 or newer.
+
+The checked-in virtual host baseline is `nginx-dreamhouse-web.conf`. Certbot
+adds the managed TLS blocks on the server after the file is installed.
 
 ## Certificate renewal
 
-The certificate is issued with Certbot DNS-01 hooks that create and remove
-AliDNS TXT records automatically. Certificate state and private keys live
-outside this repository in `~/.config/dreamhouse-letsencrypt`.
+The active ECS certificate is managed by the server's Certbot timer and covers
+both `dreamhouse.top` and `www.dreamhouse.top`. Certificate state and private
+keys stay on the server under `/etc/letsencrypt`.
+
+The DNS-01 scripts below are retained only for the CDN rollback path. They
+create and remove AliDNS TXT records automatically; their local certificate
+state lives outside this repository in `~/.config/dreamhouse-letsencrypt`.
 
 Run:
 

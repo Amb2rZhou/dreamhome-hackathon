@@ -689,6 +689,7 @@ function App() {
   const [activeImageHotspotAssetId, setActiveImageHotspotAssetId] = useState<string | null>(null)
   const [imagePostHotspots, setImagePostHotspots] = useState(IMAGE_POST_HOTSPOTS)
   const [imagePostAssets, setImagePostAssets] = useState(IMAGE_POST_ASSETS)
+  const [readyVideoId, setReadyVideoId] = useState<string | null>(null)
   const reuseDecisionRef = useRef<((reuse: boolean) => void) | null>(null)
   // 教学只由冷启动气泡的“开始逛逛”启动；普通暂停不会擅自拉起新手引导。
   const [sessionGuideStage, setSessionGuideStage] = useState<SessionGuideStage>('idle')
@@ -1153,29 +1154,44 @@ function App() {
             onHotspotActivate={(hotspot) => setActiveImageHotspotAssetId(hotspot.assetId)}
           />
         ) : (
-          <video
-            key={activeFeedVideo.id}
-            ref={videoRef}
-            src={activeFeedVideo.src}
-            poster={activeFeedVideo.poster}
-            className="video feed-video-enter"
-            loop
-            muted
-            playsInline
-            autoPlay
-            preload="metadata"
-            onLoadedData={() => recordFeedMediaEvent(activeFeedVideo.id, 'loadeddata')}
-            onCanPlay={() => recordFeedMediaEvent(activeFeedVideo.id, 'canplay')}
-            onLoadedMetadata={(event) => {
-              const target = pendingFeedTargetRef.current
-              if (!target || target.videoId !== activeFeedVideo.id) return
-              event.currentTarget.currentTime = Math.min(
-                target.time,
-                Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : target.time,
-              )
-              pendingFeedTargetRef.current = null
-            }}
-          />
+          <>
+            <img
+              key={`poster:${activeFeedVideo.id}`}
+              className={`video-poster-layer ${readyVideoId === activeFeedVideo.id ? 'is-ready' : ''}`}
+              src={activeFeedVideo.poster}
+              alt=""
+              aria-hidden="true"
+              decoding="async"
+              fetchPriority="high"
+              onError={() => setReadyVideoId(activeFeedVideo.id)}
+            />
+            <video
+              key={activeFeedVideo.id}
+              ref={videoRef}
+              src={activeFeedVideo.src}
+              poster={activeFeedVideo.poster}
+              className="video feed-video-enter"
+              loop
+              muted
+              playsInline
+              autoPlay
+              preload="metadata"
+              onLoadedData={() => {
+                setReadyVideoId(activeFeedVideo.id)
+                recordFeedMediaEvent(activeFeedVideo.id, 'loadeddata')
+              }}
+              onCanPlay={() => recordFeedMediaEvent(activeFeedVideo.id, 'canplay')}
+              onLoadedMetadata={(event) => {
+                const target = pendingFeedTargetRef.current
+                if (!target || target.videoId !== activeFeedVideo.id) return
+                event.currentTarget.currentTime = Math.min(
+                  target.time,
+                  Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : target.time,
+                )
+                pendingFeedTargetRef.current = null
+              }}
+            />
+          </>
         )}
 
         {state.feed.phase === 'browse' && (

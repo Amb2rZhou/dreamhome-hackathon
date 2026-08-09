@@ -10,7 +10,7 @@
     "check:release-data": "node tools/check-release-data.mjs",
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:discover": "tsc -b && vite build --config vite.discover.config.ts && cp -R public/. web/",
+    "build:discover": "tsc -b && vite build --config vite.discover.config.ts && cp -R public/. web/ && node tools/finalize-discover-entry.mjs",
     "lint": "oxlint src",
     "test": "vitest run",
     "preview": "vite preview"

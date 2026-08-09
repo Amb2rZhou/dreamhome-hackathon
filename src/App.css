@@ -215,6 +215,26 @@ textarea { font-family: inherit; }
   object-fit: cover;
 }
 
+.video-poster-layer {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 160ms ease-out;
+}
+
+.video-poster-layer.is-ready {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .video-poster-layer { transition: none; }
+}
+
 .image-feed-carousel,
 .image-feed-empty {
   position: absolute;
