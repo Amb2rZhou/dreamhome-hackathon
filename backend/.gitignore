@@ -6,3 +6,5 @@ storage/*
 !storage/libraries/
 !storage/scenes/
 !storage/qc/
+!storage/feed/
+!storage/catalog/

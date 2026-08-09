@@ -49,20 +49,21 @@
     .visual--photo{background:#f4ecdb}.visual--photo img{width:100%;height:100%;object-fit:contain;display:block}
     .viewer-photo{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 42% 34%,#fbfdf9,#f4ecdb 70%,#dbe6d4)}.viewer-photo img{width:100%;height:100%;object-fit:contain}.viewer-photo-note{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);padding:4px 10px;border-radius:999px;background:rgba(29,36,31,.55);color:#fff;font-size:9px;font-weight:var(--dh-font-weight-semibold);pointer-events:none}
     .catalog-section { margin-bottom:16px; padding:11px 10px 12px; border:1px solid rgba(117,139,113,.18); border-radius:14px; background:rgba(255,255,255,.9); box-shadow:0 5px 14px rgba(69,89,67,.07); }.section-head { display:flex; align-items:center; justify-content:space-between; min-height:27px; margin-bottom:8px; }.section-tag { width:max-content; padding:5px 7px; border-radius:7px; background:var(--dh-color-sage-100); color:var(--dh-color-sage-800); font-size:11px; font-weight:var(--dh-font-weight-heavy); letter-spacing:0; }.all-button,.catalog-back { border:0; padding:4px 0; background:transparent; color:var(--dh-color-sage-700); font:inherit; font-size:11px; font-weight:var(--dh-font-weight-heavy); cursor:pointer; }
-    .component-rail { display:flex; flex-wrap:nowrap; gap:9px; overflow-x:auto; overscroll-behavior-x:contain; margin:0 -2px; padding:3px 3px 7px; scrollbar-width:none; }.component-rail::-webkit-scrollbar{display:none}.component-card,.furniture-card { position:relative; }.component-card { flex:0 0 79px; min-width:0; border:0; padding:0; background:transparent; color:inherit; text-align:left; cursor:pointer; }.component-card--floorplan b{font-size:9px}.component-visual { position:relative; height:72px; overflow:hidden; border:var(--dh-card-border); border-radius:8px; background:#f7efe0; box-shadow:var(--dh-shadow-soft); }.component-card b{display:block;overflow:hidden;margin:6px 1px 0;font-size:10px;letter-spacing:0;text-overflow:ellipsis;white-space:nowrap}.favorite-control{position:absolute;z-index:3;right:4px;top:4px;width:21px;height:21px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.87);color:var(--dh-color-sage-600);font-size:12px;line-height:1;cursor:pointer;box-shadow:0 2px 5px rgba(44,59,45,.13)}.favorite-control[aria-pressed="true"]{color:#be6959;background:#fff4ef}
-    .visual--floorplan{background:linear-gradient(135deg,#f7ecd5,#fffdf6)}.visual--floorplan::before,.visual--floorplan::after{content:"";position:absolute;border:2px solid rgba(150,112,58,.5)}.visual--floorplan::before{inset:12px 14px}.visual--floorplan::after{left:37px;top:12px;bottom:12px;border-width:0 0 0 2px}.visual--floorplan-3d{background:linear-gradient(135deg,#f7ecd5,#fffdf6)}.component-visual canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+    .component-rail { display:flex; flex-wrap:nowrap; gap:9px; overflow-x:auto; overscroll-behavior-x:contain; margin:0 -2px; padding:3px 3px 7px; scrollbar-width:none; }.component-rail::-webkit-scrollbar{display:none}.component-card,.furniture-card { position:relative; }.component-card { flex:0 0 79px; min-width:0; border:0; padding:0; background:transparent; color:inherit; text-align:left; cursor:pointer; }.component-card--floorplan b{font-size:9px}.component-visual { position:relative; height:72px; overflow:hidden; border:var(--dh-card-border); border-radius:8px; background:#f7efe0; box-shadow:var(--dh-shadow-soft); }.component-card b{display:block;overflow:hidden;margin:6px 1px 0;font-size:10px;letter-spacing:0;text-overflow:ellipsis;white-space:nowrap}.favorite-control{position:absolute;z-index:3;right:4px;top:4px;width:21px;height:21px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.87);color:var(--dh-color-sage-600);font-size:12px;line-height:1;cursor:pointer;box-shadow:0 2px 5px rgba(44,59,45,.13)}.favorite-control[aria-pressed="true"]{color:#be6959;background:#fff4ef}.source-badge{position:absolute;z-index:2;left:4px;top:4px;max-width:calc(100% - 34px);overflow:hidden;padding:3px 5px;border-radius:999px;background:rgba(65,78,64,.82);color:#fff;font-size:8px;font-weight:var(--dh-font-weight-bold);line-height:1;letter-spacing:.01em;text-overflow:ellipsis;white-space:nowrap;pointer-events:none}
+    .visual--floorplan{background:linear-gradient(135deg,#f7ecd5,#fffdf6)}.visual--floorplan canvas{display:block;width:100%;height:100%;background-size:cover;background-position:center;background-repeat:no-repeat}
     .furniture-tabs { display:flex; gap:6px; overflow-x:auto; margin:0 -2px; padding:1px 3px 9px; scrollbar-width:none; }.furniture-tabs::-webkit-scrollbar{display:none}.furniture-tab{flex:0 0 auto;border:1px solid rgba(110,132,107,.2);border-radius:999px;padding:5px 9px;background:rgba(255,255,255,.62);color:var(--dh-fg-secondary);font:inherit;font-size:10px;font-weight:var(--dh-font-weight-bold);cursor:pointer}.furniture-tab[aria-selected="true"]{border-color:var(--dh-color-sage-600);background:var(--dh-color-sage-600);color:white}
+    .style-first{margin-bottom:16px;padding:13px 12px;border-radius:16px;background:linear-gradient(135deg,rgba(255,250,240,.97),rgba(236,244,233,.96));box-shadow:0 5px 14px rgba(69,89,67,.08)}.style-first__head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.style-first__head b{display:block;font-size:13px;font-weight:var(--dh-font-weight-heavy)}.style-first__head span{display:block;margin-top:3px;color:var(--dh-fg-muted);font-size:9px;line-height:1.4}.assemble-button{flex:none;min-height:36px;padding:0 13px;border:0;border-radius:999px;background:var(--dh-color-sage-600);color:#fff;font:inherit;font-size:11px;font-weight:var(--dh-font-weight-heavy);box-shadow:0 6px 14px rgba(82,109,80,.2);cursor:pointer}.style-chips{display:flex;gap:7px;overflow-x:auto;margin:11px -2px 0;padding:1px 2px 4px;scrollbar-width:none}.style-chips::-webkit-scrollbar{display:none}.style-chip{flex:none;min-height:32px;padding:0 11px;border:1px solid rgba(110,132,107,.24);border-radius:999px;background:rgba(255,255,255,.82);color:var(--dh-fg-secondary);font:inherit;font-size:10px;font-weight:var(--dh-font-weight-bold);cursor:pointer}.style-chip[aria-pressed="true"]{border-color:var(--dh-color-sage-600);background:var(--dh-color-sage-600);color:#fff}.style-chip small{margin-left:3px;font-size:8px;opacity:.72}
     .furniture-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px 7px; }.furniture-card{min-width:0;border:0;padding:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.furniture-card .component-visual{height:62px}.furniture-card b{display:block;margin:5px 1px 0;overflow:hidden;font-size:9px;font-weight:var(--dh-font-weight-bold);text-overflow:ellipsis;white-space:nowrap}.visual--furniture{background:linear-gradient(145deg,#f7efe0,#fffaf2)}.object{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);background:var(--object);box-shadow:inset 0 8px rgba(255,255,255,.18)}.object--sofa{width:47px;height:22px;border-radius:12px 12px 5px 5px}.object--sofa::before{content:"";position:absolute;left:9px;top:-12px;width:29px;height:16px;border-radius:9px 9px 3px 3px;background:var(--accent)}.object--chair{width:25px;height:23px;border-radius:7px 7px 4px 4px}.object--chair::before{content:"";position:absolute;left:4px;top:-14px;width:17px;height:18px;border-radius:7px 7px 2px 2px;background:var(--accent)}.object--table{width:42px;height:15px;border-radius:50%;bottom:18px}.object--table::before{content:"";position:absolute;left:19px;top:12px;width:4px;height:20px;background:var(--accent)}.object--lamp{width:4px;height:36px;border-radius:2px;bottom:9px}.object--lamp::before{content:"";position:absolute;left:-10px;top:-10px;width:24px;height:13px;border-radius:50% 50% 3px 3px;background:var(--accent)}.object--bed{width:46px;height:25px;border-radius:5px}.object--bed::before{content:"";position:absolute;left:5px;top:4px;width:35px;height:10px;border-radius:4px;background:var(--accent)}.object--cabinet{width:39px;height:29px;border-radius:3px}.object--plant{width:22px;height:23px;border-radius:45% 55% 38% 62%;background:var(--accent)}.object--plant::before{content:"";position:absolute;left:-7px;top:-8px;width:15px;height:22px;border-radius:50% 0 50% 0;background:var(--object)}.all-card{display:grid;place-items:center;height:62px;align-self:start;border:1px dashed rgba(150,112,58,.5)!important;border-radius:8px!important;background:rgba(245,236,215,.52)!important;color:var(--dh-color-sage-800)!important;font-size:10px;font-weight:var(--dh-font-weight-heavy);text-align:center}.all-card span{max-width:46px}
-    .catalog-toolbar{display:grid;grid-template-columns:64px 1fr 64px;align-items:center}.catalog-toolbar h2{margin:0;font-size:16px;font-weight:var(--dh-font-weight-heavy);text-align:center;white-space:nowrap}.catalog-toolbar .catalog-back{justify-self:start;font-size:30px;line-height:1;padding:0 10px 0 2px;margin:-4px 0;color:var(--dh-color-sage-700)}.catalog-manage{justify-self:end;white-space:nowrap;border:1px solid rgba(110,132,107,.32);border-radius:999px;padding:5px 13px;background:rgba(255,255,255,.82);color:var(--dh-color-sage-700);font:inherit;font-size:11px;font-weight:var(--dh-font-weight-heavy);cursor:pointer}.catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px}.catalog-grid .component-card{min-width:0}.catalog-grid .component-visual{height:86px}.empty-state{padding:24px 10px;text-align:center;color:var(--dh-fg-secondary);font-size:12px}.toast{position:absolute;z-index:40;left:50%;bottom:78px;transform:translateX(-50%) translateY(8px);opacity:0;padding:9px 12px;border-radius:999px;background:rgba(29,36,31,.9);color:white;font-size:11px;font-weight:var(--dh-font-weight-semibold);pointer-events:none;transition:.2s ease}.toast.show{opacity:1;transform:translateX(-50%)}
-    /* 选择模式：勾选框 + 平台资产禁用 */
+    .catalog-toolbar{display:grid;grid-template-columns:54px 1fr 88px;align-items:center}.catalog-toolbar h2{margin:0;font-size:16px;font-weight:var(--dh-font-weight-heavy);text-align:center;white-space:nowrap}.catalog-toolbar .catalog-back{justify-self:start;font-size:30px;line-height:1;padding:0 10px 0 2px;margin:-4px 0;color:var(--dh-color-sage-700)}.catalog-actions{justify-self:end;display:flex;align-items:center;gap:5px}.catalog-manage{width:30px;height:30px;border:1px solid rgba(110,132,107,.32);border-radius:50%;padding:0;background:rgba(255,255,255,.82);color:var(--dh-color-sage-700);font:inherit;font-size:16px;font-weight:var(--dh-font-weight-heavy);cursor:pointer}.catalog-assemble{min-height:31px;padding:0 10px;border:0;border-radius:999px;background:var(--dh-color-sage-600);color:#fff;font:inherit;font-size:10px;font-weight:var(--dh-font-weight-heavy);cursor:pointer}.catalog-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:0 0 12px}.catalog-filters .style-chips{grid-column:1/-1;margin:0 -2px;padding-bottom:2px}.catalog-filter{min-width:0;height:31px;padding:0 6px;border:1px solid rgba(110,132,107,.26);border-radius:9px;background:rgba(255,255,255,.92);color:var(--dh-fg-secondary);font:inherit;font-size:10px;font-weight:var(--dh-font-weight-semibold)}.catalog-result-count{grid-column:1/-1;margin:-1px 1px 0;color:var(--dh-fg-muted);font-size:9px}.catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px}.catalog-grid .component-card{min-width:0}.catalog-grid .component-visual{height:86px}.empty-state{padding:24px 10px;text-align:center;color:var(--dh-fg-secondary);font-size:12px}.toast{position:absolute;z-index:40;left:50%;bottom:78px;transform:translateX(-50%) translateY(8px);opacity:0;padding:9px 12px;border-radius:999px;background:rgba(29,36,31,.9);color:white;font-size:11px;font-weight:var(--dh-font-weight-semibold);pointer-events:none;transition:.2s ease}.toast.show{opacity:1;transform:translateX(-50%)}
+    /* 选择模式：删除模式只可选自有组件；拼装模式可选全部 canonical 家具 */
     .component-card[data-selectable]{cursor:pointer}.select-check{position:absolute;z-index:4;right:4px;top:4px;width:20px;height:20px;border:2px solid #fff;border-radius:50%;background:rgba(29,36,31,.35);box-shadow:0 1px 4px rgba(44,59,45,.3);display:grid;place-items:center;color:#fff;font-size:12px;line-height:1}.component-card[data-selected="true"] .select-check{background:var(--dh-color-sage-600)}.component-card--locked{opacity:.4}.selecting .favorite-control{display:none}
-    .select-bar{position:absolute;z-index:45;left:16px;right:16px;bottom:26px;display:flex;gap:10px}.select-bar[hidden]{display:none}.select-bar button{flex:1;height:42px;border-radius:13px;font:inherit;font-size:13px;font-weight:var(--dh-font-weight-bold);cursor:pointer}.select-cancel{border:1px solid rgba(110,132,107,.32);background:rgba(255,255,255,.94);color:var(--dh-fg-secondary)}.select-confirm{border:0;background:#be6959;color:#fff;box-shadow:0 8px 18px rgba(150,70,55,.3)}.select-confirm[disabled]{opacity:.45;box-shadow:none;cursor:not-allowed}
+    .select-bar{position:absolute;z-index:45;left:16px;right:16px;bottom:26px;display:grid;grid-template-columns:76px 1fr;gap:10px}.select-bar[hidden]{display:none}.select-bar button{height:44px;border-radius:13px;font:inherit;font-size:13px;font-weight:var(--dh-font-weight-bold);cursor:pointer}.select-cancel{border:1px solid rgba(110,132,107,.32);background:rgba(255,255,255,.94);color:var(--dh-fg-secondary)}.select-confirm{border:0;background:#be6959;color:#fff;box-shadow:0 8px 18px rgba(150,70,55,.3)}.select-bar[data-mode="assemble"] .select-confirm{background:var(--dh-color-sage-600);box-shadow:0 8px 18px rgba(82,109,80,.25)}.select-confirm[disabled]{opacity:.45;box-shadow:none;cursor:not-allowed}
     #mainTabbar[hidden]{display:none}
     /* 查看弹窗 */
     .viewer{position:absolute;inset:0;z-index:60;display:flex;align-items:center;justify-content:center}.viewer[hidden]{display:none}.viewer-backdrop{position:absolute;inset:0;background:rgba(20,26,21,.5);opacity:0;transition:opacity .22s ease}.viewer.is-open .viewer-backdrop{opacity:1}
     .viewer-card{position:relative;width:calc(100% - 44px);max-width:288px;padding:14px;border-radius:24px;background:#fff;box-shadow:0 18px 40px rgba(29,36,31,.3);transform:scale(.94);opacity:0;transition:transform .22s cubic-bezier(.32,.72,0,1),opacity .22s ease}.viewer.is-open .viewer-card{transform:scale(1);opacity:1}
     .viewer-close{position:absolute;z-index:2;right:12px;top:12px;width:28px;height:28px;border:0;border-radius:50%;background:rgba(240,240,238,.9);color:var(--dh-fg-secondary);font-size:13px;cursor:pointer}
-    .viewer-stage{position:relative;width:100%;aspect-ratio:1;border-radius:16px;overflow:hidden;background:radial-gradient(circle at 42% 34%,#fbfdf9,#f4ecdb 70%,#dbe6d4);touch-action:none;cursor:grab}.viewer-stage:active{cursor:grabbing}.viewer-stage--static,.viewer-stage--static:active{cursor:default;touch-action:auto}.viewer-stage canvas{display:block;width:100%;height:100%}.viewer-hint{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);padding:4px 10px;border-radius:999px;background:rgba(29,36,31,.55);color:#fff;font-size:9px;font-weight:var(--dh-font-weight-semibold);pointer-events:none}
+    .viewer-stage{position:relative;width:100%;aspect-ratio:1;border-radius:16px;overflow:hidden;background:radial-gradient(circle at 42% 34%,#fbfdf9,#f4ecdb 70%,#dbe6d4);touch-action:none;cursor:grab}.viewer-stage:active{cursor:grabbing}.viewer-stage canvas{display:block;width:100%;height:100%}.viewer-hint{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);padding:4px 10px;border-radius:999px;background:rgba(29,36,31,.55);color:#fff;font-size:9px;font-weight:var(--dh-font-weight-semibold);pointer-events:none}
     .viewer-foot{margin-top:12px;text-align:center}.viewer-name{width:100%;box-sizing:border-box;padding:2px 6px;border:0;border-radius:9px;background:transparent;color:var(--dh-fg-primary);font:inherit;font-size:17px;font-weight:var(--dh-font-weight-heavy);letter-spacing:var(--dh-tracking-title);text-align:center}.viewer-name:not([readonly]):focus{background:rgba(246,250,244,.95);outline:1.5px solid rgba(110,132,107,.4)}
     .viewer-meta{margin:7px 0 0;text-align:center;font-size:11px;font-weight:var(--dh-font-weight-semibold);color:var(--dh-fg-muted)}.viewer-delete{margin:11px auto 0;display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 13px;border:1px solid rgba(190,105,89,.42);border-radius:999px;background:#fff4ef;color:#be6959;font:inherit;font-size:11px;font-weight:var(--dh-font-weight-bold);cursor:pointer}.viewer-delete[hidden]{display:none}
     /* 管理浮层（app 端底部弹层）*/
@@ -91,7 +92,7 @@
         <nav class="dh-tabbar dh-tabbar--main" id="mainTabbar" aria-label="主功能导航"><a class="dh-tab" href="../capture/index.html" aria-label="拍一张"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8.7 4.6c-.6 0-1.15.32-1.44.84l-.7 1.24H4.6A2.6 2.6 0 0 0 2 9.32v8.28a2.6 2.6 0 0 0 2.6 2.6h14.8a2.6 2.6 0 0 0 2.6-2.6V9.32a2.6 2.6 0 0 0-2.6-2.6h-1.96l-.7-1.24a1.65 1.65 0 0 0-1.44-.84H8.7Zm3.3 5.1a3.55 3.55 0 1 0 0 7.1 3.55 3.55 0 0 0 0-7.1Z"/></svg></span></a><a class="dh-tab" href="../discover/index.html" aria-label="刷一刷"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M6.4 3.2h11.2A3.4 3.4 0 0 1 21 6.6v10.8a3.4 3.4 0 0 1-3.4 3.4H6.4A3.4 3.4 0 0 1 3 17.4V6.6a3.4 3.4 0 0 1 3.4-3.4Zm3.5 5.05c-.5-.3-1.14.06-1.14.65v6.3c0 .59.64.95 1.14.65l5.2-3.15c.48-.29.48-1.01 0-1.3l-5.2-3.15Z"/></svg></span></a><a class="dh-tab dh-tab--active" href="./index.html" aria-label="灵感库" aria-current="page"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12 2.6a6.4 6.4 0 0 0-3.9 11.48c.46.36.74.9.82 1.48l.13.94h5.84l.13-.94c.08-.58.36-1.12.82-1.48A6.4 6.4 0 0 0 12 2.6Z"/><rect x="8.7" y="17.4" width="6.6" height="1.9" rx=".95"/><rect x="9.6" y="20" width="4.8" height="1.9" rx=".95"/></svg></span></a><a class="dh-tab" href="../my-favorites/index.html" aria-label="我的收藏"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7 3.6h10a2.2 2.2 0 0 1 2.2 2.2v13.9c0 .86-.94 1.38-1.66.92L12 17.2l-5.54 3.42c-.72.46-1.66-.06-1.66-.92V5.8A2.2 2.2 0 0 1 7 3.6Z"/></svg></span></a><a class="dh-tab" href="../my-home/index.html" aria-label="我的家"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10.7 3.3a2 2 0 0 1 2.6 0l6.8 5.86c.44.38.7.94.7 1.53v7.71a2 2 0 0 1-2 2h-2.8a1 1 0 0 1-1-1v-4.4a1 1 0 0 0-1-1h-2.4a1 1 0 0 0-1 1v4.4a1 1 0 0 1-1 1H6.2a2 2 0 0 1-2-2V10.7c0-.59.26-1.15.7-1.53L10.7 3.3Z"/></svg></span></a></nav>
         <div class="select-bar" id="selectBar" hidden>
           <button class="select-cancel" id="selectCancel" type="button">取消</button>
-          <button class="select-confirm" id="confirmDelete" type="button" disabled>确认删除</button>
+          <button class="select-confirm" id="selectConfirm" type="button" disabled>确认删除</button>
         </div>
         <div class="viewer" id="viewer" hidden>
           <div class="viewer-backdrop" data-viewer-close></div>
@@ -128,10 +129,11 @@
       </div>
     </section>
   </main>
-  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+  <script type="importmap">{"imports":{"three":"/vendor/three.module.js","three/addons/":"/vendor/three-addons/"}}</script>
   <script type="module">
     import { COMPONENT_FAMILIES, FURNITURE_CATEGORIES, getAssets, getAsset, getFavorites, toggleFavorite, removeUserAsset, addUserAsset } from '../shared/asset-library-data.js';
-    import { renderTemplatePreview, renderTemplatePreviews, disposeTemplatePreviews, buildRoom } from '../shared/template-preview-3d.js';
+    import { renderTemplatePreview, renderTemplatePreviews, disposeTemplatePreviews } from '../shared/template-preview-3d.js';
+    import { MAX_ASSEMBLY_ASSETS, encodeAssemblyAssetIds, filterFurnitureByTags, styleFacets } from '../shared/library-tag-flow.js';
 
     const home = document.querySelector('#libraryHome');
     const catalog = document.querySelector('#catalogView');
@@ -145,38 +147,47 @@
     let activeFurnitureCategory = 'all';
     let toastTimer = null;
     // 当前 catalog 上下文 + 选择模式状态（保持简洁：单一 state，渲染读它）
-    const view = { kind: '', category: '', favoriteOnly: false };
-    const select = { on: false, ids: new Set() };
+    const view = { kind: '', category: '', favoriteOnly: false, filters: { color: '', material: '', style: '' } };
+    const select = { mode: '', ids: new Set() };
+
+    // 仅供把当前浏览器的收藏选择固化为演示默认值；普通访问不会显示或触发。
+    if (new URLSearchParams(location.search).get('exportFavorites') === '1') {
+      const ids = [...getFavorites()];
+      const blob = new Blob([JSON.stringify({ version: 1, ids }, null, 2)], { type: 'application/json' });
+      const href = URL.createObjectURL(blob);
+      document.body.innerHTML = `<main style="min-height:100vh;display:grid;place-items:center;background:#fffaf0;font:16px system-ui;color:#4b3b28"><section style="max-width:420px;padding:32px;text-align:center"><h1>收藏配置已准备好</h1><p>共 ${ids.length} 件。下载后把文件发给 Codex，即可固化为所有人首次打开的默认收藏。</p><a href="${href}" download="dreamhome-default-favorites.json" style="display:inline-block;margin-top:12px;padding:12px 20px;border-radius:999px;background:#70886f;color:white;text-decoration:none">下载收藏配置</a></section></main>`;
+    }
 
     const labelByKind = Object.fromEntries(COMPONENT_FAMILIES.map((family) => [family.id, family.label]));
     const isUser = (asset) => asset?.source === 'user';
     const showToast = (message) => { toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1500); };
     const favoriteButton = (asset) => `<button class="favorite-control" data-favorite="${asset.id}" aria-label="收藏 ${asset.name}" aria-pressed="${getFavorites().has(asset.id)}">${getFavorites().has(asset.id) ? '♥' : '♡'}</button>`;
+    const sourceBadge = (asset) => asset.sourceType === 'offline_photo' ? '<span class="source-badge">拍照生成</span>' : '';
     const visual = (asset) => {
-      // 户型：真实 3D 渲染(等距,与「我的家」生成的户型一致)；无 templateId 时退回占位框
-      if (asset.kind === 'floorplan') return asset.templateId
-        ? `<div class="component-visual visual--floorplan-3d"><canvas data-template-preview="${asset.templateId}"></canvas></div>`
-        : `<div class="component-visual visual--floorplan"></div>`;
+      if (asset.kind === 'floorplan') return `<div class="component-visual visual--floorplan"><canvas data-template-preview="${asset.templateId}" aria-label="${asset.name} 3D 户型预览"></canvas></div>`;
       if (asset.thumbnail) return `<div class="component-visual visual--photo"><img src="${asset.thumbnail}" alt="" loading="lazy" /></div>`; // 平台真实资产用照片
       const type = asset.primitive || 'cabinet';
       return `<div class="component-visual visual--furniture" style="--object:${asset.color};--accent:${asset.accent}"><span class="object object--${type}"></span></div>`;
     };
     // 选择模式下：用户组件带勾选框，平台资产变灰锁定
     const card = (asset, className = 'component-card') => {
-      if (select.on) {
-        const locked = !isUser(asset);
+      if (select.mode) {
+        const locked = select.mode === 'delete' && !isUser(asset);
         const selected = select.ids.has(asset.id);
         const check = locked ? '' : `<span class="select-check">${selected ? '✓' : ''}</span>`;
-        return `<article class="${className}${locked ? ' component-card--locked' : ''}" data-asset="${asset.id}" ${locked ? '' : 'data-selectable'} data-selected="${selected}" tabindex="0">${check}${visual(asset)}<b>${asset.name}</b></article>`;
+        return `<article class="${className}${locked ? ' component-card--locked' : ''}" data-asset="${asset.id}" ${locked ? '' : 'data-selectable'} data-selected="${selected}" tabindex="0">${check}${sourceBadge(asset)}${visual(asset)}<b>${asset.name}</b></article>`;
       }
-      return `<article class="${className}" data-asset="${asset.id}" tabindex="0">${favoriteButton(asset)}${visual(asset)}<b>${asset.name}</b></article>`;
+      return `<article class="${className}" data-asset="${asset.id}" tabindex="0">${favoriteButton(asset)}${sourceBadge(asset)}${visual(asset)}<b>${asset.name}</b></article>`;
     };
     const openCatalog = (kind, category = '') => { location.hash = `catalog=${kind}${category ? `:${encodeURIComponent(category)}` : ''}`; }; // 中文子类需编码
+    const facetValues = (assets, key) => [...new Set(assets.flatMap((asset) => asset[key] || []).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'zh-CN'));
+    const facetSelect = (label, filterKey, values) => `<select class="catalog-filter" data-filter="${filterKey}" aria-label="按${label}筛选"><option value="">${label} · 全部</option>${values.map((value) => `<option value="${value}"${view.filters[filterKey] === value ? ' selected' : ''}>${value}</option>`).join('')}</select>`;
+    const styleChips = (assets, active = '', limit = Infinity) => `<div class="style-chips" role="group" aria-label="按风格筛选"><button class="style-chip" data-style="" aria-pressed="${!active}">全部</button>${styleFacets(assets).slice(0, limit).map(({ value, count }) => `<button class="style-chip" data-style="${value}" aria-pressed="${active === value}">${value}<small>${count}</small></button>`).join('')}</div>`;
     // ---------- 顶部 banner 轮播（情绪引导卡 + 平台案例卡；真机用 <swiper circular>） ----------
-    // 案例卡本轮为占位：视觉用 web/assets/gallery 单品图 + 风格标签 + @博主名；点击留 hook，下一轮接 3D 案例空间。
+    // 案例卡复用对应 1:1 重建场景的真实封面，确保入口预览与进入后的房间一致。
     const BANNER_CASES = [
-      { id: 'case-oak', videoId: 'vid_40734d7f2e6c', image: '../../../assets/gallery/sofa.jpg', tag: '原木侘寂 · 45㎡', blogger: '@小丸子的家' },
-      { id: 'case-cream', videoId: 'vid_5f32a0ac954a', image: '../../../assets/gallery/armchair.jpg', tag: '奶油风 · 78㎡', blogger: '@栗子设计日记' },
+      { id: 'case-oak', videoId: 'vid_40734d7f2e6c', image: '../../assets/scenes/vid_40734d7f2e6c.jpg?v=approved-room', tag: '原木侘寂 · 45㎡', blogger: '@鸡蛋灌饼的家' },
+      { id: 'case-cream', videoId: 'vid_5f32a0ac954a', image: '../../assets/scenes/vid_5f32a0ac954a.jpg', tag: '奶油风 · 78㎡', blogger: '@栗子设计日记' },
     ];
     // 无缝循环：两端各加一张克隆，滑到克隆帧后在 transitionend 里瞬移回真实帧。向右滑=前进（第3张→第1张顺向切入）。
     let bannerPos = 1;        // 轨道位置：真实第 i 张在 pos=i+1
@@ -211,7 +222,7 @@
       let startX = null;
       viewport.addEventListener('pointerdown', (event) => { startX = event.clientX; bannerDragged = false; try { viewport.setPointerCapture(event.pointerId); } catch (_) {} });
       viewport.addEventListener('pointermove', (event) => { if (startX !== null && Math.abs(event.clientX - startX) > 10) bannerDragged = true; });
-      const endDrag = (event) => { if (startX === null) return; const dx = event.clientX - startX; const wasTap = !bannerDragged && Math.abs(dx) < 10; startX = null; if (dx < -40) { stepBanner(1); return; } if (dx > 40) { stepBanner(-1); return; } if (wasTap) { const el = document.elementFromPoint(event.clientX, event.clientY); const caseSlide = el && el.closest('[data-case]'); if (caseSlide && caseSlide.dataset.video) location.href = `../my-home/index.html?case=${encodeURIComponent(caseSlide.dataset.video)}`; } }; // 指针捕获会吞掉 click，故 tap 跳转在此处理（elementFromPoint 定位案例卡）；左划(dx<0)前进 / 右划(dx>0)后退
+      const endDrag = (event) => { if (startX === null) return; const dx = event.clientX - startX; const wasTap = !bannerDragged && Math.abs(dx) < 10; startX = null; if (dx < -40) { stepBanner(1); return; } if (dx > 40) { stepBanner(-1); return; } if (wasTap) { const el = document.elementFromPoint(event.clientX, event.clientY); const caseSlide = el && el.closest('[data-case]'); if (caseSlide && caseSlide.dataset.video) location.href = `../same-home/index.html?case=${encodeURIComponent(caseSlide.dataset.video)}`; } }; // 指针捕获会吞掉 click，故 tap 跳转在此处理（elementFromPoint 定位案例卡）；左划(dx<0)前进 / 右划(dx>0)后退
       viewport.addEventListener('pointerup', endDrag);
       viewport.addEventListener('pointercancel', () => { startX = null; });
       libraryBanner.querySelector('#heroDots').addEventListener('click', (event) => { const i = [...libraryBanner.querySelectorAll('#heroDots i')].indexOf(event.target); if (i >= 0 && !bannerAnimating && i + 1 !== bannerPos) { bannerPos = i + 1; bannerAnimating = true; paintBanner(true); } });
@@ -219,19 +230,22 @@
     const renderHome = () => {
       const previousTabs = home.querySelector('.furniture-tabs');
       const previousTabScrollLeft = previousTabs?.scrollLeft || 0;
+      disposeTemplatePreviews(home);
       const rails = ['floorplan'].map((kind) => { // 地板/墙纸类不在灵感库覆盖，改由「我的家」直接选（后端联调）；此处仅留户型类
         const assets = getAssets(kind).slice(0, 5);
         const cardClass = kind === 'floorplan' ? 'component-card component-card--floorplan' : 'component-card';
         return `<section class="catalog-section"><div class="section-head"><span class="section-tag">${labelByKind[kind]}</span><button class="all-button" data-all="${kind}">全部</button></div><div class="component-rail">${assets.map((asset) => card(asset, cardClass)).join('')}</div></section>`;
       }).join('');
       const isAllFurniture = activeFurnitureCategory === 'all';
-      const furniture = (isAllFurniture ? getAssets('furniture') : getAssets('furniture', activeFurnitureCategory)).slice(0, 11);
+      const allFurniture = getAssets('furniture');
+      const furniture = (isAllFurniture ? allFurniture : getAssets('furniture', activeFurnitureCategory)).slice(0, 11);
       const tabs = [`<button class="furniture-tab" data-category="all" role="tab" aria-selected="${isAllFurniture}">全部</button>`, ...FURNITURE_CATEGORIES.map((category) => `<button class="furniture-tab" data-category="${category.id}" role="tab" aria-selected="${category.id === activeFurnitureCategory}">${category.label}</button>`)].join('');
       const allData = isAllFurniture ? 'furniture' : `furniture:${activeFurnitureCategory}`;
       const allLabel = isAllFurniture ? '家具' : FURNITURE_CATEGORIES.find((item) => item.id === activeFurnitureCategory).label;
-      home.innerHTML = `${rails}<section class="catalog-section"><div class="section-head"><span class="section-tag">家具类</span></div><div class="furniture-tabs" role="tablist" aria-label="家具子类">${tabs}</div><div class="furniture-grid">${furniture.map((asset) => card(asset, 'furniture-card')).join('')}<button class="furniture-card all-card" data-all="${allData}" aria-label="查看全部${allLabel}"><span>查看全部</span></button></div></section>`;
+      const styleFirst = `<section class="style-first"><div class="style-first__head"><div><b>先选风格，再拼家具</b><span>按后端风格标签筛选，可多选带入我的家</span></div><button class="assemble-button" data-start-assemble>去拼装</button></div>${styleChips(allFurniture, '', 7)}</section>`;
+      home.innerHTML = `${styleFirst}${rails}<section class="catalog-section"><div class="section-head"><span class="section-tag">家具类</span></div><div class="furniture-tabs" role="tablist" aria-label="家具子类">${tabs}</div><div class="furniture-grid">${furniture.map((asset) => card(asset, 'furniture-card')).join('')}<button class="furniture-card all-card" data-all="${allData}" aria-label="查看全部${allLabel}"><span>查看全部</span></button></div></section>`;
+      renderTemplatePreviews(home);
       const nextTabs = home.querySelector('.furniture-tabs');
-      renderTemplatePreviews(home); // 户型卡片真实 3D 渲染(等距)
       const selectedTab = nextTabs?.querySelector('[aria-selected="true"]');
       if (!nextTabs || !selectedTab) return;
       nextTabs.scrollLeft = previousTabScrollLeft;
@@ -244,27 +258,37 @@
       const { kind, category, favoriteOnly } = view;
       let assets = getAssets(kind, category);
       if (favoriteOnly) assets = assets.filter((asset) => getFavorites().has(asset.id));
+      const facetSource = assets;
+      if (kind === 'furniture') {
+        const { color, material, style } = view.filters;
+        assets = filterFurnitureByTags(assets, { color, material, style });
+      }
       const title = favoriteOnly ? '已收藏' : `${labelByKind[kind]}${category ? ` · ${FURNITURE_CATEGORIES.find((item) => item.id === category)?.label || ''}` : ''}`;
       // 管理按钮：仅家具类细分品类的全部页；选择模式下隐藏管理按钮，底部出现「取消/确认删除」
-      const canManage = kind === 'furniture' && !favoriteOnly && !select.on; // 家具类「全部」页也可管理（category 为空时同样允许）
-      const toolbar = `<div class="catalog-toolbar"><button class="catalog-back" id="catalogBack" aria-label="返回">‹</button><h2>${title}</h2>${canManage ? '<button class="catalog-manage" id="manageOpen">管理</button>' : ''}</div>`;
-      home.hidden = true; catalog.hidden = false; catalog.classList.toggle('selecting', select.on);
+      const canManage = kind === 'furniture' && !favoriteOnly && !select.mode; // 家具类「全部」页也可管理（category 为空时同样允许）
+      const action = canManage ? '<div class="catalog-actions"><button class="catalog-assemble" data-start-assemble>选家具</button><button class="catalog-manage" id="manageOpen" aria-label="管理">···</button></div>' : '';
+      const toolbar = `<div class="catalog-toolbar"><button class="catalog-back" id="catalogBack" aria-label="返回">‹</button><h2>${title}</h2>${action}</div>`;
+      home.hidden = true; catalog.hidden = false; catalog.classList.toggle('selecting', Boolean(select.mode));
       screenEl.classList.remove('dh-topwhite'); // 次级页恢复原透明顶栏
       libraryBanner.hidden = true; // banner 仅主页展示
       // 次级页标题栏移到滚动区外（与主页「灵感库」标题同构，随内容滚动而固定），隐藏底部 tabbar
       libraryHeader.hidden = false; libraryHeader.classList.add('is-catalog'); libraryHeader.innerHTML = toolbar;
       mainTabbar.hidden = true;
-      catalog.innerHTML = assets.length ? `<div class="catalog-grid">${assets.map((asset) => card(asset)).join('')}</div>` : '<p class="empty-state">还没有收藏组件。点击心形即可收藏。</p>';
-      renderTemplatePreviews(catalog); // 户型「全部」页卡片真实 3D 渲染(等距)
-      selectBar.hidden = !select.on;
-      confirmDelete.disabled = select.ids.size === 0;
+      disposeTemplatePreviews(catalog);
+      const filters = kind === 'furniture' ? `<div class="catalog-filters" aria-label="家具标签筛选">${styleChips(facetSource, view.filters.style)}${facetSelect('颜色', 'color', facetValues(facetSource, 'colors'))}${facetSelect('材质', 'material', facetValues(facetSource, 'materials'))}<span class="catalog-result-count">找到 ${assets.length} 件标签匹配组件${select.mode === 'assemble' ? ` · 已选 ${select.ids.size}/${MAX_ASSEMBLY_ASSETS}` : ''}</span></div>` : '';
+      const emptyCopy = favoriteOnly && !Object.values(view.filters).some(Boolean) ? '还没有收藏组件。点击心形即可收藏。' : '没有符合当前标签组合的组件。';
+      catalog.innerHTML = `${filters}${assets.length ? `<div class="catalog-grid">${assets.map((asset) => card(asset)).join('')}</div>` : `<p class="empty-state">${emptyCopy}</p>`}`;
+      renderTemplatePreviews(catalog);
+      selectBar.hidden = !select.mode;
+      selectBar.dataset.mode = select.mode;
+      selectConfirm.textContent = select.mode === 'assemble' ? `去拼装 · ${select.ids.size} 件` : `确认删除 · ${select.ids.size} 件`;
+      selectConfirm.disabled = select.ids.size === 0;
     };
     const rerender = () => { if (!catalog.hidden) renderCatalog(); else renderHome(); };
     const route = () => {
-      if (select.on) exitSelect(true);
-      const reopenId = (location.hash.match(/^#viewer=(.+)$/) || [])[1]; // 从原视频返回:主页底层上重开该组件弹窗
+      if (select.mode) exitSelect(true);
       const matched = location.hash.match(/^#catalog=([^:]+)(?::(.+))?$/);
-      if (!matched && location.hash !== '#favorites') { home.hidden = false; catalog.hidden = true; libraryBanner.hidden = false; libraryHeader.hidden = false; libraryHeader.classList.remove('is-catalog'); libraryHeader.innerHTML = '<h1 class="library-title">灵感库</h1>'; mainTabbar.hidden = false; screenEl.classList.add('dh-topwhite'); renderHome(); libraryContent.scrollTop = 0; requestAnimationFrame(() => { libraryContent.scrollTop = 0; }); if (reopenId && getAsset(decodeURIComponent(reopenId))) openViewer(decodeURIComponent(reopenId)); return; } // 返回主页始终从顶部展示
+      if (!matched && location.hash !== '#favorites') { home.hidden = false; catalog.hidden = true; libraryBanner.hidden = false; libraryHeader.hidden = false; libraryHeader.classList.remove('is-catalog'); libraryHeader.innerHTML = '<h1 class="library-title">灵感库</h1>'; mainTabbar.hidden = false; screenEl.classList.add('dh-topwhite'); renderHome(); libraryContent.scrollTop = 0; requestAnimationFrame(() => { libraryContent.scrollTop = 0; }); return; } // 返回主页始终从顶部展示
       if (location.hash === '#favorites') { const favorites = getFavorites(); const first = [...favorites][0]; const asset = first ? getAssets().find((item) => item.id === first) : null; Object.assign(view, { kind: asset?.kind || 'furniture', category: '', favoriteOnly: true }); renderCatalog(); libraryContent.scrollTop = 0; return; }
       Object.assign(view, { kind: matched[1], category: matched[2] ? decodeURIComponent(matched[2]) : '', favoriteOnly: false });
       renderCatalog();
@@ -317,25 +341,11 @@
         camera.near = Math.max(0.01, dist - r * 2); camera.far = dist + r * 4; camera.updateProjectionMatrix();
         controls.target.set(0, 0, 0); controls.update();
       };
-      // 户型：实时房间(默认地板+墙纸)，可拖拽俯视查看
-      if (asset.kind === 'floorplan' && asset.templateId) {
-        const room = await buildRoom(asset.templateId);
-        if (!room) return false;
-        if (!viewer3D) return true; // 加载期间已关闭
-        scene.add(room);
-        frameObject(room);
-        camera.position.set(camera.position.x, camera.position.y * 1.35, camera.position.z); camera.updateProjectionMatrix(); // 抬高机位更接近俯拍
-        controls.minPolarAngle = 0.12; controls.maxPolarAngle = Math.PI * 0.47; // 只能俯视看进房间，不钻到地板下/翻上屋顶
-        controls.autoRotate = false; // 户型不自动转，纯手动拖拽
-        controls.update();
-        tick();
-        return true;
-      }
       // 平台真实资产：载入压缩 GLB（Draco）；失败则 resolve(false) 让上层切回照片
       if (asset.modelUrl) {
         const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
         const { DRACOLoader } = await import('three/addons/loaders/DRACOLoader.js');
-        const draco = new DRACOLoader(); draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/libs/draco/');
+        const draco = new DRACOLoader(); draco.setDecoderPath('/vendor/three-addons/libs/draco/');
         const loader = new GLTFLoader(); loader.setDRACOLoader(draco);
         return new Promise((resolve) => {
           loader.load(asset.modelUrl, (gltf) => {
@@ -383,42 +393,44 @@
       if (!asset) return;
       viewerAssetId = id;
       const editable = isUser(asset);
-      const use3D = (isUser(asset) && asset.kind === 'furniture') || !!asset.modelUrl || (asset.kind === 'floorplan' && !!asset.templateId); // 用户生成→primitive；平台 GLB→真实模型；户型→实时房间(可拖拽)
+      const use3D = (isUser(asset) && asset.kind === 'furniture') || !!asset.modelUrl; // 用户生成→primitive 占位；平台真实资产→真实 GLB
       viewerName.value = asset.name;
       viewerName.readOnly = !editable;
       viewerDelete.hidden = !editable;
-      viewerSource.hidden = editable || asset.kind === 'floorplan'; // 链接icon 仅平台组件有原视频；用户生成/户型不显示
+      viewerSource.hidden = editable || asset.sourceType === 'offline_photo' || !asset.videoUrl; // 拍照资产没有虚构的视频跳转
       syncViewerFav();
       fitViewerName();
       const catLabel = asset.category ? FURNITURE_CATEGORIES.find((c) => c.id === asset.category)?.label || '' : '';
-      viewerMeta.textContent = `${labelByKind[asset.kind]}${catLabel ? ` · ${catLabel}` : ''}${editable ? ' · 我的组件' : ' · 平台组件'}`;
+      const provenance = asset.sourceType === 'offline_photo' ? '线下拍照生成' : (editable ? '我的组件' : '平台组件');
+      viewerMeta.textContent = `${labelByKind[asset.kind]}${catLabel ? ` · ${catLabel}` : ''} · ${provenance}`;
       viewer.hidden = false;
+      disposeTemplatePreviews(viewerStage);
       const showPhoto = () => {
         if (asset.thumbnail) viewerStage.innerHTML = `<div class="viewer-photo"><img src="${asset.thumbnail}" alt="${asset.name}" /></div>`;
         else viewerStage.innerHTML = visual(asset);
       };
-      if (use3D) {
-        viewerStage.className = 'viewer-stage';
+      if (asset.kind === 'floorplan' && asset.templateId) {
+        viewerStage.innerHTML = `<div class="component-visual visual--floorplan"><canvas data-template-preview="${asset.templateId}" aria-label="${asset.name} 3D 户型预览"></canvas></div>`;
+        requestAnimationFrame(() => { viewer.classList.add('is-open'); renderTemplatePreview(viewerStage.querySelector('canvas'), asset.templateId); });
+      } else if (use3D) {
         viewerStage.innerHTML = '<span class="viewer-hint">拖动可 360° 查看</span>';
         requestAnimationFrame(async () => {
           viewer.classList.add('is-open');
           const ok = await open3DViewer(asset);
-          if (!ok && viewerAssetId === id) { viewer3D?.dispose(); viewer3D = null; showPhoto(); } // 3D 失败兜底照片
+          if (!ok && viewerAssetId === id) { viewer3D?.dispose(); viewer3D = null; showPhoto(); } // GLB 失败兜底照片
         });
       } else if (asset.thumbnail) {
-        viewerStage.className = 'viewer-stage';
         viewerStage.innerHTML = `<div class="viewer-photo"><img src="${asset.thumbnail}" alt="${asset.name}" /><span class="viewer-photo-note">3D 预览由后端提供</span></div>`;
         requestAnimationFrame(() => viewer.classList.add('is-open'));
       } else {
-        viewerStage.className = 'viewer-stage';
         viewerStage.innerHTML = visual(asset);
         requestAnimationFrame(() => viewer.classList.add('is-open'));
       }
     }
     function closeViewer() {
       viewer.classList.remove('is-open');
+      disposeTemplatePreviews(viewerStage);
       viewer3D?.dispose(); viewer3D = null; viewerAssetId = null;
-      if (location.hash.startsWith('#viewer=')) history.replaceState(null, '', location.pathname + location.search); // 关闭即清掉 #viewer 标记
       setTimeout(() => { viewer.hidden = true; }, 220);
     }
     viewerName.addEventListener('change', () => {
@@ -432,7 +444,12 @@
     viewerFav.addEventListener('click', () => { if (!viewerAssetId) return; toggle(viewerAssetId); syncViewerFav(); });
     // 删除（仅用户组件）→ 先弹「删除后不可恢复」二次确认
     viewerDelete.addEventListener('click', () => { if (!viewerAssetId) return; openDelConfirm({ type: 'single', id: viewerAssetId }); });
-    viewerSource.addEventListener('click', () => { const a = getAsset(viewerAssetId); if (!viewerAssetId || a?.kind === 'floorplan') return; history.replaceState(null, '', '#viewer=' + encodeURIComponent(viewerAssetId)); location.href = `../discover/index.html#asset=${encodeURIComponent(viewerAssetId)}&from=library`; }); // 跳「刷一刷」看原视频；先把本页 URL 盖成 #viewer=id，原视频返回键(history.back)即回到该组件弹窗；户型无源视频
+    viewerSource.addEventListener('click', () => {
+      const asset = getAsset(viewerAssetId); if (!asset?.videoUrl) return;
+      const target = new URLSearchParams({ asset:viewerAssetId, video:asset.videoId || '' });
+      if (asset.videoSec != null && Number.isFinite(Number(asset.videoSec))) target.set('t', String(asset.videoSec));
+      location.href = `../discover/index.html#${target}`;
+    }); // 仅视频资产跳「刷一刷」准确来源
 
     // ---------- 删除二次确认弹窗 ----------
     const delConfirm = document.getElementById('delConfirm');
@@ -473,12 +490,18 @@
     function closeSheet() { manageSheet.classList.remove('is-open'); setTimeout(() => { manageSheet.hidden = true; }, 240); }
 
     // ---------- 删除选择模式 ----------
-    function enterSelect() { select.on = true; select.ids.clear(); renderCatalog(); }
-    function exitSelect(silent = false) { select.on = false; select.ids.clear(); selectBar.hidden = true; if (!silent) renderCatalog(); }
+    function enterSelect(mode) { select.mode = mode; select.ids.clear(); renderCatalog(); }
+    function exitSelect(silent = false) { select.mode = ''; select.ids.clear(); selectBar.hidden = true; if (!silent) renderCatalog(); }
     const selectBar = document.getElementById('selectBar');
-    const confirmDelete = document.getElementById('confirmDelete');
-    confirmDelete.addEventListener('click', () => {
+    const selectConfirm = document.getElementById('selectConfirm');
+    selectConfirm.addEventListener('click', () => {
       if (!select.ids.size) return;
+      if (select.mode === 'assemble') {
+        const target = new URL('../my-home/index.html', location.href);
+        target.searchParams.set('addAssets', encodeAssemblyAssetIds([...select.ids]));
+        location.href = target.href;
+        return;
+      }
       openDelConfirm({ type: 'batch', ids: [...select.ids] });
     });
 
@@ -490,13 +513,16 @@
       if (event.target.closest('[data-sheet-close]')) { closeSheet(); return; }
       if (event.target.closest('#sheetBack')) { renderSheet('main'); return; }
       if (event.target.closest('#sheetAdd')) { renderSheet('add'); return; }
-      if (event.target.closest('#sheetDelete')) { closeSheet(); enterSelect(); return; }
+      if (event.target.closest('#sheetDelete')) { closeSheet(); enterSelect('delete'); return; }
       if (event.target.closest('#manageOpen')) { openSheet('main'); return; }
       if (event.target.closest('#selectCancel')) { exitSelect(); return; }
+      const style = event.target.closest('[data-style]');
+      if (style) { view.filters.style = style.dataset.style; if (catalog.hidden) openCatalog('furniture'); else renderCatalog(); return; }
+      if (event.target.closest('[data-start-assemble]')) { if (catalog.hidden) openCatalog('furniture'); requestAnimationFrame(() => enterSelect('assemble')); return; }
       // 选择模式：点卡片切换选中
-      if (select.on) {
+      if (select.mode) {
         const selectable = event.target.closest('[data-selectable]');
-        if (selectable) { const id = selectable.dataset.asset; select.ids.has(id) ? select.ids.delete(id) : select.ids.add(id); renderCatalog(); return; }
+        if (selectable) { const id = selectable.dataset.asset; if (select.ids.has(id)) select.ids.delete(id); else if (select.ids.size < MAX_ASSEMBLY_ASSETS || select.mode === 'delete') select.ids.add(id); else showToast(`一次最多选 ${MAX_ASSEMBLY_ASSETS} 件`); renderCatalog(); return; }
         if (event.target.closest('.component-card--locked')) { showToast('平台组件库内容，暂不支持删除'); }
         return;
       }
@@ -508,11 +534,17 @@
       if (tab) { activeFurnitureCategory = tab.dataset.category; renderHome(); return; }
       if (event.target.closest('#catalogBack')) { const fromMyHome = new URLSearchParams(location.search).get('from') === 'myhome'; if (fromMyHome && view.kind === 'floorplan' && !view.favoriteOnly) { location.href = '../my-home/index.html'; return; } if (location.hash) location.hash = ''; else route(); return; } // 唯一例外：从「我的家」进来的户型全部页返回我的家；其余回灵感库主页
       const caseSlide = event.target.closest('[data-case]');
-      if (caseSlide) { if (bannerDragged) { bannerDragged = false; return; } const videoId = caseSlide.dataset.video; if (videoId) location.href = `../my-home/index.html?case=${encodeURIComponent(videoId)}`; return; } // 跳「我的家」案例只读模式（复用拼装编辑器）
+      if (caseSlide) { if (bannerDragged) { bannerDragged = false; return; } const videoId = caseSlide.dataset.video; if (videoId) location.href = `../same-home/index.html?case=${encodeURIComponent(videoId)}`; return; } // 进入独立的“同款小家”案例空间
       const asset = event.target.closest('[data-asset]');
       if (asset) openViewer(asset.dataset.asset);
     });
     window.addEventListener('hashchange', route);
+    catalog.addEventListener('change', (event) => {
+      const filter = event.target.closest('[data-filter]');
+      if (!filter) return;
+      view.filters[filter.dataset.filter] = filter.value;
+      renderCatalog();
+    });
     renderBanner();
     route();
   </script>

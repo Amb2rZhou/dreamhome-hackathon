@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>DreamHome · 资产评审看板</title>
 <link rel="icon" href="data:," />
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+<script type="importmap">{"imports":{"three":"/vendor/three.module.js","three/addons/":"/vendor/three-addons/"}}</script>
 <style>
   :root{
     --bg:#f6f0e3; --surface:#fffdf8; --surface-2:#fbf5e9; --line:#e7dcc6;
@@ -184,7 +184,7 @@ function open3D(asset, host) {
   let raf = 0; const tick = () => { controls.update(); renderer.render(scene, camera); raf = requestAnimationFrame(tick); };
   const handle = { dispose() { cancelAnimationFrame(raf); controls.dispose(); scene.traverse((o) => { if (o.isMesh) { o.geometry?.dispose(); const m = o.material; Array.isArray(m) ? m.forEach((x) => x?.dispose()) : m?.dispose(); } }); renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove(); } };
   viewer = handle;
-  const draco = new DRACOLoader(); draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/libs/draco/');
+  const draco = new DRACOLoader(); draco.setDecoderPath('/vendor/three-addons/libs/draco/');
   const loader = new GLTFLoader(); loader.setDRACOLoader(draco);
   loader.load(asset.urls.model, (gltf) => {
     if (viewer !== handle) return;

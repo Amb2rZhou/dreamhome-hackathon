@@ -5,6 +5,7 @@
 启用: .env 里 ENHANCE_PROVIDER=module
 """
 import os
+from typing import Optional
 
 import httpx
 
@@ -13,11 +14,14 @@ SEGMENT_API = os.environ.get("SEGMENT_API_URL", "http://localhost:8002")
 ENHANCE_MODEL = os.environ.get("ENHANCE_MODEL", "wan2.7-image")
 
 
-def enhance(in_path: str, out_path: str, category: str = "") -> None:
+def enhance(in_path: str, out_path: str, category: str = "",
+            selection_path: Optional[list[tuple[int, int]]] = None) -> None:
     with open(in_path, "rb") as f:
         files = {"file": (os.path.basename(in_path), f, "image/jpeg")}
         data = {"category": category} if category else {}
         data["model"] = ENHANCE_MODEL
+        if selection_path:
+            data["path"] = ";".join(f"{int(x)},{int(y)}" for x, y in selection_path)
         r = httpx.post(f"{SEGMENT_API}/api/inpaint", files=files, data=data,
                        timeout=150, trust_env=False)
     r.raise_for_status()

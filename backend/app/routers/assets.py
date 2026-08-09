@@ -1,13 +1,17 @@
 """资产库：浏览/详情/审核(改标签/合并重复)。"""
+from pathlib import Path
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 
 from .. import db, matching
+from ..config import settings
+from ..structured_catalog import StructuredCatalogError, load_structured_catalog
 from ..schemas_lib import AssetOut, MergeRequest
 from ..store import get_job
 
 router = APIRouter(prefix="/api/assets", tags=["assets"])
+STRUCTURED_CATALOG_PATH = Path(settings.STORAGE_DIR) / "catalog" / "structured-assets.v1.json"
 
 # 专项库品类(T6 服务端化):窗户/吊顶/地板/光线/窗外景观,默认不进常规资产库列表
 SPECIAL_CATEGORIES = {"窗户", "吊顶", "地板", "光线", "窗外景观"}
@@ -48,6 +52,18 @@ async def list_assets(space: str = "", category: str = "", q: str = "",
 async def review_duplicates():
     """审核页：疑似重复资产对(同品类 + 标签高重合)，人工确认后调 /merge。"""
     return matching.duplicate_pairs()
+
+
+@router.get("/catalog/structured")
+async def structured_catalog():
+    """给灵感库和拼装端的版本化资产契约。
+
+    标签溯源/人工复核与资产质量审核分开，避免把历史 AI 推断冒充为已确认标签。
+    """
+    try:
+        return load_structured_catalog(STRUCTURED_CATALOG_PATH)
+    except StructuredCatalogError as exc:
+        raise HTTPException(503, str(exc)) from exc
 
 
 @router.get("/{asset_id}", response_model=AssetOut)

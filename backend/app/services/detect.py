@@ -7,6 +7,8 @@ provider:
 检测结果由调用方(videos router)写回 track 索引缓存(lazy indexing)。
 """
 import hashlib
+import json
+import re
 from typing import Optional
 
 import httpx
@@ -21,7 +23,64 @@ async def detect_frame(video_id: str, t: float,
     """返回 [{bbox:[x,y,w,h], category, score}]，bbox 归一化。"""
     if settings.effective_detect_provider == "remote":
         return await _remote(frame_data_uri, video_id, t)
+    if settings.effective_detect_provider == "dashscope":
+        return await _dashscope(frame_data_uri)
     return _mock(video_id, t)
+
+
+def _json_payload(text: str) -> list[dict]:
+    cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip(), flags=re.I | re.S)
+    value = json.loads(cleaned)
+    if isinstance(value, dict):
+        value = value.get("boxes", [])
+    return value if isinstance(value, list) else []
+
+
+def _normalise_boxes(items: list[dict]) -> list[dict]:
+    boxes: list[dict] = []
+    for item in items:
+        raw = item.get("bbox") if isinstance(item, dict) else None
+        if not isinstance(raw, list) or len(raw) != 4:
+            continue
+        try:
+            x1, y1, x2, y2 = [max(0.0, min(999.0, float(v))) for v in raw]
+        except (TypeError, ValueError):
+            continue
+        if x2 <= x1 or y2 <= y1:
+            continue
+        boxes.append({
+            "bbox": [round(x1 / 999, 4), round(y1 / 999, 4),
+                     round((x2 - x1) / 999, 4), round((y2 - y1) / 999, 4)],
+            "category": str(item.get("category") or "其他")[:24],
+            "score": round(max(0.0, min(1.0, float(item.get("score", 0.75)))), 3),
+        })
+    return boxes
+
+
+async def _dashscope(frame_data_uri: Optional[str]) -> list[dict]:
+    if not frame_data_uri:
+        raise RuntimeError("dashscope detection requires frame_data_uri")
+    payload = {
+        "model": settings.DASHSCOPE_VL_MODEL,
+        "messages": [{"role": "user", "content": [
+            {"type": "image_url", "image_url": {"url": frame_data_uri}},
+            {"type": "text", "text": (
+                "检测画面中可独立摆放的家具和家居物品。只返回 JSON 数组，"
+                "每项为 {bbox:[x1,y1,x2,y2],category,score}。bbox 坐标范围 0-999，"
+                "排除墙、地板、门窗和人物。"
+            )},
+        ]}],
+        "temperature": 0,
+    }
+    async with httpx.AsyncClient(timeout=45, trust_env=False) as client:
+        response = await client.post(
+            f"{settings.DASHSCOPE_BASE_URL}/compatible-mode/v1/chat/completions",
+            headers={"Authorization": f"Bearer {settings.DASHSCOPE_API_KEY}"},
+            json=payload,
+        )
+        response.raise_for_status()
+    content = response.json()["choices"][0]["message"]["content"]
+    return _normalise_boxes(_json_payload(content))
 
 
 async def _remote(frame_data_uri: Optional[str], video_id: str, t: float) -> list[dict]:

@@ -1,0 +1,24 @@
+import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { inferRuntimePrimitive, isModelBackedHome } from '../web/prototype/pages/shared/home-model-loading.js';
+
+describe('DreamHome model-backed scenes', () => {
+  it('keeps both video scenes and copied same-home scenes behind the loading gate', () => {
+    expect(isModelBackedHome({ source: { type: 'video_rebuild' } })).toBe(true);
+    expect(isModelBackedHome({ source: { type: 'case_copy' } })).toBe(true);
+    expect(isModelBackedHome({ source: { type: 'template' } })).toBe(false);
+  });
+
+  it('uses asset labels to render a meaningful temporary fallback', () => {
+    expect(inferRuntimePrimitive({ name: '双人床', tags: ['白色', '布艺'] })).toBe('bed');
+    expect(inferRuntimePrimitive({ name: '办公椅', tags: ['带轮子'] })).toBe('chair');
+    expect(inferRuntimePrimitive({ name: '原木色衣柜', tags: ['收纳'] })).toBe('cabinet');
+  });
+
+  it('loads Draco from the path shared by local preview and static deployment', () => {
+    const source = readFileSync('web/prototype/pages/my-home/index.html', 'utf8');
+
+    expect(source).toContain("setDecoderPath('/draco/')");
+    expect(source).not.toContain("setDecoderPath('/vendor/three-addons/libs/draco/')");
+  });
+});

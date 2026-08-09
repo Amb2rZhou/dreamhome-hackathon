@@ -104,6 +104,47 @@ def _assets_at(video_id: str, t: float) -> list[dict]:
     return [item for _, item in sorted(best.values(), key=lambda x: x[0])]
 
 
+def find_exact_asset(video_id: str, t: float, bbox: list[float],
+                     track_id: Optional[str] = None) -> Optional[dict]:
+    """Resolve a deterministic same-object binding before any new generation.
+
+    A caller-supplied track is the strongest identity signal, but is accepted
+    only when it belongs to the requested video and points at a ready canonical
+    asset.  Otherwise the existing same-frame annotation/track IoU contract is
+    used.  Label similarity is deliberately excluded: it remains a suggestion
+    that requires an explicit user decision.
+    """
+    if track_id:
+        track = db.get_track(track_id)
+        if track and track.get("video_id") == video_id and track.get("asset_id"):
+            asset = db.get_asset(track["asset_id"])
+            if asset and asset.get("status") == "ready":
+                return {
+                    "asset": asset,
+                    "source": "track",
+                    "iou": 1.0,
+                    "track_id": track_id,
+                }
+
+    best_item, best_iou = None, 0.0
+    for item in _assets_at(video_id, t):
+        value = _iou(bbox, item["bbox"])
+        if value > best_iou:
+            best_item, best_iou = item, value
+    if best_item is None or best_iou <= IOU_THRESHOLD:
+        return None
+    asset = db.get_asset(best_item["asset_id"])
+    if not asset or asset.get("status") != "ready":
+        return None
+    return {
+        "asset": asset,
+        "source": best_item["source"],
+        "iou": round(best_iou, 4),
+        "bbox": best_item["bbox"],
+        "track_id": None,
+    }
+
+
 @router.get("/{video_id}/assets_at")
 def assets_at(video_id: str, t: float = Query(..., ge=0.0)):
     """t 时刻画面里已生成的资产(track 插值 bbox + 手动标注 bbox)。"""
@@ -129,9 +170,8 @@ def match_annotation(video_id: str, body: MatchIn):
 
     best_item, best_iou = None, 0.0
     for item in _assets_at(video_id, body.t):
-        v = _iou(body.bbox, item["bbox"])
-        if v > best_iou:
-            best_item, best_iou = item, v
-
+        value = _iou(body.bbox, item["bbox"])
+        if value > best_iou:
+            best_item, best_iou = item, value
     matched = best_item if best_iou > IOU_THRESHOLD else None
     return {"matched": matched, "iou": round(best_iou, 4)}

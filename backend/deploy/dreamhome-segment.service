@@ -1,0 +1,17 @@
+[Unit]
+Description=DreamHome DashScope completion adapter
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/dreamhome/backend
+EnvironmentFile=-/etc/dreamhome/backend.env
+Environment=PYTHONPATH=/opt/dreamhome/backend
+ExecStart=/opt/dreamhome/.venv/bin/uvicorn segment_api:app --host 127.0.0.1 --port 8002
+Restart=always
+RestartSec=3
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target

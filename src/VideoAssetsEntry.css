@@ -1,0 +1,72 @@
+.video-assets-entry {
+  position: absolute;
+  z-index: 10;
+  left: 14px;
+  bottom: 205px;
+  min-height: 44px;
+  max-width: calc(100% - 94px);
+  padding: 0 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(255, 255, 255, .44);
+  border-radius: 999px;
+  color: #20261f;
+  background: rgba(255, 255, 255, .9);
+  box-shadow: 0 7px 18px rgba(8, 12, 9, .2);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+  backdrop-filter: blur(14px) saturate(120%);
+  touch-action: manipulation;
+  transition: transform .18s ease, background .18s ease;
+}
+.video-assets-entry:active { transform: scale(.97); }
+.video-assets-entry:focus-visible { outline: 3px solid #f2b94b; outline-offset: 2px; }
+.video-assets-entry svg {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 19px;
+  fill: rgba(235, 173, 55, .13);
+  stroke: #7a5a1c;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.video-assets-entry span { font-size: 12px; font-weight: 800; white-space: nowrap; }
+.video-assets-entry b {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #fff;
+  background: #30372f;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.video-assets-entry i { color: #687067; font-size: 20px; font-style: normal; line-height: 1; }
+.video-assets-saved {
+  position: absolute;
+  z-index: 90;
+  left: 50%;
+  bottom: 148px;
+  min-height: 36px;
+  padding: 8px 13px;
+  display: grid;
+  place-items: center;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(35, 42, 35, .94);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .24);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  animation: video-assets-notice-in .2s ease-out both;
+}
+@keyframes video-assets-notice-in {
+  from { opacity: 0; transform: translate(-50%, 6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .video-assets-entry, .video-assets-saved { animation: none; transition: none; }
+}

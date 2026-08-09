@@ -12,6 +12,7 @@ import uuid
 from typing import Any, Optional
 
 from .config import settings
+from .migrations import apply_compat_migrations
 
 _lock = threading.Lock()
 _conn: Optional[sqlite3.Connection] = None
@@ -38,6 +39,14 @@ CREATE TABLE IF NOT EXISTS tracks(
   keyframe_masks_json TEXT NOT NULL DEFAULT '[]',
   best_frame_t REAL NOT NULL DEFAULT 0,
   asset_id     TEXT,                        -- NULL = 检测到但未入库(可圈选)
+  confidence   REAL,                        -- 轨迹检测/跟踪置信度
+  review_status TEXT NOT NULL DEFAULT 'unreviewed',
+  version      INTEGER NOT NULL DEFAULT 1,
+  source       TEXT NOT NULL DEFAULT 'legacy',
+  binding_confidence REAL,                  -- track -> canonical asset 映射置信度
+  binding_review_status TEXT NOT NULL DEFAULT 'unreviewed',
+  binding_version INTEGER NOT NULL DEFAULT 1,
+  binding_source TEXT NOT NULL DEFAULT 'legacy',
   created_at   REAL NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_tracks_video ON tracks(video_id);
@@ -64,6 +73,51 @@ CREATE TABLE IF NOT EXISTS user_library(
   added_at REAL NOT NULL,
   PRIMARY KEY(user_id, asset_id)
 );
+CREATE TABLE IF NOT EXISTS home_projects(
+  project_id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  name TEXT NOT NULL DEFAULT '',
+  schema_version INTEGER NOT NULL DEFAULT 3,
+  source_json TEXT NOT NULL DEFAULT '{}',
+  envelope_json TEXT NOT NULL DEFAULT '{}',
+  walls_json TEXT NOT NULL DEFAULT '[]',
+  rooms_json TEXT NOT NULL DEFAULT '[]',
+  window_slots_json TEXT NOT NULL DEFAULT '[]',
+  finishes_json TEXT NOT NULL DEFAULT '{}',
+  created_at REAL NOT NULL,
+  updated_at REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_home_projects_user ON home_projects(user_id, updated_at);
+CREATE TABLE IF NOT EXISTS home_placements(
+  placement_id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  asset_id TEXT NOT NULL,
+  room_id TEXT NOT NULL DEFAULT '',
+  position_json TEXT NOT NULL DEFAULT '{}',
+  rotation_json TEXT NOT NULL DEFAULT '{}',
+  scale_json TEXT NOT NULL DEFAULT '{}',
+  custom_size_json TEXT,
+  visible INTEGER NOT NULL DEFAULT 1,
+  created_at REAL NOT NULL,
+  updated_at REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_home_placements_project ON home_placements(project_id);
+CREATE TABLE IF NOT EXISTS home_project_versions(
+  version_id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  revision INTEGER NOT NULL,
+  document_json TEXT NOT NULL,
+  created_at REAL NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_home_versions_revision ON home_project_versions(project_id, revision);
+CREATE TABLE IF NOT EXISTS generation_jobs(
+  job_id TEXT PRIMARY KEY,
+  document_json TEXT NOT NULL,
+  request_json TEXT NOT NULL DEFAULT '{}',
+  created_at REAL NOT NULL,
+  updated_at REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_generation_jobs_updated ON generation_jobs(updated_at);
 """
 
 
@@ -75,6 +129,7 @@ def get_conn() -> sqlite3.Connection:
             _conn = sqlite3.connect(settings.DB_PATH, check_same_thread=False)
             _conn.row_factory = sqlite3.Row
             _conn.executescript(_SCHEMA)
+            apply_compat_migrations(_conn)
             _conn.commit()
         return _conn
 
@@ -100,6 +155,60 @@ def _row(sql: str, params: tuple = ()) -> Optional[dict]:
 
 def new_id(prefix: str) -> str:
     return f"{prefix}_{uuid.uuid4().hex[:12]}"
+
+
+# ---- durable generation jobs ----
+
+def upsert_generation_job(job_id: str, document: dict, request: Optional[dict] = None) -> None:
+    now = time.time()
+    existing = _row("SELECT request_json,created_at FROM generation_jobs WHERE job_id=?", (job_id,))
+    request_json = json.dumps(
+        request if request is not None else json.loads(existing["request_json"] or "{}")
+        if existing else {},
+        ensure_ascii=False,
+    )
+    created_at = existing["created_at"] if existing else now
+    _exec(
+        "INSERT INTO generation_jobs(job_id,document_json,request_json,created_at,updated_at)"
+        " VALUES(?,?,?,?,?)"
+        " ON CONFLICT(job_id) DO UPDATE SET document_json=excluded.document_json,"
+        " request_json=excluded.request_json,updated_at=excluded.updated_at",
+        (
+            job_id,
+            json.dumps(document, ensure_ascii=False),
+            request_json,
+            created_at,
+            now,
+        ),
+    )
+
+
+def get_generation_job(job_id: str) -> Optional[dict]:
+    row = _row("SELECT * FROM generation_jobs WHERE job_id=?", (job_id,))
+    if not row:
+        return None
+    return {
+        "job": json.loads(row["document_json"]),
+        "request": json.loads(row["request_json"] or "{}"),
+        "created_at": row["created_at"],
+        "updated_at": row["updated_at"],
+    }
+
+
+def list_generation_jobs(*, include_terminal: bool = True) -> list[dict]:
+    rows = _rows("SELECT * FROM generation_jobs ORDER BY created_at")
+    result = []
+    for row in rows:
+        document = json.loads(row["document_json"])
+        if not include_terminal and document.get("status") in {"succeeded", "failed"}:
+            continue
+        result.append({
+            "job": document,
+            "request": json.loads(row["request_json"] or "{}"),
+            "created_at": row["created_at"],
+            "updated_at": row["updated_at"],
+        })
+    return result
 
 
 # ---- videos ----
@@ -133,13 +242,22 @@ def set_video_status(video_id: str, status: str, index_source: str = "") -> None
 
 def insert_track(video_id: str, category: str, frames: list[dict], *,
                  t_start: float = 0, t_end: float = 0, best_frame_t: float = 0,
-                 keyframe_masks: Optional[list] = None, asset_id: Optional[str] = None) -> str:
+                 keyframe_masks: Optional[list] = None, asset_id: Optional[str] = None,
+                 confidence: Optional[float] = None,
+                 review_status: str = "unreviewed", version: int = 1,
+                 source: str = "legacy", binding_confidence: Optional[float] = None,
+                 binding_review_status: str = "unreviewed",
+                 binding_version: int = 1, binding_source: str = "legacy") -> str:
     tid = new_id("trk")
     _exec(
         "INSERT INTO tracks(track_id,video_id,category,t_start,t_end,frames_json,"
-        "keyframe_masks_json,best_frame_t,asset_id,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)",
+        "keyframe_masks_json,best_frame_t,asset_id,confidence,review_status,version,source,"
+        "binding_confidence,binding_review_status,binding_version,binding_source,created_at) "
+        "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (tid, video_id, category, t_start, t_end, json.dumps(frames),
-         json.dumps(keyframe_masks or []), best_frame_t, asset_id, time.time()),
+         json.dumps(keyframe_masks or []), best_frame_t, asset_id, confidence,
+         review_status, version, source, binding_confidence, binding_review_status,
+         binding_version, binding_source, time.time()),
     )
     return tid
 
@@ -160,12 +278,31 @@ def get_track(track_id: str) -> Optional[dict]:
     return r
 
 
-def bind_track_asset(track_id: str, asset_id: str) -> None:
-    _exec("UPDATE tracks SET asset_id=? WHERE track_id=?", (asset_id, track_id))
+def bind_track_asset(track_id: str, asset_id: str, *,
+                     binding_review_status: str = "unreviewed",
+                     binding_source: str = "manual",
+                     binding_confidence: Optional[float] = None) -> None:
+    """Bind a track to a canonical asset and invalidate stale review metadata.
+
+    A binding is a versioned relation, not a property of the canonical asset.
+    Rebinding therefore bumps ``binding_version`` even when legacy callers do
+    not supply quality metadata.  Confidence is deliberately nullable: manual
+    confirmation is not an AI score.
+    """
+    _exec(
+        "UPDATE tracks SET asset_id=?,binding_confidence=?,"
+        "binding_review_status=?,binding_version=binding_version+1,"
+        "binding_source=? WHERE track_id=?",
+        (asset_id, binding_confidence, binding_review_status, binding_source, track_id),
+    )
 
 
 def rebind_tracks(from_asset: str, to_asset: str) -> None:
-    _exec("UPDATE tracks SET asset_id=? WHERE asset_id=?", (to_asset, from_asset))
+    _exec(
+        "UPDATE tracks SET asset_id=?,binding_version=binding_version+1,"
+        "binding_source='catalog_merge' WHERE asset_id=?",
+        (to_asset, from_asset),
+    )
 
 
 # ---- assets ----

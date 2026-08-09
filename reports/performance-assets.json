@@ -1,0 +1,394 @@
+{
+  "schemaVersion": 1,
+  "scope": [
+    "public",
+    "source-assets/mascot-motion",
+    "web/prototype/assets",
+    "web/prototype/pages/discover/app/assets"
+  ],
+  "totalsByKind": {
+    "css": {
+      "files": 1,
+      "bytes": 63049
+    },
+    "font": {
+      "files": 1,
+      "bytes": 2082964
+    },
+    "glb": {
+      "files": 222,
+      "bytes": 47621568
+    },
+    "image": {
+      "files": 543,
+      "bytes": 44676436
+    },
+    "js": {
+      "files": 6,
+      "bytes": 1451025
+    },
+    "runtime-model": {
+      "files": 4,
+      "bytes": 71312512
+    },
+    "video": {
+      "files": 20,
+      "bytes": 60122155
+    }
+  },
+  "mascot": {
+    "roots": [
+      "public/mascot-motion",
+      "web/prototype/assets/mascot"
+    ],
+    "inventory": [
+      {
+        "path": "public/mascot-motion/cold-start.web.mp4",
+        "bytes": 989042,
+        "kind": "video",
+        "sha256": "8809f1d905d7924cde925324587f1f2709231ef8d8e587d148b82ba0bda0d03c",
+        "references": []
+      },
+      {
+        "path": "public/mascot-motion/collect-ready.png",
+        "bytes": 1378585,
+        "kind": "image",
+        "sha256": "d0238ae5db78b501480558ef80f0380ce06441847940325befc6d158f5e19042",
+        "references": [
+          "src/Mascot.tsx"
+        ]
+      },
+      {
+        "path": "public/mascot-motion/collect.png",
+        "bytes": 1371488,
+        "kind": "image",
+        "sha256": "9fa69991cb6d5bc579b0ee7f0abba39cba850c167bfc868df656595bb02addc5",
+        "references": [
+          "src/Mascot.tsx"
+        ]
+      },
+      {
+        "path": "public/mascot-motion/complete.web.mp4",
+        "bytes": 3339176,
+        "kind": "video",
+        "sha256": "2c6e647d454c1a9d911c099e623406186cba30b161fc8864a027c14d6a93c5d8",
+        "references": []
+      },
+      {
+        "path": "public/mascot-motion/guide-checklist-v1.png",
+        "bytes": 1016014,
+        "kind": "image",
+        "sha256": "80f9d333a1426f74ba171e7242ccca252775a2f9d1456d497feb464387371eb4",
+        "references": [
+          "src/App.tsx"
+        ]
+      },
+      {
+        "path": "public/mascot-motion/guide-pointer-v1.png",
+        "bytes": 1336773,
+        "kind": "image",
+        "sha256": "d49ca90d492e6f1389ccd473c4a215d26c2f2b4f01759c5f249d996c38469d19",
+        "references": [
+          "src/App.tsx"
+        ]
+      },
+      {
+        "path": "public/mascot-motion/idle-belt.web.mp4",
+        "bytes": 919526,
+        "kind": "video",
+        "sha256": "06503dd9c38dd5679a8e17ee33b0703f47b6d53145dcc0e02152781777f3bb58",
+        "references": []
+      },
+      {
+        "path": "public/mascot-motion/idle-magnifier.web.mp4",
+        "bytes": 1777899,
+        "kind": "video",
+        "sha256": "08cb9487cc9f3c8a9bec51c73234e6cc857088331572110c3dfc4eb0a49b159e",
+        "references": []
+      },
+      {
+        "path": "public/mascot-motion/idle.web.mp4",
+        "bytes": 520068,
+        "kind": "video",
+        "sha256": "28542c8dc0242321ae4696233c1f95559a2db74b8e174797069563f2e46510f1",
+        "references": []
+      },
+      {
+        "path": "public/mascot-motion/working-drawing.web.mp4",
+        "bytes": 2992100,
+        "kind": "video",
+        "sha256": "55f20084d542d18bd6792ae59661fc9324ea7560e86637b83ad0df24859d4259",
+        "references": []
+      },
+      {
+        "path": "public/mascot-motion/working-hammer.web.mp4",
+        "bytes": 2598420,
+        "kind": "video",
+        "sha256": "60f8a5d9a2dd58cc2047179349a04c697b105980d835c5c4f0814c94e4c00cfc",
+        "references": []
+      },
+      {
+        "path": "public/mascot-motion/working.web.mp4",
+        "bytes": 1967320,
+        "kind": "video",
+        "sha256": "de360acc57a400a42ec7a5c227f01f31fa444a8846b2631064da9e3f409be49e",
+        "references": []
+      },
+      {
+        "path": "web/prototype/assets/mascot/mascot-happy.png",
+        "bytes": 184778,
+        "kind": "image",
+        "sha256": "7278c8b9238ef536c334273b5edb894a67c9682d94ebaefb612241e09472e5f2",
+        "references": [
+          "src/Mascot.tsx",
+          "web/prototype/pages/inspiration-library/index.html",
+          "web/prototype/pages/my-favorites/index.html"
+        ]
+      },
+      {
+        "path": "web/prototype/assets/mascot/mascot-idle.png",
+        "bytes": 3112517,
+        "kind": "image",
+        "sha256": "eda3df6e2a67750f54a0c10ca79336ec3d949d2c7ce4b555a30acff8ad2a5a7d",
+        "references": []
+      },
+      {
+        "path": "web/prototype/assets/mascot/mascot-ui.png",
+        "bytes": 237782,
+        "kind": "image",
+        "sha256": "64d031884bffa146e607825be6644fdcb150d89bad9180e30e418ebf88dc85e8",
+        "references": [
+          "web/prototype/pages/my-home/index.html"
+        ]
+      },
+      {
+        "path": "web/prototype/assets/mascot/motion/assembly-loading.webm",
+        "bytes": 1185928,
+        "kind": "video",
+        "sha256": "a1df9754f9a49b21e091bc6896a5db3292c5bedc037ea59a8c52e0b263cd0d57",
+        "references": [
+          "web/prototype/pages/my-home/index.html"
+        ]
+      },
+      {
+        "path": "web/prototype/assets/mascot/motion/working-drawing.webm",
+        "bytes": 1896411,
+        "kind": "video",
+        "sha256": "e8213cfc4c30554ed997643ebd8f2858334faf338295b7f11b6d7f5ba34f7d92",
+        "references": [
+          "web/prototype/_archive/draw/index.html"
+        ]
+      },
+      {
+        "path": "web/prototype/assets/mascot/motion/working-hammer.webm",
+        "bytes": 1439734,
+        "kind": "video",
+        "sha256": "7d9e2b36678d91db8b6961d917f4539e23bf45421684ab8194de38a44cc679bd",
+        "references": [
+          "web/prototype/pages/capture/index.html"
+        ]
+      },
+      {
+        "path": "web/prototype/assets/mascot/states/mascot-thinking.png",
+        "bytes": 2541142,
+        "kind": "image",
+        "sha256": "af6d3b83323048c101819f4b888fcc1de850f27cc4d8d49ec56f295b24d11b84",
+        "references": [
+          "web/prototype/pages/capture/index.html"
+        ]
+      },
+      {
+        "path": "web/prototype/assets/mascot/states/mascot-working.png",
+        "bytes": 2999111,
+        "kind": "image",
+        "sha256": "05fba838804ff30bf0fce8beee14c04722b316f7ed50efcd055482de1309ac66",
+        "references": [
+          "src/Mascot.tsx"
+        ]
+      }
+    ],
+    "exactDuplicates": [],
+    "referenceSummary": {
+      "mainAppDynamicMp4": [
+        "public/mascot-motion/cold-start.web.mp4",
+        "public/mascot-motion/idle.web.mp4",
+        "public/mascot-motion/idle-magnifier.web.mp4",
+        "public/mascot-motion/idle-belt.web.mp4",
+        "public/mascot-motion/working.web.mp4",
+        "public/mascot-motion/working-hammer.web.mp4",
+        "public/mascot-motion/working-drawing.web.mp4",
+        "public/mascot-motion/complete.web.mp4"
+      ],
+      "failureFallbackImages": [
+        "public/mascot-initial.png",
+        "public/mascot-happy.png",
+        "public/mascot-working.png"
+      ],
+      "retainedUnpublishedSources": [
+        "source-assets/mascot-motion/cold-start.mp4",
+        "source-assets/mascot-motion/idle.mp4",
+        "source-assets/mascot-motion/idle-magnifier.mp4",
+        "source-assets/mascot-motion/idle-belt.mp4",
+        "source-assets/mascot-motion/working.mp4",
+        "source-assets/mascot-motion/working-hammer.mp4",
+        "source-assets/mascot-motion/working-drawing.mp4",
+        "source-assets/mascot-motion/complete.mp4"
+      ],
+      "logicalOverlapNotByteDuplicates": [
+        {
+          "state": "working-hammer",
+          "mainApp": "public/mascot-motion/working-hammer.web.mp4",
+          "prototype": "web/prototype/assets/mascot/motion/working-hammer.webm"
+        },
+        {
+          "state": "working-drawing",
+          "mainApp": "public/mascot-motion/working-drawing.web.mp4",
+          "prototype": "web/prototype/assets/mascot/motion/working-drawing.webm"
+        },
+        {
+          "state": "assembly-loading",
+          "sourceOnly": "source-assets/mascot-motion/assembly-loading.mp4",
+          "prototype": "web/prototype/assets/mascot/motion/assembly-loading.webm"
+        }
+      ]
+    },
+    "compression": {
+      "items": [
+        {
+          "name": "cold-start",
+          "original": "source-assets/mascot-motion/cold-start.mp4",
+          "optimized": "public/mascot-motion/cold-start.web.mp4",
+          "beforeBytes": 2684966,
+          "afterBytes": 989042,
+          "savedBytes": 1695924,
+          "savedPercent": 63.16
+        },
+        {
+          "name": "idle",
+          "original": "source-assets/mascot-motion/idle.mp4",
+          "optimized": "public/mascot-motion/idle.web.mp4",
+          "beforeBytes": 1568079,
+          "afterBytes": 520068,
+          "savedBytes": 1048011,
+          "savedPercent": 66.83
+        },
+        {
+          "name": "idle-magnifier",
+          "original": "source-assets/mascot-motion/idle-magnifier.mp4",
+          "optimized": "public/mascot-motion/idle-magnifier.web.mp4",
+          "beforeBytes": 5347849,
+          "afterBytes": 1777899,
+          "savedBytes": 3569950,
+          "savedPercent": 66.75
+        },
+        {
+          "name": "idle-belt",
+          "original": "source-assets/mascot-motion/idle-belt.mp4",
+          "optimized": "public/mascot-motion/idle-belt.web.mp4",
+          "beforeBytes": 2489023,
+          "afterBytes": 919526,
+          "savedBytes": 1569497,
+          "savedPercent": 63.06
+        },
+        {
+          "name": "working",
+          "original": "source-assets/mascot-motion/working.mp4",
+          "optimized": "public/mascot-motion/working.web.mp4",
+          "beforeBytes": 5738364,
+          "afterBytes": 1967320,
+          "savedBytes": 3771044,
+          "savedPercent": 65.72
+        },
+        {
+          "name": "working-hammer",
+          "original": "source-assets/mascot-motion/working-hammer.mp4",
+          "optimized": "public/mascot-motion/working-hammer.web.mp4",
+          "beforeBytes": 8047202,
+          "afterBytes": 2598420,
+          "savedBytes": 5448782,
+          "savedPercent": 67.71
+        },
+        {
+          "name": "working-drawing",
+          "original": "source-assets/mascot-motion/working-drawing.mp4",
+          "optimized": "public/mascot-motion/working-drawing.web.mp4",
+          "beforeBytes": 9820251,
+          "afterBytes": 2992100,
+          "savedBytes": 6828151,
+          "savedPercent": 69.53
+        },
+        {
+          "name": "complete",
+          "original": "source-assets/mascot-motion/complete.mp4",
+          "optimized": "public/mascot-motion/complete.web.mp4",
+          "beforeBytes": 10561172,
+          "afterBytes": 3339176,
+          "savedBytes": 7221996,
+          "savedPercent": 68.38
+        }
+      ],
+      "totals": {
+        "beforeBytes": 46256906,
+        "afterBytes": 15103551,
+        "savedBytes": 31153355,
+        "savedPercent": 67.35
+      }
+    },
+    "deliveryStrategy": {
+      "mainApp": "640x480 H.264 MP4 for broad browser support; original MP4/MOV retained as sources",
+      "prototypeWebm": [
+        "web/prototype/assets/mascot/motion/assembly-loading.webm",
+        "web/prototype/assets/mascot/motion/working-drawing.webm",
+        "web/prototype/assets/mascot/motion/working-hammer.webm"
+      ],
+      "duplicatePolicy": "Keep referenced prototype WebM in place; do not copy it into public and create another binary duplicate",
+      "failurePolicy": "Existing small transparent mascot PNG loads only after the active video fails"
+    },
+    "loading": {
+      "before": {
+        "normalRequestCount": 2,
+        "assets": [
+          "original idle MP4",
+          "active feed video metadata"
+        ]
+      },
+      "after": {
+        "normalRequestCount": 2,
+        "assets": [
+          "optimized idle MP4",
+          "active feed video metadata"
+        ]
+      },
+      "failureFallbackAdditionalRequests": 1,
+      "deferredStates": [
+        "cold-start",
+        "idle-magnifier",
+        "idle-belt",
+        "working",
+        "working-hammer",
+        "working-drawing",
+        "complete"
+      ]
+    }
+  },
+  "mediaBehavior": {
+    "feedVideo": {
+      "preload": "metadata",
+      "nextVideoPrefetch": "metadata after current canplay plus 1500ms",
+      "posters": {
+        "files": 9,
+        "bytes": 460100
+      },
+      "integrationPatch": "reports/feed-video-poster.integration.patch"
+    },
+    "glb": {
+      "load": "drawer-open and active-item only",
+      "module": "lazy import",
+      "failureFallback": "thumbnail remains visible"
+    }
+  },
+  "pathCheck": {
+    "checkedTextFiles": 109,
+    "failures": []
+  }
+}

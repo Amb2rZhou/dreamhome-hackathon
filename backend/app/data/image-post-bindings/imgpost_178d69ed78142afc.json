@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "post_id": "imgpost_178d69ed78142afc",
+  "bindings": [
+    {"asset_id":"ast_ad5525ea3cd7","slide_index":0,"bbox":[0.48,0.52,0.2,0.13],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_ad5525ea3cd7","slide_index":1,"bbox":[0.60,0.45,0.30,0.22],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_ad5525ea3cd7","slide_index":2,"bbox":[0.24,0.13,0.56,0.30],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_aa869bdbc7df","slide_index":1,"bbox":[0.49,0.02,0.21,0.28],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_aa869bdbc7df","slide_index":0,"bbox":[0.43,0.24,0.22,0.20],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_fe736b8ec699","slide_index":0,"bbox":[0.62,0.54,0.34,0.20],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_fe736b8ec699","slide_index":1,"bbox":[0.66,0.60,0.34,0.32],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_fe736b8ec699","slide_index":8,"bbox":[0.00,0.27,0.42,0.43],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_afd6f3601580","slide_index":2,"bbox":[0.27,0.48,0.48,0.38],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_afd6f3601580","slide_index":0,"bbox":[0.40,0.56,0.18,0.15],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_afd6f3601580","slide_index":1,"bbox":[0.34,0.50,0.30,0.22],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_ec7bd4765edf","slide_index":4,"bbox":[0.34,0.47,0.45,0.22],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_9744402b7797","slide_index":4,"bbox":[0.27,0.55,0.19,0.24],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_ec584a8d45a8","slide_index":4,"bbox":[0.74,0.56,0.20,0.24],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_82bd6f3c7fb4","slide_index":4,"bbox":[0.48,0.09,0.20,0.29],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_82bd6f3c7fb4","slide_index":0,"bbox":[0.77,0.00,0.23,0.16],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_53378341afb0","slide_index":6,"bbox":[0.04,0.05,0.82,0.88],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_53378341afb0","slide_index":0,"bbox":[0.04,0.27,0.33,0.38],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_53378341afb0","slide_index":1,"bbox":[0.00,0.15,0.42,0.40],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_53378341afb0","slide_index":7,"bbox":[0.81,0.10,0.19,0.62],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_f26609d506f5","slide_index":8,"bbox":[0.43,0.35,0.43,0.46],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_f26609d506f5","slide_index":0,"bbox":[0.86,0.57,0.13,0.18],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_66867682801e","slide_index":9,"bbox":[0.08,0.56,0.76,0.30],"polygon":[],"status":"ready","source":"verified_demo_baseline"},
+    {"asset_id":"ast_9cc339d8da1f","slide_index":9,"bbox":[0.80,0.42,0.11,0.13],"polygon":[],"status":"ready","source":"verified_demo_baseline"}
+  ]
+}

@@ -12,11 +12,17 @@
     body { margin:0; min-height:100vh; background:linear-gradient(90deg,#faf4e6,#fefdf8 48%,#f8f2e3); color:var(--dh-fg-primary); font-family:var(--dh-font-sans); }
     .preview-stage { min-height:100vh; display:grid; place-items:center; padding:28px 18px; box-sizing:border-box; }
     .draw-app { height:calc(100% - 50px); padding:0 16px; display:flex; flex-direction:column; box-sizing:border-box; overflow:hidden; }
-    .draw-header { display:grid; place-items:center; min-height:42px; padding-top:3px; }
+    .draw-header { position:relative; display:grid; place-items:center; min-height:42px; padding-top:3px; }
     /* 主页面顶栏：状态栏 + 标题栏统一为底部导航同色（白），营造真机 app 顶栏 */
     .dh-screen.dh-topwhite .dh-statusbar { background: var(--dh-bg-surface); }
     .dh-screen.dh-topwhite .draw-header { background: var(--dh-bg-surface); margin:0 -16px; padding-left:16px; padding-right:16px; box-shadow:0 2px 6px rgba(175,135,65,.06); }
     .draw-title { margin:0; font-size:16px; letter-spacing:0; font-weight:var(--dh-font-weight-heavy); }
+    .service-status { position:absolute; right:0; top:50%; transform:translateY(-50%); display:inline-flex; align-items:center; gap:4px; margin:0; color:var(--dh-fg-muted); font-size:9px; font-weight:var(--dh-font-weight-bold); }
+    .service-status::before { content:""; width:6px; height:6px; border-radius:50%; background:#c9bda3; box-shadow:0 0 0 2px rgba(201,189,163,.18); }
+    .service-status[data-state="ready"] { color:#567053; }
+    .service-status[data-state="ready"]::before { background:#6f936d; box-shadow:0 0 0 2px rgba(111,147,109,.18); }
+    .service-status[data-state="failed"] { color:#a85b4b; }
+    .service-status[data-state="failed"]::before { background:#b96a58; box-shadow:0 0 0 2px rgba(185,106,88,.18); }
     .draw-sub { margin:1px 0 0; font-size:10px; font-weight:var(--dh-font-weight-semibold); color:var(--dh-fg-muted); }
     .draw-content { flex:1; min-height:0; display:flex; flex-direction:column; padding:10px 0 var(--dh-tabbar-safe-space); overflow:hidden; }
     .phase { display:none; flex:1; min-height:0; flex-direction:column; }
@@ -27,12 +33,8 @@
     .photo-wrap { position:relative; flex:1; min-height:0; border:1px solid rgba(117,139,113,.2); border-radius:18px; background:linear-gradient(150deg,#ffffff,#fefaf2); box-shadow:var(--dh-shadow-soft); overflow:hidden; }
     .photo-empty { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:0 22px; }
     .photo-hint { margin:0; text-align:center; font-size:12px; line-height:1.65; font-weight:var(--dh-font-weight-semibold); color:var(--dh-fg-muted); }
-    /* 拍摄小贴士：直接提升单图重建成图率（腿/底座露出、背景干净），是"漏结构"最高性价比的解 */
-    .photo-tips { margin:2px 0 0; padding:0; list-style:none; display:flex; flex-direction:column; gap:7px; width:100%; max-width:236px; }
-    .photo-tips li { display:flex; align-items:flex-start; gap:7px; text-align:left; font-size:11px; line-height:1.45; font-weight:var(--dh-font-weight-semibold); color:var(--dh-fg-muted); }
-    .photo-tips li svg { flex:0 0 auto; width:14px; height:14px; margin-top:1px; color:var(--dh-color-sage-600); }
     .photo-empty.is-hidden { display:none; }
-    /* 包公球占位：待生成「包公球拍照」图后替换 src 即可 */
+    /* 包工球占位：待生成「包工球拍照」图后替换 src 即可 */
     .photo-mascot { width:96px; height:96px; object-fit:contain; transform-origin:50% 88%; animation:mascot-sway 2.6s ease-in-out infinite; }
     @keyframes mascot-sway { 0%,100%{transform:rotate(-2.2deg)} 50%{transform:rotate(2.2deg)} }
     .photo-preview { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
@@ -84,10 +86,11 @@
     .result-list { width:100%; max-width:264px; box-sizing:border-box; display:flex; flex-direction:column; gap:9px; max-height:340px; overflow-y:auto; padding:2px; scrollbar-width:none; }
     .result-list::-webkit-scrollbar { display:none; }
     .result-item { display:flex; align-items:center; gap:11px; padding:9px; border:1px solid rgba(117,139,113,.2); border-radius:16px; background:rgba(255,255,255,.92); box-shadow:var(--dh-shadow-soft); }
-    .result-visual { position:relative; width:66px; height:66px; flex:none; border:1px solid var(--dh-border-soft); border-radius:12px; background:linear-gradient(145deg,#f7edda,#fffdf6); overflow:hidden; }
+    .result-visual { position:relative; width:84px; height:84px; flex:none; border:1px solid var(--dh-border-soft); border-radius:12px; background:linear-gradient(145deg,#f7edda,#fffdf6); overflow:hidden; cursor:grab; touch-action:none; }
+    .result-visual:active { cursor:grabbing; }
+    .result-model-viewer { width:100%; height:100%; display:block; }
+    .result-model-hint { position:absolute; left:50%; bottom:3px; transform:translateX(-50%); padding:2px 5px; border-radius:999px; background:rgba(255,253,247,.78); color:#8b765a; font-size:7px; font-weight:var(--dh-font-weight-bold); white-space:nowrap; pointer-events:none; }
     .result-visual .object { position:absolute; left:50%; bottom:11px; transform:translateX(-50%) scale(.92); transform-origin:bottom center; background:var(--object); box-shadow:inset 0 8px rgba(255,255,255,.18); }
-    /* 渲染出的组件缩略图(对齐平台资产:透明底、组件本身) */
-    .result-visual img.result-thumb { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; padding:4px; box-sizing:border-box; }
     .object--sofa{width:47px;height:22px;border-radius:12px 12px 5px 5px}.object--sofa::before{content:"";position:absolute;left:9px;top:-12px;width:29px;height:16px;border-radius:9px 9px 3px 3px;background:var(--accent)}
     .object--chair{width:25px;height:23px;border-radius:7px 7px 4px 4px}.object--chair::before{content:"";position:absolute;left:4px;top:-14px;width:17px;height:18px;border-radius:7px 7px 2px 2px;background:var(--accent)}
     .object--table{width:42px;height:15px;border-radius:50%;bottom:24px}.object--table::before{content:"";position:absolute;left:19px;top:12px;width:4px;height:20px;background:var(--accent)}
@@ -118,6 +121,7 @@
         <div class="draw-app">
           <header class="draw-header">
             <h1 class="draw-title">拍一张</h1>
+            <p class="service-status" id="serviceStatus" data-state="checking">连接 3D 服务</p>
           </header>
           <div class="draw-content">
 
@@ -125,15 +129,11 @@
             <section class="phase is-active" id="capturePhase" aria-label="拍照或选图">
               <div class="photo-wrap">
                 <div class="photo-empty" id="photoEmpty">
-                  <img class="photo-mascot" src="../../assets/mascot/states/mascot-thinking.png" alt="包公球在等你拍照" />
-                  <p class="photo-hint">拍一张喜欢的家具，生成 3D 组件</p>
-                  <ul class="photo-tips" aria-label="拍摄小贴士">
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>平视或略俯 45°</span></li>
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>整件家具入框</span></li>
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>背景干净，主体居中，光线均匀</span></li>
-                  </ul>
+                  <img class="photo-mascot" src="../../assets/mascot/states/mascot-thinking.png" alt="包工球在等你拍照" />
+                  <p class="photo-hint">拍一张喜欢的家具，<br />生成 3D 组件进入灵感库</p>
                 </div>
-                <img class="photo-preview" id="photoPreview" alt="已选照片" hidden />
+                <img class="photo-preview" id="photoPreview" alt="已选图片或视频封面" hidden />
+                <video class="photo-preview" id="videoPreview" muted playsinline controls hidden></video>
                 <button class="photo-reset" id="photoReset" type="button" hidden>重新选择</button>
               </div>
               <div class="capture-actions">
@@ -144,8 +144,8 @@
                 </label>
                 <label class="capture-btn">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5-4 4-2-2L3 19"/></svg>
-                  <span>从相册选择</span>
-                  <input id="galleryInput" type="file" accept="image/*" />
+                  <span>选择图片或视频</span>
+                  <input id="galleryInput" type="file" accept="image/*,video/*" />
                 </label>
               </div>
               <div class="category-row">
@@ -157,9 +157,9 @@
 
             <!-- 阶段 B · 生成中 -->
             <section class="phase gen-phase" id="genPhase" aria-live="polite">
-              <video class="gen-video" id="genOrbit" src="../../assets/mascot/motion/working-hammer.webm" autoplay muted loop playsinline aria-label="包公球正在生成组件"></video>
+              <video class="gen-video" id="genOrbit" src="../../assets/mascot/motion/working-hammer.webm" autoplay muted loop playsinline aria-label="包工球正在生成组件"></video>
               <h2 class="gen-title" id="genTitle">正在识别照片</h2>
-              <p class="gen-copy" id="genCopy">包公球正在看你拍的家居照片</p>
+              <p class="gen-copy" id="genCopy">包工球正在看你拍的家居照片</p>
               <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
               <div class="gen-actions">
                 <button class="secondary-button" id="genBack" type="button">返回</button>
@@ -189,20 +189,25 @@
     </section>
   </main>
 
-  <!-- 本地 vendor 的 model-viewer：结果页实时 3D 预览 + 离屏渲染组件缩略图（对齐平台 512² 透明渲染）。
-       小程序侧用 xr-frame 承载，此为设计规格。fal 的 GLB 无 Draco/KTX2，纯 PNG 贴图，完全离线可用。 -->
-  <script type="module" src="../../assets/vendor/model-viewer.min.js"></script>
+  <script type="importmap">{"imports":{"three":"/vendor/three.module.js","three/addons/":"/vendor/three-addons/"}}</script>
   <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+    import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
     import { FURNITURE_CATEGORIES, CATEGORY_PRIMITIVE, CATEGORY_DIMENSIONS, addUserAsset } from '../shared/asset-library-data.js';
 
     const photoEmpty = document.getElementById('photoEmpty');
     const photoPreview = document.getElementById('photoPreview');
+    const videoPreview = document.getElementById('videoPreview');
     const photoReset = document.getElementById('photoReset');
     const cameraInput = document.getElementById('cameraInput');
     const galleryInput = document.getElementById('galleryInput');
     const categoryTabs = document.getElementById('categoryTabs');
     const generateBtn = document.getElementById('generateBtn');
     const toast = document.getElementById('toast');
+    const serviceStatus = document.getElementById('serviceStatus');
 
     const phases = { capture:document.getElementById('capturePhase'), gen:document.getElementById('genPhase'), result:document.getElementById('resultPhase') };
     const genOrbit = document.getElementById('genOrbit');
@@ -217,11 +222,46 @@
     const toMyHome = document.getElementById('toMyHome');
 
     const DEFAULT_CATEGORY = FURNITURE_CATEGORIES[0].id; // 默认选中首个真实分类（列表首位、可见即高亮）
-    const state = { categories:[DEFAULT_CATEGORY], photoUrl:null, photoFile:null, hasPhoto:false, photoColor:'#9a8163', pollTimer:null, job:null, mock:false, generatedAssets:[] };
+    const ACTIVE_JOB_KEY = 'dreamhome.capture.active-job.v1';
+    const ACTIVE_JOB_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+    const state = { categories:[DEFAULT_CATEGORY], photoUrl:null, photoFile:null, hasPhoto:false, backendReady:false, photoColor:'#9a8163', pollTimer:null, pollFailures:0, job:null, generatedAssets:[] };
+    const dracoLoader = new DRACOLoader().setDecoderPath('/vendor/three-addons/libs/draco/');
+    const generatedModelLoader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).setDRACOLoader(dracoLoader);
+    const resultPreviewDisposers = [];
     let toastTimer = null;
     const showToast = (message) => { toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1600); };
     const rgbToHex = (r, g, b) => '#' + [r, g, b].map((c) => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0')).join('');
     const lighten = (hex, amount = .34) => { const n = parseInt(hex.slice(1), 16); const mix = (c) => Math.round(c + (255 - c) * amount); return '#' + [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => mix(c).toString(16).padStart(2, '0')).join(''); };
+    function readActiveJob() {
+      try {
+        const value = JSON.parse(localStorage.getItem(ACTIVE_JOB_KEY) || 'null');
+        if (!value?.jobId || !value?.submittedAt || Date.now() - value.submittedAt > ACTIVE_JOB_MAX_AGE_MS) {
+          localStorage.removeItem(ACTIVE_JOB_KEY);
+          return null;
+        }
+        return value;
+      } catch {
+        localStorage.removeItem(ACTIVE_JOB_KEY);
+        return null;
+      }
+    }
+    function persistActiveJob(job = state.job) {
+      if (!job?.job_id) return;
+      const previous = readActiveJob();
+      localStorage.setItem(ACTIVE_JOB_KEY, JSON.stringify({
+        jobId:job.job_id,
+        status:job.status || previous?.status || 'queued',
+        progress:Number(job.progress || previous?.progress || 0),
+        categoryId:state.categories[0] || previous?.categoryId || DEFAULT_CATEGORY,
+        photoColor:state.photoColor || previous?.photoColor || '#9a8163',
+        submittedAt:previous?.jobId === job.job_id ? previous.submittedAt : Date.now(),
+        updatedAt:Date.now(),
+      }));
+    }
+    function clearActiveJob() {
+      localStorage.removeItem(ACTIVE_JOB_KEY);
+      state.job = null;
+    }
 
     // 从照片提取主色（缩到小图求均值，作生成组件配色）· 小程序侧等价 tt.canvasGetImageData
     function extractPhotoColor(img) {
@@ -242,32 +282,58 @@
       } catch { return '#9a8163'; }
     }
 
-    function onPhotoChosen(file) {
+    function setImageFile(file) {
       if (!file) return;
+      clearActiveJob();
       if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
-      state.photoFile = file; // 留住原始 File，供上传后端（objectURL 不能当上传体）
+      state.photoFile = file;
       state.photoUrl = URL.createObjectURL(file);
       const img = new Image();
       img.onload = () => { state.photoColor = extractPhotoColor(img); };
       img.src = state.photoUrl;
       photoPreview.src = state.photoUrl;
       photoPreview.hidden = false;
+      videoPreview.hidden = true; videoPreview.pause(); videoPreview.removeAttribute('src');
       photoEmpty.classList.add('is-hidden');
       photoReset.hidden = false;
       state.hasPhoto = true;
-      generateBtn.disabled = false;
+      generateBtn.disabled = !state.backendReady;
+    }
+    async function onMediaChosen(file) {
+      if (!file) return;
+      if (!file.type.startsWith('video/')) { setImageFile(file); return; }
+      clearActiveJob();
+      if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
+      const sourceUrl=URL.createObjectURL(file),video=document.createElement('video');
+      video.muted=true;video.playsInline=true;video.preload='metadata';video.src=sourceUrl;
+      try {
+        await new Promise((resolve,reject)=>{video.onloadeddata=resolve;video.onerror=()=>reject(new Error('无法读取这个视频'));});
+        video.currentTime=Math.min(.2,Math.max(0,video.duration/10||0));
+        await new Promise(resolve=>{video.onseeked=resolve;setTimeout(resolve,500);});
+        const max=1280,scale=Math.min(1,max/Math.max(video.videoWidth,video.videoHeight)),canvas=document.createElement('canvas');
+        canvas.width=Math.max(1,Math.round(video.videoWidth*scale));canvas.height=Math.max(1,Math.round(video.videoHeight*scale));
+        canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);
+        const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.88));
+        if(!blob)throw new Error('无法提取视频画面');
+        state.photoFile=new File([blob],`${file.name.replace(/\.[^.]+$/,'')}-frame.jpg`,{type:'image/jpeg'});
+        state.photoColor=extractPhotoColor(canvas);state.photoUrl=sourceUrl;
+        videoPreview.src=sourceUrl;videoPreview.hidden=false;photoPreview.hidden=true;photoPreview.removeAttribute('src');
+        photoEmpty.classList.add('is-hidden');photoReset.hidden=false;state.hasPhoto=true;generateBtn.disabled=!state.backendReady;
+        showToast('已提取视频画面用于生成');
+      } catch(error) { URL.revokeObjectURL(sourceUrl);showToast(error.message||'视频读取失败'); }
     }
     function resetPhoto() {
       if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
-      state.photoUrl = null; state.hasPhoto = false; state.photoFile = null;
+      state.photoUrl = null; state.photoFile = null; state.hasPhoto = false;
       photoPreview.hidden = true; photoPreview.removeAttribute('src');
+      videoPreview.hidden = true; videoPreview.pause(); videoPreview.removeAttribute('src');
       photoEmpty.classList.remove('is-hidden');
       photoReset.hidden = true;
       generateBtn.disabled = true;
       cameraInput.value = ''; galleryInput.value = '';
     }
-    cameraInput.addEventListener('change', (event) => onPhotoChosen(event.target.files[0]));
-    galleryInput.addEventListener('change', (event) => onPhotoChosen(event.target.files[0]));
+    cameraInput.addEventListener('change', (event) => setImageFile(event.target.files[0]));
+    galleryInput.addEventListener('change', (event) => onMediaChosen(event.target.files[0]));
     photoReset.addEventListener('click', resetPhoto);
 
     // 品类控件（单选，始终保留一个）
@@ -284,254 +350,281 @@
 
     function setPhase(name) { Object.entries(phases).forEach(([key, el]) => el.classList.toggle('is-active', key === name)); }
 
-    // ---- 拍照 → 3D：后端异步 job（POST /api/photo-to-3d → 轮询 /api/jobs/{id}）----
-    // 本机预览连本地后端；部署后把 API_BASE 换成公网域名。后端不可达时自动降级为本地占位生成，页面仍可演示。
-    // 小程序侧：fetch→tt.request，FormData 上传→tt.uploadFile，本段为设计规格。
-    const API_BASE = (location.hostname === '127.0.0.1' || location.hostname === 'localhost') ? 'http://127.0.0.1:8000' : '';
-    // 后端 status(queued/running/succeeded/failed) → 本页 UI 态(queued/processing/ready/failed)
+    // ---- 拍照 → 3D：正式后端异步任务 ----
+    // 公网始终走 Vercel 同源代理，避免浏览器直连 ECS 的 mixed-content/CORS
+    // 问题；本地开发则连接本地 FastAPI。
+    const API_BASE = ['127.0.0.1', 'localhost'].includes(location.hostname)
+      ? 'http://127.0.0.1:8000'
+      : '/dreamhome-api';
     const STATUS_MAP = { queued:'queued', running:'processing', succeeded:'ready', failed:'failed' };
-    const categoryLabel = (id) => (FURNITURE_CATEGORIES.find((c) => c.id === id) || {}).label || id;
-
+    const categoryLabel = (id) => (FURNITURE_CATEGORIES.find((item) => item.id === id) || {}).label || id;
+    async function checkBackend() {
+      serviceStatus.dataset.state = 'checking';
+      serviceStatus.textContent = '连接 3D 服务';
+      try {
+        const response = await fetch(`${API_BASE}/api/health`, { cache:'no-store' });
+        if (!response.ok) throw new Error(`health ${response.status}`);
+        const health = await response.json();
+        const capabilities = health.capabilities || {};
+        const ready = health.consumer_contract === 'dreamhome-consumer-v1'
+          && capabilities.gen3d?.ready === true
+          && capabilities.completion?.ready === true
+          && capabilities.single_object_check?.ready === true
+          && capabilities.identity_check?.ready === true
+          && capabilities.material_postprocess?.ready === true;
+        if (!ready) throw new Error('pipeline not ready');
+        state.backendReady = true;
+        serviceStatus.dataset.state = 'ready';
+        serviceStatus.textContent = '3D 服务已连接';
+      } catch {
+        state.backendReady = false;
+        serviceStatus.dataset.state = 'failed';
+        serviceStatus.textContent = '3D 服务暂不可用';
+      }
+      generateBtn.disabled = !state.hasPhoto || !state.backendReady;
+    }
+    checkBackend();
+    window.addEventListener('focus', checkBackend);
     async function submitPhoto() {
-      const fd = new FormData();
-      fd.append('file', state.photoFile, state.photoFile.name || 'photo.jpg');
-      fd.append('texture', 'true');
-      fd.append('meta', JSON.stringify({ category: categoryLabel(state.categories[0]) })); // 品类作识别提示
-      const res = await fetch(`${API_BASE}/api/photo-to-3d`, { method:'POST', body: fd });
-      if (!res.ok) throw new Error(`submit ${res.status}`);
-      return res.json(); // { job_id, status }
+      if (!state.photoFile) throw new Error('请先重新选择照片');
+      const form = new FormData();
+      form.append('file', state.photoFile, state.photoFile.name || 'photo.jpg');
+      form.append('texture', 'true');
+      form.append('meta', JSON.stringify({ category:categoryLabel(state.categories[0]) }));
+      const response = await fetch(`${API_BASE}/api/photo-to-3d`, { method:'POST', body:form });
+      if (!response.ok) {
+        const detail = await response.json().catch(() => null);
+        throw new Error(detail?.detail || detail?.error || `提交失败（${response.status}）`);
+      }
+      return response.json();
     }
     async function fetchJob(jobId) {
-      const res = await fetch(`${API_BASE}/api/jobs/${jobId}`);
-      if (!res.ok) throw new Error(`poll ${res.status}`);
-      return res.json();
+      const response = await fetch(`${API_BASE}/api/jobs/${encodeURIComponent(jobId)}`, { cache:'no-store' });
+      if (!response.ok) {
+        const error = new Error(`读取生成进度失败（${response.status}）`);
+        error.status = response.status;
+        throw error;
+      }
+      return response.json();
     }
-
-    // 降级：后端不可达时的本地占位（保留原假进度，保证断网也能走完 demo）
-    const MOCK_FAILURE = false;
-    const mockService = {
-      submit() { return { id:`capture-${Math.random().toString(36).slice(2, 8)}`, startedAt:performance.now() }; },
-      poll(job) {
-        const elapsed = performance.now() - job.startedAt;
-        if (MOCK_FAILURE && elapsed > 1100) return { status:'failed', progress:60, error:'没能认出家具，换张更清晰的照片' };
-        if (elapsed < 700) return { status:'queued', progress:16 };
-        if (elapsed < 1500) return { status:'processing', progress:52 };
-        if (elapsed < 2300) return { status:'processing', progress:82 };
-        return { status:'ready', progress:100 };
-      },
-    };
     const GEN_COPY = {
-      queued:['正在识别照片','包公球正在看你拍的家居照片'],
+      queued:['正在识别照片','包工球正在看你拍的家居照片'],
       processing:['正在提取家具','从照片里认出家具并生成 3D 组件'],
       ready:['组件已就绪','正在整理你的新组件'],
       failed:['生成没有完成',''],
     };
-    // 进度条：与后端粗粒度 progress(8→55→100) 解耦。排队时不动；一进入生成就基于时间平滑爬升
-    // (减速逼近 92% 封顶，始终在动、不平台期卡住)；成功瞬间补满 100，失败则停在当前值。
-    const progressCtl = (() => {
-      let raf = 0, running = false, done = false, startT = 0, displayed = 0;
-      const paint = (v) => { displayed = v; progressBar.style.width = v.toFixed(1) + '%'; };
-      const loop = () => {
-        const t = performance.now() - startT;
-        const target = 92 * (1 - Math.exp(-t / 28000)); // 平滑减速爬升，~60-90s 自然到 80%+
-        if (target > displayed) paint(target);
-        if (running) raf = requestAnimationFrame(loop);
-      };
-      return {
-        reset() { cancelAnimationFrame(raf); running = false; done = false; startT = 0; paint(0); },
-        queued() { /* 保持当前(通常 0)，不启动爬升 —— "一开始没进度" */ },
-        run() { if (done || running) return; running = true; startT = performance.now(); raf = requestAnimationFrame(loop); },
-        finish() { if (done) return; done = true; running = false; cancelAnimationFrame(raf);
-          const from = displayed, t0 = performance.now();
-          const step = () => { const k = Math.min(1, (performance.now() - t0) / 420); paint(from + (100 - from) * k); if (k < 1) requestAnimationFrame(step); };
-          requestAnimationFrame(step);
-        },
-        fail() { running = false; cancelAnimationFrame(raf); },
-      };
-    })();
     function updateGen(status, progress, error = '') {
       const copy = GEN_COPY[status] || GEN_COPY.queued;
       genOrbit.dataset.status = status === 'ready' ? 'processing' : status;
       genTitle.textContent = copy[0];
       genCopy.textContent = status === 'failed' ? (error || '请检查照片或重新尝试') : copy[1];
-      if (status === 'ready') progressCtl.finish();
-      else if (status === 'failed') progressCtl.fail();
-      else if (status === 'processing') progressCtl.run();
-      else progressCtl.queued();
+      progressBar.style.width = `${progress}%`;
       genRetry.hidden = status !== 'failed';
     }
 
-    // 按所选品类生成一个组件（单选）
-    function buildAssets() {
-      const seqBase = String(Date.now()).slice(-3);
-      return state.categories.map((catId, index) => {
-        const primitive = CATEGORY_PRIMITIVE[catId] || 'cabinet';
-        const category = FURNITURE_CATEGORIES.find((item) => item.id === catId);
-        const color = state.photoColor;
-        const accent = lighten(color, .28 + index * .07);
-        return {
-          id:`capture-${catId}-${seqBase}${index + 1}-${Math.random().toString(36).slice(2, 6)}`,
-          kind:'furniture',
-          name:`拍摄·${category.label} ${seqBase}`,
-          category:catId,
-          primitive,
-          color,
-          accent,
-          dimensions:CATEGORY_DIMENSIONS[catId] || [1, .8, .6],
-          source:'user',
-          sourceType:'capture',
-          createdAt:new Date().toISOString(),
-        };
-      });
+    function buildAssetFromJob(job, modelDimensions) {
+      const categoryId = state.categories[0];
+      const category = FURNITURE_CATEGORIES.find((item) => item.id === categoryId);
+      const dimensions = Array.isArray(job.estimated_size_m) && job.estimated_size_m.length === 3
+        ? job.estimated_size_m.map(Number)
+        : (() => {
+            const fallback = CATEGORY_DIMENSIONS[categoryId] || [1, .8, .6];
+            const longest = Math.max(...modelDimensions);
+            const targetLongest = Math.max(...fallback);
+            return longest > 0
+              ? modelDimensions.map((value) => value / longest * targetLongest)
+              : fallback;
+          })();
+      const modelUrl = /^https?:/i.test(job.model_url || '')
+        ? job.model_url
+        : `${API_BASE}${job.model_url || ''}`;
+      return {
+        id:`capture-${categoryId}-${job.job_id || Date.now()}`,
+        kind:'furniture',
+        name:`拍摄·${category.label}`,
+        category:categoryId,
+        primitive:CATEGORY_PRIMITIVE[categoryId] || 'cabinet',
+        color:state.photoColor,
+        accent:lighten(state.photoColor, .3),
+        dimensions,
+        sizePrior:{ w:dimensions[0], h:dimensions[1], d:dimensions[2] },
+        sizePriorVersion:2,
+        modelUrl,
+        rawModel:true,
+        modelValidated:true,
+        canonicalStatus:'raw_succeeded',
+        libraryAttached:false,
+        thumbnail:null,
+        backendCategory:job.category || null,
+        style:job.style || null,
+        material:job.material || null,
+        source:'user',
+        sourceType:'capture',
+        sourceUrl:null,
+        createdAt:new Date().toISOString(),
+      };
     }
 
-    // 降级到本地占位（提交失败或轮询中掉线都走这里）
-    function degradeToMock() {
-      state.mock = true;
-      state.job = mockService.submit();
-      showToast('未连接后端，本地占位演示');
-      state.pollTimer = setTimeout(pollJob, 420);
+    async function loadVerifiedGeneratedModel(modelUrl) {
+      if (!modelUrl) throw new Error('生成结果缺少 3D 文件地址');
+      const response = await fetch(modelUrl, { cache:'no-store' });
+      if (!response.ok) throw new Error(`3D 文件读取失败（${response.status}）`);
+      const contentType = response.headers.get('content-type') || '';
+      const buffer = await response.arrayBuffer();
+      if (buffer.byteLength < 1024) throw new Error('生成的 3D 文件不完整');
+      const magic = new TextDecoder().decode(new Uint8Array(buffer, 0, 4));
+      if (magic !== 'glTF' && !contentType.includes('model/gltf')) throw new Error('生成结果不是有效 GLB');
+      const gltf = await new Promise((resolve, reject) => {
+        generatedModelLoader.parse(buffer, new URL('.', modelUrl).href, resolve, reject);
+      });
+      const box = new THREE.Box3().setFromObject(gltf.scene);
+      const size = box.getSize(new THREE.Vector3());
+      if (![size.x, size.y, size.z].every((value) => Number.isFinite(value) && value > .0001)) {
+        throw new Error('生成的 3D 模型没有有效几何');
+      }
+      return { gltf, dimensions:[size.x, size.y, size.z] };
+    }
+
+    function disposeResultPreviews() {
+      while (resultPreviewDisposers.length) resultPreviewDisposers.pop()();
+    }
+
+    function mountResultModel(canvas, sourceScene, name) {
+      const scene = new THREE.Scene();
+      const model = sourceScene.clone(true);
+      const originalBox = new THREE.Box3().setFromObject(model);
+      const center = originalBox.getCenter(new THREE.Vector3());
+      const size = originalBox.getSize(new THREE.Vector3());
+      model.position.set(-center.x, -originalBox.min.y, -center.z);
+      scene.add(model);
+      scene.add(new THREE.HemisphereLight('#fff8e8', '#8f806d', 2.25));
+      const key = new THREE.DirectionalLight('#fff2d8', 3.2);
+      key.position.set(3, 5, 4);
+      scene.add(key);
+      const width = Math.max(canvas.clientWidth, 84);
+      const height = Math.max(canvas.clientHeight, 84);
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha:true, antialias:true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(width, height, false);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.08;
+      const camera = new THREE.PerspectiveCamera(32, width / height, .01, 100);
+      const radius = Math.max(size.x, size.y, size.z);
+      camera.position.set(radius * 1.7, radius * 1.15, radius * 2.1);
+      const controls = new OrbitControls(camera, canvas);
+      controls.enablePan = false;
+      controls.enableZoom = true;
+      controls.minDistance = radius * 1.35;
+      controls.maxDistance = radius * 4;
+      controls.target.set(0, size.y * .48, 0);
+      const render = () => renderer.render(scene, camera);
+      controls.addEventListener('change', render);
+      controls.update();
+      render();
+      canvas.setAttribute('aria-label', `${name} 的真实 3D，可拖动旋转`);
+      resultPreviewDisposers.push(() => {
+        controls.dispose();
+        renderer.dispose();
+      });
     }
 
     async function pollJob() {
       clearTimeout(state.pollTimer);
-      if (state.mock) {
-        const r = mockService.poll(state.job);
-        updateGen(r.status, r.progress, r.error);
-        if (r.status === 'ready') { finishGeneration(null); return; }
-        if (r.status === 'failed') return;
-        state.pollTimer = setTimeout(pollJob, 620);
-        return;
+      try {
+        const job = await fetchJob(state.job.job_id);
+        state.job = job;
+        persistActiveJob(job);
+        state.pollFailures = 0;
+        const uiStatus = STATUS_MAP[job.status] || 'queued';
+        updateGen(uiStatus, job.progress || 0, job.error);
+        if (job.status === 'queued' && job.queue_position > 0) {
+          genCopy.textContent = job.queue_position === 1
+            ? '任务已保存，正在等待当前组件生成完成'
+            : `任务已保存，前面还有 ${job.queue_position - 1} 个生成任务`;
+        }
+        if (job.status === 'succeeded') { finishGeneration(job); return; }
+        if (job.status === 'failed') return;
+        state.pollTimer = setTimeout(pollJob, 1600);
+      } catch (error) {
+        const transient = !error.status || error.status === 408 || error.status === 429 || error.status >= 500;
+        if (transient && state.pollFailures < 20) {
+          state.pollFailures += 1;
+          genTitle.textContent = '仍在后台生成';
+          genCopy.textContent = '网络暂时波动，正在自动恢复进度';
+          state.pollTimer = setTimeout(pollJob, Math.min(8000, 1600 + state.pollFailures * 400));
+          return;
+        }
+        if (error.status === 404) clearActiveJob();
+        updateGen('failed', 0, error.message || '后端暂时不可用，请稍后重试');
       }
-      let job;
-      try { job = await fetchJob(state.job.job_id); }
-      catch (e) { degradeToMock(); return; } // 轮询期间后端掉线 → 回退占位
-      const ui = STATUS_MAP[job.status] || 'queued';
-      updateGen(ui, job.progress || 0, job.error);
-      if (job.status === 'succeeded') { finishGeneration(job); return; }
-      if (job.status === 'failed') return; // error 已展示，等用户点重新生成
-      state.pollTimer = setTimeout(pollJob, 1600); // 真 3D 30–120s，轮询间隔放宽
     }
     async function startGeneration() {
       setPhase('gen');
-      progressCtl.reset();
-      state.thumbReady = null; // 新一轮生成，清掉上一轮的缩略图 promise
       updateGen('queued', 6);
       genRetry.hidden = true;
-      state.mock = false;
-      if (!state.photoFile) { degradeToMock(); return; } // 无 File（异常）→ 占位
+      state.pollFailures = 0;
       try {
-        const sub = await submitPhoto();
-        state.job = { job_id: sub.job_id };
-      } catch (e) { degradeToMock(); return; } // 后端不可达 → 占位演示
-      state.pollTimer = setTimeout(pollJob, 900);
+        state.job = await submitPhoto();
+        persistActiveJob(state.job);
+        state.pollTimer = setTimeout(pollJob, 900);
+      } catch (error) {
+        updateGen('failed', 0, error.message || '3D 服务提交失败，请稍后重试');
+      }
     }
     async function finishGeneration(job) {
-      const asset = (job && job.model_url) ? buildAssetFromJob(job) : buildAssets()[0];
-      state.generatedAssets = [asset];
-      addUserAsset(asset); // 先入库(此刻缩略图未渲染)；addUserAsset 内部自动收藏，勿再 toggle
-      renderResult([asset]);
-      setPhase('result');
-      showToast(asset.modelUrl ? '已生成 3D 组件并加入收藏' : '已生成并加入灵感库收藏');
-      // 后台把"组件本身"渲成缩略图(对齐平台 512² 透明渲染)，完成后回写入库 + 刷新卡片。
-      // 存成 promise：跳转前 await 它，避免"渲染没完就离开本页→缩略图没写进库"的竞态。
-      state.thumbReady = asset.modelUrl ? (async () => {
-        const thumb = await renderThumbnail(asset.modelUrl);
-        if (!thumb) return;
-        asset.thumbnail = thumb;
-        addUserAsset(asset);          // 同 id 覆盖回写，下游收藏/灵感库/我的家卡片即用真缩略图
-        const img = resultList.querySelector(`.result-thumb[data-thumb="${asset.id}"]`);
-        if (img) img.src = thumb; else renderResult([asset]);
-      })() : Promise.resolve();
+      state.job = job;
+      persistActiveJob(job);
+      setPhase('gen');
+      genTitle.textContent = '正在验证真实 3D';
+      genCopy.textContent = '确认模型、纹理和比例可正常加载';
+      progressBar.style.width = '100%';
+      try {
+        const modelUrl = /^https?:/i.test(job.model_url || '')
+          ? job.model_url
+          : `${API_BASE}${job.model_url || ''}`;
+        const verified = await loadVerifiedGeneratedModel(modelUrl);
+        const asset = buildAssetFromJob(job, verified.dimensions);
+        state.generatedAssets = [asset];
+        addUserAsset(asset);
+        toMyHome.href = `../my-home/index.html?addAsset=${encodeURIComponent(asset.id)}`;
+        renderResult([asset], verified.gltf);
+        setPhase('result');
+        showToast('真实 3D 已验证并保存到本机收藏');
+      } catch (error) {
+        updateGen('failed', 100, error.message || '真实 3D 无法加载，请重新生成');
+      }
     }
-    // 离屏 model-viewer 把 GLB 渲成 512² 透明 PNG dataURL（组件本身的图，替代旧的图元占位）
-    function renderThumbnail(modelUrl) {
-      return new Promise((resolve) => {
-        const mv = document.createElement('model-viewer');
-        mv.setAttribute('src', modelUrl);
-        mv.setAttribute('camera-orbit', '25deg 72deg auto');
-        mv.setAttribute('exposure', '1');
-        mv.setAttribute('shadow-intensity', '0');
-        mv.setAttribute('interaction-prompt', 'none');
-        mv.setAttribute('disable-zoom', '');
-        mv.setAttribute('loading', 'eager');
-        // 关键：offscreen(left:-10000px) 会被 model-viewer 的 IntersectionObserver 判为"不可见"→真机(硬件合成)
-        // 上直接跳过渲染，toDataURL 拿到空白。改为留在视口内但 opacity:0(几何仍相交→照常渲染)、不可点、置底。
-        mv.style.cssText = 'position:fixed;left:0;top:0;width:512px;height:512px;opacity:0;pointer-events:none;z-index:-1;background:transparent;';
-        document.body.appendChild(mv);
-        let settled = false;
-        const done = (val) => { if (settled) return; settled = true; try { mv.remove(); } catch {} resolve(val); };
-        mv.addEventListener('load', () => {
-          // 等两帧确保已实际绘制一帧，再读像素（否则可能读到未渲染的空画布）
-          requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(async () => {
-            let url = null; try { url = mv.toDataURL('image/png'); } catch {}
-            if (url) url = await downscale(url, 384); // 固定 384²，消除 dpr 放大(1024²→506KB 的坑)
-            done(url);
-          }, 260)));
-        });
-        mv.addEventListener('error', () => done(null));
-        setTimeout(() => done(null), 12000); // 兜底：模型/组件未就绪则退回图元
-      });
+    function restoreActiveGeneration() {
+      const active = readActiveJob();
+      if (!active) return false;
+      if (FURNITURE_CATEGORIES.some((item) => item.id === active.categoryId)) {
+        state.categories = [active.categoryId];
+        syncCategoryTabs();
+      }
+      state.photoColor = active.photoColor || state.photoColor;
+      state.job = { job_id:active.jobId, status:active.status, progress:active.progress };
+      state.pollFailures = 0;
+      setPhase('gen');
+      updateGen(STATUS_MAP[active.status] || 'queued', active.progress || 6);
+      if (active.status === 'succeeded') {
+        genTitle.textContent = '正在恢复生成结果';
+        genCopy.textContent = '组件已经生成，正在重新载入';
+      } else {
+        genTitle.textContent = active.status === 'failed' ? '正在确认任务状态' : '仍在后台生成';
+        genCopy.textContent = '已恢复上次任务，正在同步最新进度';
+      }
+      pollJob();
+      return true;
     }
-    // 把渲染图等比居中缩到固定 size²(透明底)，与设备像素比无关，控住 localStorage 体积
-    function downscale(dataUrl, size) {
-      return new Promise((resolve) => {
-        const im = new Image();
-        im.onload = () => {
-          const c = document.createElement('canvas'); c.width = c.height = size;
-          const ctx = c.getContext('2d');
-          const s = Math.min(size / im.width, size / im.height);
-          const w = im.width * s, h = im.height * s;
-          ctx.clearRect(0, 0, size, size);
-          ctx.drawImage(im, (size - w) / 2, (size - h) / 2, w, h);
-          resolve(c.toDataURL('image/png'));
-        };
-        im.onerror = () => resolve(dataUrl);
-        im.src = dataUrl;
-      });
-    }
-    // 用后端 job 真数据构建资产：model_url(GLB) + 识别品类/尺寸；缺字段回退品类默认
-    function buildAssetFromJob(job) {
-      const catId = state.categories[0];
-      const category = FURNITURE_CATEGORIES.find((item) => item.id === catId);
-      const seqBase = String(Date.now()).slice(-3);
-      const dims = (Array.isArray(job.estimated_size_m) && job.estimated_size_m.length === 3)
-        ? job.estimated_size_m.map(Number) : (CATEGORY_DIMENSIONS[catId] || [1, .8, .6]);
-      const color = state.photoColor;
-      const modelUrl = /^https?:/i.test(job.model_url || '') ? job.model_url : `${API_BASE}${job.model_url || ''}`;
-      return {
-        id:`capture-${catId}-${seqBase}-${Math.random().toString(36).slice(2, 6)}`,
-        kind:'furniture',
-        name:`拍摄·${category.label} ${seqBase}`,
-        category:catId,                                  // 前端品类 id（驱动筛选/导航/图元），非后端标签
-        primitive:CATEGORY_PRIMITIVE[catId] || 'cabinet',
-        color, accent:lighten(color, .3),
-        dimensions:dims,
-        sizePrior:{ w:dims[0], h:dims[1], d:dims[2] },
-        modelUrl,                                        // 真·GLB（后端产出）
-        rawModel:true,
-        thumbnail:job.thumbnail_url || null,             // 后端无缩略图则回退品类图元（勿存 blob:，刷新即失效）
-        backendCategory:job.category || null,            // 后端识别标签（仅展示）
-        style:job.style || null, material:job.material || null,
-        source:'user', sourceType:'capture',
-        createdAt:new Date().toISOString(),
-      };
-    }
-    function renderResult(assets) {
+    function renderResult(assets, gltf) {
+      disposeResultPreviews();
       resultList.innerHTML = assets.map((asset) => {
         const category = FURNITURE_CATEGORIES.find((item) => item.id === asset.category);
-        const dims = Array.isArray(asset.dimensions) ? asset.dimensions : [];
-        const sizeText = dims.length === 3 ? ` · ${dims.map((n) => (+n).toFixed(2)).join('×')}m` : '';
-        const backendCat = (asset.backendCategory && asset.backendCategory !== category.label) ? ` · ${asset.backendCategory}` : '';
-        // 真 GLB 徽标：web 用 <model-viewer> 预览；抖音小程序改 xr-frame/原生 3D 组件承载（此处为规格）
-        const glbTag = asset.modelUrl
-          ? `<a href="${asset.modelUrl}" target="_blank" rel="noopener" style="position:absolute;left:8px;bottom:8px;z-index:2;display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:999px;background:rgba(29,36,31,.72);color:#fff;font-size:10px;font-weight:700;text-decoration:none;">3D·GLB ↗</a>` : '';
-        // 缩略图就绪 → 用组件本身的渲染图；未就绪(或占位路径) → 暂用图元
-        const visual = asset.thumbnail
-          ? `<img class="result-thumb" data-thumb="${asset.id}" src="${asset.thumbnail}" alt="${category.label}组件缩略图" />`
-          : `<span class="object object--${asset.primitive}"></span>`;
-        return `<div class="result-item"><div class="result-visual" style="position:relative;--object:${asset.color};--accent:${asset.accent}">${visual}${glbTag}</div><div class="result-body"><input class="result-name" maxlength="16" value="${asset.name}" data-name="${asset.id}" aria-label="组件名称" /><p class="result-meta">家具类 · ${category.label}${backendCat}${sizeText} · 已收藏</p></div></div>`;
+        return `<div class="result-item"><div class="result-visual"><canvas class="result-model-viewer" data-model-preview="${asset.id}"></canvas><span class="result-model-hint">拖动查看</span></div><div class="result-body"><input class="result-name" maxlength="16" value="${asset.name}" data-name="${asset.id}" aria-label="组件名称" /><p class="result-meta">家具类 · ${category.label} · 真实 GLB · 本机收藏</p></div></div>`;
       }).join('');
+      const canvas = resultList.querySelector('[data-model-preview]');
+      if (canvas && gltf?.scene) mountResultModel(canvas, gltf.scene, assets[0].name);
     }
 
     // 名称编辑：写回已入库的用户资产（同 id 覆盖）
@@ -547,21 +640,24 @@
     // 前进按钮只负责跳转（已入库）；查看我的收藏直达首个组件所属细分标签全部页
     generateBtn.addEventListener('click', () => { if (state.hasPhoto) startGeneration(); });
     genBack.addEventListener('click', () => { clearTimeout(state.pollTimer); setPhase('capture'); });
-    genRetry.addEventListener('click', startGeneration);
-    // 跳转前先 await 缩略图渲染完成（有上限：renderThumbnail 自带 12s 兜底），保证组件带真缩略图入库再离开本页
-    async function awaitThumb() { try { await state.thumbReady; } catch {} }
-    toMyHome.addEventListener('click', (event) => {
-      if (!state.thumbReady) return;                 // 无待渲染任务 → 走默认 <a> 跳转
-      event.preventDefault();
-      awaitThumb().then(() => { location.href = toMyHome.getAttribute('href'); });
+    genRetry.addEventListener('click', () => {
+      if (state.photoFile) {
+        startGeneration();
+        return;
+      }
+      clearActiveJob();
+      resetPhoto();
+      setPhase('capture');
+      showToast('请重新选择照片后生成');
     });
     toLibrary.addEventListener('click', (event) => {
       event.preventDefault();
-      awaitThumb().then(() => {
-        location.href = `../my-favorites/index.html#catalog=furniture:${encodeURIComponent(state.generatedAssets[0].category)}`;
-      });
+      location.href = `../my-favorites/index.html#catalog=furniture:${encodeURIComponent(state.generatedAssets[0].category)}`;
     });
-    captureAgain.addEventListener('click', () => { resetPhoto(); setPhase('capture'); });
+    captureAgain.addEventListener('click', () => { disposeResultPreviews(); clearActiveJob(); resetPhoto(); setPhase('capture'); });
+    window.addEventListener('pagehide', () => persistActiveJob());
+    window.addEventListener('pagehide', disposeResultPreviews);
+    restoreActiveGeneration();
   </script>
 </body>
 </html>

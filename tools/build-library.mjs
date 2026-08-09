@@ -1,8 +1,8 @@
 // DreamHome · 灵感库真实资产烘焙脚本（一次性 dev 工具，产物提交入库）
 //
 // 读 datasets/available-assets-v1 →
-//   · 缩略图     completed_input.jpg(缺则 source_crop.jpg) → web/prototype/assets/library/<id>.jpg
-//   · 源视频帧   context.jpg                              → web/prototype/assets/frames/<id>.jpg（视频海报）
+//   · 缩略图     completed_input.jpg/png(缺则 source_crop.jpg) → web/prototype/assets/library/<id>.jpg
+//   · 来源画面   context.jpg                                  → web/prototype/assets/frames/<id>.jpg
 //   · 压缩 3D    model.glb（贴图 WebP+缩放、几何 Draco）  → web/prototype/assets/models/<id>.glb
 //   · 压缩视频   videos/<vid>/source.mp4（8 条共享，ffmpeg）→ web/prototype/assets/videos/<vid>.mp4
 // → 生成 web/prototype/pages/shared/library-assets.generated.js（export BACKEND_ASSETS）。
@@ -91,10 +91,11 @@ for (const entry of manifest.assets) {
   const rec = JSON.parse(readFileSync(join(DATASET, entry.record), 'utf8'));
   const dir = join(DATASET, 'assets', id);
 
-  // 缩略图：优先抠好的单品图，缺失回退 source_crop.jpg（149 件都有）
-  const completed = join(dir, 'completed_input.jpg');
+  // 缩略图：优先补全后的单品图（视频资产通常 jpg、线下拍照资产通常 png），缺失回退 source_crop.jpg
+  const completed = ['completed_input.jpg', 'completed_input.png', 'completed_input.webp']
+    .map((name) => join(dir, name)).find(existsSync);
   const crop = join(dir, 'source_crop.jpg');
-  const thumbSrc = existsSync(completed) ? completed : (existsSync(crop) ? crop : null);
+  const thumbSrc = completed || (existsSync(crop) ? crop : null);
   let thumbnail = null;
   if (thumbSrc) {
     if (thumbSrc === crop) thumbFallback += 1;
@@ -128,11 +129,14 @@ for (const entry of manifest.assets) {
     size_status: rec.size_status,
     physical_size_m: rec.physical_size_m ?? { width: null, height: null, depth: null },
     dimensions_model_unit: rec.geometry?.dimensions_model_unit ?? null,
+    source_type: rec.source?.type || (rec.video_id ? 'video' : 'platform'),
+    source_label: rec.source?.label || null,
+    source_url: rec.source?.url || null,
     thumbnail,
     frame_url: frameUrl,
     model_url: modelUrl,
     video_url: videoUrl,
-    video_id: rec.video_id ?? '',
+    video_id: rec.video_id ?? null,
     representative_sec: repSec,
   });
   process.stdout.write(`\r  处理 ${records.length}/${total}  models=${models}(fail ${modelFail}) videos=${videoCache.size}   `);

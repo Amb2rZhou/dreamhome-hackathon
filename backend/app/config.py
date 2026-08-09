@@ -28,6 +28,23 @@ class Settings:
 
     FAL_KEY: str = _env("FAL_KEY")
     FAL_TRELLIS_ENDPOINT: str = _env("FAL_TRELLIS_ENDPOINT", "fal-ai/trellis")
+    FAL_TRELLIS_MULTI_ENDPOINT: str = _env(
+        "FAL_TRELLIS_MULTI_ENDPOINT", "fal-ai/trellis/multi"
+    )
+    TRELLIS_SS_STEPS: int = int(_env("TRELLIS_SS_STEPS", "25"))
+    TRELLIS_SLAT_STEPS: int = int(_env("TRELLIS_SLAT_STEPS", "25"))
+    TRELLIS_MESH_SIMPLIFY: float = float(_env("TRELLIS_MESH_SIMPLIFY", "0.9"))
+    TRELLIS_TEXTURE_SIZE: int = int(_env("TRELLIS_TEXTURE_SIZE", "2048"))
+    TRELLIS_MULTIIMAGE_ALGO: str = _env(
+        "TRELLIS_MULTIIMAGE_ALGO",
+        "stochastic",
+    )
+    # TRELLIS often bakes scene shadows into the base-color texture.  Keep the
+    # correction explicit and versionable so generated assets are not silently
+    # delivered with the raw, overly-dark material.
+    # Keep the lift deliberately subtle so product colors stay close to the
+    # source image; 0.7 proved too bright on saturated fabrics.
+    TRELLIS_ALBEDO_GAMMA: float = float(_env("TRELLIS_ALBEDO_GAMMA", "0.95"))
 
     TRIPO_API_KEY: str = _env("TRIPO_API_KEY")
     TRIPO_BASE_URL: str = _env("TRIPO_BASE_URL", "https://api.tripo3d.ai/v2/openapi")
@@ -42,13 +59,26 @@ class Settings:
     # ---- 资产库(asset-library-plan.md) ----
     # SQLite 库文件；默认放 storage 同级
     DB_PATH: str = _env("DB_PATH", os.path.join(os.path.dirname(__file__), "..", "storage", "dreamhome.db"))
-    # 实时单帧检测 provider: mock | remote(自部署 GPU 推理服务)
+    # 实时单帧检测 provider: mock | remote | dashscope
     DETECT_PROVIDER: str = _env("DETECT_PROVIDER", "mock").lower()
     # AutoDL/RunPod 上 gpu/server.py 的地址，如 http://x.x.x.x:9000
     REMOTE_GPU_URL: str = _env("REMOTE_GPU_URL", "")
+    # TRELLIS may run behind the general GPU API or as a dedicated local
+    # worker. Keeping its URL separate avoids sending large completed images
+    # through the detection proxy on the all-in-one ECS deployment.
+    GEN3D_REMOTE_URL: str = _env("GEN3D_REMOTE_URL", "") or REMOTE_GPU_URL
+    # The dedicated worker exposes submit/status, while the lightweight GPU
+    # gateway owns the shared `/files` mount. They may be the same service on
+    # simpler deployments.
+    GEN3D_FILES_URL: str = _env("GEN3D_FILES_URL", "") or REMOTE_GPU_URL or GEN3D_REMOTE_URL
     # 打标签 provider: mock | anthropic | dashscope
     LABELS_PROVIDER: str = _env("LABELS_PROVIDER", "mock").lower()
     DASHSCOPE_API_KEY: str = _env("DASHSCOPE_API_KEY")
+    # Region-specific DashScope root. Singapore uses
+    # https://dashscope-intl.aliyuncs.com; API keys cannot cross regions.
+    DASHSCOPE_BASE_URL: str = _env(
+        "DASHSCOPE_BASE_URL", "https://dashscope.aliyuncs.com"
+    ).rstrip("/")
     DASHSCOPE_VL_MODEL: str = _env("DASHSCOPE_VL_MODEL", "qwen-vl-max")
     # 抠图补全(队友模块,契约见 docs/enhance-integration.md): off | module | cmd
     ENHANCE_PROVIDER: str = _env("ENHANCE_PROVIDER", "off").lower()
@@ -56,14 +86,27 @@ class Settings:
 
     # 上传文件落地目录（demo 用本地磁盘；生产换对象存储）
     STORAGE_DIR: str = _env("STORAGE_DIR", os.path.join(os.path.dirname(__file__), "..", "storage"))
+    # Public deployments must protect media-intake routes.  The token is read
+    # only by the backend and is never returned by readiness endpoints.
+    IMAGE_POST_IMPORT_TOKEN: str = _env("IMAGE_POST_IMPORT_TOKEN")
+    REQUIRE_IMAGE_POST_IMPORT_TOKEN: bool = _env(
+        "REQUIRE_IMAGE_POST_IMPORT_TOKEN", "0"
+    ).lower() in {"1", "true", "yes", "on"}
+    # A single A10 should execute one heavy completion/TRELLIS workflow at a
+    # time. Additional requests remain durable queued jobs instead of spawning
+    # unbounded background work and exhausting GPU/CPU memory.
+    JOB_MAX_CONCURRENCY: int = max(1, int(_env("JOB_MAX_CONCURRENCY", "1")))
+    JOB_QUEUE_MAX: int = max(1, int(_env("JOB_QUEUE_MAX", "100")))
     # 对外可访问的基址，用于拼 model_url（部署到 Vercel/服务器时改成公网域名）
     PUBLIC_BASE_URL: str = _env("PUBLIC_BASE_URL", "http://localhost:8000")
 
     @property
     def effective_detect_provider(self) -> str:
-        """有远端 GPU 地址才走 remote，否则 mock。"""
+        """Resolve detection without silently exposing a paid provider."""
         if self.DETECT_PROVIDER == "remote" and self.REMOTE_GPU_URL:
             return "remote"
+        if self.DETECT_PROVIDER == "dashscope" and self.DASHSCOPE_API_KEY:
+            return "dashscope"
         return "mock"
 
     @property
@@ -77,7 +120,7 @@ class Settings:
     @property
     def effective_provider(self) -> str:
         """有 key 才用真 provider，否则一律 mock，避免线上 500。"""
-        if self.GEN3D_PROVIDER == "selfhost" and self.REMOTE_GPU_URL:
+        if self.GEN3D_PROVIDER == "selfhost" and self.GEN3D_REMOTE_URL:
             return "selfhost"
         if self.GEN3D_PROVIDER == "fal" and self.FAL_KEY:
             return "fal"
@@ -86,6 +129,47 @@ class Settings:
         if self.GEN3D_PROVIDER == "meshy" and self.MESHY_API_KEY:
             return "meshy"
         return "mock"
+
+    def consumer_capabilities(self) -> dict:
+        """Return secret-free configured readiness for the consumer pipeline."""
+        detect_provider = self.effective_detect_provider
+        labels_provider = self.effective_labels_provider
+        gen3d_provider = self.effective_provider
+        completion_ready = self.ENHANCE_PROVIDER in {"module", "cmd"}
+        consistency_ready = bool(self.DASHSCOPE_API_KEY)
+        trellis_ready = gen3d_provider in {"fal", "selfhost"}
+        capabilities = {
+            "detect": {"provider": detect_provider, "ready": detect_provider != "mock"},
+            "completion": {
+                "provider": self.ENHANCE_PROVIDER,
+                "ready": completion_ready,
+            },
+            "labels": {"provider": labels_provider, "ready": labels_provider != "mock"},
+            "single_object_check": {
+                "provider": "dashscope" if consistency_ready else "off",
+                "ready": consistency_ready,
+            },
+            "identity_check": {
+                "provider": "dashscope" if consistency_ready else "off",
+                "ready": consistency_ready,
+            },
+            "gen3d": {
+                "provider": gen3d_provider,
+                "model_family": "trellis" if trellis_ready else "unsupported",
+                "ready": trellis_ready,
+            },
+            "material_postprocess": {
+                "ready": 0 < self.TRELLIS_ALBEDO_GAMMA <= 1,
+                "albedo_gamma": self.TRELLIS_ALBEDO_GAMMA,
+            },
+            "identity": {"mode": "local_demo", "authenticated": False},
+        }
+        capabilities["consumer_pipeline_ready"] = all(
+            state.get("ready", True)
+            for name, state in capabilities.items()
+            if name != "identity"
+        )
+        return capabilities
 
 
 settings = Settings()

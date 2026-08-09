@@ -82,7 +82,12 @@ async def unbind_track(track_id: str, req: UnbindRequest):
     tr = _get_or_404(track_id)
 
     if req.t_start is None and req.t_end is None:
-        db._exec("UPDATE tracks SET asset_id=NULL WHERE track_id=?", (track_id,))
+        db._exec(
+            "UPDATE tracks SET asset_id=NULL,binding_confidence=NULL,"
+            "binding_review_status='unreviewed',binding_version=binding_version+1,"
+            "binding_source='manual_unbind' WHERE track_id=?",
+            (track_id,),
+        )
         return _summary(track_id, {"action": "unbind_all"})
 
     frames = _sorted_frames(tr)
@@ -97,7 +102,12 @@ async def unbind_track(track_id: str, req: UnbindRequest):
 
     if len(kept) < 2:
         # 剩余帧不足以构成轨迹 → 整条解绑（frames 原样保留，不做几何裁剪）
-        db._exec("UPDATE tracks SET asset_id=NULL WHERE track_id=?", (track_id,))
+        db._exec(
+            "UPDATE tracks SET asset_id=NULL,binding_confidence=NULL,"
+            "binding_review_status='unreviewed',binding_version=binding_version+1,"
+            "binding_source='manual_unbind' WHERE track_id=?",
+            (track_id,),
+        )
         return _summary(track_id, {"action": "unbind_all", "reason": "剩余帧不足2个，退化为整条解绑"})
 
     _write_frames(track_id, kept, _clamp_best_t(kept, tr["best_frame_t"]))
@@ -116,7 +126,12 @@ async def rebind_track(track_id: str, req: RebindRequest):
     _get_or_404(track_id)
     if not db.get_asset(req.asset_id):
         raise HTTPException(404, "asset not found")
-    db.bind_track_asset(track_id, req.asset_id)
+    db.bind_track_asset(
+        track_id,
+        req.asset_id,
+        binding_review_status="approved",
+        binding_source="manual_rebind",
+    )
     return _summary(track_id, {"action": "rebind"})
 
 

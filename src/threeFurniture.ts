@@ -93,6 +93,7 @@ const BUILDERS: Record<FurnitureCategory, () => THREE.Group> = {
   '绿植': plant,
   '装饰画': wallArt,
   '地毯': rug,
+  '其他': teaTable,
 }
 
 export function buildFurniture(cat: FurnitureCategory): THREE.Group {

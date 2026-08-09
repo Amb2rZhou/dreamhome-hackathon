@@ -31,10 +31,10 @@ _SOLO_PROMPT = ('这是一张家具产品图,目标商品是「{name}」。判�
                 '只输出 JSON: {{"solo": true/false, "reason": "一句话"}}')
 
 
-async def check_solo(enhanced_path: str, name: str) -> tuple[bool, str]:
+async def check_solo(enhanced_path: str, name: str, *, strict: bool = False) -> tuple[bool, str]:
     """单体闸:补全图必须只含目标家具一件(2026-07-20 验收:餐桌图残留椅子会被焊进3D)。"""
     if not settings.DASHSCOPE_API_KEY:
-        return True, "skipped(no key)"
+        return (False, "unavailable(no key)") if strict else (True, "skipped(no key)")
     from . import cache
     key = cache.content_key(enhanced_path, extra=f"solo-v1|{name}")
     hit = cache.get("consistency", key)
@@ -50,7 +50,7 @@ async def check_solo(enhanced_path: str, name: str) -> tuple[bool, str]:
         }
         async with httpx.AsyncClient(timeout=60, trust_env=False) as client:
             r = await client.post(
-                "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+                f"{settings.DASHSCOPE_BASE_URL}/compatible-mode/v1/chat/completions",
                 headers={"Authorization": f"Bearer {settings.DASHSCOPE_API_KEY}"},
                 json=payload)
             r.raise_for_status()
@@ -61,16 +61,21 @@ async def check_solo(enhanced_path: str, name: str) -> tuple[bool, str]:
         reason = str(data.get("reason", ""))[:120]
         cache.put("consistency", key, {"solo": solo, "reason": reason})
         return solo, reason
-    except Exception as e:  # noqa: BLE001 校验挂了不拦生产
-        return True, f"skipped({type(e).__name__})"
+    except Exception as e:  # noqa: BLE001
+        reason = f"unavailable({type(e).__name__})"
+        return (False, reason) if strict else (True, reason.replace("unavailable", "skipped"))
 
 
-async def check_consistency(original_path: str, enhanced_path: str) -> tuple[bool, str]:
+async def check_consistency(original_path: str, enhanced_path: str, *,
+                            target_name: str = "", strict: bool = False) -> tuple[bool, str]:
     """返回 (是否一致, 原因)。校验不可用时返回 (True, 'skipped')。"""
     if not settings.DASHSCOPE_API_KEY:
-        return True, "skipped(no key)"
+        return (False, "unavailable(no key)") if strict else (True, "skipped(no key)")
     from . import cache
-    key = cache.content_key(original_path, enhanced_path, extra="consistency-v2")  # v2: 清杂物不算不一致
+    key = cache.content_key(
+        original_path, enhanced_path,
+        extra=f"consistency-v3|{target_name}",
+    )
     hit = cache.get("consistency", key)
     if hit:
         return hit["same"], hit["reason"]
@@ -80,12 +85,14 @@ async def check_consistency(original_path: str, enhanced_path: str) -> tuple[boo
             "messages": [{"role": "user", "content": [
                 {"type": "image_url", "image_url": {"url": _uri(original_path)}},
                 {"type": "image_url", "image_url": {"url": _uri(enhanced_path)}},
-                {"type": "text", "text": _PROMPT},
+                {"type": "text", "text": (
+                    (f"目标家具是「{target_name}」。" if target_name else "") + _PROMPT
+                )},
             ]}],
         }
         async with httpx.AsyncClient(timeout=60, trust_env=False) as client:
             r = await client.post(
-                "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+                f"{settings.DASHSCOPE_BASE_URL}/compatible-mode/v1/chat/completions",
                 headers={"Authorization": f"Bearer {settings.DASHSCOPE_API_KEY}"},
                 json=payload)
             r.raise_for_status()
@@ -96,5 +103,6 @@ async def check_consistency(original_path: str, enhanced_path: str) -> tuple[boo
         reason = str(data.get("reason", ""))[:120]
         cache.put("consistency", key, {"same": same, "reason": reason})
         return same, reason
-    except Exception as e:  # noqa: BLE001 校验挂了不拦生产
-        return True, f"skipped({type(e).__name__})"
+    except Exception as e:  # noqa: BLE001
+        reason = f"unavailable({type(e).__name__})"
+        return (False, reason) if strict else (True, reason.replace("unavailable", "skipped"))

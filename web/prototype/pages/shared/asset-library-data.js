@@ -2,6 +2,18 @@ import { BACKEND_ASSETS } from './library-assets.generated.js';
 
 const FAVORITES_KEY = 'dreamhome.asset-library.v1';
 const USER_ASSETS_KEY = 'dreamhome.user-assets.v1';
+const FAVORITES_MIGRATION_KEY = 'dreamhome.asset-library.defaults.20260723-approved-homes';
+// 产品演示的首次打开收藏。当前用户已明确选择的快照会写入这里；浏览器后续操作仍覆盖本地状态。
+export const DEFAULT_FAVORITE_IDS = [
+  'floorplan-wide-living', 'floorplan-long-living', 'floorplan-square-lounge',
+  'floorplan-l-living', 'floorplan-bay-bedroom', 'floorplan-standard-bedroom',
+  'ast_7a6844fdf7e6', 'ast_717c98fe0e21', 'ast_b914f61b3e04', 'ast_eea00f986e60',
+  'ast_42a4923c5286', 'ast_0c40e643ff23', 'ast_b7f81d8b8dcd', 'ast_7b10d7d4bdb6',
+  'ast_4a6964d61395', 'ast_2e0f65b42cfc', 'ast_dec6af78617b', 'ast_88ceb53354e6',
+  'ast_9d3dc36f80d6', 'ast_79d7df1565e0', 'ast_06c83d58cb62', 'ast_12910011860f',
+  'ast_ccc6f7405f39', 'ast_8926f9413f29', 'ast_b80193251739', 'ast_00e00df1bfeb',
+  'ast_09f5ed9678b1', 'ast_45226bd63340', 'ast_b80f4e4a387b',
+];
 
 export const COMPONENT_FAMILIES = [
   { id: 'floorplan', label: '户型类' },
@@ -22,7 +34,7 @@ export const CATEGORY_PRIMITIVE = {
   灯具: 'lamp', 柜子: 'cabinet', 绿植: 'plant', 桌子: 'table', 单椅: 'chair',
   装饰: 'plant', 地毯: 'cabinet', 沙发: 'sofa', 家电: 'cabinet', 床: 'bed', 卫浴: 'cabinet',
 };
-// size_missing（142/149 件无真实米制尺寸）时的每类兜底尺寸 [宽,高,深]（米）
+// size_missing（162/169 件无真实米制尺寸）时的每类兜底尺寸 [宽,高,深]（米）
 export const CATEGORY_DIMENSIONS = {
   灯具: [.4, 1.4, .4], 柜子: [1.0, 1.2, .45], 绿植: [.4, .7, .4], 桌子: [1.2, .75, .7], 单椅: [.55, .9, .55],
   装饰: [.3, .4, .3], 地毯: [1.6, .02, 2.2], 沙发: [1.9, .82, .9], 家电: [.6, 1.0, .6], 床: [1.6, .5, 2.0], 卫浴: [.6, .8, .5],
@@ -50,18 +62,31 @@ const colorForAsset = (rec) => {
 // 后端记录 → 前端资产（适配层；将来接 API 只需把 import 换成 fetch、复用此函数）
 export const adaptBackendAsset = (rec) => {
   const category = rec.type.category;
+  const sourceType = rec.source_type || (rec.video_id ? 'video' : 'platform');
+  const sourceLabel = rec.source_label || (sourceType === 'offline_photo' ? '线下拍照生成' : '平台组件');
   const known = rec.size_status === 'known' && rec.physical_size_m?.width != null;
   const color = colorForAsset(rec);
+  const categoryDims = CATEGORY_DIMENSIONS[category] || [1, .8, .6];
+  const modelDims = Array.isArray(rec.dimensions_model_unit)
+    ? rec.dimensions_model_unit.map((value) => Math.max(Number(value) || 0, .001))
+    : null;
+  const modelLongest = modelDims ? Math.max(...modelDims) : 0;
+  const targetLongest = Math.max(...categoryDims);
   const dims = known
     ? [rec.physical_size_m.width, rec.physical_size_m.height, rec.physical_size_m.depth]
-    : (CATEGORY_DIMENSIONS[category] || [1, .8, .6]);
+    : modelLongest > 0
+      ? modelDims.map((value) => value / modelLongest * targetLongest)
+      : categoryDims;
   return {
-    id: rec.asset_id, kind: 'furniture', name: rec.name, source: 'platform', sourceType: 'platform',
+    id: rec.asset_id, kind: 'furniture', name: rec.name, source: 'platform', sourceType, sourceLabel,
     category, subcategory: rec.type.subcategory, primitive: CATEGORY_PRIMITIVE[category] || 'cabinet',
     color, accent: lightenHex(color, .3),
     dimensions: dims,
-    // 「我的家」房间放置：真实 GLB 走 rawModel 归一化到 sizePrior（真实米制或分类兜底尺寸），避免原始网格尺度失真
-    rawModel: !!(rec.model_url), sizePrior: { w: dims[0], h: dims[1], d: dims[2] }, mount: 'floor',
+    // 有米制尺寸时按真实尺寸归一化；缺尺寸时只做统一等比缩放，保留 GLB 原始宽高深比例。
+    rawModel: !!(rec.model_url), sizePrior: { w: dims[0], h: dims[1], d: dims[2] },
+    sizePriorVersion: known ? 1 : 2,
+    legacySizePrior: known ? null : { w: categoryDims[0], h: categoryDims[1], d: categoryDims[2] },
+    mount: 'floor',
     sizeStatus: rec.size_status, thumbnail: rec.thumbnail, videoId: rec.video_id,
     modelUrl: rec.model_url || null, frameUrl: rec.frame_url || null,
     videoUrl: rec.video_url || null, videoSec: rec.representative_sec ?? null,
@@ -78,7 +103,7 @@ export const COMPONENT_ASSETS = [
   asset('floorplan-square-lounge', 'floorplan', '方形会客厅', { templateId: 'square-lounge', supported: true, previewImage: '../../assets/scenes/templates/square-lounge.png?v=2' }),
   asset('floorplan-l-living', 'floorplan', 'L形客厅', { templateId: 'l-living', supported: true, previewImage: '../../assets/scenes/templates/l-living.png?v=2' }),
   asset('floorplan-bay-bedroom', 'floorplan', '飘窗卧室', { templateId: 'bay-bedroom', supported: true, previewImage: '../../assets/scenes/templates/bay-bedroom.png?v=2' }),
-  asset('floorplan-corner-bedroom', 'floorplan', '转角卧室', { templateId: 'corner-bedroom', supported: true, previewImage: '../../assets/scenes/templates/corner-bedroom.png?v=2' }),
+  asset('floorplan-standard-bedroom', 'floorplan', '普通方形卧室', { templateId: 'standard-bedroom', supported: true, previewImage: '../../assets/scenes/templates/bay-bedroom.png?v=3' }),
   asset('floor-oak', 'floor', '原木浅橡', { finish: { color: '#cfae7f', accent: '#ad895b', pattern: 'grain' } }),
   asset('floor-terrazzo', 'floor', '暖白水磨石', { finish: { color: '#ded9cb', accent: '#a9afa5', pattern: 'speckle' } }),
   asset('floor-walnut', 'floor', '胡桃木拼花', { finish: { color: '#835d42', accent: '#b58764', pattern: 'parquet' } }),
@@ -87,7 +112,7 @@ export const COMPONENT_ASSETS = [
   asset('wallpaper-sage', 'wallpaper', '苔藓绿植感', { finish: { color: '#bbcab4', accent: '#7f9677', pattern: 'leaf' } }),
   asset('wallpaper-grid', 'wallpaper', '米灰细格', { finish: { color: '#dfddd5', accent: '#aaa99f', pattern: 'grid' } }),
   asset('wallpaper-rust', 'wallpaper', '砖红手作纹', { finish: { color: '#c6846e', accent: '#9e5f4c', pattern: 'woven' } }),
-  // 家具类：来自后端真实资产数据集（datasets/available-assets-v1，149 件），经 adaptBackendAsset 适配。
+  // 家具类：来自后端真实资产数据集（169 件：149 件视频资产 + 20 件线下拍照资产），经 adaptBackendAsset 适配。
   ...BACKEND_ASSETS.map(adaptBackendAsset),
 ];
 
@@ -144,7 +169,9 @@ function userAssetById(id) {
 }
 
 export function getAssets(kind, category) {
-  const combined = COMPONENT_ASSETS.concat(getUserAssets());
+  // 用户刚生成的组件必须优先可见；收藏首页只展示有限数量，
+  // 若放在平台资产之后会造成“生成成功但收藏里看不见”的错觉。
+  const combined = getUserAssets().concat(COMPONENT_ASSETS);
   return combined.filter((item) => item.kind === kind && (!category || item.category === category));
 }
 
@@ -154,8 +181,15 @@ export function getAsset(id) {
 
 export function getFavorites() {
   try {
-    const stored = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '{}');
-    const ids = Array.isArray(stored.ids) ? stored.ids : [];
+    const raw = localStorage.getItem(FAVORITES_KEY);
+    const stored = raw ? JSON.parse(raw) : null;
+    const storedIds = Array.isArray(stored?.ids) ? stored.ids : [];
+    const shouldSeed = !localStorage.getItem(FAVORITES_MIGRATION_KEY) && storedIds.length === 0;
+    const ids = shouldSeed || !stored ? DEFAULT_FAVORITE_IDS : storedIds;
+    if (shouldSeed || !stored) {
+      localStorage.setItem(FAVORITES_KEY, JSON.stringify({ version: 2, ids }));
+      localStorage.setItem(FAVORITES_MIGRATION_KEY, '1');
+    }
     const userIds = new Set(getUserAssets().map((item) => item.id));
     return new Set(ids.filter((id) => ASSET_BY_ID.has(id) || userIds.has(id)));
   } catch {
@@ -166,7 +200,8 @@ export function getFavorites() {
 export function setFavorites(ids) {
   const userIds = new Set(getUserAssets().map((item) => item.id));
   const known = [...new Set(ids)].filter((id) => ASSET_BY_ID.has(id) || userIds.has(id));
-  localStorage.setItem(FAVORITES_KEY, JSON.stringify({ version: 1, ids: known }));
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify({ version: 2, ids: known }));
+  localStorage.setItem(FAVORITES_MIGRATION_KEY, '1');
   return new Set(known);
 }
 

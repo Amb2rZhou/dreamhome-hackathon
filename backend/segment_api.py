@@ -71,7 +71,17 @@ def parse_bbox(bbox: Optional[str]) -> Optional[Tuple[int, int, int, int]]:
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    ready = bool(DASHSCOPE_API_KEY)
+    return {
+        "status": "ok" if ready else "degraded",
+        "capabilities": {
+            "completion": {
+                "provider": "dashscope",
+                "model_family": "wan2.7-image",
+                "ready": ready,
+            }
+        },
+    }
 
 
 @app.post("/api/segment")
@@ -212,15 +222,22 @@ INPAINT_SYSTEM_PROMPT = (
 )
 
 DASHSCOPE_API_KEY = os.environ.get("DASHSCOPE_API_KEY", "")
+DASHSCOPE_BASE_URL = os.environ.get(
+    "DASHSCOPE_BASE_URL", "https://dashscope.aliyuncs.com"
+).rstrip("/")
 # 旧域名仍可用，无需 workspace ID；有 workspace ID 时用专属域名更稳
 DASHSCOPE_WORKSPACE_ID = os.environ.get("DASHSCOPE_WORKSPACE_ID", "")
 if DASHSCOPE_WORKSPACE_ID:
+    region = os.environ.get("DASHSCOPE_REGION", "cn-beijing")
     DASHSCOPE_INPAINT_URL = (
-        f"https://{DASHSCOPE_WORKSPACE_ID}.cn-beijing.maas.aliyuncs.com"
+        f"https://{DASHSCOPE_WORKSPACE_ID}.{region}.maas.aliyuncs.com"
         "/api/v1/services/aigc/multimodal-generation/generation"
     )
 else:
-    DASHSCOPE_INPAINT_URL = "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation"
+    DASHSCOPE_INPAINT_URL = (
+        f"{DASHSCOPE_BASE_URL}/api/v1/services/aigc/"
+        "multimodal-generation/generation"
+    )
 
 
 def parse_path(path_str: Optional[str]) -> Optional[list]:
@@ -288,12 +305,10 @@ async def inpaint(
     except Exception as e:
         raise HTTPException(400, f"bad image: {e}")
 
-    # 无 key：mock 原样返回，便于前端跑通 pipeline
+    # 正式链路不允许把原图伪装成补全结果。开发环境若需要 mock，
+    # 应在调用端显式替换 provider，而不是从该生产端点静默直通。
     if not DASHSCOPE_API_KEY:
-        buf = io.BytesIO()
-        im.save(buf, format="PNG")
-        buf.seek(0)
-        return StreamingResponse(buf, media_type="image/png")
+        raise HTTPException(503, "DashScope completion is not configured")
 
     pts = parse_path(path)
 
