@@ -4,9 +4,16 @@ declare global {
   }
 }
 
-const productionApiBase = ['dreamhouse.top', 'www.dreamhouse.top'].includes(window.location.hostname)
-  ? 'https://api.dreamhouse.top'
-  : '/dreamhome-api'
+export function defaultDreamHomeApiBase(hostname: string): string {
+  if (['localhost', '127.0.0.1', '0.0.0.0', '::1'].includes(hostname)) {
+    return 'http://127.0.0.1:8000'
+  }
+  return ['dreamhouse.top', 'www.dreamhouse.top'].includes(hostname)
+    ? 'https://api.dreamhouse.top'
+    : '/dreamhome-api'
+}
+
+const productionApiBase = defaultDreamHomeApiBase(window.location.hostname)
 
 const configuredBase = (
   window.__DREAMHOME_API_BASE_URL__

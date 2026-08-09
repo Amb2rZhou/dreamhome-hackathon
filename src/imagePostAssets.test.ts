@@ -43,7 +43,7 @@ describe('image post asset appearances', () => {
     }))
     expect(merged.assets.filter((asset) => asset.id === 'ast_ad5525ea3cd7')).toHaveLength(1)
     expect(merged.assets.find((asset) => asset.id === 'ast_new')).toEqual(expect.objectContaining({
-      name: '新边桌', category: '茶几', modelUrl: '/dreamhome-api/storage/models/new.glb',
+      name: '新边桌', category: '茶几', modelUrl: 'http://127.0.0.1:8000/storage/models/new.glb',
     }))
   })
 })

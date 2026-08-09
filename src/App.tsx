@@ -16,6 +16,7 @@ import { FurnitureAssetThumbnail } from './FurnitureAssetThumbnail'
 import { VideoAssetsEntry } from './VideoAssetsEntry'
 import { workshopFromAppState } from './workshopModel'
 import { AVAILABLE_ASSETS_BY_VIDEO, assetsForVideoFrame, defaultAssetFrame, detectedFurnitureForVideoFrame } from './availableAssets.generated'
+import { fetchVideoBoundAssets, mergeVideoAssets, videoAssetsAtTime } from './videoAssetBindings'
 import {
   IMAGE_POST_ASSETS,
   IMAGE_POST_HOTSPOTS,
@@ -689,6 +690,7 @@ function App() {
   const [activeImageHotspotAssetId, setActiveImageHotspotAssetId] = useState<string | null>(null)
   const [imagePostHotspots, setImagePostHotspots] = useState(IMAGE_POST_HOTSPOTS)
   const [imagePostAssets, setImagePostAssets] = useState(IMAGE_POST_ASSETS)
+  const [backendVideoAssets, setBackendVideoAssets] = useState<Record<string, LibraryComponent[]>>({})
   const [readyVideoId, setReadyVideoId] = useState<string | null>(null)
   const reuseDecisionRef = useRef<((reuse: boolean) => void) | null>(null)
   // 教学只由冷启动气泡的“开始逛逛”启动；普通暂停不会擅自拉起新手引导。
@@ -701,10 +703,10 @@ function App() {
   const wheelLocked = useRef(false)
   const activeFeedVideo = FEED_VIDEOS[state.feed.index]
   const pausedFrame = state.feed.pausedFrame
-  const activeFrameAssets = useMemo(
-    () => assetsForVideoFrame(pausedFrame.videoId, pausedFrame.time),
-    [pausedFrame],
-  )
+  const activeFrameAssets = useMemo(() => mergeVideoAssets(
+    assetsForVideoFrame(pausedFrame.videoId, pausedFrame.time),
+    videoAssetsAtTime(backendVideoAssets[pausedFrame.videoId] ?? [], pausedFrame.time),
+  ), [backendVideoAssets, pausedFrame])
   const activeFrameDetectedLabels = useMemo(
     () => detectedFurnitureForVideoFrame(
       pausedFrame.videoId,
@@ -713,10 +715,10 @@ function App() {
     ),
     [activeFrameAssets, pausedFrame],
   )
-  const activeVideoAssets = useMemo(
-    () => AVAILABLE_ASSETS_BY_VIDEO[activeFeedVideo.id] ?? [],
-    [activeFeedVideo.id],
-  )
+  const activeVideoAssets = useMemo(() => mergeVideoAssets(
+    AVAILABLE_ASSETS_BY_VIDEO[activeFeedVideo.id] ?? [],
+    backendVideoAssets[activeFeedVideo.id] ?? [],
+  ), [activeFeedVideo.id, backendVideoAssets])
   const activeImageHotspotAsset = useMemo(
     () => imagePostAssets.find((asset) => asset.id === activeImageHotspotAssetId) ?? null,
     [activeImageHotspotAssetId, imagePostAssets],
@@ -733,9 +735,23 @@ function App() {
       console.warn('[DreamHome API] image-post bindings unavailable; keeping verified baseline', error)
     }
   }, [])
+  const refreshVideoBindings = useCallback(async (videoId: string) => {
+    try {
+      const assets = await fetchVideoBoundAssets(videoId)
+      setBackendVideoAssets((current) => ({ ...current, [videoId]: assets }))
+    } catch (error) {
+      // Keep the reviewed static catalog available when the API is briefly
+      // unreachable. A later feed visit or completed job retries this read.
+      console.warn('[DreamHome API] video bindings unavailable; keeping verified baseline', error)
+    }
+  }, [])
   useEffect(() => {
     void refreshImagePostBindings()
   }, [refreshImagePostBindings])
+  useEffect(() => {
+    if (activeFeedVideo.mediaType === 'image-carousel') return
+    void refreshVideoBindings(activeFeedVideo.id)
+  }, [activeFeedVideo.id, activeFeedVideo.mediaType, refreshVideoBindings])
   useEffect(() => {
     setActiveImageHotspotAssetId(null)
   }, [activeFeedVideo.id])
@@ -988,6 +1004,8 @@ function App() {
               if (cancelled) return
               if (pendingSelection.mediaType === 'image-carousel') {
                 await refreshImagePostBindings()
+              } else {
+                await refreshVideoBindings(pendingSelection.videoId)
               }
               dispatch({
                 type: 'CRAFT_DONE',
@@ -1049,6 +1067,9 @@ function App() {
               if (pendingSelection?.mediaType === 'image-carousel') {
                 await refreshImagePostBindings()
                 if (cancelled) return
+              } else if (pendingSelection?.videoId) {
+                await refreshVideoBindings(pendingSelection.videoId)
+                if (cancelled) return
               }
               dispatch({
                 type: 'CRAFT_DONE',
@@ -1100,7 +1121,7 @@ function App() {
       }, 15_000)
       return () => clearTimeout(t)
     }
-  }, [craft, refreshImagePostBindings, requestReuseDecision])
+  }, [craft, refreshImagePostBindings, refreshVideoBindings, requestReuseDecision])
 
   return (
     <div
