@@ -17,6 +17,7 @@ import { VideoAssetsEntry } from './VideoAssetsEntry'
 import { workshopFromAppState } from './workshopModel'
 import { AVAILABLE_ASSETS_BY_VIDEO, assetsForVideoFrame, defaultAssetFrame, detectedFurnitureForVideoFrame } from './availableAssets.generated'
 import { fetchVideoBoundAssets, mergeVideoAssets, videoAssetsAtTime } from './videoAssetBindings'
+import { dreamHomeUserId } from './dreamHomeIdentity'
 import {
   IMAGE_POST_ASSETS,
   IMAGE_POST_HOTSPOTS,
@@ -252,7 +253,7 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         feed: feedRuntimeReducer(state.feed, { type: 'SET_TARGET', index: action.index, videoId: action.videoId, time: action.time }),
-        videoPlaying: true,
+        videoPlaying: false,
         selected: [],
         activeObjectId: null,
         showFailHint: false,
@@ -662,13 +663,20 @@ function readFeedDeepLink(): FeedDeepLink | null {
 }
 
 function App() {
+  const userIdRef = useRef(dreamHomeUserId())
   const initialFeedTargetRef = useRef<FeedDeepLink | null>(readFeedDeepLink())
   const [state, dispatch] = useReducer(reducer, initialState, (base) => {
     const target = initialFeedTargetRef.current
     if (!target) return base
     return {
       ...base,
-      feed: createFeedRuntimeState(target.index, target.videoId, target.time),
+      feed: feedRuntimeReducer(base.feed, {
+        type: 'SET_TARGET',
+        index: target.index,
+        videoId: target.videoId,
+        time: target.time,
+      }),
+      videoPlaying: false,
     }
   })
   const [favoriteAssetIds, setFavoriteAssetIds] = useState<string[]>(() => {
@@ -991,12 +999,14 @@ function App() {
                 ? await confirmImagePostSelection({
                     postId: pendingSelection.videoId,
                     selectId: selected.select_id,
+                    userId: userIdRef.current,
                     useAssetId: candidate.asset.asset_id,
                     generateNew: false,
                   })
                 : await confirmVideoSelection({
                     videoId: pendingSelection.videoId,
                     selectId: selected.select_id,
+                    userId: userIdRef.current,
                     useAssetId: candidate.asset.asset_id,
                     generateNew: false,
                   })
@@ -1019,11 +1029,13 @@ function App() {
               ? await confirmImagePostSelection({
                   postId: pendingSelection.videoId,
                   selectId: selected.select_id,
+                  userId: userIdRef.current,
                   generateNew: true,
                 })
               : await confirmVideoSelection({
                   videoId: pendingSelection.videoId,
                   selectId: selected.select_id,
+                  userId: userIdRef.current,
                   generateNew: true,
                   rejectMatchedAsset: Boolean(candidate),
                   qualityMode: 'production',

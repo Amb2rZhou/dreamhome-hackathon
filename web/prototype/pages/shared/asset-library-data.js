@@ -2,6 +2,7 @@ import { BACKEND_ASSETS } from './library-assets.generated.js';
 
 const FAVORITES_KEY = 'dreamhome.asset-library.v1';
 const USER_ASSETS_KEY = 'dreamhome.user-assets.v1';
+const PROFILE_KEY = 'dreamhome.local-profile.v1';
 const FAVORITES_MIGRATION_KEY = 'dreamhome.asset-library.defaults.20260723-approved-homes';
 // 产品演示的首次打开收藏。当前用户已明确选择的快照会写入这里；浏览器后续操作仍覆盖本地状态。
 export const DEFAULT_FAVORITE_IDS = [
@@ -49,6 +50,32 @@ const COLOR_HEX = {
   粉色: '#d8a9a4', 透明: '#d8d4cc', 彩色: '#c0a06a', 浅木色: '#cbb089', 原木色: '#cbb089',
 };
 const DEFAULT_OBJECT_COLOR = '#b98d61';
+
+export function getDreamHomeUserId() {
+  const configured = String(window.__DREAMHOME_USER_ID__ || '').trim();
+  if (configured) return configured;
+  try {
+    const stored = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+    if (typeof stored.userId === 'string' && stored.userId.trim()) return stored.userId;
+  } catch (_) {}
+  const suffix = globalThis.crypto?.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+  const userId = `local-profile-${suffix}`;
+  localStorage.setItem(PROFILE_KEY, JSON.stringify({ version: 1, userId }));
+  return userId;
+}
+
+const apiBase = () => {
+  const configured = String(window.__DREAMHOME_API_BASE_URL__ || '').trim().replace(/\/$/, '');
+  if (configured) return configured;
+  if (['localhost', '127.0.0.1', '0.0.0.0', '::1'].includes(location.hostname)) return 'http://127.0.0.1:8000';
+  if (['dreamhouse.top', 'www.dreamhouse.top'].includes(location.hostname)) return 'https://api.dreamhouse.top';
+  return '/dreamhome-api';
+};
+const backendMediaUrl = (value = '') => {
+  if (!value) return '';
+  if (/^https?:\/\//.test(value)) return value;
+  return `${apiBase()}${value.startsWith('/') ? value : `/${value}`}`;
+};
 const lightenHex = (hex, amount = .3) => {
   const n = parseInt(hex.slice(1), 16);
   const mix = (c) => Math.round(c + (255 - c) * amount);
@@ -149,6 +176,72 @@ export function addUserAsset(nextAsset) {
   return record;
 }
 
+function adaptUserLibraryAsset(rec) {
+  const labels = rec.labels || {};
+  const category = labels.category || '其他';
+  const source = rec.source || {};
+  const libraryContext = rec.library_context || {};
+  const videoId = libraryContext.video_id || libraryContext.image_post_id || source.video_id || source.image_post_id || null;
+  const videoSec = libraryContext.t ?? libraryContext.slide_index ?? source.t_best ?? source.slide_index ?? null;
+  const fallback = CATEGORY_DIMENSIONS[category] || [1, .8, .6];
+  const prior = rec.size_prior;
+  const knownDimensions = Array.isArray(prior) && prior.length >= 3
+    ? prior.slice(0, 3).map(Number)
+    : prior && typeof prior === 'object'
+      ? [Number(prior.w || prior.width), Number(prior.h || prior.height), Number(prior.d || prior.depth)]
+      : null;
+  const hasKnownSize = knownDimensions?.every((value) => Number.isFinite(value) && value > 0) || false;
+  const color = colorForAsset({ labels });
+  return {
+    id: rec.asset_id,
+    kind: 'furniture',
+    name: rec.name || labels.sub || category || '新家具',
+    source: 'user',
+    backendManaged: true,
+    visibility: 'private',
+    sourceType: videoId ? 'video' : 'offline_photo',
+    sourceLabel: videoId ? '视频圈选生成' : '线下拍照生成',
+    category,
+    subcategory: labels.sub || '',
+    primitive: CATEGORY_PRIMITIVE[category] || 'cabinet',
+    color,
+    accent: lightenHex(color, .3),
+    dimensions: hasKnownSize ? knownDimensions : fallback,
+    rawModel: Boolean(rec.glb_url),
+    sizePrior: { w: (hasKnownSize ? knownDimensions : fallback)[0], h: (hasKnownSize ? knownDimensions : fallback)[1], d: (hasKnownSize ? knownDimensions : fallback)[2] },
+    sizePriorVersion: hasKnownSize ? 1 : 2,
+    legacySizePrior: hasKnownSize ? null : { w: fallback[0], h: fallback[1], d: fallback[2] },
+    mount: labels.mount || 'floor',
+    sizeStatus: hasKnownSize ? 'known' : 'unknown',
+    thumbnail: backendMediaUrl(rec.thumb_url || ''),
+    modelUrl: backendMediaUrl(rec.glb_url || ''),
+    videoId,
+    videoSec,
+    videoUrl: videoId ? '../discover/index.html' : null,
+    colors: labels.colors || [],
+    materials: labels.materials || [],
+    styles: labels.styles || [],
+    features: labels.features || [],
+  };
+}
+
+export async function syncBackendUserAssets() {
+  const userId = getDreamHomeUserId();
+  const response = await fetch(`${apiBase()}/api/library?user_id=${encodeURIComponent(userId)}`);
+  if (!response.ok) throw new Error(`DreamHome library sync failed (${response.status})`);
+  const payload = await response.json();
+  const records = Array.isArray(payload) ? payload : [];
+  const liveAssets = records
+    .filter((rec) => rec?.status === 'ready' && rec?.asset_id && rec?.glb_url)
+    .map(adaptUserLibraryAsset);
+  const localOnly = getUserAssets().filter((item) => !item.backendManaged);
+  setUserAssets([...localOnly, ...liveAssets]);
+  // A generated/reused asset belongs to this local profile, so expose it in
+  // the same favorites surface without cloning the canonical asset.
+  liveAssets.forEach((item) => autoCollectOwn(item.id));
+  return liveAssets;
+}
+
 // 首次生成的用户组件自动收藏；已在收藏或曾被本人取消过则不强行加入。
 function autoCollectOwn(id) {
   const seededKey = USER_ASSETS_KEY + '.autocollected';
@@ -172,12 +265,23 @@ function userAssetById(id) {
 export function getAssets(kind, category) {
   // 用户刚生成的组件必须优先可见；收藏首页只展示有限数量，
   // 若放在平台资产之后会造成“生成成功但收藏里看不见”的错觉。
-  const combined = getUserAssets().concat(COMPONENT_ASSETS);
+  const combined = [...new Map(
+    COMPONENT_ASSETS.concat(getUserAssets()).map((item) => [item.id, item]),
+  ).values()];
   return combined.filter((item) => item.kind === kind && (!category || item.category === category));
 }
 
 export function getAsset(id) {
-  return ASSET_BY_ID.get(id) || userAssetById(id);
+  return userAssetById(id) || ASSET_BY_ID.get(id);
+}
+
+export function sourceFeedHref(asset) {
+  if (!asset?.videoId) return '';
+  const target = new URLSearchParams({ asset: asset.id, video: asset.videoId });
+  if (asset.videoSec != null && Number.isFinite(Number(asset.videoSec))) {
+    target.set('t', String(asset.videoSec));
+  }
+  return `../discover/index.html#${target}`;
 }
 
 export function getFavorites() {

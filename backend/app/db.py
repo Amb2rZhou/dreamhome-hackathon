@@ -70,6 +70,7 @@ CREATE TABLE IF NOT EXISTS user_library(
   user_id  TEXT NOT NULL,
   asset_id TEXT NOT NULL,
   via      TEXT NOT NULL DEFAULT '',
+  context_json TEXT NOT NULL DEFAULT '{}', -- 用户从哪个视频/图文位置收入
   added_at REAL NOT NULL,
   PRIMARY KEY(user_id, asset_id)
 );
@@ -408,12 +409,20 @@ def union_labels(a: dict, b: dict) -> dict:
 
 # ---- user library ----
 
-def library_add(user_id: str, asset_ids: list[str], via: str) -> int:
+def library_add(user_id: str, asset_ids: list[str], via: str,
+                context: Optional[dict] = None) -> int:
     n = 0
     for aid in asset_ids:
         try:
-            _exec("INSERT OR IGNORE INTO user_library(user_id,asset_id,via,added_at) VALUES(?,?,?,?)",
-                  (user_id, aid, via, time.time()))
+            context_json = json.dumps(context or {}, ensure_ascii=False)
+            _exec(
+                "INSERT INTO user_library(user_id,asset_id,via,context_json,added_at) "
+                "VALUES(?,?,?,?,?) ON CONFLICT(user_id,asset_id) DO UPDATE SET "
+                "via=excluded.via,added_at=excluded.added_at,context_json="
+                "CASE WHEN excluded.context_json='{}' THEN user_library.context_json "
+                "ELSE excluded.context_json END",
+                (user_id, aid, via, context_json, time.time()),
+            )
             n += 1
         except sqlite3.Error:
             pass
@@ -422,14 +431,16 @@ def library_add(user_id: str, asset_ids: list[str], via: str) -> int:
 
 def library_of(user_id: str) -> list[dict]:
     rows = _rows(
-        "SELECT a.*, ul.via, ul.added_at FROM user_library ul"
+        "SELECT a.*, ul.via, ul.added_at, ul.context_json AS library_context_json "
+        "FROM user_library ul"
         " JOIN assets a ON a.asset_id=ul.asset_id WHERE ul.user_id=? ORDER BY ul.added_at DESC",
         (user_id,),
     )
     out = []
     for r in rows:
         via, added = r.pop("via"), r.pop("added_at")
+        context = json.loads(r.pop("library_context_json") or "{}")
         a = _hydrate_asset(r)
-        a["via"], a["added_at"] = via, added
+        a["via"], a["added_at"], a["library_context"] = via, added, context
         out.append(a)
     return out

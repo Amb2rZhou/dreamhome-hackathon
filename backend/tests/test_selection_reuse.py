@@ -44,6 +44,7 @@ class SelectionReuseTests(unittest.TestCase):
             patch.object(videos.db, "get_asset", return_value=READY_ASSET),
             patch.object(videos.db, "get_track", return_value=track),
             patch.object(videos.db, "bind_track_asset") as bind,
+            patch.object(videos.db, "library_add") as library_add,
             patch.object(videos, "extract_labels", labels),
             patch.object(videos, "find_exact_asset", return_value={
                 "asset": READY_ASSET, "source": "track", "iou": 1.0,
@@ -65,13 +66,18 @@ class SelectionReuseTests(unittest.TestCase):
             confirmed = self.client.post(
                 "/api/videos/vid_test/select/confirm",
                 json={"select_id": body["select_id"], "generate_new": True,
-                      "quality_mode": "production"},
+                      "quality_mode": "production", "user_id": "local-profile-test"},
             )
             self.assertEqual(confirmed.status_code, 200, confirmed.text)
             result = confirmed.json()
             self.assertEqual(result["asset_id"], "ast_existing")
             self.assertEqual(result["quality_mode"], "reuse")
             self.assertIsNone(result["job_id"])
+            self.assertTrue(result["library_attached"])
+            library_add.assert_called_once_with(
+                "local-profile-test", ["ast_existing"], "video_selection_reuse",
+                {"video_id": "vid_test", "track_id": "trk_existing", "t": 3.0},
+            )
             bind.assert_called_once_with(
                 "trk_existing",
                 "ast_existing",

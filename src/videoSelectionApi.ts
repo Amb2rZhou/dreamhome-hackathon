@@ -139,6 +139,7 @@ export async function submitVideoSelection(input: {
 export async function confirmVideoSelection(input: {
   videoId: string
   selectId: string
+  userId: string
   useAssetId?: string
   generateNew?: boolean
   rejectMatchedAsset?: boolean
@@ -153,6 +154,7 @@ export async function confirmVideoSelection(input: {
       generate_new: input.generateNew ?? false,
       reject_matched_asset: input.rejectMatchedAsset ?? false,
       quality_mode: input.qualityMode || 'production',
+      user_id: input.userId,
     }),
   })
   return responseJson<VideoSelectConfirmResponse>(response)
@@ -180,6 +182,7 @@ export async function submitImagePostSelection(input: {
 export async function confirmImagePostSelection(input: {
   postId: string
   selectId: string
+  userId: string
   useAssetId?: string
   generateNew?: boolean
 }): Promise<VideoSelectConfirmResponse> {
@@ -191,6 +194,7 @@ export async function confirmImagePostSelection(input: {
       use_asset_id: input.useAssetId || null,
       generate_new: input.generateNew ?? false,
       quality_mode: 'production',
+      user_id: input.userId,
     }),
   })
   return responseJson<VideoSelectConfirmResponse>(response)

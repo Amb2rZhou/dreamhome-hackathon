@@ -31,6 +31,22 @@ class FeedMigrationTests(unittest.TestCase):
         self.assertEqual(record["review_status"], "unreviewed")
         self.assertEqual(record["binding_version"], 1)
 
+    def test_user_library_context_migration_is_additive_and_idempotent(self):
+        conn = sqlite3.connect(":memory:")
+        conn.execute(
+            "CREATE TABLE user_library(user_id TEXT NOT NULL, asset_id TEXT NOT NULL, "
+            "via TEXT NOT NULL DEFAULT '', added_at REAL NOT NULL, "
+            "PRIMARY KEY(user_id, asset_id))"
+        )
+
+        first = apply_compat_migrations(conn)
+        second = apply_compat_migrations(conn)
+
+        self.assertEqual(first, ["context_json"])
+        self.assertEqual(second, [])
+        columns = [item[1] for item in conn.execute("PRAGMA table_info(user_library)")]
+        self.assertIn("context_json", columns)
+
 
 class FeedManifestTests(unittest.TestCase):
     def test_current_demo_manifest_is_deterministic_and_uses_catalog_fallback(self):

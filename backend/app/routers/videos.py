@@ -401,10 +401,19 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
                 binding_review_status="approved",
                 binding_source="user_confirmed_reuse",
             )
+            library_attached = False
+            if req.user_id:
+                db.library_add(req.user_id, [exact_asset_id], "video_selection_reuse", {
+                    "video_id": video_id,
+                    "track_id": track_id,
+                    "t": sel["t"],
+                })
+                library_attached = True
             return SelectConfirmResponse(
                 asset_id=exact_asset_id,
                 track_id=track_id,
                 quality_mode="reuse",
+                library_attached=library_attached,
             )
     elif exact_asset_id and req.reject_matched_asset:
         # The user inspected the matched GLB and explicitly said it is not the
@@ -453,8 +462,17 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
             binding_source="user_confirmed_reuse",
         )
         _SELECTS.pop(req.select_id, None)
+        library_attached = False
+        if req.user_id:
+            db.library_add(req.user_id, [req.use_asset_id], "video_selection_reuse", {
+                "video_id": video_id,
+                "track_id": track_id,
+                "t": sel["t"],
+            })
+            library_attached = True
         return SelectConfirmResponse(asset_id=req.use_asset_id, track_id=track_id,
-                                     quality_mode="reuse")
+                                     quality_mode="reuse",
+                                     library_attached=library_attached)
 
     if not req.generate_new:
         raise HTTPException(400, "either use_asset_id or generate_new=true")

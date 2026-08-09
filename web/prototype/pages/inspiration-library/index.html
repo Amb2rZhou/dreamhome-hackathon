@@ -215,7 +215,7 @@
   </main>
   <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
   <script type="module">
-    import { COMPONENT_FAMILIES, FURNITURE_CATEGORIES, getAssets, getAsset, getFavorites, toggleFavorite, removeUserAsset, addUserAsset } from '../shared/asset-library-data.js';
+    import { COMPONENT_FAMILIES, FURNITURE_CATEGORIES, getAssets, getAsset, getFavorites, toggleFavorite, removeUserAsset, addUserAsset, sourceFeedHref, syncBackendUserAssets } from '../shared/asset-library-data.js';
     import { renderTemplatePreview, renderTemplatePreviews, disposeTemplatePreviews } from '../shared/template-preview-3d.js';
 
     const home = document.querySelector('#libraryHome');
@@ -757,7 +757,7 @@
       viewerName.value = asset.name;
       viewerName.readOnly = !editable;
       viewerDelete.hidden = !editable;
-      viewerSource.hidden = editable || asset.sourceType === 'offline_photo' || !asset.videoUrl; // 拍照资产没有虚构的视频跳转
+      viewerSource.hidden = asset.sourceType === 'offline_photo' || !asset.videoId; // 只有真实 video_id 才提供回溯，用户生成资产也保留来源。
       syncViewerFav();
       fitViewerName();
       const catLabel = asset.category ? FURNITURE_CATEGORIES.find((c) => c.id === asset.category)?.label || '' : '';
@@ -808,10 +808,8 @@
     // 删除（仅用户组件）→ 先弹「删除后不可恢复」二次确认
     viewerDelete.addEventListener('click', () => { if (!viewerAssetId) return; openDelConfirm({ type: 'single', id: viewerAssetId }); });
     viewerSource.addEventListener('click', () => {
-      const asset = getAsset(viewerAssetId); if (!asset?.videoUrl) return;
-      const target = new URLSearchParams({ asset:viewerAssetId, video:asset.videoId || '' });
-      if (asset.videoSec != null && Number.isFinite(Number(asset.videoSec))) target.set('t', String(asset.videoSec));
-      location.href = `../discover/index.html#${target}`;
+      const href = sourceFeedHref(getAsset(viewerAssetId)); if (!href) return;
+      location.href = href;
     }); // 仅视频资产跳「刷一刷」准确来源
 
     // ---------- 删除二次确认弹窗 ----------
@@ -921,6 +919,9 @@
     window.addEventListener('hashchange', route);
     renderBanner();
     route();
+    // 首屏先用缓存立即渲染，再用后端用户库覆盖刷新。
+    // 失败时保留上次成功同步的资产，不阻断灵感库浏览。
+    syncBackendUserAssets().then(rerender).catch((error) => console.warn('[DreamHome API] user library sync unavailable', error));
   </script>
 </body>
 </html>

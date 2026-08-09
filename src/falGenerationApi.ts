@@ -18,6 +18,8 @@ export interface FalJobResponse {
   error?: string | null
   quality_mode?: 'draft' | 'fast' | 'production' | null
   library_attached?: boolean
+  asset_id?: string | null
+  track_id?: string | null
 }
 
 export class FalApiError extends Error {
@@ -101,7 +103,7 @@ export function falJobToComponent(job: FalJobResponse, fallback: {
   const thumbnail = job.thumbnail_url || fallback.snapshot
   const isProduction = job.quality_mode === 'production'
   return {
-    id: `fal-${fallback.id}`,
+    id: job.asset_id || `fal-${fallback.id}`,
     category: fallback.category,
     name: fallback.name,
     source: isProduction ? '正式生成 · DreamHome' : '快速草稿 · TRELLIS',
