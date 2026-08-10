@@ -99,6 +99,10 @@ describe('Mia interaction with DreamHome data', () => {
     expect(assets).toContain('/api/library/batch-add');
     expect(assets).toContain('record?.asset_id === id');
     expect(social).toContain('export function addMessage');
-    expect(home).not.toContain('fire-buddy-home-visitor.js');
+    expect(home).toContain("import { mountFireBuddyHomeVisitor }");
+    expect(home).toContain('if(IS_FRIEND_SHARE_VISIT)');
+    expect(home).toContain('projectPlacements:project.placements||[]');
+    expect(home).toContain("variant:'share'");
+    expect(home).toContain('fireBuddyVisitor?.dispose?.()');
   });
 });
