@@ -217,14 +217,14 @@
       }).join('') : '<div class="detail-empty">家具清单正在同步，仍可先进入 3D 参观这个家</div>';
     }
 
-    function openHomeDetail(home) {
+    function openHomeDetail(home, shareId = '', ownerId = '') {
       detailHome = home;
       const project = homeProject(home.id);
       const preview = home.cover?.url || home.coverImage || home.previewImage || project?.shareCover?.url || project?.coverImage || project?.previewImage || '';
       const name = home.name || project?.name || '我的家';
       ui.detailTitle.textContent = name;
       ui.detailScene.innerHTML = preview ? `<img src="${escapeText(preview)}" alt="${escapeText(name)} 3D 缩略图" />` : '';
-      ui.detailEnter3d.href = `../my-home/index.html?home=${encodeURIComponent(home.id)}&mode=locked&source=friend-share&friend=${encodeURIComponent(friend.id)}`;
+      ui.detailEnter3d.href = `../my-home/index.html?home=${encodeURIComponent(home.id)}&mode=locked&source=friend-share&friend=${encodeURIComponent(friend.id)}&shareId=${encodeURIComponent(shareId)}&ownerId=${encodeURIComponent(ownerId || friend.id)}`;
       renderFurniture(home);
       ui.detailSheet.classList.remove('is-full');
       ui.detailExpand.setAttribute('aria-label', '扩大至整屏');
@@ -268,7 +268,8 @@
         const homeName = home.name || '我的家';
         const roomType = roomTypeLabel(home);
         const subtitle = roomType === '理想家' ? '喜欢这里的家具或户型，可以收藏到你的灵感库' : `喜欢这个${roomType}的家具和布局，可以收藏到你的灵感库`;
-        return `<article class="message ${outgoing ? 'outgoing' : 'incoming'}"><span class="avatar message-avatar" style="--avatar:${escapeText(avatarColor)}">${escapeText(avatar)}</span><div><div class="home-share"><button class="home-card" type="button" data-home-detail="${escapeText(home.id)}" aria-label="查看 ${escapeText(homeName)} 的详情，并收藏喜欢的家具"><div class="home-visual"><div class="home-photo">${preview?`<img src="${escapeText(preview)}" alt="${escapeText(homeName)} 预览" />`:''}</div><span class="home-brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 10.5 8-6.5 8 6.5"/><path d="M6.5 9.2V20h11V9.2"/><circle cx="10" cy="13" r=".8"/><circle cx="14" cy="13" r=".8"/><path d="M10.5 20v-4h3v4"/></svg><b>DreamHome理想家</b></span><span class="home-invite-bubble">来我家<br>一起看看吧！ <em>♥</em></span><span class="home-mascot-slot"><img class="home-mascot" src="../../assets/mascot/dreamhome-master-share-card.png" alt="" aria-hidden="true" /></span></div><div class="home-copy"><span class="home-copy-mark star">✦</span><span class="home-copy-mark heart">♥</span><span class="home-copy-mark strokes"></span><span class="home-eyebrow">邀请你来参观我的</span><b class="home-title" style="--home-title-size:${titleSize(homeName)}px">「${escapeText(homeName)}」</b><div class="home-card-foot"><small>${escapeText(subtitle)}</small><span class="home-cta">一起看看 <i>›</i></span></div></div></button></div><div class="read">${escapeText(timeLabel(message.createdAt))}${outgoing ? ' · 已送达' : ''}</div></div></article>`;
+        const ownerId=home.originalOwnerId || (outgoing ? 'me' : friend.id);
+        return `<article class="message ${outgoing ? 'outgoing' : 'incoming'}"><span class="avatar message-avatar" style="--avatar:${escapeText(avatarColor)}">${escapeText(avatar)}</span><div><div class="home-share"><button class="home-card" type="button" data-home-detail="${escapeText(home.id)}" data-share-id="${escapeText(message.id)}" data-owner-id="${escapeText(ownerId)}" aria-label="查看 ${escapeText(homeName)} 的详情，并收藏喜欢的家具"><div class="home-visual"><div class="home-photo">${preview?`<img src="${escapeText(preview)}" alt="${escapeText(homeName)} 预览" />`:''}</div><span class="home-brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 10.5 8-6.5 8 6.5"/><path d="M6.5 9.2V20h11V9.2"/><circle cx="10" cy="13" r=".8"/><circle cx="14" cy="13" r=".8"/><path d="M10.5 20v-4h3v4"/></svg><b>DreamHome理想家</b></span><span class="home-invite-bubble">来我家<br>一起看看吧！ <em>♥</em></span><span class="home-mascot-slot"><img class="home-mascot" src="../../assets/mascot/dreamhome-master-share-card.png" alt="" aria-hidden="true" /></span></div><div class="home-copy"><span class="home-copy-mark star">✦</span><span class="home-copy-mark heart">♥</span><span class="home-copy-mark strokes"></span><span class="home-eyebrow">邀请你来参观我的</span><b class="home-title" style="--home-title-size:${titleSize(homeName)}px">「${escapeText(homeName)}」</b><div class="home-card-foot"><small>${escapeText(subtitle)}</small><span class="home-cta">一起看看 <i>›</i></span></div></div></button></div><div class="read">${escapeText(timeLabel(message.createdAt))}${outgoing ? ' · 已送达' : ''}</div></div></article>`;
       }
       return `<article class="message ${outgoing ? 'outgoing' : 'incoming'}"><span class="avatar message-avatar" style="--avatar:${escapeText(avatarColor)}">${escapeText(avatar)}</span><div><div class="bubble">${escapeText(message.text)}</div><div class="read">${escapeText(timeLabel(message.createdAt))}</div></div></article>`;
     }
@@ -280,8 +281,6 @@
         return;
       }
       const latestDay = new Intl.DateTimeFormat('zh-CN', { month:'long', day:'numeric' }).format(new Date(conversation.at(-1).createdAt));
-      const latestHome = [...conversation].reverse().find((message) => message.type === 'home_share' && message.home?.id)?.home;
-      if (latestHome) ui.back.href = `../my-home/index.html?home=${encodeURIComponent(latestHome.id)}&mode=locked`;
       ui.messages.innerHTML = `<div class="date">${escapeText(latestDay)}</div>${conversation.map(renderMessage).join('')}`;
       requestAnimationFrame(() => { ui.messages.scrollTop = ui.messages.scrollHeight; });
     }
@@ -290,8 +289,8 @@
     ui.messages.addEventListener('click', (event) => {
       const card = event.target.closest('[data-home-detail]');
       if (!card) return;
-      const home = [...getConversation(friend.id)].reverse().find((message) => message.type === 'home_share' && message.home?.id === card.dataset.homeDetail)?.home;
-      if (home) location.href = `../my-home/index.html?home=${encodeURIComponent(home.id)}&mode=locked&source=friend-share&friend=${encodeURIComponent(friend.id)}`;
+      const message = getConversation(friend.id).find((item) => item.type === 'home_share' && item.id === card.dataset.shareId && item.home?.id === card.dataset.homeDetail);
+      if (message?.home) location.href = `../my-home/index.html?home=${encodeURIComponent(message.home.id)}&mode=locked&source=friend-share&friend=${encodeURIComponent(friend.id)}&shareId=${encodeURIComponent(message.id)}&ownerId=${encodeURIComponent(card.dataset.ownerId || friend.id)}`;
     });
     ui.detailBackdrop.addEventListener('click', closeHomeDetail);
     ui.detailClose.addEventListener('click', closeHomeDetail);
