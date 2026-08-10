@@ -1,0 +1,1311 @@
+{
+  "schema_version": 1,
+  "batch": "qc_direct_3d_2026-07-22",
+  "reviewed": 39,
+  "passed": 36,
+  "failed": 3,
+  "results": [
+    {
+      "asset_id": "ast_02d392491118",
+      "name": "桌子",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 124.5,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 122.0,
+          "t_end": 124.5,
+          "representative_t": 124.5
+        }
+      ],
+      "model_path": "/storage/models/32a786276525449aa7577693900ab737.glb",
+      "model_sha256": "2b3ec1c1348f60cbb0e0c1c979d553c2ab5938d74253c0f2fc8321098ecd1409",
+      "dimensions": [
+        0.9990163445472717,
+        0.6711048781871796,
+        1.0000430643558502
+      ],
+      "vertex_count": 9045,
+      "triangle_count": 14536,
+      "generated_at": "2026-07-22T12:53:54.977877+00:00",
+      "reviewed_at": "2026-07-22T13:07:16.567350+00:00"
+    },
+    {
+      "asset_id": "ast_0b5b91c8bf11",
+      "name": "单椅",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 48.0,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 48.0,
+          "t_end": 49.5,
+          "representative_t": 48.0
+        }
+      ],
+      "model_path": "/storage/models/f1d02d79b1024c7599b2d33668b91184.glb",
+      "model_sha256": "7ce0b9adb7d0e324b96ce4de08eec5def26b3b23cdaf57eda9e03ed3828f8bde",
+      "dimensions": [
+        0.6657272577285767,
+        0.9827324748039246,
+        0.8800835311412811
+      ],
+      "vertex_count": 10522,
+      "triangle_count": 16474,
+      "generated_at": "2026-07-22T12:54:33.375229+00:00",
+      "reviewed_at": "2026-07-22T13:07:06.797647+00:00"
+    },
+    {
+      "asset_id": "ast_0c40e643ff23",
+      "name": "边柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_5f32a0ac954a",
+      "representative_sec": 10.5,
+      "segments": [
+        {
+          "video_id": "vid_5f32a0ac954a",
+          "t_start": 10.0,
+          "t_end": 10.5,
+          "representative_t": 10.5
+        }
+      ],
+      "model_path": "/storage/models/d0fb78e37da54f8f836310206e45cac1.glb",
+      "model_sha256": "cdee3192add8369e04eec5ab12bd05e61e9fa11feeacacd76a2d4be8698ee4d6",
+      "dimensions": [
+        0.7926462590694427,
+        1.0001480281352997,
+        0.27869103848934174
+      ],
+      "vertex_count": 14012,
+      "triangle_count": 23108,
+      "generated_at": "2026-07-22T12:30:38.467042+00:00",
+      "reviewed_at": "2026-07-22T12:50:47.440772+00:00"
+    },
+    {
+      "asset_id": "ast_0e38333f7509",
+      "name": "桌子",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 7.5,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 7.5,
+          "t_end": 8.5,
+          "representative_t": 7.5
+        }
+      ],
+      "model_path": "/storage/models/461875983c5d4448a23854e481d6a650.glb",
+      "model_sha256": "a557f648792e95c463a45fda629b7c5a12386bd780e3d1fa38e79c2a0dd27752",
+      "dimensions": [
+        1.0005509853363037,
+        0.5046795010566711,
+        0.9998949766159058
+      ],
+      "vertex_count": 8472,
+      "triangle_count": 15088,
+      "generated_at": "2026-07-22T12:49:19.307835+00:00",
+      "reviewed_at": "2026-07-22T12:51:21.604540+00:00"
+    },
+    {
+      "asset_id": "ast_12910011860f",
+      "name": "盆栽植物",
+      "category": "绿植",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_b75d95dc92a7",
+      "representative_sec": 22.0,
+      "segments": [
+        {
+          "video_id": "vid_b75d95dc92a7",
+          "t_start": 21.5,
+          "t_end": 22.5,
+          "representative_t": 22.0
+        }
+      ],
+      "model_path": "/storage/models/8986002dd0304651b9b784a443921bcc.glb",
+      "model_sha256": "53729ea1acb795dfd8a6cdec31a940e88300b319eac7340b0a1fe74335d5f2f9",
+      "dimensions": [
+        0.7139481604099274,
+        0.999199777841568,
+        0.33903858065605164
+      ],
+      "vertex_count": 16851,
+      "triangle_count": 18127,
+      "generated_at": "2026-07-22T12:29:09.970906+00:00",
+      "reviewed_at": "2026-07-22T12:49:49.983145+00:00"
+    },
+    {
+      "asset_id": "ast_12e8c8bee10d",
+      "name": "悬挂绿植",
+      "category": "绿植",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_b75d95dc92a7",
+      "representative_sec": 18.0,
+      "segments": [
+        {
+          "video_id": "vid_b75d95dc92a7",
+          "t_start": 6.2,
+          "t_end": 17.9,
+          "representative_t": 17.9
+        }
+      ],
+      "model_path": "/storage/models/306b9f2615464ffdb0fc671817cc433f.glb",
+      "model_sha256": "f6c546e4f62337dcdc6d57f0367e28e46269ded61da05d4cfca2578abedd1029",
+      "dimensions": [
+        0.7691483795642853,
+        0.924414187669754,
+        0.7932577729225159
+      ],
+      "vertex_count": 16094,
+      "triangle_count": 18863,
+      "generated_at": "2026-07-22T12:31:14.135754+00:00",
+      "reviewed_at": "2026-07-22T12:49:47.746494+00:00"
+    },
+    {
+      "asset_id": "ast_1b5019dfc442",
+      "name": "茶几",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 53.5,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 52.5,
+          "t_end": 54.5,
+          "representative_t": 53.5
+        }
+      ],
+      "model_path": "/storage/models/2694bc81cf0144bd915acb7fab5a3633.glb",
+      "model_sha256": "6eda4e9844126ed508081595b099ec67300ddb4b87046a4b44fb1cd11a87b756",
+      "dimensions": [
+        1.0009422302246094,
+        0.3108743280172348,
+        0.27884069085121155
+      ],
+      "vertex_count": 6079,
+      "triangle_count": 9428,
+      "generated_at": "2026-07-22T12:52:03.073640+00:00",
+      "reviewed_at": "2026-07-22T13:07:10.716301+00:00"
+    },
+    {
+      "asset_id": "ast_23cdb254488f",
+      "name": "单椅",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 83.5,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 83.5,
+          "t_end": 84.0,
+          "representative_t": 83.5
+        }
+      ],
+      "model_path": "/storage/models/7c23bfde88d946fe879ddba2f76d2fd4.glb",
+      "model_sha256": "06f2d5ca690c6ee516bafe0089bc9a31a0bd4bbb78269b51296271ff78ae6b5e",
+      "dimensions": [
+        0.755148857831955,
+        1.0016835927963257,
+        0.7806240022182465
+      ],
+      "vertex_count": 11534,
+      "triangle_count": 16492,
+      "generated_at": "2026-07-22T12:55:11.584936+00:00",
+      "reviewed_at": "2026-07-22T13:07:12.799641+00:00"
+    },
+    {
+      "asset_id": "ast_31c15251a859",
+      "name": "干花摆件",
+      "category": "绿植",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_605df2fff231",
+      "representative_sec": 52.5,
+      "segments": [
+        {
+          "video_id": "vid_605df2fff231",
+          "t_start": 46.0,
+          "t_end": 54.0,
+          "representative_t": 52.5
+        }
+      ],
+      "model_path": "/storage/models/6bbadba2b80045b8bbd6fa0a3d0cc8c8.glb",
+      "model_sha256": "ee3454c38d7e5439880098ec82581975f095d93998d10a1fa207c0516274daa2",
+      "dimensions": [
+        0.9322368502616882,
+        0.9993800818920135,
+        0.8543960750102997
+      ],
+      "vertex_count": 19389,
+      "triangle_count": 23769,
+      "generated_at": "2026-07-22T12:31:53.041936+00:00",
+      "reviewed_at": "2026-07-22T12:54:04.132583+00:00"
+    },
+    {
+      "asset_id": "ast_3323727dd208",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_b75d95dc92a7",
+      "representative_sec": 26.0,
+      "segments": [
+        {
+          "video_id": "vid_b75d95dc92a7",
+          "t_start": 25.5,
+          "t_end": 26.0,
+          "representative_t": 26.0
+        }
+      ],
+      "model_path": "/storage/models/d6fc3145ad154211be3f56f8d3041dd2.glb",
+      "model_sha256": "a073f446a5063ce6e2b1511f123485694d72d85df53159c368b17b621f9eac6a",
+      "dimensions": [
+        0.3087374120950699,
+        0.9993045628070831,
+        0.29622305929660797
+      ],
+      "vertex_count": 965,
+      "triangle_count": 1500,
+      "generated_at": "2026-07-22T12:32:20.749941+00:00",
+      "reviewed_at": "2026-07-22T12:49:56.638328+00:00"
+    },
+    {
+      "asset_id": "ast_4455b63b1e0b",
+      "name": "玻璃罩摆件",
+      "category": "装饰",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_58a7a1504281",
+      "representative_sec": 133.5,
+      "segments": [
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 133.0,
+          "t_end": 133.5,
+          "representative_t": 133.5
+        }
+      ],
+      "model_path": "/storage/models/e25950bf91fa493db7380324086dd069.glb",
+      "model_sha256": "3ddc86e1c509c512608d08c81553ec77bbfcf9b86acd4505c55365ac4a61bd12",
+      "dimensions": [
+        0.34546877443790436,
+        0.5121067613363266,
+        0.34312064945697784
+      ],
+      "vertex_count": 2199,
+      "triangle_count": 3738,
+      "generated_at": "2026-07-22T12:32:50.112755+00:00",
+      "reviewed_at": "2026-07-22T13:04:01.567433+00:00"
+    },
+    {
+      "asset_id": "ast_45226bd63340",
+      "name": "音乐盒",
+      "category": "装饰",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_40734d7f2e6c",
+      "representative_sec": 7.0,
+      "segments": [
+        {
+          "video_id": "vid_40734d7f2e6c",
+          "t_start": 6.0,
+          "t_end": 8.0,
+          "representative_t": 7.0
+        }
+      ],
+      "model_path": "/storage/models/2518123fae7a423286c5d215ef075122.glb",
+      "model_sha256": "fd1bcca6bf638301a4f6326dcc893a4221f084e76a2d93c87a079f7c87526225",
+      "dimensions": [
+        0.532972663640976,
+        0.5556274652481079,
+        0.5347784459590912
+      ],
+      "vertex_count": 11014,
+      "triangle_count": 14694,
+      "generated_at": "2026-07-22T12:33:23.946486+00:00",
+      "reviewed_at": "2026-07-22T13:06:41.663937+00:00"
+    },
+    {
+      "asset_id": "ast_4d362c616d1d",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 95.0,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 95.0,
+          "t_end": 96.0,
+          "representative_t": 95.0
+        }
+      ],
+      "model_path": "/storage/models/80cc8ddda35c452c8bd9070f2c4db035.glb",
+      "model_sha256": "9fe49f81a995ecf38314d702622e59d623910d84c4be998e22df8caaabea8dd6",
+      "dimensions": [
+        0.7314360737800598,
+        1.0004294216632843,
+        0.7358908951282501
+      ],
+      "vertex_count": 3236,
+      "triangle_count": 4044,
+      "generated_at": "2026-07-22T12:33:56.387508+00:00",
+      "reviewed_at": "2026-07-22T12:52:59.366545+00:00"
+    },
+    {
+      "asset_id": "ast_4fd1300eef86",
+      "name": "餐桌",
+      "category": "桌子",
+      "verdict": "fail",
+      "reason": "",
+      "video_id": "vid_58a7a1504281",
+      "representative_sec": 8.5,
+      "segments": [
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 3.5,
+          "t_end": 9.5,
+          "representative_t": 8.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 30.5,
+          "t_end": 32.5,
+          "representative_t": 31.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 32.5,
+          "t_end": 34.0,
+          "representative_t": 33.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 45.5,
+          "t_end": 48.5,
+          "representative_t": 47.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 49.0,
+          "t_end": 56.5,
+          "representative_t": 56.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 80.5,
+          "t_end": 81.0,
+          "representative_t": 80.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 81.0,
+          "t_end": 81.5,
+          "representative_t": 81.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 81.5,
+          "t_end": 82.0,
+          "representative_t": 82.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 82.0,
+          "t_end": 82.5,
+          "representative_t": 82.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 84.5,
+          "t_end": 85.0,
+          "representative_t": 84.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 85.5,
+          "t_end": 86.0,
+          "representative_t": 86.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 86.5,
+          "t_end": 87.5,
+          "representative_t": 86.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 94.5,
+          "t_end": 96.5,
+          "representative_t": 94.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 144.0,
+          "t_end": 145.0,
+          "representative_t": 145.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 144.5,
+          "t_end": 145.5,
+          "representative_t": 145.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 145.0,
+          "t_end": 146.0,
+          "representative_t": 146.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 145.5,
+          "t_end": 146.5,
+          "representative_t": 145.5
+        }
+      ],
+      "model_path": "/storage/models/96c7f3d5f8ba48c680d830b86ce96517.glb",
+      "model_sha256": "a151481c774e272ef67790497cf6c5a3ea96c489cdb6d7429273e5c7c26b4d62",
+      "dimensions": [
+        0.9989169836044312,
+        0.3594248294830322,
+        0.4957709014415741
+      ],
+      "vertex_count": 5477,
+      "triangle_count": 8570,
+      "generated_at": "2026-07-22T12:59:50.051379+00:00",
+      "reviewed_at": "2026-07-22T13:03:25.650405+00:00"
+    },
+    {
+      "asset_id": "ast_655a4e7f4daf",
+      "name": "落地灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_182cbf77954d",
+      "representative_sec": 11.0,
+      "segments": [
+        {
+          "video_id": "vid_182cbf77954d",
+          "t_start": 8.5,
+          "t_end": 11.5,
+          "representative_t": 11.0
+        }
+      ],
+      "model_path": "/storage/models/e08d6e04873e4c75818791aa29aeab9c.glb",
+      "model_sha256": "8d23c10736ffa55c95ca856c0450a8175e97d10a10b4acc04f28a3f365631675",
+      "dimensions": [
+        0.2181684970855713,
+        0.9900119304656982,
+        0.2171742096543312
+      ],
+      "vertex_count": 1698,
+      "triangle_count": 2140,
+      "generated_at": "2026-07-22T12:34:24.062940+00:00",
+      "reviewed_at": "2026-07-22T12:48:53.086661+00:00"
+    },
+    {
+      "asset_id": "ast_65f6490e4afc",
+      "name": "冰箱",
+      "category": "家电",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 9.5,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 9.5,
+          "t_end": 10.0,
+          "representative_t": 9.5
+        },
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 15.0,
+          "t_end": 16.0,
+          "representative_t": 16.0
+        },
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 16.5,
+          "t_end": 17.0,
+          "representative_t": 16.5
+        }
+      ],
+      "model_path": "/storage/models/8c76476eb4634619b672651cbccf730f.glb",
+      "model_sha256": "7bfba38452077b4f9a4d9f6ff5a5c0922723c114e56e6fb7c90e30cc14ed0753",
+      "dimensions": [
+        0.3693361431360245,
+        1.0011470317840576,
+        0.42925333976745605
+      ],
+      "vertex_count": 7782,
+      "triangle_count": 12559,
+      "generated_at": "2026-07-22T12:55:44.370769+00:00",
+      "reviewed_at": "2026-07-22T13:06:58.870254+00:00"
+    },
+    {
+      "asset_id": "ast_79d7df1565e0",
+      "name": "插花摆件",
+      "category": "装饰",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_605df2fff231",
+      "representative_sec": 131.5,
+      "segments": [
+        {
+          "video_id": "vid_605df2fff231",
+          "t_start": 129.0,
+          "t_end": 132.0,
+          "representative_t": 131.5
+        }
+      ],
+      "model_path": "/storage/models/b5d737667c37444dbe65bd655d55ceda.glb",
+      "model_sha256": "b5c070c9f7825eccbbefa8bb673bb5e70d8bcd2939b7d0f53dabb4770ec55d32",
+      "dimensions": [
+        0.7793282866477966,
+        1.0008086562156677,
+        0.4439907670021057
+      ],
+      "vertex_count": 7477,
+      "triangle_count": 8373,
+      "generated_at": "2026-07-22T12:34:53.680572+00:00",
+      "reviewed_at": "2026-07-22T12:54:10.753746+00:00"
+    },
+    {
+      "asset_id": "ast_7d1a1127850a",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 118.5,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 116.0,
+          "t_end": 119.5,
+          "representative_t": 118.5
+        }
+      ],
+      "model_path": "/storage/models/3d8d7cd33ae748739ab2262c2ba66c37.glb",
+      "model_sha256": "6fd1e4eff7fc12a1ef68d6e40e9b0c7a0792afe295d4ba4b9f1ae10a3c6ede9b",
+      "dimensions": [
+        0.6773882508277893,
+        0.7400528490543365,
+        0.6755119264125824
+      ],
+      "vertex_count": 9421,
+      "triangle_count": 16038,
+      "generated_at": "2026-07-22T12:35:31.250784+00:00",
+      "reviewed_at": "2026-07-22T12:53:08.652329+00:00"
+    },
+    {
+      "asset_id": "ast_8926f9413f29",
+      "name": "床头桌",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_40734d7f2e6c",
+      "representative_sec": 4.0,
+      "segments": [
+        {
+          "video_id": "vid_40734d7f2e6c",
+          "t_start": 1.0,
+          "t_end": 4.0,
+          "representative_t": 4.0
+        }
+      ],
+      "model_path": "/storage/models/462e6fa6b6b044028bd83155b9d40863.glb",
+      "model_sha256": "6519a2595a61213ae665911f47073014dedf6a42dd3e10c12075c97069aff9bc",
+      "dimensions": [
+        0.5783657729625702,
+        1.0008682608604431,
+        0.6472588777542114
+      ],
+      "vertex_count": 9260,
+      "triangle_count": 13448,
+      "generated_at": "2026-07-22T12:36:04.776685+00:00",
+      "reviewed_at": "2026-07-22T13:06:40.852190+00:00"
+    },
+    {
+      "asset_id": "ast_924f98656f6a",
+      "name": "画框",
+      "category": "装饰",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_58a7a1504281",
+      "representative_sec": 122.5,
+      "segments": [
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 118.5,
+          "t_end": 124.0,
+          "representative_t": 122.5
+        }
+      ],
+      "model_path": "/storage/models/1b7000d1dbb94e44bec909f8fb00d2e2.glb",
+      "model_sha256": "507a3f5fce7878e44a4392734f9d7fd42d0d5816437165053e35432dbae22f56",
+      "dimensions": [
+        1.0003051161766052,
+        0.7557247579097748,
+        0.3252762705087662
+      ],
+      "vertex_count": 9200,
+      "triangle_count": 17194,
+      "generated_at": "2026-07-22T12:36:43.287779+00:00",
+      "reviewed_at": "2026-07-22T13:04:00.050570+00:00"
+    },
+    {
+      "asset_id": "ast_935ba7a58128",
+      "name": "桌子",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 113.0,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 112.0,
+          "t_end": 115.5,
+          "representative_t": 113.0
+        }
+      ],
+      "model_path": "/storage/models/014eb6b8d9a44b8ba818eaf4594d9e10.glb",
+      "model_sha256": "c3297b62a88eb0f32b6b2d6b54ee9bd8e70aeb4e4cdf5fd4d07ab7d47fabf941",
+      "dimensions": [
+        1.0014022588729858,
+        0.4936124235391617,
+        0.33334043622016907
+      ],
+      "vertex_count": 9555,
+      "triangle_count": 15424,
+      "generated_at": "2026-07-22T12:56:20.115567+00:00",
+      "reviewed_at": "2026-07-22T13:07:15.433167+00:00"
+    },
+    {
+      "asset_id": "ast_960342a8f926",
+      "name": "马桶",
+      "category": "卫浴",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 73.0,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 69.0,
+          "t_end": 73.5,
+          "representative_t": 73.0
+        }
+      ],
+      "model_path": "/storage/models/4722b2a03ec744819aca0e3889157ef1.glb",
+      "model_sha256": "909629cde417e9b40aca2467e73da2e68f6316b3b4e92dd5cae45e7a585438a0",
+      "dimensions": [
+        0.5419822037220001,
+        0.8929935097694397,
+        0.9934424757957458
+      ],
+      "vertex_count": 11474,
+      "triangle_count": 18742,
+      "generated_at": "2026-07-22T12:52:45.438480+00:00",
+      "reviewed_at": "2026-07-22T13:07:11.549296+00:00"
+    },
+    {
+      "asset_id": "ast_980f1a89dee5",
+      "name": "洗衣机",
+      "category": "家电",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_58a7a1504281",
+      "representative_sec": 66.0,
+      "segments": [
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 62.5,
+          "t_end": 66.0,
+          "representative_t": 66.0
+        }
+      ],
+      "model_path": "/storage/models/a8f8ee61d1fb4b89892b003221432e7b.glb",
+      "model_sha256": "b1f1a2f9d0496adf605d60d669786235789bffa4122555284de1d2e2d247fe42",
+      "dimensions": [
+        0.4373156577348709,
+        0.9980844855308533,
+        0.576054722070694
+      ],
+      "vertex_count": 24014,
+      "triangle_count": 36423,
+      "generated_at": "2026-07-22T12:37:26.164478+00:00",
+      "reviewed_at": "2026-07-22T13:03:47.132740+00:00"
+    },
+    {
+      "asset_id": "ast_99d79ff4452e",
+      "name": "桌子",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 20.5,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 18.0,
+          "t_end": 21.0,
+          "representative_t": 20.5
+        }
+      ],
+      "model_path": "/storage/models/71e7ff70656f4e5499d60158131e4570.glb",
+      "model_sha256": "259dab79338716a617894abbc7521cd70b3fcf6b33173cce96e0cf8fd3d48382",
+      "dimensions": [
+        1.0008039474487305,
+        0.4534907042980194,
+        0.3016578257083893
+      ],
+      "vertex_count": 5929,
+      "triangle_count": 10236,
+      "generated_at": "2026-07-22T12:56:56.148966+00:00",
+      "reviewed_at": "2026-07-22T13:07:03.730524+00:00"
+    },
+    {
+      "asset_id": "ast_9aa4c4becf13",
+      "name": "吧台",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_605df2fff231",
+      "representative_sec": 9.5,
+      "segments": [
+        {
+          "video_id": "vid_605df2fff231",
+          "t_start": 8.4,
+          "t_end": 9.7,
+          "representative_t": 9.5
+        }
+      ],
+      "model_path": "/storage/models/f6c77c0755b7457597472e8b86b0988a.glb",
+      "model_sha256": "c4c6f7cf8914e8cce0835d13e14bff2002531c7c2d8ab61282b454d7644240cf",
+      "dimensions": [
+        1.0022406578063965,
+        0.7956591546535492,
+        0.39996659755706787
+      ],
+      "vertex_count": 11153,
+      "triangle_count": 18572,
+      "generated_at": "2026-07-22T12:38:09.992100+00:00",
+      "reviewed_at": "2026-07-22T12:53:59.404019+00:00"
+    },
+    {
+      "asset_id": "ast_9dc8d4e8a44f",
+      "name": "灯具",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 5.5,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 4.0,
+          "t_end": 6.0,
+          "representative_t": 5.5
+        }
+      ],
+      "model_path": "/storage/models/a49b7566b0944d8b8ef31984f05506a8.glb",
+      "model_sha256": "40b1579446231517e7e6975b41d66c2d4022967e1539805d5dc2565824b447e7",
+      "dimensions": [
+        0.41179393231868744,
+        1.001937448978424,
+        0.4114096462726593
+      ],
+      "vertex_count": 5844,
+      "triangle_count": 9864,
+      "generated_at": "2026-07-22T12:48:42.292231+00:00",
+      "reviewed_at": "2026-07-22T12:51:01.103197+00:00"
+    },
+    {
+      "asset_id": "ast_a436c4d67cad",
+      "name": "边桌",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 10.5,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 9.0,
+          "t_end": 12.0,
+          "representative_t": 10.5
+        }
+      ],
+      "model_path": "/storage/models/28aabc58bc854ab49f2617a16fbde8d2.glb",
+      "model_sha256": "62438117437e1b01accee2b959eabce189c791d55703ed96a6ed896a1a7bac01",
+      "dimensions": [
+        1.0009844899177551,
+        0.4893685579299927,
+        0.6421218812465668
+      ],
+      "vertex_count": 11252,
+      "triangle_count": 19270,
+      "generated_at": "2026-07-22T12:50:44.476124+00:00",
+      "reviewed_at": "2026-07-22T12:51:44.321519+00:00"
+    },
+    {
+      "asset_id": "ast_a4807b023418",
+      "name": "镜子",
+      "category": "装饰",
+      "verdict": "fail",
+      "reason": "",
+      "video_id": "vid_182cbf77954d",
+      "representative_sec": 39.5,
+      "segments": [
+        {
+          "video_id": "vid_182cbf77954d",
+          "t_start": 37.0,
+          "t_end": 39.5,
+          "representative_t": 39.5
+        }
+      ],
+      "model_path": "/storage/models/3b7e3e5a53fa48c5824f533bb3722ff9.glb",
+      "model_sha256": "ce6cf85284c33a8169f0c6fdbba25ee65f3bfcb85d6d57417b7a4325f1a6d49a",
+      "dimensions": [
+        0.6606636047363281,
+        1.0006324350833893,
+        0.3634183555841446
+      ],
+      "vertex_count": 16434,
+      "triangle_count": 27366,
+      "generated_at": "2026-07-22T12:38:48.443237+00:00",
+      "reviewed_at": "2026-07-22T12:49:13.135616+00:00"
+    },
+    {
+      "asset_id": "ast_b3479a4b5400",
+      "name": "边柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 62.0,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 61.0,
+          "t_end": 62.5,
+          "representative_t": 62.0
+        }
+      ],
+      "model_path": "/storage/models/8aaa0997f8154f1c85bdd79220bdfeb5.glb",
+      "model_sha256": "21cf1b6b7f6c7a7f129ac5ccb8045704c9fe74a078845f79952387198dc17427",
+      "dimensions": [
+        1.0016579627990723,
+        0.5815300941467285,
+        0.1851850524544716
+      ],
+      "vertex_count": 9039,
+      "triangle_count": 12400,
+      "generated_at": "2026-07-22T12:39:24.491484+00:00",
+      "reviewed_at": "2026-07-22T12:52:39.952324+00:00"
+    },
+    {
+      "asset_id": "ast_b40e09ce49b3",
+      "name": "桌子",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 8.0,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 3.0,
+          "t_end": 8.0,
+          "representative_t": 8.0
+        }
+      ],
+      "model_path": "/storage/models/6be9b04687454ff08f8a654069758ce1.glb",
+      "model_sha256": "11aaf9157ab271596acb14dc464281c4205bf835ac4d26998728bcbfccdde3c6",
+      "dimensions": [
+        0.9996638000011444,
+        0.4239886999130249,
+        0.3348904252052307
+      ],
+      "vertex_count": 7094,
+      "triangle_count": 11232,
+      "generated_at": "2026-07-22T12:49:56.650097+00:00",
+      "reviewed_at": "2026-07-22T12:51:25.717946+00:00"
+    },
+    {
+      "asset_id": "ast_b583ea575ba3",
+      "name": "黑色带背餐椅",
+      "category": "单椅",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_58a7a1504281",
+      "representative_sec": 8.5,
+      "segments": [
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 3.5,
+          "t_end": 9.5,
+          "representative_t": 8.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 30.5,
+          "t_end": 32.5,
+          "representative_t": 31.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 32.5,
+          "t_end": 34.0,
+          "representative_t": 33.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 45.5,
+          "t_end": 48.5,
+          "representative_t": 47.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 49.0,
+          "t_end": 56.5,
+          "representative_t": 56.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 80.5,
+          "t_end": 81.0,
+          "representative_t": 80.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 81.0,
+          "t_end": 81.5,
+          "representative_t": 81.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 81.5,
+          "t_end": 82.0,
+          "representative_t": 82.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 82.0,
+          "t_end": 82.5,
+          "representative_t": 82.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 84.5,
+          "t_end": 85.0,
+          "representative_t": 84.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 85.5,
+          "t_end": 86.0,
+          "representative_t": 86.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 86.5,
+          "t_end": 87.5,
+          "representative_t": 86.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 94.5,
+          "t_end": 96.5,
+          "representative_t": 94.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 144.0,
+          "t_end": 145.0,
+          "representative_t": 145.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 144.5,
+          "t_end": 145.5,
+          "representative_t": 145.5
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 145.0,
+          "t_end": 146.0,
+          "representative_t": 146.0
+        },
+        {
+          "video_id": "vid_58a7a1504281",
+          "t_start": 145.5,
+          "t_end": 146.5,
+          "representative_t": 145.5
+        }
+      ],
+      "model_path": "/storage/models/ab460ef78c434b6e995746792b7aa74d.glb",
+      "model_sha256": "bdc88ab63902eeee804446b4564b8bba41a19ff63ee3b50439c00b7f73deb3ce",
+      "dimensions": [
+        0.5574991106987,
+        1.0002129077911377,
+        0.6163375973701477
+      ],
+      "vertex_count": 5530,
+      "triangle_count": 9092,
+      "generated_at": "2026-07-22T13:00:20.495059+00:00",
+      "reviewed_at": "2026-07-22T13:03:21.066977+00:00"
+    },
+    {
+      "asset_id": "ast_bbc1f5ab225d",
+      "name": "红棕木边柜吧台组合",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_182cbf77954d",
+      "representative_sec": 18.0,
+      "segments": [
+        {
+          "video_id": "vid_182cbf77954d",
+          "t_start": 16.5,
+          "t_end": 18.0,
+          "representative_t": 18.0
+        },
+        {
+          "video_id": "vid_182cbf77954d",
+          "t_start": 17.0,
+          "t_end": 18.0,
+          "representative_t": 18.0
+        }
+      ],
+      "model_path": "/storage/models/55b17f8219f94c788028057b723de192.glb",
+      "model_sha256": "37b3fb7922fa2f70755de4b7734bb35794a3b474a08846d5692c4aee8735c519",
+      "dimensions": [
+        0.995037853717804,
+        0.839524120092392,
+        0.27183789014816284
+      ],
+      "vertex_count": 15221,
+      "triangle_count": 23597,
+      "generated_at": "2026-07-22T13:01:02.664836+00:00",
+      "reviewed_at": "2026-07-22T13:02:02.618887+00:00"
+    },
+    {
+      "asset_id": "ast_c26b4f2fe8b3",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 49.0,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 46.0,
+          "t_end": 51.5,
+          "representative_t": 49.0
+        }
+      ],
+      "model_path": "/storage/models/76cdbe784c6a45aab11bdbc36be156d6.glb",
+      "model_sha256": "7d90ce18d4e3b05ab2e41d1217399d457a73c04290d5cb130f9367d53c7ff971",
+      "dimensions": [
+        0.6685451567173004,
+        1.00104221701622,
+        0.6680637001991272
+      ],
+      "vertex_count": 4804,
+      "triangle_count": 7240,
+      "generated_at": "2026-07-22T12:39:57.482448+00:00",
+      "reviewed_at": "2026-07-22T12:52:18.669848+00:00"
+    },
+    {
+      "asset_id": "ast_c5ab118e8f8d",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_b75d95dc92a7",
+      "representative_sec": 22.0,
+      "segments": [
+        {
+          "video_id": "vid_b75d95dc92a7",
+          "t_start": 22.0,
+          "t_end": 24.0,
+          "representative_t": 23.0
+        }
+      ],
+      "model_path": "/storage/models/3bb1db317af24fcb9a4a670bfa9a8d3f.glb",
+      "model_sha256": "8251f9e42cd4d4d4cb23260d8fcc57175d169bbbba3402be0a06ddade4f0bc56",
+      "dimensions": [
+        0.36339835822582245,
+        0.9983997941017151,
+        0.36416713893413544
+      ],
+      "vertex_count": 2945,
+      "triangle_count": 4488,
+      "generated_at": "2026-07-22T12:40:25.422759+00:00",
+      "reviewed_at": "2026-07-22T12:49:50.823308+00:00"
+    },
+    {
+      "asset_id": "ast_ceea9d7f3729",
+      "name": "吊灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 90.0,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 89.0,
+          "t_end": 90.0,
+          "representative_t": 90.0
+        }
+      ],
+      "model_path": "/storage/models/94a14933801b4262a2768fb275cf7514.glb",
+      "model_sha256": "dd754d1f215e1987af9ecee3d43cb71e5d277076e063579bd491563a6f6530fa",
+      "dimensions": [
+        0.42484666407108307,
+        1.0004920363426208,
+        0.4332762807607651
+      ],
+      "vertex_count": 2619,
+      "triangle_count": 3364,
+      "generated_at": "2026-07-22T12:40:56.239795+00:00",
+      "reviewed_at": "2026-07-22T12:52:55.551656+00:00"
+    },
+    {
+      "asset_id": "ast_cfaa5917ba1e",
+      "name": "柜子",
+      "category": "柜子",
+      "verdict": "fail",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 47.0,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 46.5,
+          "t_end": 47.0,
+          "representative_t": 47.0
+        }
+      ],
+      "model_path": "/storage/models/d7feee6a73064f3c95c1fa6357063f7d.glb",
+      "model_sha256": "b5b8d7f4a94a0b14da8fefa268eed6470cd62fdcd5ed8711f73bab984a62b959",
+      "dimensions": [
+        1.0007638931274414,
+        0.9320001006126404,
+        0.35800081491470337
+      ],
+      "vertex_count": 18136,
+      "triangle_count": 27966,
+      "generated_at": "2026-07-22T12:51:31.685732+00:00",
+      "reviewed_at": "2026-07-22T13:07:05.615868+00:00"
+    },
+    {
+      "asset_id": "ast_dec6af78617b",
+      "name": "壁灯",
+      "category": "灯具",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_b75d95dc92a7",
+      "representative_sec": 0.0,
+      "segments": [
+        {
+          "video_id": "vid_b75d95dc92a7",
+          "t_start": 0.0,
+          "t_end": 3.0,
+          "representative_t": 0.0
+        }
+      ],
+      "model_path": "/storage/models/563d806f34304e34ba19efc2ffd030bd.glb",
+      "model_sha256": "d90eeea8302aa3a441366ee82faf8662309bd5c1427335894f1b1dce91b67c21",
+      "dimensions": [
+        0.5279924869537354,
+        0.693017765879631,
+        0.9733954071998596
+      ],
+      "vertex_count": 6928,
+      "triangle_count": 10481,
+      "generated_at": "2026-07-22T12:41:26.501408+00:00",
+      "reviewed_at": "2026-07-22T12:49:33.069511+00:00"
+    },
+    {
+      "asset_id": "ast_e90c1ad174a3",
+      "name": "边柜",
+      "category": "柜子",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_b75d95dc92a7",
+      "representative_sec": 6.0,
+      "segments": [
+        {
+          "video_id": "vid_b75d95dc92a7",
+          "t_start": 3.5,
+          "t_end": 10.5,
+          "representative_t": 6.0
+        }
+      ],
+      "model_path": "/storage/models/543e761e57644f7d9204f8f85f3abdfb.glb",
+      "model_sha256": "3a3a240052c22ad04cbdab25982f45fcca0008b42ab682d5543f23c0f0af4b2e",
+      "dimensions": [
+        0.429790735244751,
+        1.0013700127601624,
+        0.22036172449588776
+      ],
+      "vertex_count": 10085,
+      "triangle_count": 17761,
+      "generated_at": "2026-07-22T12:53:19.458973+00:00",
+      "reviewed_at": "2026-07-22T13:02:14.917267+00:00"
+    },
+    {
+      "asset_id": "ast_f0423f713e53",
+      "name": "桌子",
+      "category": "桌子",
+      "verdict": "pass",
+      "reason": "",
+      "video_id": "vid_5c7efd168eb7",
+      "representative_sec": 90.5,
+      "segments": [
+        {
+          "video_id": "vid_5c7efd168eb7",
+          "t_start": 89.0,
+          "t_end": 90.5,
+          "representative_t": 90.5
+        }
+      ],
+      "model_path": "/storage/models/f02caa77903b4f369ff3347ad7a8896e.glb",
+      "model_sha256": "8e6f3efce8313eded604226c2d0fa9a026f3db7350b598564a2b9b8126aa9988",
+      "dimensions": [
+        0.9980819523334503,
+        0.7060348987579346,
+        0.9995503425598145
+      ],
+      "vertex_count": 9677,
+      "triangle_count": 16898,
+      "generated_at": "2026-07-22T12:57:36.495702+00:00",
+      "reviewed_at": "2026-07-22T13:07:13.966516+00:00"
+    }
+  ]
+}
