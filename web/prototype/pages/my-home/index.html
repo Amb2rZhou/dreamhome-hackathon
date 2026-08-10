@@ -1321,7 +1321,9 @@
       registerPublishedAssets(records);
       state.caseMode=false;state.friendMode=false;state.ownReadOnly=false;state.publishedMode=false;state.activeShareUrl='';
       const ids=records.map((item)=>item.asset_id||item.id).filter(Boolean),home=homeSceneService.loadHomes()[0];
-      if(home)await openHome(home.id,'',ids);else{state.assemblyAssetIds=ids;tell('请先选择一个户型，再放入分享的 3D 资产');}
+      if(home){await openHome(home.id,'',ids);return;}
+      const starter=buildProject('long-living');starter.name='分享资产拼装空间';starter.source={...(starter.source||{}),type:'shared_asset_starter',shareSlug:slug};
+      homeSceneService.saveProject(starter);enterProjectEditor(starter);activateAssemblyTray(ids);
     }
 
     // Recommendations only use the shared canonical catalog. This keeps the
