@@ -173,6 +173,14 @@ test('fire-buddy dispose makes later timers and forced state changes inert', () 
   assert.deepEqual(changes, ['walk']);
 });
 
+test('navigation can be rebuilt when final furniture geometry arrives', async () => {
+  const source = await readFile(new URL('./fire-buddy-social.js', import.meta.url), 'utf8');
+  assert.match(source, /const refreshNavigation = \(nextPlacements = placements\) =>/);
+  assert.match(source, /Object\.assign\(navigation, buildFireBuddyNavigation/);
+  assert.match(source, /insideObstacle && navigation\.points\.length/);
+  assert.match(source, /refreshNavigation, dispose/);
+});
+
 test('fire-buddy 2.5D sprite uses depth testing and releases scene, frame, texture, and materials', () => {
   class Node {
     constructor() {

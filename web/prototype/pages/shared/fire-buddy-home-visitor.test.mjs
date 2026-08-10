@@ -59,3 +59,12 @@ test('furniture reaction faces the camera and pokes toward screen left or right'
   assert.match(source, /fireBuddyReactionFacing = 'camera'/);
   assert.match(source, /duration: 4\.15/);
 });
+
+test('collision geometry refreshes after asynchronous furniture models load', async () => {
+  const source = await readFile(new URL('./fire-buddy-home-visitor.js', import.meta.url), 'utf8');
+  assert.match(source, /const refreshCollisionGeometry = \(\) =>/);
+  assert.match(source, /group\.updateWorldMatrix\(true, true\)/);
+  assert.match(source, /buddy\.refreshNavigation\(entities\)/);
+  assert.match(source, /collisionRefreshDelays = \[250, 600, 1200, 2400, 4800, 8000\]/);
+  assert.match(source, /sourceAsset: asset/);
+});

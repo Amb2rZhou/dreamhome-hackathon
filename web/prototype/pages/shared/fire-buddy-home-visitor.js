@@ -92,6 +92,7 @@ export function mountFireBuddyHomeVisitor({
   let inspectTimer = null;
   let sleepTimer = null;
   let wakeTimer = null;
+  let collisionRefreshTimer = null;
   let css2DRenderer = null;
   let css2DObject = null;
   let css2DAnchor = null;
@@ -127,7 +128,15 @@ export function mountFireBuddyHomeVisitor({
     const size = box.getSize(new THREE.Vector3());
     const center = box.getCenter(new THREE.Vector3());
     if (size.x < .08 || size.z < .08) return null;
-    const footprint = floorFootprint(asset.name || placement.name, asset.category || placement.category, size.x, size.z);
+    const placementScale = placement.scale || { x: 1, z: 1 };
+    const priorWidth = finite(asset.sizePrior?.w, 0) * Math.abs(finite(placementScale.x, 1));
+    const priorDepth = finite(asset.sizePrior?.d, 0) * Math.abs(finite(placementScale.z, 1));
+    const hasSizePrior = priorWidth > .08 && priorDepth > .08;
+    const measuredWidth = Math.max(size.x, priorWidth);
+    const measuredDepth = Math.max(size.z, priorDepth);
+    const footprint = hasSizePrior
+      ? [measuredWidth, measuredDepth]
+      : floorFootprint(asset.name || placement.name, asset.category || placement.category, measuredWidth, measuredDepth);
     if (!footprint) return null;
     const restKind = classifyFireBuddyRestFurniture(asset.name || placement.name, asset.category || placement.category);
     const sleepSurface = restKind ? findRestSurface(THREE, group) : null;
@@ -142,7 +151,10 @@ export function mountFireBuddyHomeVisitor({
       target: { x: center.x, y: Math.max(.22, Math.min(center.y, 1.15)), z: center.z },
       position: { x: center.x, y: finite(placement.position?.y), z: center.z },
       dimensions: [Math.max(.1, footprint[0]), Math.max(.1, size.y), Math.max(.1, footprint[1])],
-      scale: { x: 1, y: 1, z: 1 }
+      scale: { x: 1, y: 1, z: 1 },
+      sourceGroup: group,
+      sourcePlacement: placement,
+      sourceAsset: asset
     };
     entityById.set(entity.id, entity);
     return entity;
@@ -205,6 +217,58 @@ export function mountFireBuddyHomeVisitor({
   overlayRoot.dataset.fireBuddyRestSurfaceCount = String(entities.filter((entity) => entity.sleepSurface).length);
 
   const clearTimer = (timer) => { if (timer !== null) clearTimeout(timer); };
+  const refreshCollisionGeometry = () => {
+    if (disposed) return;
+    let changed = false;
+    for (const entity of entities) {
+      const group = entity.sourceGroup;
+      if (!group?.visible) continue;
+      group.updateWorldMatrix(true, true);
+      const box = new THREE.Box3().setFromObject(group, true);
+      if (box.isEmpty()) continue;
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      const scale = entity.sourcePlacement?.scale || { x: 1, z: 1 };
+      const priorWidth = finite(entity.sourceAsset?.sizePrior?.w, 0) * Math.abs(finite(scale.x, 1));
+      const priorDepth = finite(entity.sourceAsset?.sizePrior?.d, 0) * Math.abs(finite(scale.z, 1));
+      const hasSizePrior = priorWidth > .08 && priorDepth > .08;
+      const measuredWidth = Math.max(size.x, priorWidth);
+      const measuredDepth = Math.max(size.z, priorDepth);
+      const nextFootprint = hasSizePrior
+        ? [measuredWidth, measuredDepth]
+        : floorFootprint(entity.name, entity.category, measuredWidth, measuredDepth);
+      if (!nextFootprint) continue;
+      const nextDimensions = [Math.max(.1, nextFootprint[0]), Math.max(.1, size.y), Math.max(.1, nextFootprint[1])];
+      const signatureChanged = Math.abs(entity.position.x - center.x) > .02
+        || Math.abs(entity.position.z - center.z) > .02
+        || Math.abs(entity.dimensions[0] - nextDimensions[0]) > .02
+        || Math.abs(entity.dimensions[2] - nextDimensions[2]) > .02;
+      if (!signatureChanged) continue;
+      entity.position.x = center.x;
+      entity.position.z = center.z;
+      entity.target = { x: center.x, y: Math.max(.22, Math.min(center.y, 1.15)), z: center.z };
+      entity.dimensions = nextDimensions;
+      entity.sleepSurface = entity.restKind ? findRestSurface(THREE, group) : null;
+      changed = true;
+    }
+    if (changed) {
+      buddy.refreshNavigation(entities);
+      overlayRoot.dataset.fireBuddyObstacleCount = String(buddy.navigation.obstacles.length);
+      overlayRoot.dataset.fireBuddyWaypointCount = String(buddy.navigation.points.length);
+      overlayRoot.dataset.fireBuddyCollisionRefreshCount = String(Number(overlayRoot.dataset.fireBuddyCollisionRefreshCount || 0) + 1);
+      overlayRoot.dataset.fireBuddyRestSurfaceCount = String(entities.filter((entity) => entity.sleepSurface).length);
+    }
+  };
+  const collisionRefreshDelays = [250, 600, 1200, 2400, 4800, 8000];
+  const scheduleCollisionRefresh = (index = 0) => {
+    if (disposed || index >= collisionRefreshDelays.length) return;
+    collisionRefreshTimer = setTimeout(() => {
+      collisionRefreshTimer = null;
+      refreshCollisionGeometry();
+      scheduleCollisionRefresh(index + 1);
+    }, collisionRefreshDelays[index]);
+  };
+  scheduleCollisionRefresh();
   const scheduleCopy = (delay = 15000) => {
     clearTimer(copyTimer);
     copyTimer = setTimeout(() => {
@@ -332,6 +396,7 @@ export function mountFireBuddyHomeVisitor({
     overlayRoot.dataset.fireBuddySleepSurfaceY = entity.sleepSurface.y.toFixed(3);
     overlayRoot.dataset.fireBuddySleepCount = String(Number(overlayRoot.dataset.fireBuddySleepCount || 0) + 1);
     clearTimer(wakeTimer);
+    clearTimer(collisionRefreshTimer);
     wakeTimer = setTimeout(() => {
       wakeTimer = null;
       if (disposed) return;
@@ -471,6 +536,7 @@ export function mountFireBuddyHomeVisitor({
     delete overlayRoot.dataset.fireBuddySleepingOn;
     delete overlayRoot.dataset.fireBuddySleepSurfaceY;
     delete overlayRoot.dataset.fireBuddyBubblePositioning;
+    delete overlayRoot.dataset.fireBuddyCollisionRefreshCount;
   };
 
   return { buddy, avatar, sleepAvatar, entities, inspectEntity, approachRestFurniture, dispose, get sleeping() { return sleeping; }, get disposed() { return disposed; } };

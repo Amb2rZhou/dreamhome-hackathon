@@ -638,6 +638,29 @@ export function mountFireBuddySocial({ THREE, scene, camera, rooms = [], placeme
     return true;
   };
 
+  const refreshNavigation = (nextPlacements = placements) => {
+    if (disposed) return false;
+    placements = nextPlacements;
+    Object.assign(navigation, buildFireBuddyNavigation({ rooms, placements, ...navigationOptions }));
+    route = [];
+    routeIndex = 0;
+    directedRoute = false;
+    group.userData.route = [];
+    group.userData.routeIndex = 0;
+    group.userData.directedRoute = false;
+    const position = { x: group.position.x, z: group.position.z };
+    const insideObstacle = navigation.obstacles.some((box) => position.x >= box.minX && position.x <= box.maxX && position.z >= box.minZ && position.z <= box.maxZ);
+    if (insideObstacle && navigation.points.length) {
+      const safe = [...navigation.points].sort((a, b) => distance(position, a) - distance(position, b))[0];
+      group.position.set(safe.x, finite(safe.y) + .015, safe.z);
+      current = safe;
+      target = safe;
+    }
+    fsm.setLocked(false);
+    group.userData.navigationRefreshCount = Number(group.userData.navigationRefreshCount || 0) + 1;
+    return true;
+  };
+
   const dispose = () => {
     if (disposed) return;
     disposed = true;
@@ -673,7 +696,7 @@ export function mountFireBuddySocial({ THREE, scene, camera, rooms = [], placeme
     }
     group.clear?.();
   };
-  return { group, sprite, bubble, mediaElement: video, mediaElements: { walk: video, sit: sitVideo }, navigation, get state() { return fsm.state; }, setState: fsm.setState, walkTo, hold, prompt, dispose, get disposed() { return disposed; } };
+  return { group, sprite, bubble, mediaElement: video, mediaElements: { walk: video, sit: sitVideo }, navigation, get state() { return fsm.state; }, setState: fsm.setState, walkTo, hold, prompt, refreshNavigation, dispose, get disposed() { return disposed; } };
 }
 
 export { STATES as FIRE_BUDDY_STATES };
