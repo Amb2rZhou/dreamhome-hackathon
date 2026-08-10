@@ -139,7 +139,7 @@
   </main>
   <script type="importmap">{"imports":{"three":"/vendor/three.module.js","three/addons/":"/vendor/three-addons/"}}</script>
   <script type="module">
-    import { COMPONENT_FAMILIES, FURNITURE_CATEGORIES, getAssets, getAsset, getFavorites, toggleFavorite, removeUserAsset, addUserAsset } from '../shared/asset-library-data.js?v=20260810c';
+    import { COMPONENT_FAMILIES, FURNITURE_CATEGORIES, getAssets, getAsset, getFavorites, toggleFavorite, removeUserAsset, addUserAsset, sourceFeedHref, syncBackendUserAssets } from '../shared/asset-library-data.js?v=20260810d';
     import { renderTemplatePreview, renderTemplatePreviews, disposeTemplatePreviews } from '../shared/template-preview-3d.js?v=20260810c';
 
     const home = document.querySelector('#libraryHome');
@@ -468,10 +468,8 @@
     // 删除（仅用户组件）→ 先弹「删除后不可恢复」二次确认
     viewerDelete.addEventListener('click', () => { if (!viewerAssetId) return; openDelConfirm({ type: 'single', id: viewerAssetId }); });
     viewerSource.addEventListener('click', () => {
-      const asset = getAsset(viewerAssetId); if (!asset?.videoUrl) return;
-      const target = new URLSearchParams({ asset:viewerAssetId, video:asset.videoId || '' });
-      if (asset.videoSec != null && Number.isFinite(Number(asset.videoSec))) target.set('t', String(asset.videoSec));
-      location.href = `../discover/index.html#${target}`;
+      const href = sourceFeedHref(getAsset(viewerAssetId));
+      if (href) location.href = href;
     }); // 仅视频资产跳「刷一刷」准确来源
 
     // ---------- 删除二次确认弹窗 ----------
@@ -556,6 +554,9 @@
     });
     window.addEventListener('hashchange', route);
     route();
+    syncBackendUserAssets().then(() => { route(); }).catch((error) => {
+      console.warn('[DreamHome API] user library sync unavailable', error);
+    });
   </script>
 </body>
 </html>

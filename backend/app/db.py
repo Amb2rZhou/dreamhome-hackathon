@@ -119,6 +119,12 @@ CREATE TABLE IF NOT EXISTS generation_jobs(
   updated_at REAL NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_generation_jobs_updated ON generation_jobs(updated_at);
+CREATE TABLE IF NOT EXISTS photo_asset_commits(
+  job_id TEXT PRIMARY KEY,
+  asset_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  created_at REAL NOT NULL
+);
 CREATE TABLE IF NOT EXISTS selection_sessions(
   select_id     TEXT PRIMARY KEY,
   video_id      TEXT NOT NULL,
@@ -222,6 +228,17 @@ def list_generation_jobs(*, include_terminal: bool = True) -> list[dict]:
             "updated_at": row["updated_at"],
         })
     return result
+
+
+def get_photo_asset_commit(job_id: str) -> Optional[dict]:
+    return _row("SELECT * FROM photo_asset_commits WHERE job_id=?", (job_id,))
+
+
+def insert_photo_asset_commit(job_id: str, asset_id: str, user_id: str) -> None:
+    _exec(
+        "INSERT INTO photo_asset_commits(job_id,asset_id,user_id,created_at) VALUES(?,?,?,?)",
+        (job_id, asset_id, user_id, time.time()),
+    )
 
 
 # ---- durable interactive selections ----

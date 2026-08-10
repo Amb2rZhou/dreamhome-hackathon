@@ -162,7 +162,7 @@
 
             <!-- 阶段 B · 生成中 -->
             <section class="phase gen-phase" id="genPhase" aria-live="polite">
-              <video class="gen-video" id="genOrbit" src="../../assets/mascot/motion/working-hammer.webm" autoplay muted loop playsinline aria-label="包工球正在生成组件"></video>
+              <video class="gen-video" id="genOrbit" src="../../assets/mascot/motion/working-drawing.webm" autoplay muted loop playsinline aria-label="包工球正在粉刷并生成组件"></video>
               <h2 class="gen-title" id="genTitle">正在识别照片</h2>
               <p class="gen-copy" id="genCopy">包工球正在看你拍的家居照片</p>
               <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
@@ -201,7 +201,7 @@
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
     import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-    import { FURNITURE_CATEGORIES, CATEGORY_PRIMITIVE, CATEGORY_DIMENSIONS, addUserAsset, getAssets } from '../shared/asset-library-data.js?v=20260810c';
+    import { FURNITURE_CATEGORIES, addUserAsset, dreamHomeApiBase, getAsset, getAssets, getDreamHomeUserId, syncBackendUserAssets } from '../shared/asset-library-data.js?v=20260810d';
 
     const photoEmpty = document.getElementById('photoEmpty');
     const photoPreview = document.getElementById('photoPreview');
@@ -387,9 +387,7 @@
     // ---- 拍照 → 3D：正式后端异步任务 ----
     // 公网始终走 Vercel 同源代理，避免浏览器直连 ECS 的 mixed-content/CORS
     // 问题；本地开发则连接本地 FastAPI。
-    const API_BASE = ['127.0.0.1', 'localhost'].includes(location.hostname)
-      ? 'http://127.0.0.1:8000'
-      : '/dreamhome-api';
+    const API_BASE = dreamHomeApiBase();
     const STATUS_MAP = { queued:'queued', running:'processing', succeeded:'ready', failed:'failed' };
     const categoryLabel = (id) => (FURNITURE_CATEGORIES.find((item) => item.id === id) || {}).label || id;
     async function checkBackend() {
@@ -454,64 +452,6 @@
       genCopy.textContent = status === 'failed' ? (error || '请检查照片或重新尝试') : copy[1];
       progressBar.style.width = `${progress}%`;
       genRetry.hidden = status !== 'failed';
-    }
-
-    function buildAssetFromJob(job, modelDimensions) {
-      const categoryId = state.categories[0];
-      const category = FURNITURE_CATEGORIES.find((item) => item.id === categoryId);
-      const dimensions = Array.isArray(job.estimated_size_m) && job.estimated_size_m.length === 3
-        ? job.estimated_size_m.map(Number)
-        : (() => {
-            const fallback = CATEGORY_DIMENSIONS[categoryId] || [1, .8, .6];
-            const longest = Math.max(...modelDimensions);
-            const targetLongest = Math.max(...fallback);
-            return longest > 0
-              ? modelDimensions.map((value) => value / longest * targetLongest)
-              : fallback;
-          })();
-      const modelUrl = /^https?:/i.test(job.model_url || '')
-        ? job.model_url
-        : `${API_BASE}${job.model_url || ''}`;
-      return {
-        id:`capture-${categoryId}-${job.job_id || Date.now()}`,
-        kind:'furniture',
-        name:`拍摄·${category.label}`,
-        category:categoryId,
-        primitive:CATEGORY_PRIMITIVE[categoryId] || 'cabinet',
-        color:state.photoColor,
-        accent:lighten(state.photoColor, .3),
-        dimensions,
-        sizeStatus:Array.isArray(job.estimated_size_m) && job.estimated_size_m.length === 3 ? 'estimated' : 'missing',
-        sizePrior:{ w:dimensions[0], h:dimensions[1], d:dimensions[2] },
-        sizePriorVersion:2,
-        modelUrl,
-        rawModel:true,
-        modelValidated:true,
-        canonicalStatus:'raw_succeeded',
-        libraryAttached:false,
-        thumbnail:null,
-        backendCategory:job.category || null,
-        // 与平台资产同构：平台侧是 labels.styles 数组（经适配器成为 asset.styles），
-        // 用户组件此前只存单数 style 字符串，导致在风格筛选/图鉴里完全隐形。
-        // 后端若回了 style 且命中现有词表，作为默认选中；否则留空等用户选。
-        // 风格只认用户在生成前选的那一个。后端的 job.style 不参与填充：
-        // 识别可能不准，而组件弹窗里没有补录/修改入口，错了就永久错在库里。
-        // 后端原值仍存在下面的 style 字段里备查，只是不作为用户可见标签。
-        styles:[...state.styles],
-        materials:job.material ? [job.material] : ['待确认材质'],
-        tagProvenance:{
-          source:'user_declared',
-          confidence:1,
-          humanReviewStatus:'reviewed',
-          reviewedAt:new Date().toISOString(),
-        },
-        style:job.style || null,
-        material:job.material || null,
-        source:'user',
-        sourceType:'capture',
-        sourceUrl:null,
-        createdAt:new Date().toISOString(),
-      };
     }
 
     async function loadVerifiedGeneratedModel(modelUrl) {
@@ -625,23 +565,48 @@
       state.job = job;
       persistActiveJob(job);
       setPhase('gen');
-      genTitle.textContent = '正在验证真实 3D';
-      genCopy.textContent = '确认模型、纹理和比例可正常加载';
+      genTitle.textContent = '包工球正在验收组件';
+      genCopy.textContent = '确认模型可加载后，再写入你的资产库';
       progressBar.style.width = '100%';
+      genBack.disabled = true;
       try {
         const modelUrl = /^https?:/i.test(job.model_url || '')
           ? job.model_url
           : `${API_BASE}${job.model_url || ''}`;
         const verified = await loadVerifiedGeneratedModel(modelUrl);
-        const asset = buildAssetFromJob(job, verified.dimensions);
+        genTitle.textContent = '正在放进你的灵感库';
+        genCopy.textContent = '保存结构化标签和可组装的 3D 资产';
+        const categoryId = state.categories[0];
+        const commitResponse = await fetch(`${API_BASE}/api/photo-to-3d/${encodeURIComponent(job.job_id)}/commit`, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body:JSON.stringify({
+            user_id:getDreamHomeUserId(),
+            name:`拍摄·${categoryLabel(categoryId)}`,
+            category:categoryId,
+            styles:[...state.styles],
+            materials:job.material ? [job.material] : ['待确认材质'],
+            colors:[],
+          }),
+        });
+        if (!commitResponse.ok) {
+          const detail = await commitResponse.json().catch(() => null);
+          throw new Error(detail?.detail || `资产入库失败（${commitResponse.status}）`);
+        }
+        const committed = await commitResponse.json();
+        await syncBackendUserAssets();
+        const asset = getAsset(committed.asset_id);
+        if (!asset) throw new Error('资产已生成，但同步到灵感库失败');
         state.generatedAssets = [asset];
-        addUserAsset(asset);
         toMyHome.href = `../my-home/index.html?addAsset=${encodeURIComponent(asset.id)}`;
         renderResult([asset], verified.gltf);
         setPhase('result');
-        showToast('真实 3D 已验证并保存到本机收藏');
+        clearActiveJob();
+        showToast('真实 3D 已进入灵感库、收藏和我的家');
       } catch (error) {
         updateGen('failed', 100, error.message || '真实 3D 无法加载，请重新生成');
+      } finally {
+        genBack.disabled = false;
       }
     }
     function restoreActiveGeneration() {
@@ -676,20 +641,25 @@
         const category = FURNITURE_CATEGORIES.find((item) => item.id === asset.category);
         // 风格在生成前已选好，这里只回显，不再给第二处编辑入口
         const styleText = (asset.styles || []).length ? ` · ${asset.styles.join(' / ')}` : '';
-        return `<div class="result-item"><div class="result-visual"><canvas class="result-model-viewer" data-model-preview="${asset.id}"></canvas><span class="result-model-hint">拖动查看</span></div><div class="result-body"><input class="result-name" maxlength="16" value="${asset.name}" data-name="${asset.id}" aria-label="组件名称" /><p class="result-meta">家具类 · ${category.label}${styleText} · 真实 GLB · 本机收藏</p></div></div>`;
+        return `<div class="result-item"><div class="result-visual"><canvas class="result-model-viewer" data-model-preview="${asset.id}"></canvas><span class="result-model-hint">拖动查看</span></div><div class="result-body"><input class="result-name" maxlength="16" value="${asset.name}" data-name="${asset.id}" aria-label="组件名称" /><p class="result-meta">家具类 · ${category.label}${styleText} · 真实 GLB · 已入资产库</p></div></div>`;
       }).join('');
       const canvas = resultList.querySelector('[data-model-preview]');
       if (canvas && gltf?.scene) mountResultModel(canvas, gltf.scene, assets[0].name);
     }
 
     // 名称编辑：写回已入库的用户资产（同 id 覆盖）
-    resultList.addEventListener('change', (event) => {
+    resultList.addEventListener('change', async (event) => {
       const input = event.target.closest('[data-name]');
       if (!input) return;
       const asset = state.generatedAssets.find((item) => item.id === input.dataset.name);
       if (!asset) return;
       asset.name = input.value.trim() || asset.name; input.value = asset.name;
       addUserAsset(asset);
+      if (asset.backendManaged) {
+        fetch(`${API_BASE}/api/assets/${encodeURIComponent(asset.id)}`, {
+          method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:asset.name}),
+        }).catch(() => showToast('名称已在本机更新，后端同步稍后重试'));
+      }
     });
 
     // 前进按钮只负责跳转（已入库）；查看我的收藏直达首个组件所属细分标签全部页

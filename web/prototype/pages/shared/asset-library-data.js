@@ -71,6 +71,7 @@ const apiBase = () => {
   if (['dreamhouse.top', 'www.dreamhouse.top'].includes(location.hostname)) return 'https://api.dreamhouse.top';
   return '/dreamhome-api';
 };
+export const dreamHomeApiBase = apiBase;
 const backendMediaUrl = (value = '') => {
   if (!value) return '';
   if (/^https?:\/\//.test(value)) return value;

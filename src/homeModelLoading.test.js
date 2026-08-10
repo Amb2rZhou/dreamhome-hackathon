@@ -22,4 +22,14 @@ describe('DreamHome model-backed scenes', () => {
     expect(source).toContain("setDecoderPath('/draco/')");
     expect(source).not.toContain("setDecoderPath('/vendor/three-addons/libs/draco/')");
   });
+
+  it('keeps the blocking Bao Gong Qiu loader until every real model settles', () => {
+    const source = readFileSync('web/prototype/pages/my-home/index.html', 'utf8');
+
+    expect(source).toContain('working-drawing.webm');
+    expect(source).toContain('ui.editorPhase.inert=sceneLoading');
+    expect(source).toContain('if(modelLoadProgress.total>0)return');
+    expect(source).not.toContain('SCENE_PREVIEW_DEADLINE_MS');
+    expect(source).not.toContain('家具继续载入中');
+  });
 });

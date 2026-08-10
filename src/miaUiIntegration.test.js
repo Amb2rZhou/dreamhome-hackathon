@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 const readPage = (name) => readFileSync(resolve(process.cwd(), `web/prototype/pages/${name}/index.html`), 'utf8');
 const readShared = (name) => readFileSync(resolve(process.cwd(), `web/prototype/pages/shared/${name}`), 'utf8');
+const readBackend = (name) => readFileSync(resolve(process.cwd(), `backend/app/${name}`), 'utf8');
 
 describe('Mia interaction with DreamHome data', () => {
   it('keeps style filtering while removing the multi-asset assembly entry', () => {
@@ -17,9 +18,13 @@ describe('Mia interaction with DreamHome data', () => {
 
   it('preserves declared tag provenance on captured assets', () => {
     const capture = readPage('capture');
-    expect(capture).toContain("source:'user_declared'");
-    expect(capture).toContain("humanReviewStatus:'reviewed'");
-    expect(capture).toContain("sizeStatus:Array.isArray(job.estimated_size_m)");
+    const photoRouter = readBackend('routers/photo.py');
+    expect(capture).toContain('styles:[...state.styles]');
+    expect(capture).toContain('/commit`');
+    expect(photoRouter).toContain('"source_type": "offline_photo"');
+    expect(photoRouter).toContain('"styles": styles');
+    expect(photoRouter).toContain('"materials": materials');
+    expect(photoRouter).toContain('size_prior = None');
   });
 
   it('publishes the room-size page with the matching live-preview module', () => {

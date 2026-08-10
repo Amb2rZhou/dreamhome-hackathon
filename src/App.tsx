@@ -681,6 +681,7 @@ interface FeedDeepLink {
   index: number
   videoId: string
   time: number
+  assetId: string
 }
 
 function readFeedDeepLink(): FeedDeepLink | null {
@@ -707,6 +708,7 @@ function readFeedDeepLink(): FeedDeepLink | null {
     index,
     videoId,
     time: Number.isFinite(time) ? Math.max(0, time) : defaultAssetFrame(videoId),
+    assetId,
   }
 }
 
@@ -1121,6 +1123,7 @@ function App() {
                   })
               if (!reused.asset_id) throw new Error('同款资产复用失败，请稍后重试')
               if (cancelled) return
+              setFavoriteAssetIds((current) => Array.from(new Set([...current, reused.asset_id!])))
               if (selectionMediaType === 'image-carousel') {
                 await refreshImagePostBindings()
               } else {
@@ -1182,6 +1185,9 @@ function App() {
             if (cancelled) return
             dispatch({ type: 'CRAFT_PROGRESS', id: craft.id, progress: job.progress ?? 0, stage: 'generate_3d' })
             if (job.status === 'succeeded') {
+              if (job.asset_id) {
+                setFavoriteAssetIds((current) => Array.from(new Set([...current, job.asset_id!])))
+              }
               const pendingSelection = craft.sourceSelectionId
                 ? selectionRequestsRef.current.get(craft.sourceSelectionId)
                 : null
@@ -1342,7 +1348,10 @@ function App() {
                   target.time,
                   Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : target.time,
                 )
-                pendingFeedTargetRef.current = null
+                // Keep an asset deep link pending until bindings arrive and
+                // the source drawer has actually opened. A plain time link
+                // can be cleared as soon as the seek is applied.
+                if (!target.assetId) pendingFeedTargetRef.current = null
               }}
             />
           </>
@@ -1439,6 +1448,9 @@ function App() {
             pausedTime={pausedFrame.time}
             selectionRequests={selectionRequestsRef.current}
             frameAssets={activeFrameAssets}
+            sourceAssetId={pendingFeedTargetRef.current?.videoId === activeFeedVideo.id
+              ? pendingFeedTargetRef.current.assetId
+              : ''}
             detectedLabels={activeFrameDetectedLabels}
             favoriteAssetIds={favoriteAssetIds}
             onToggleFavoriteAsset={toggleFavoriteAsset}
@@ -2026,6 +2038,7 @@ function SessionLayer({
   pausedTime,
   selectionRequests,
   frameAssets,
+  sourceAssetId,
   detectedLabels,
   favoriteAssetIds,
   onToggleFavoriteAsset,
@@ -2042,6 +2055,7 @@ function SessionLayer({
   pausedTime: number
   selectionRequests: PendingSelectionRequests
   frameAssets: LibraryComponent[]
+  sourceAssetId: string
   detectedLabels: string[]
   favoriteAssetIds: string[]
   onToggleFavoriteAsset: (id: string) => void
@@ -2086,7 +2100,7 @@ function SessionLayer({
   const pickupPhaseRef = useRef<'idle' | 'pressing' | 'dragging' | 'dropping' | 'returning'>('idle')
   const pickupHoveringRef = useRef(false)
   const [isRecognizing, setIsRecognizing] = useState(false)
-  const [frameAssetsOpen, setFrameAssetsOpen] = useState(false)
+  const [frameAssetsOpen, setFrameAssetsOpen] = useState(Boolean(sourceAssetId))
   const [recognizeGuideVisible, setRecognizeGuideVisible] = useState(showRecognizeGuide)
   const recognizeGuideShownRef = useRef(false)
   const [dragGuideVisible, setDragGuideVisible] = useState(false)
@@ -2097,6 +2111,10 @@ function SessionLayer({
     showDragGuideRef.current = showDragGuide
     onDragGuideShownRef.current = onDragGuideShown
   }, [onDragGuideShown, showDragGuide])
+  useEffect(() => {
+    if (!sourceAssetId || !frameAssets.some((asset) => asset.id === sourceAssetId)) return
+    setFrameAssetsOpen(true)
+  }, [frameAssets, sourceAssetId])
 
   const selectedCount = state.selected.reduce((sum, obj) => sum + obj.items.length, 0)
   // The pickup card represents the user's explicit submission. Furniture

@@ -42,4 +42,29 @@ describe('Mia library backend synchronization', () => {
     const ids = getAssets('furniture').map((item) => item.id)
     expect(new Set(ids).size).toBe(ids.length)
   })
+
+  it('keeps photo assets in the shared library without inventing a video return link', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([{
+      asset_id: 'ast_photo',
+      name: '拍摄·柜子',
+      status: 'ready',
+      labels: { category: '柜子', materials: ['待确认材质'], styles: ['中古'] },
+      size_prior: null,
+      glb_url: '/storage/models/photo.glb',
+      source: { source_type: 'offline_photo', job_id: 'photo-1' },
+      library_context: { source_type: 'offline_photo', job_id: 'photo-1' },
+    }]), { status: 200 })))
+
+    await syncBackendUserAssets()
+    const component = getAssets('furniture').find((item) => item.id === 'ast_photo')
+
+    expect(component).toEqual(expect.objectContaining({
+      backendManaged: true,
+      sourceType: 'offline_photo',
+      sizeStatus: 'unknown',
+      styles: ['中古'],
+      materials: ['待确认材质'],
+    }))
+    expect(sourceFeedHref(component)).toBe('')
+  })
 })
