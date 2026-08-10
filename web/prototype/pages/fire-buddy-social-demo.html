@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fire Buddy Social · 隔离 Demo</title>
+  <link rel="stylesheet" href="./shared/fire-buddy-social.css">
+  <style>
+    :root { color-scheme: light; font-family: system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; background: #f5eadc; color: #55382c; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 20px; }
+    main { width: min(980px, 100%); }
+    h1 { margin: 0 0 6px; font-size: clamp(22px, 4vw, 34px); }
+    p { margin: 0 0 14px; color: #765b4f; }
+    #stage { position: relative; height: min(66vh, 620px); min-height: 390px; overflow: hidden; border: 1px solid rgba(91, 58, 39, .13); border-radius: 24px; background: #f8f1e7; box-shadow: 0 20px 60px rgba(91, 58, 39, .15); }
+    canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    button { min-height: 42px; padding: 0 15px; border: 1px solid rgba(99, 59, 42, .18); border-radius: 999px; background: #fffaf1; color: #633b2d; font: inherit; font-weight: 700; cursor: pointer; }
+    button:hover { background: #fff; }
+    #status { display: inline-flex; align-items: center; margin-top: 10px; padding: 6px 10px; border-radius: 10px; background: rgba(255,255,255,.62); font-size: 13px; }
+  </style>
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+</head>
+<body>
+  <main>
+    <h1>小火人社交 · 隔离验收</h1>
+    <p>拖动旋转房间；真 3D 小火人沿安全路线行走，拥有完整背面，并会被家具自然遮挡。</p>
+    <section id="stage" class="fire-buddy-social-stage" aria-label="小火人 3D 隔离测试场景"></section>
+    <div class="toolbar" aria-label="测试控制">
+      <button data-state="walk">Walk 走路</button>
+      <button data-state="sit">Sit 坐着呼吸</button>
+      <button id="route-test">A* 绕障</button>
+      <button id="view-test">切换 3D 视角</button>
+      <button data-prompt="furniture">查看家具</button>
+      <button data-prompt="recommendation">查看推荐</button>
+      <button id="remount">退出并重新进入</button>
+    </div>
+    <output id="status" aria-live="polite">准备挂载</output>
+  </main>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { FIRE_BUDDY_SOCIAL_COPY_CAROUSEL, mountFireBuddySocial } from './shared/fire-buddy-social.js';
+    import { createFireBuddy3DAvatar } from './shared/fire-buddy-3d-avatar.js';
+
+    const stage = document.querySelector('#stage');
+    const status = document.querySelector('#status');
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.18;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    stage.append(renderer.domElement);
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#f7efe4');
+    const camera = new THREE.PerspectiveCamera(42, 1, .1, 50);
+    camera.position.set(6.7, 5.6, 7.5);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.set(0, .55, 0);
+    controls.enableDamping = true;
+    controls.maxPolarAngle = Math.PI * .48;
+    scene.add(new THREE.HemisphereLight('#fffaf0', '#8c7567', 2.2));
+    const sun = new THREE.DirectionalLight('#fff1d4', 2.8);
+    sun.position.set(-4, 8, 5);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(1024, 1024);
+    sun.shadow.bias = -.0004;
+    scene.add(sun);
+    const warmFill = new THREE.PointLight('#ffae45', 2.2, 9, 2);
+    warmFill.position.set(2.8, 3.4, 2.8);
+    scene.add(warmFill);
+    const coolRim = new THREE.DirectionalLight('#fff7de', 1.4);
+    coolRim.position.set(4, 5, -5);
+    scene.add(coolRim);
+
+    const floor = new THREE.Mesh(new THREE.BoxGeometry(6, .1, 5), new THREE.MeshStandardMaterial({ color: '#c99f74', roughness: .78 }));
+    floor.position.y = -.05;
+    floor.receiveShadow = true;
+    scene.add(floor);
+    const addBox = (size, position, color) => {
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), new THREE.MeshStandardMaterial({ color, roughness: .72 }));
+      mesh.position.set(...position);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      scene.add(mesh);
+      return mesh;
+    };
+    addBox([2.2, .72, 1], [0, .36, 0], '#b98972');
+    addBox([1.2, .7, 1.2], [1.8, .35, 1.2], '#8d6a4c');
+    addBox([.8, 1.35, .75], [-2.15, .675, 1.4], '#79906e');
+
+    const rooms = [{ id: 'demo-living', type: 'living', x: 0, z: 0, width: 6, depth: 5 }];
+    const placements = [
+      { roomId: 'demo-living', name: '沙发', position: { x: 0, z: 0 }, dimensions: [2.2, .72, 1] },
+      { roomId: 'demo-living', name: '餐桌', position: { x: 1.8, z: 1.2 }, dimensions: [1.2, .7, 1.2] },
+      { roomId: 'demo-living', name: '边柜', position: { x: -2.15, z: 1.4 }, dimensions: [.8, 1.35, .75] }
+    ];
+    let buddy;
+    let avatar;
+    let pendingFurnitureReaction = null;
+    let previousBuddyPosition = new THREE.Vector3();
+    let lastAvatarUpdate = performance.now();
+    let copyTimer = null;
+    let copyIndex = 0;
+    const routeMaterial = new THREE.LineBasicMaterial({ color: 0xd76836, transparent: true, opacity: .72, depthTest: true });
+    const routeLine = new THREE.Line(new THREE.BufferGeometry(), routeMaterial);
+    routeLine.position.y = .035;
+    routeLine.renderOrder = 1;
+    scene.add(routeLine);
+    let routeSignature = '';
+    let displayedState = '';
+    const clearCopyCarousel = () => {
+      if (copyTimer !== null) clearTimeout(copyTimer);
+      copyTimer = null;
+    };
+    const scheduleCopyCarousel = (delay = 15000) => {
+      clearCopyCarousel();
+      copyTimer = setTimeout(() => {
+        copyTimer = null;
+        if (!buddy || buddy.disposed) return;
+        const entry = FIRE_BUDDY_SOCIAL_COPY_CAROUSEL[copyIndex];
+        if (buddy.prompt(entry.key, entry.message)) {
+          status.textContent = `${entry.label}：${entry.message}`;
+          copyIndex = (copyIndex + 1) % FIRE_BUDDY_SOCIAL_COPY_CAROUSEL.length;
+          scheduleCopyCarousel(15000);
+        } else {
+          scheduleCopyCarousel(3000);
+        }
+      }, delay);
+    };
+    function mount() {
+      clearCopyCarousel();
+      pendingFurnitureReaction = null;
+      avatar?.dispose();
+      buddy?.dispose();
+      buddy = mountFireBuddySocial({
+        THREE, scene, camera, rooms, placements, overlayRoot: stage,
+        durations: { walk: [4000, 5000], sit: [2500, 3500] },
+        textureUrl: '../assets/social/fire-buddy.png', viewer: { id: 'demo-friend', name: '访问者' },
+        onPrompt: ({ message }) => { status.textContent = `语言互动：${message}`; }
+      });
+      buddy.sprite.visible = false;
+      const incomingSprite = buddy.group.getObjectByName('fire-buddy-social-sprite-incoming');
+      if (incomingSprite) incomingSprite.visible = false;
+      avatar = createFireBuddy3DAvatar({ THREE, scale: .52 });
+      buddy.group.add(avatar.root);
+      buddy.group.position.set(-2.3, .015, 0);
+      previousBuddyPosition.copy(buddy.group.position);
+      lastAvatarUpdate = performance.now();
+      buddy.walkTo({ x: 2.3, y: 0, z: -1.7 });
+      status.textContent = `真 3D 已挂载 · ${buddy.navigation.points.length} 个安全点 · 当前 ${buddy.state}`;
+      copyIndex = 0;
+      scheduleCopyCarousel(1200);
+    }
+    mount();
+    document.querySelectorAll('[data-state]').forEach((button) => button.addEventListener('click', () => {
+      buddy.setState(button.dataset.state);
+      status.textContent = `测试状态：${buddy.state}`;
+    }));
+    document.querySelectorAll('[data-prompt]').forEach((button) => button.addEventListener('click', () => {
+      if (button.dataset.prompt === 'furniture') {
+        const target = { x: 0, y: .36, z: 0 };
+        const standAt = { x: 0, y: 0, z: -1.14 };
+        if (buddy.walkTo(standAt)) {
+          pendingFurnitureReaction = { target, standAt };
+          status.textContent = '正在走向沙发旁的安全观察点';
+        }
+        return;
+      }
+      if (!buddy.prompt(button.dataset.prompt)) status.textContent = '低频保护生效：暂不重复发言';
+    }));
+    document.querySelector('#route-test').addEventListener('click', () => {
+      buddy.group.position.set(-2.3, .015, 0);
+      const planned = buddy.walkTo({ x: 2.3, y: 0, z: -1.7 });
+      status.textContent = planned ? `A* 已规划 · ${buddy.group.userData.route.length} 段路线` : 'A* 未找到安全路线';
+    });
+    let alternateView = false;
+    document.querySelector('#view-test').addEventListener('click', () => {
+      alternateView = !alternateView;
+      camera.position.set(...(alternateView ? [-6.7, 4.8, 6] : [6.7, 5.6, 7.5]));
+      camera.lookAt(0, 0, 0);
+      controls.update();
+      status.textContent = alternateView ? '已切换到反向 3D 视角' : '已恢复默认 3D 视角';
+    });
+    document.querySelector('#remount').addEventListener('click', () => {
+      clearCopyCarousel();
+      avatar?.dispose();
+      avatar = null;
+      buddy.dispose();
+      status.textContent = '已退出并清理';
+      setTimeout(mount, 350);
+    });
+
+    const resize = () => {
+      const width = stage.clientWidth;
+      const height = stage.clientHeight;
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    };
+    new ResizeObserver(resize).observe(stage);
+    resize();
+    function render() {
+      controls.update();
+      if (buddy) {
+        const timestamp = performance.now();
+        const delta = Math.min(.05, Math.max(0, (timestamp - lastAvatarUpdate) / 1000));
+        const dx = buddy.group.position.x - previousBuddyPosition.x;
+        const dz = buddy.group.position.z - previousBuddyPosition.z;
+        const heading = Math.hypot(dx, dz) > .0001 ? Math.atan2(dx, dz) : null;
+        avatar?.update(buddy.state, timestamp / 1000, heading, delta);
+        if (pendingFurnitureReaction) {
+          const remaining = Math.hypot(
+            buddy.group.position.x - pendingFurnitureReaction.standAt.x,
+            buddy.group.position.z - pendingFurnitureReaction.standAt.z
+          );
+          if (remaining < .055) {
+            const targetDx = pendingFurnitureReaction.target.x - buddy.group.position.x;
+            const targetDz = pendingFurnitureReaction.target.z - buddy.group.position.z;
+            buddy.hold(2150);
+            avatar?.react('furniture', { heading: Math.atan2(targetDx, targetDz), duration: 1.85 });
+            if (!buddy.prompt('furniture')) status.textContent = '已停留并指向沙发（话术冷却中）';
+            pendingFurnitureReaction = null;
+          }
+        }
+        previousBuddyPosition.copy(buddy.group.position);
+        lastAvatarUpdate = timestamp;
+        stage.dataset.buddyState = buddy.state;
+        stage.dataset.transitioning = String(Boolean(buddy.group.userData.transitioning));
+        if (buddy.state !== displayedState) {
+          displayedState = buddy.state;
+          status.textContent = `自动循环：当前 ${buddy.state}`;
+        }
+      }
+      const route = buddy?.group?.userData?.route || [];
+      const signature = route.map((point) => `${point.x.toFixed(2)},${point.z.toFixed(2)}`).join('|');
+      if (signature !== routeSignature) {
+        routeSignature = signature;
+        const points = buddy ? [new THREE.Vector3(buddy.group.position.x, 0, buddy.group.position.z), ...route.map((point) => new THREE.Vector3(point.x, 0, point.z))] : [];
+        routeLine.geometry.dispose();
+        routeLine.geometry = new THREE.BufferGeometry().setFromPoints(points);
+        routeLine.visible = points.length > 1;
+      }
+      renderer.render(scene, camera);
+      requestAnimationFrame(render);
+    }
+    render();
+    addEventListener('pagehide', () => { clearCopyCarousel(); avatar?.dispose(); buddy?.dispose(); }, { once: true });
+  </script>
+</body>
+</html>

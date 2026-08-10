@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>小火人 3D · 原形象比例版</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui,-apple-system,"PingFang SC",sans-serif; color:#51372c; background:#f4e9dc; }
+    * { box-sizing:border-box; }
+    body { min-height:100vh; margin:0; display:grid; place-items:center; padding:20px; }
+    main { width:min(980px,100%); }
+    h1 { margin:0 0 6px; font-size:clamp(24px,4vw,36px); }
+    p { margin:0 0 14px; color:#7b6155; }
+    #stage { height:min(68vh,650px); min-height:430px; overflow:hidden; border:1px solid rgba(88,53,37,.12); border-radius:26px; background:radial-gradient(circle at 50% 34%,#fffdf8,#f3e4d2 72%); box-shadow:0 22px 62px rgba(83,53,38,.16); }
+    canvas { display:block; width:100%; height:100%; touch-action:none; }
+    .toolbar { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    button { min-height:42px; padding:0 15px; border:1px solid rgba(95,57,40,.18); border-radius:999px; background:#fffaf2; color:#633c2d; font:inherit; font-weight:750; cursor:pointer; }
+    button[aria-pressed="true"] { border-color:#e4a02c; box-shadow:0 0 0 2px rgba(228,160,44,.18); }
+    output { display:inline-flex; margin-top:10px; padding:7px 11px; border-radius:10px; background:rgba(255,255,255,.64); font-size:13px; }
+  </style>
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+</head>
+<body>
+  <main>
+    <h1>小火人 · 原形象 3D 草模</h1>
+    <p>已按原图重做宽矮轮廓、偏心火焰尖、贴身手臂和前伸坐姿。</p>
+    <section id="stage" aria-label="小火人 3D 草模预览"></section>
+    <div class="toolbar">
+      <button data-state="idle">待机</button>
+      <button data-state="walk">原地走路</button>
+      <button data-state="sit" aria-pressed="true">坐姿呼吸</button>
+      <button id="front">看正面</button>
+      <button id="back">看背面</button>
+      <button id="spin">自动旋转</button>
+    </div>
+    <output id="status">原形象比例版 · 当前 sit</output>
+  </main>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const stage = document.querySelector('#stage');
+    const status = document.querySelector('#status');
+    const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    stage.append(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(35,1,.1,50);
+    camera.position.set(4.8,2.7,6.5);
+    const controls = new OrbitControls(camera,renderer.domElement);
+    controls.target.set(0,-.02,0);
+    controls.enableDamping = true;
+    controls.minDistance = 3.7;
+    controls.maxDistance = 10;
+
+    scene.add(new THREE.HemisphereLight('#fff9e9','#8d644b',2.8));
+    const key = new THREE.DirectionalLight('#fff1c8',4.2);
+    key.position.set(-4,7,6); key.castShadow = true; scene.add(key);
+    const rim = new THREE.DirectionalLight('#ffd15c',2.2);
+    rim.position.set(5,3,-5); scene.add(rim);
+
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(3.7,96),new THREE.MeshStandardMaterial({color:'#d8b183',roughness:.82}));
+    floor.rotation.x = -Math.PI/2; floor.position.y = -1.48; floor.receiveShadow = true; scene.add(floor);
+    const shadow = new THREE.Mesh(new THREE.CircleGeometry(.72,64),new THREE.MeshBasicMaterial({color:'#6c4735',transparent:true,opacity:.18,depthWrite:false}));
+    shadow.rotation.x = -Math.PI/2; shadow.position.set(0,-1.465,.08); scene.add(shadow);
+
+    const root = new THREE.Group();
+    scene.add(root);
+    const character = new THREE.Group();
+    root.add(character);
+
+    function createFlameGeometry() {
+      const rings = [
+        { y:-.91, r:.43, cx: .00, depth:.70 },
+        { y:-.80, r:.72, cx: .00, depth:.76 },
+        { y:-.57, r:.91, cx: .00, depth:.80 },
+        { y:-.25, r:1.00, cx: .01, depth:.82 },
+        { y: .08, r:.97, cx: .03, depth:.84 },
+        { y: .37, r:.86, cx: .03, depth:.86 },
+        { y: .60, r:.69, cx:-.02, depth:.86 },
+        { y: .79, r:.50, cx:-.10, depth:.84 },
+        { y: .98, r:.30, cx:-.19, depth:.80 },
+        { y:1.13, r:.13, cx:-.22, depth:.76 },
+        { y:1.19, r:.025,cx:-.19, depth:.70 }
+      ];
+      const segments = 96;
+      const vertices = [];
+      const indices = [];
+      for (const ring of rings) {
+        for (let segment=0; segment<segments; segment++) {
+          const angle = segment / segments * Math.PI * 2;
+          vertices.push(
+            ring.cx + Math.cos(angle) * ring.r,
+            ring.y,
+            Math.sin(angle) * ring.r * ring.depth
+          );
+        }
+      }
+      for (let ring=0; ring<rings.length-1; ring++) {
+        for (let segment=0; segment<segments; segment++) {
+          const next = (segment+1) % segments;
+          const a = ring*segments+segment;
+          const b = ring*segments+next;
+          const c = (ring+1)*segments+next;
+          const d = (ring+1)*segments+segment;
+          indices.push(a,d,b,b,d,c);
+        }
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+      geometry.setIndex(indices);
+      geometry.computeVertexNormals();
+      return geometry;
+    }
+    const bodyGeometry = createFlameGeometry();
+    const positions = bodyGeometry.attributes.position;
+    const colors = [];
+    const low = new THREE.Color('#ff7518');
+    const middle = new THREE.Color('#ff9b19');
+    const high = new THREE.Color('#ffe13b');
+    for (let i=0;i<positions.count;i++) {
+      const y = positions.getY(i);
+      const t = THREE.MathUtils.clamp((y+.91)/2.1,0,1);
+      const color = t<.48
+        ? low.clone().lerp(middle,t/.48)
+        : middle.clone().lerp(high,(t-.48)/.52);
+      colors.push(color.r,color.g,color.b);
+    }
+    bodyGeometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+    bodyGeometry.computeVertexNormals();
+    const bodyMaterial = new THREE.MeshStandardMaterial({vertexColors:true,roughness:.6,metalness:0});
+    const body = new THREE.Mesh(bodyGeometry,bodyMaterial);
+    body.castShadow = true; character.add(body);
+
+    const limbMaterial = new THREE.MeshStandardMaterial({color:'#ff8c20',roughness:.55});
+    const makeLimb = (name,scale,position,rotation=0) => {
+      const pivot = new THREE.Group(); pivot.name=name; pivot.position.set(...position); pivot.rotation.z=rotation; character.add(pivot);
+      const geometry = new THREE.SphereGeometry(1,48,32);
+      const mesh = new THREE.Mesh(geometry,limbMaterial); mesh.scale.set(...scale); mesh.castShadow=true; pivot.add(mesh);
+      return pivot;
+    };
+    const leftArm = makeLimb('left-arm',[.21,.36,.19],[-.89,-.44,.02],-.22);
+    const rightArm = makeLimb('right-arm',[.21,.36,.19],[.89,-.44,.02],.22);
+    const makeFoot = (name,position,rotation=0) => {
+      const pivot = new THREE.Group();
+      pivot.name=name;
+      pivot.position.set(...position);
+      pivot.rotation.z=rotation;
+      character.add(pivot);
+
+      const halfGeometry = new THREE.SphereGeometry(1,48,32,Math.PI,Math.PI,0,Math.PI);
+      const heel = new THREE.Mesh(halfGeometry,limbMaterial);
+      heel.scale.set(.31,.35,.28);
+      heel.castShadow=true;
+      pivot.add(heel);
+
+      const sole = new THREE.Mesh(
+        new THREE.CircleGeometry(1,64),
+        new THREE.MeshStandardMaterial({color:'#ff9821',roughness:.58})
+      );
+      sole.scale.set(.31,.35,1);
+      sole.position.z=.012;
+      pivot.add(sole);
+      return pivot;
+    };
+    const leftLeg = makeFoot('left-leg',[-.52,-.86,.74],-.08);
+    const rightLeg = makeFoot('right-leg',[.52,-.86,.74],.08);
+
+    const eyeMaterial = new THREE.MeshStandardMaterial({color:'#493026',roughness:.28});
+    for (const x of [-.28,.28]) {
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(.105,32,20),eyeMaterial);
+      eye.scale.set(.92,1.08,.48); eye.position.set(x,-.17,.815); character.add(eye);
+      const glint = new THREE.Mesh(new THREE.SphereGeometry(.022,16,10),new THREE.MeshBasicMaterial({color:'#fff6dd'}));
+      glint.position.set(x-.025,-.13,.865); character.add(glint);
+    }
+    const smileCurve = new THREE.QuadraticBezierCurve3(
+      new THREE.Vector3(-.14,-.40,.835),
+      new THREE.Vector3(0,-.53,.885),
+      new THREE.Vector3(.14,-.40,.835)
+    );
+    const smile = new THREE.Mesh(new THREE.TubeGeometry(smileCurve,32,.026,12,false),new THREE.MeshStandardMaterial({color:'#f04d24',roughness:.45}));
+    character.add(smile);
+
+    let state='sit';
+    let autoSpin=false;
+    const setState = next => {
+      state=next;
+      document.querySelectorAll('[data-state]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.state===state)));
+      status.textContent=`原形象比例版 · 当前 ${state}`;
+    };
+    document.querySelectorAll('[data-state]').forEach(button=>button.addEventListener('click',()=>setState(button.dataset.state)));
+    const focusView = z => {
+      camera.position.set(0,1.1,z); controls.target.set(0,0,0); controls.update(); autoSpin=false;
+    };
+    document.querySelector('#front').addEventListener('click',()=>focusView(6.2));
+    document.querySelector('#back').addEventListener('click',()=>focusView(-6.2));
+    document.querySelector('#spin').addEventListener('click',()=>{autoSpin=!autoSpin; status.textContent=autoSpin?'自动展示完整 360° 背面':'已停止自动旋转';});
+
+    const clock = new THREE.Clock();
+    function animate() {
+      const t=clock.getElapsedTime();
+      root.rotation.y += autoSpin ? .008 : 0;
+      character.position.y=0;
+      character.scale.set(1,1,1);
+      leftArm.rotation.z=-.22; rightArm.rotation.z=.22;
+      leftLeg.rotation.x=0; rightLeg.rotation.x=0;
+      leftArm.position.set(-.89,-.44,.02); rightArm.position.set(.89,-.44,.02);
+      leftLeg.position.set(-.52,-.86,.74); rightLeg.position.set(.52,-.86,.74);
+      if (state==='walk') {
+        const step=Math.sin(t*7.4);
+        character.position.y=-.28;
+        const leftLift=Math.max(0,step)*.10;
+        const rightLift=Math.max(0,-step)*.10;
+        leftLeg.position.set(-.48,-1.188+leftLift,.08+step*.045);
+        rightLeg.position.set(.48,-1.188+rightLift,.08-step*.045);
+        leftLeg.rotation.x=Math.PI/2;
+        rightLeg.rotation.x=Math.PI/2;
+        leftArm.rotation.z=-.58-step*.13; rightArm.rotation.z=.58-step*.13;
+      } else if (state==='sit') {
+        const breathe=1+Math.sin(t*2)*.014;
+        character.scale.set(1/breathe,breathe,1);
+        leftArm.rotation.z=-.22; rightArm.rotation.z=.22;
+      } else {
+        const breathe=1+Math.sin(t*2)*.012;
+        character.scale.set(1/breathe,breathe,1);
+      }
+      shadow.scale.setScalar(state==='sit'?1.18:1+Math.abs(Math.sin(t*7.4))*.05);
+      controls.update(); renderer.render(scene,camera); requestAnimationFrame(animate);
+    }
+    const resize=()=>{const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};
+    new ResizeObserver(resize).observe(stage); resize(); animate();
+  </script>
+</body>
+</html>
