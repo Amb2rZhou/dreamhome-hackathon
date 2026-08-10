@@ -74,4 +74,32 @@ describe('video asset bindings', () => {
       representativeSec: 1.7,
     }])
   })
+
+  it('collapses historical asset rows that point at the same canonical GLB', async () => {
+    const tracks = ['ast-plant-a', 'ast-plant-b'].map((assetId) => ({
+      track_id: `trk-${assetId}`,
+      t_start: 4.24,
+      t_end: 4.24,
+      best_frame_t: 4.24,
+      frames: [{ t: 4.24, bbox: [0.1, 0.1, 0.2, 0.2] }],
+      asset_id: assetId,
+    }))
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ video_id: 'home-1', tracks }), { status: 200 }))
+      .mockImplementation(() => Promise.resolve(new Response(JSON.stringify({
+        asset_id: 'ast-plant',
+        name: '盆栽植物',
+        status: 'ready',
+        glb_url: '/storage/models/shared-plant.glb',
+        thumb_url: '/storage/thumbs/shared-plant.png',
+        labels: { category: '绿植' },
+        source: { video_id: 'home-1', t_best: 4.24 },
+      }), { status: 200 })))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const hydrated = await fetchVideoBoundAssets('home-1')
+
+    expect(hydrated).toHaveLength(1)
+    expect(hydrated[0].name).toBe('盆栽植物')
+  })
 })

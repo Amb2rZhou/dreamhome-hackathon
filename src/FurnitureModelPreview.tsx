@@ -80,7 +80,8 @@ export function FurnitureModelPreview({ modelUrl, fallbackImage, name }: Furnitu
     const loader = new GLTFLoader()
     loader.setDRACOLoader(dracoLoader)
     mount.dataset.state = 'loading'
-    loader.load(
+    let retryTimer = 0
+    const load = () => loader.load(
       modelUrl,
       (gltf) => {
         if (disposed) {
@@ -107,11 +108,13 @@ export function FurnitureModelPreview({ modelUrl, fallbackImage, name }: Furnitu
       undefined,
       (error) => {
         if (!disposed) {
-          mount.dataset.state = 'failed'
+          mount.dataset.state = 'loading'
           console.warn(`[3D preview] failed to load ${modelUrl}`, error)
+          retryTimer = window.setTimeout(load, 2200)
         }
       },
     )
+    load()
 
     const onPointerDown = (event: PointerEvent) => {
       dragging = true
@@ -143,6 +146,7 @@ export function FurnitureModelPreview({ modelUrl, fallbackImage, name }: Furnitu
     return () => {
       disposed = true
       window.cancelAnimationFrame(raf)
+      window.clearTimeout(retryTimer)
       renderer.domElement.removeEventListener('pointerdown', onPointerDown)
       renderer.domElement.removeEventListener('pointermove', onPointerMove)
       renderer.domElement.removeEventListener('pointerup', onPointerUp)
@@ -161,8 +165,10 @@ export function FurnitureModelPreview({ modelUrl, fallbackImage, name }: Furnitu
 
   return (
     <div className="workshop-model-viewer" ref={mountRef} aria-label={`${name} 3D 模型`}>
-      <span className="workshop-model-loading">3D 家具加载中</span>
-      <img className="workshop-model-fallback" src={fallbackImage} alt="" />
+      <div className="workshop-model-loading" aria-label="包工球正在加载 3D 家具">
+        <video src="/prototype/assets/mascot/motion/working-drawing.webm" autoPlay muted loop playsInline preload="auto" />
+        <span>真实 3D 家具加载中</span>
+      </div>
     </div>
   )
 }

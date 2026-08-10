@@ -391,15 +391,17 @@
 .workshop-model-loading {
   position: absolute;
   z-index: 3;
-  bottom: 10px;
-  padding: 5px 9px;
-  border-radius: 999px;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 2px;
   color: #71786f;
-  background: rgba(255,255,255,.78);
   font-size: 8px;
   opacity: 0;
   transition: opacity .18s ease;
 }
+.workshop-model-loading video { width: 108px; height: 82px; object-fit: contain; }
 .workshop-model-viewer[data-state='loading'] .workshop-model-loading { opacity: 1; }
 .workshop-furniture-hint {
   margin: 7px 0 11px;

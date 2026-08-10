@@ -57,7 +57,9 @@ const MOTIONS: Record<MotionName, MotionClip> = {
   idleBelt: motionClip('idle-belt', { loop: false, scale: 1.02, x: -1, y: 0 }),
   working: motionClip('working', { loop: true, scale: 1, x: 0, y: 0 }),
   workingHammer: motionClip('working-hammer', { loop: false, scale: 0.96, x: 1, y: 1 }),
-  workingDrawing: motionClip('working-drawing', { loop: false, scale: 0.96, x: 0, y: 1 }),
+  // This clip is also the long-running production/loading state.  Looping it
+  // prevents Safari from parking on its transparent final frame.
+  workingDrawing: motionClip('working-drawing', { loop: true, scale: 0.96, x: 0, y: 1 }),
   complete: motionClip('complete', { loop: true, scale: 0.98, x: 0, y: 1 }),
 }
 
@@ -340,7 +342,7 @@ export function Mascot({
             // Collection state is expressed by the surrounding overlay and
             // copy. It deliberately does not replace this media node, so a
             // drag cannot remount or duplicate the animated mascot.
-            preload="metadata"
+            preload="auto"
             onEnded={onMotionEnded}
             onError={() => setVideoFailed(true)}
             style={{

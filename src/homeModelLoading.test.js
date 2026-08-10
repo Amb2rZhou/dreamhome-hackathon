@@ -31,5 +31,9 @@ describe('DreamHome model-backed scenes', () => {
     expect(source).toContain('if(modelLoadProgress.total>0)return');
     expect(source).not.toContain('SCENE_PREVIEW_DEADLINE_MS');
     expect(source).not.toContain('家具继续载入中');
+    expect(source).not.toContain('件家具使用临时预览');
+    expect(source).toContain('fallback.visible=false');
+    expect(source).toContain('真实组件加载失败，保持加载层并重试');
+    expect(source).toContain('const MAX_MODEL_LOADS=Math.min(2');
   });
 });

@@ -29,6 +29,7 @@ export function FrameAssetsDrawer({
   detectedLabels?: string[]
 }) {
   const [activeId, setActiveId] = useState(assets[0]?.id ?? '')
+  const [thumbnailsReady, setThumbnailsReady] = useState(false)
   const activeIndex = useMemo(() => {
     const index = assets.findIndex((asset) => asset.id === activeId)
     return index >= 0 ? index : 0
@@ -47,6 +48,32 @@ export function FrameAssetsDrawer({
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [onClose])
+
+  useEffect(() => {
+    let cancelled = false
+    let retryTimer = 0
+    const urls = Array.from(new Set(assets.map(furnitureThumbnailUrl).filter(Boolean)))
+    setThumbnailsReady(urls.length === 0)
+    const loadAll = async () => {
+      const results = await Promise.all(urls.map((url) => new Promise<boolean>((resolve) => {
+        const image = new Image()
+        image.onload = () => resolve(true)
+        image.onerror = () => resolve(false)
+        image.src = url
+      })))
+      if (cancelled) return
+      if (results.every(Boolean)) {
+        setThumbnailsReady(true)
+        return
+      }
+      retryTimer = window.setTimeout(loadAll, 2200)
+    }
+    void loadAll()
+    return () => {
+      cancelled = true
+      window.clearTimeout(retryTimer)
+    }
+  }, [assets])
 
   const allFavorited = assets.length > 0 && assets.every((asset) => favoriteIds.includes(asset.id))
 
@@ -130,6 +157,20 @@ export function FrameAssetsDrawer({
             </svg>
             <strong>这条视频暂无现成 3D 组件</strong>
             <span>你仍可以暂停画面并圈选想要的家具</span>
+          </div>
+        ) : !thumbnailsReady ? (
+          <div className="frame-assets-loading" role="status" aria-label="正在加载真实 3D 家具">
+            <video
+              src="/prototype/assets/mascot/motion/working-drawing.webm"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              aria-hidden="true"
+            />
+            <strong>包工球正在搬运真实家具</strong>
+            <span>全部资源就绪后再一起展示</span>
           </div>
         ) : (
           <>

@@ -47,7 +47,7 @@ export async function fetchVideoBoundAssets(videoId: string): Promise<LibraryCom
     return responseJson<ReusableAsset>(response)
   }))
 
-  return assets.flatMap((asset) => {
+  const hydrated = assets.flatMap((asset) => {
     if (!asset || !asset.glb_url) return []
     const appearances = tracks
       .filter((track) => track.asset_id === asset.asset_id)
@@ -87,6 +87,34 @@ export async function fetchVideoBoundAssets(videoId: string): Promise<LibraryCom
       },
     }]
   })
+
+  // A canonical model can have more than one historical asset row when an
+  // old selection was retried repeatedly.  Those rows are not different
+  // furniture: they point at the exact same GLB.  Collapse them at the media
+  // identity boundary and preserve every appearance on the retained asset so
+  // the video drawer never renders a row of duplicate plants.
+  const byModel = new Map<string, LibraryComponent>()
+  for (const component of hydrated) {
+    const modelKey = mediaUrl(component.modelUrl ?? '').replace(/[?#].*$/, '') || component.id
+    const existing = byModel.get(modelKey)
+    if (!existing) {
+      byModel.set(modelKey, component)
+      continue
+    }
+    const appearances = [
+      ...(existing.sourceVideo?.appearances ?? []),
+      ...(component.sourceVideo?.appearances ?? []),
+    ].filter((appearance, index, list) => list.findIndex((candidate) => (
+      candidate.startSec === appearance.startSec
+      && candidate.endSec === appearance.endSec
+      && candidate.representativeSec === appearance.representativeSec
+    )) === index)
+    byModel.set(modelKey, {
+      ...existing,
+      sourceVideo: existing.sourceVideo ? { ...existing.sourceVideo, appearances } : existing.sourceVideo,
+    })
+  }
+  return [...byModel.values()]
 }
 
 export function mergeVideoAssets(

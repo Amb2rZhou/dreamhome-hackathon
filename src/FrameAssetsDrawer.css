@@ -106,6 +106,19 @@
 }
 .frame-assets-drawer-empty strong { color: #343b34; font-size: 14px; }
 .frame-assets-drawer-empty span { max-width: 240px; font-size: 10px; line-height: 1.5; }
+.frame-assets-loading {
+  grid-row: 2 / -1;
+  min-height: 230px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 5px;
+  color: #6d756c;
+  text-align: center;
+}
+.frame-assets-loading video { width: 142px; height: 112px; object-fit: contain; }
+.frame-assets-loading strong { color: #343b34; font-size: 13px; }
+.frame-assets-loading span { font-size: 9px; }
 
 .frame-assets-drawer-header > div { min-width: 0; display: grid; gap: 2px; }
 .frame-assets-drawer-header strong { font-size: 16px; line-height: 1.25; letter-spacing: -.2px; }
