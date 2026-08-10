@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { getAsset } from './asset-library-data.js';
+import { getAsset } from './asset-library-data.js?v=20260810c';
 
 const SPECS = {
   'wide-living': { width:9, depth:5.5, shape:'rect', windows:['back-floor'] },

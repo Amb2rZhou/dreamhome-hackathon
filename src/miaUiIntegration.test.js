@@ -26,7 +26,7 @@ describe('Mia interaction with DreamHome data', () => {
     const setup = readPage('room-setup');
     const preview = readShared('template-preview-3d.js');
     const home = readPage('my-home');
-    expect(setup).toContain("template-preview-3d.js?v=20260810b");
+    expect(setup).toContain("template-preview-3d.js?v=20260810c");
     expect(preview).toContain('export function createLivePreview');
     expect(home).toContain('roomOverride:null');
     expect(home).toContain('friendMode:false');

@@ -1,4 +1,4 @@
-import { BACKEND_ASSETS } from './library-assets.generated.js';
+import { BACKEND_ASSETS } from './library-assets.generated.js?v=20260810c';
 
 const FAVORITES_KEY = 'dreamhome.asset-library.v1';
 const USER_ASSETS_KEY = 'dreamhome.user-assets.v1';
