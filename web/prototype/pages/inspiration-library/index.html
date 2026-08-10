@@ -79,9 +79,11 @@
     /* ---- 主页功能图标栏（参考酷家乐主入口）---- */
     .fn-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:0 0 16px;padding:12px 4px;border-radius:16px;background:rgba(255,255,255,.86);border:1px solid rgba(117,139,113,.16);box-shadow:0 5px 14px rgba(69,89,67,.07)}
     .fn-item{display:flex;flex-direction:column;align-items:center;gap:5px;border:0;padding:0;background:transparent;color:inherit;font:inherit;cursor:pointer}
-    .fn-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;color:#8a5f2e;background:linear-gradient(150deg,#fdf3dd,#f6e6c4)}.fn-icon svg{width:23px;height:23px}
-    .fn-icon--cases{background:linear-gradient(150deg,#fce9dc,#f7d8c2)}.fn-icon--floorplan{background:linear-gradient(150deg,#e7efe4,#d6e5d2);color:#5f7a5c}
-    .fn-icon--furniture{background:linear-gradient(150deg,#fdf3dd,#f4e3bd)}.fn-icon--styles{background:linear-gradient(150deg,#ece7f5,#ddd4ee);color:#6d5b96}
+    .fn-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;overflow:hidden;background:linear-gradient(150deg,#fdf6e6,#f7ebd0)}
+    /* 图标是抠好的透明 PNG（3 倍图），底色与投影都由 CSS 画：调色只改这里，不用重新出图 */
+    .fn-icon img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 1.5px 2px rgba(92,72,52,.22))}
+    .fn-icon--cases{background:linear-gradient(150deg,#fdf0ec,#f8ddd5)}.fn-icon--floorplan{background:linear-gradient(150deg,#edf2f4,#d9e4ea)}
+    .fn-icon--furniture{background:linear-gradient(150deg,#fdf6e6,#f7ebd0)}.fn-icon--styles{background:linear-gradient(150deg,#f5f2ec,#e9e3d8)}
     .fn-item b{font-size:11px;font-weight:var(--dh-font-weight-heavy);letter-spacing:.01em}
 
     /* ---- 找案例列表 ---- */
@@ -254,18 +256,29 @@
     // ---------- 整套案例（承接「刷一刷」的「查看同款小家」）----------
     // 数据源就是我的家在用的那批场景 JSON，不另造数据；items[].id 即资产库的 ast_*，
     // 所以案例里的组件能直接复用卡片渲染与收藏链路。
+    // tag 里不再写死面积：原来那个 ㎡ 是博主整套房子的名义面积（沿用自 banner 营销文案），
+    // 而案例还原的往往只是其中一个房间（奶油风标 78㎡，实际还原的客厅只有 19.4㎡）。
+    // 两个数并排显示会自相矛盾，改为一律按 scene.room 实算。
     const CASE_INDEX = [
-      { videoId: 'vid_91fe552c5f7d', cover: '../../assets/scenes/vid_91fe552c5f7d.jpg', tag: '长厅公寓 · 48㎡', blogger: '@云上的小路' },
-      { videoId: 'vid_40734d7f2e6c', cover: '../../assets/scenes/vid_40734d7f2e6c.jpg?v=approved-room', tag: '原木侘寂 · 45㎡', blogger: '@鸡蛋灌饼的家' },
-      { videoId: 'vid_5f32a0ac954a', cover: '../../assets/scenes/vid_5f32a0ac954a.jpg', tag: '奶油风 · 78㎡', blogger: '@栗子设计日记' },
+      { videoId: 'vid_91fe552c5f7d', cover: '../../assets/scenes/vid_91fe552c5f7d.jpg', tag: '长厅公寓', blogger: '@云上的小路' },
+      { videoId: 'vid_40734d7f2e6c', cover: '../../assets/scenes/vid_40734d7f2e6c.jpg?v=approved-room', tag: '原木侘寂', blogger: '@鸡蛋灌饼的家' },
+      { videoId: 'vid_5f32a0ac954a', cover: '../../assets/scenes/vid_5f32a0ac954a.jpg', tag: '奶油风', blogger: '@栗子设计日记' },
     ];
+    const roomSpec = (scene) => {
+      const room = scene?.room;
+      if (!room?.w || !room?.d) return '';
+      return `${(room.w * room.d).toFixed(1)}㎡ · ${room.w} × ${room.d} m`;
+    };
     const SCENE_ROOT = '../../assets/demo-backend/scenes';
     // 主页功能图标栏：灵感库能逛的四类内容各一个入口。件数在渲染时实时算，不写死。
+    // 图标是黏土质感的透明 PNG（生成图抠掉底色后归一化到 126px，即 42px 容器的 3 倍图），
+    // 圆角色块与投影都在 CSS 里，见 .fn-icon / .fn-icon--*。
+    const FN_ICON_ROOT = '../../assets/icons/fn';
     const FN_ENTRIES = [
-      { id: 'cases', label: '找案例', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 9.8 12 4l8.4 5.8v9a1.4 1.4 0 0 1-1.4 1.4H5a1.4 1.4 0 0 1-1.4-1.4Z"/><path d="M9.2 20.2v-6.4h5.6v6.4"/></svg>' },
-      { id: 'floorplan', label: '找户型', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="3.4" width="17.2" height="17.2" rx="2"/><path d="M3.4 12.6h6.2V3.4M9.6 12.6v8M20.6 12.6h-11"/></svg>' },
-      { id: 'furniture', label: '找家具', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11V7.6A1.6 1.6 0 0 1 5.6 6h12.8A1.6 1.6 0 0 1 20 7.6V11"/><path d="M3 11.4h18a1 1 0 0 1 1 1V17H2v-4.6a1 1 0 0 1 1-1Z"/><path d="M4.6 17v2.4M19.4 17v2.4"/></svg>' },
-      { id: 'styles', label: '找风格', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.4a8.6 8.6 0 1 0 0 17.2c1.3 0 1.9-.9 1.9-1.8 0-1.1-.9-1.7-.9-2.6 0-.8.7-1.5 1.6-1.5h1.4a4.6 4.6 0 0 0 4.6-4.6C20.6 6.5 16.8 3.4 12 3.4Z"/><circle cx="7.6" cy="11" r="1.1" fill="currentColor" stroke="none"/><circle cx="11" cy="7.4" r="1.1" fill="currentColor" stroke="none"/><circle cx="15.6" cy="8.6" r="1.1" fill="currentColor" stroke="none"/></svg>' },
+      { id: 'cases', label: '找案例' },
+      { id: 'floorplan', label: '找户型' },
+      { id: 'furniture', label: '找家具' },
+      { id: 'styles', label: '找风格' },
     ];
     const fnCounts = () => ({
       cases: `${CASE_INDEX.length} 套`,
@@ -322,9 +335,11 @@
     const openCatalog = (kind, category = '') => { location.hash = `catalog=${kind}${category ? `:${encodeURIComponent(category)}` : ''}`; }; // 中文子类需编码
     // ---------- 顶部 banner 轮播（情绪引导卡 + 平台案例卡；真机用 <swiper circular>） ----------
     // 案例卡复用对应 1:1 重建场景的真实封面，确保入口预览与进入后的房间一致。
+    // tag 同样不写面积：原来的 45㎡/78㎡ 是博主整套房子的名义面积，与点进去后按 scene.room 实算的
+    // 房间面积（21.8㎡ / 19.4㎡）自相矛盾。与 CASE_INDEX 保持一致，只留风格名。
     const BANNER_CASES = [
-      { id: 'case-oak', videoId: 'vid_40734d7f2e6c', image: '../../assets/scenes/vid_40734d7f2e6c.jpg?v=approved-room', tag: '原木侘寂 · 45㎡', blogger: '@鸡蛋灌饼的家' },
-      { id: 'case-cream', videoId: 'vid_5f32a0ac954a', image: '../../assets/scenes/vid_5f32a0ac954a.jpg', tag: '奶油风 · 78㎡', blogger: '@栗子设计日记' },
+      { id: 'case-oak', videoId: 'vid_40734d7f2e6c', image: '../../assets/scenes/vid_40734d7f2e6c.jpg?v=approved-room', tag: '原木侘寂', blogger: '@鸡蛋灌饼的家' },
+      { id: 'case-cream', videoId: 'vid_5f32a0ac954a', image: '../../assets/scenes/vid_5f32a0ac954a.jpg', tag: '奶油风', blogger: '@栗子设计日记' },
     ];
     // 无缝循环：两端各加一张克隆，滑到克隆帧后在 transitionend 里瞬移回真实帧。向右滑=前进（第3张→第1张顺向切入）。
     let bannerPos = 1;        // 轨道位置：真实第 i 张在 pos=i+1
@@ -371,7 +386,7 @@
       disposeTemplatePreviews(home);
       // 主入口感：顶部 banner 承担案例大图，紧接着是功能图标栏（案例/户型/家具/风格四个入口），
       // 内容流只留精选家具。案例与户型原来的横滑 rail 收进图标，页面短一大截。
-      const fnGrid = `<nav class="fn-grid" aria-label="灵感库功能入口">${FN_ENTRIES.map((entry) => `<button class="fn-item" data-fn="${entry.id}" aria-label="${entry.label}"><span class="fn-icon fn-icon--${entry.id}">${entry.svg}</span><b>${entry.label}</b></button>`).join('')}</nav>`;
+      const fnGrid = `<nav class="fn-grid" aria-label="灵感库功能入口">${FN_ENTRIES.map((entry) => `<button class="fn-item" data-fn="${entry.id}" aria-label="${entry.label}"><span class="fn-icon fn-icon--${entry.id}"><img src="${FN_ICON_ROOT}/${entry.id}.png" alt="" width="42" height="42" loading="lazy" decoding="async" /></span><b>${entry.label}</b></button>`).join('')}</nav>`;
 
       const isAllFurniture = activeFurnitureCategory === 'all';
       const furniture = (isAllFurniture ? getAssets('furniture') : getAssets('furniture', activeFurnitureCategory)).slice(0, 11);
@@ -393,7 +408,10 @@
     const paintCaseCounts = (root = catalog) => {
       root.querySelectorAll('[data-case-count]').forEach((node) => {
         loadCase(node.dataset.caseCount)
-          .then((scene) => { node.textContent = `${(scene.items || []).length} 件组件`; })
+          .then((scene) => {
+            const spec = roomSpec(scene);
+            node.textContent = `${(scene.items || []).length} 件组件${spec ? ` · ${spec}` : ''}`;
+          })
           .catch(() => { node.textContent = ''; });
       });
     };
@@ -514,8 +532,8 @@
     // 找案例：整套案例列表（竖排大卡，件数异步回填）
     const renderCases = () => {
       libraryContent.classList.remove('is-case');
-      enterSecondary('整套案例');
-      catalog.innerHTML = `<p class="case-summary">博主视频里被完整还原的空间，可以单件收藏，也能整套套用到我的家。</p><div class="case-list">${CASE_INDEX.map((item) => `<button class="case-tile" data-case-open="${item.videoId}" aria-label="查看案例 ${item.tag}" style="background-image:url('${item.cover}')"><span class="case-tile-foot"><b>${item.tag}</b><span>${item.blogger} · <i data-case-count="${item.videoId}">…</i></span></span></button>`).join('')}</div>`;
+      enterSecondary('同款小家');
+      catalog.innerHTML = `<p class="sg-intro">查看博主同款小家，可单件收藏，也可一键套用到我的家。</p><div class="case-list">${CASE_INDEX.map((item) => `<button class="case-tile" data-case-open="${item.videoId}" aria-label="查看案例 ${item.tag}" style="background-image:url('${item.cover}')"><span class="case-tile-foot"><b>${item.tag}</b><span>${item.blogger} · <i data-case-count="${item.videoId}">…</i></span></span></button>`).join('')}</div>`;
       paintCaseCounts(catalog);
     };
 
@@ -571,7 +589,7 @@
     // 案例详情页：顶部封面 + 整套组件（按品类分组）+ 底部两个动作
     const renderCase = async (videoId) => {
       const meta = caseMetaOf(videoId);
-      enterSecondary('整套案例');
+      enterSecondary('同款小家');
       libraryContent.classList.add('is-case');
       catalog.innerHTML = '<p class="empty-state">正在载入案例…</p>';
       let scene;
@@ -589,12 +607,12 @@
         if (!groups.has(label)) groups.set(label, []);
         groups.get(label).push(item);
       });
-      const room = scene.room ? `${scene.room.w} × ${scene.room.d} m` : '';
+      const room = roomSpec(scene);
       const groupHtml = [...groups.entries()].map(([label, list]) => `<div class="case-group"><div class="case-group-head"><span class="section-tag">${label}</span><span class="case-group-n">${list.length}</span></div><div class="catalog-grid">${list.map((item) => item.inLibrary
         ? card(item.asset)
         : `<div class="component-card component-card--readonly"><div class="component-visual visual--furniture"><i class="case-placeholder" aria-hidden="true"></i></div><b>${item.name}</b><span class="case-readonly-note">暂未入库</span></div>`).join('')}</div></div>`).join('');
       catalog.innerHTML = `<section class="case-hero" style="background-image:url('${meta?.cover || ''}')"><div class="case-hero-foot"><b>${meta?.tag || scene.title || '整套案例'}</b><span>${meta?.blogger || ''}${room ? ` · ${room}` : ''}</span></div></section>
-        <p class="case-summary">这套空间共 <b>${items.length}</b> 件组件${savable.length < items.length ? `，其中 ${savable.length} 件可收藏` : ''}。可以单件收藏，也可以整套套用到我的家。</p>
+        <p class="case-summary">这套空间共 <b>${items.length}</b> 件组件${savable.length < items.length ? `，其中 ${savable.length} 件可收藏` : ''}。</p>
         ${groupHtml}
         <div class="case-actions"><button class="case-save-all" id="caseSaveAll" type="button" ${savable.length ? '' : 'disabled'}>${allSaved ? '✓ 已全部收藏' : `全部收藏（${savable.length}）`}</button><a class="case-apply" href="../my-home/index.html?case=${encodeURIComponent(videoId)}">用这套布置我的家</a></div>`;
       renderTemplatePreviews(catalog);
@@ -910,7 +928,8 @@
       if (event.target.closest('#catalogBack')) {
         // 逐级退回：家具列表 → 风格详情 → 风格图鉴 → 主页，不一路弹回首页
         if (location.hash.startsWith('#style=')) { location.hash = 'styles'; return; }
-        if (view.caseId || ['#cases','#styles'].includes(location.hash)) { location.hash = ''; return; } const fromMyHome = new URLSearchParams(location.search).get('from') === 'myhome'; if (fromMyHome && view.kind === 'floorplan' && !view.favoriteOnly) { location.href = '../my-home/index.html'; return; } if (location.hash) location.hash = ''; else route(); return; } // 唯一例外：从「我的家」进来的户型全部页返回我的家；其余回灵感库主页
+        if (view.caseId) { location.hash = 'cases'; return; } // 案例详情退回「同款小家」列表，与风格链路同构（banner 直接点进来的也先落到列表，再退主页）
+        if (['#cases','#styles'].includes(location.hash)) { location.hash = ''; return; } const fromMyHome = new URLSearchParams(location.search).get('from') === 'myhome'; if (fromMyHome && view.kind === 'floorplan' && !view.favoriteOnly) { location.href = '../my-home/index.html'; return; } if (location.hash) location.hash = ''; else route(); return; } // 唯一例外：从「我的家」进来的户型全部页返回我的家；其余回灵感库主页
       const caseSlide = event.target.closest('[data-case]');
       if (caseSlide) { if (bannerDragged) { bannerDragged = false; return; } const videoId = caseSlide.dataset.video; if (videoId) location.hash = `case=${encodeURIComponent(videoId)}`; return; } // 先进灵感库案例详情页；要套用再从那里跳我的家
       const asset = event.target.closest('[data-asset]');
