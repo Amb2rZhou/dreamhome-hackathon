@@ -116,16 +116,23 @@
 
     // 预设行的数据源与 my-home 的 getFavoriteTemplates() 保持同一套过滤，
     // 否则这里列出的形状会跟「从收藏户型生成」对不上。
+    function supportedFloorplans() {
+      return getAssets('floorplan')
+        .filter((asset) => isSupportedFloorplan(asset) && isPresetId(asset.templateId))
+        .map((asset) => ({ id: asset.id, templateId: asset.templateId, name: asset.name }));
+    }
+
     function favoriteFloorplans() {
       const favorites = getFavorites();
-      return getAssets('floorplan')
-        .filter((asset) => favorites.has(asset.id) && isSupportedFloorplan(asset) && isPresetId(asset.templateId))
-        .map((asset) => ({ templateId: asset.templateId, name: asset.name }));
+      return supportedFloorplans().filter((item) => favorites.has(item.id));
     }
 
     const options = favoriteFloorplans();
     const requested = QUERY.get('template');
-    const initialId = (isPresetId(requested) && options.some((item) => item.templateId === requested))
+    // A valid deep link must still open before a new browser identity has
+    // finished syncing favorites. The library controls which templates exist;
+    // favorites only choose the fallback when no template was requested.
+    const initialId = (isPresetId(requested) && supportedFloorplans().some((item) => item.templateId === requested))
       ? requested
       : (options[0]?.templateId || '');
 

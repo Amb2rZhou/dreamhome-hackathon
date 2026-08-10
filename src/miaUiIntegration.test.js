@@ -41,6 +41,7 @@ describe('Mia interaction with DreamHome data', () => {
     expect(home).not.toContain('selectCustomPlan');
     expect(home).toContain("location.href = `../room-setup/index.html?template=${encodeURIComponent(state.selectedTemplateId)}`");
     expect(setup).toContain("location.href = `${MY_HOME}?template=${encodeURIComponent(state.templateId)}&w=${w}&d=${d}&h=${h}&autogen=1`");
+    expect(setup).toContain("supportedFloorplans().some((item) => item.templateId === requested)");
 
     // Mia's dimensions must enter the existing DreamHome project/editor shape.
     expect(home).toContain('project.source.custom = { ...dims }');
