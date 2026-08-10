@@ -1297,6 +1297,11 @@ function App() {
             title={activeFeedVideo.caption}
             audioSrc={activeFeedVideo.audioSrc}
             playing={state.videoPlaying && !activeImageHotspotAsset}
+            onPause={() => {
+              if (suppressPause.current || state.feed.overlay !== 'none') return
+              dispatch({ type: 'PAUSE', videoId: activeFeedVideo.id, time: imageSlideIndexRef.current })
+              setSessionGuideStage((current) => current === 'pause' ? 'recognize' : current)
+            }}
             onMediaReady={() => recordFeedMediaEvent(activeFeedVideo.id, 'loadeddata')}
             onIndexChange={(index) => { imageSlideIndexRef.current = index }}
             hotspots={activeFeedVideo.id === IMAGE_POST_ID ? imagePostHotspots : []}

@@ -8,6 +8,7 @@ type Props = {
   title: string
   audioSrc?: string
   playing: boolean
+  onPause?: () => void
   onMediaReady?: () => void
   onIndexChange?: (index: number) => void
   hotspots?: ImagePostHotspot[]
@@ -19,21 +20,27 @@ export function ImageFeedCarousel({
   title,
   audioSrc,
   playing,
+  onPause,
   onMediaReady,
   onIndexChange,
   hotspots = [],
   onHotspotActivate,
 }: Props) {
   const [index, setIndex] = useState(0)
+  const [loadedImage, setLoadedImage] = useState<string | null>(null)
   const [audioPaused, setAudioPaused] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
   const touchStart = useRef<{ x: number; y: number } | null>(null)
+  const suppressPauseClick = useRef(false)
   const readyReported = useRef(false)
   const audioActive = playing && !audioPaused
+  const activeImage = images[index]
+  const imageReady = loadedImage === activeImage
   const visibleHotspots = hotspots.filter((hotspot) => hotspot.slideIndex === index)
 
   useEffect(() => {
     setIndex(0)
+    setLoadedImage(null)
     readyReported.current = false
   }, [images])
 
@@ -70,7 +77,14 @@ export function ImageFeedCarousel({
     <section
       className="image-feed-carousel"
       aria-label={`${title}，第 ${index + 1} 张，共 ${images.length} 张`}
-      onClick={(event) => event.stopPropagation()}
+      onClick={(event) => {
+        event.stopPropagation()
+        if (suppressPauseClick.current) {
+          suppressPauseClick.current = false
+          return
+        }
+        if (imageReady) onPause?.()
+      }}
       onPointerDown={(event) => event.stopPropagation()}
       onPointerUp={(event) => event.stopPropagation()}
       onTouchStart={(event) => {
@@ -86,24 +100,27 @@ export function ImageFeedCarousel({
         const dy = touch.clientY - start.y
         if (Math.abs(dx) < 36 || Math.abs(dx) <= Math.abs(dy)) return
         event.stopPropagation()
+        suppressPauseClick.current = true
+        window.setTimeout(() => { suppressPauseClick.current = false }, 350)
         move(dx < 0 ? 1 : -1)
       }}
     >
       <div className="image-feed-media">
         <img
-          key={images[index]}
-          className="image-feed-slide"
-          src={images[index]}
+          key={activeImage}
+          className={`image-feed-slide ${imageReady ? 'is-ready' : ''}`}
+          src={activeImage}
           alt={`${title}，第 ${index + 1} 张`}
           crossOrigin="anonymous"
           draggable={false}
           onLoad={() => {
+            setLoadedImage(activeImage)
             if (readyReported.current) return
             readyReported.current = true
             onMediaReady?.()
           }}
         />
-        {visibleHotspots.length > 0 && (
+        {imageReady && visibleHotspots.length > 0 && (
           <div className="image-feed-hotspots" aria-label={`本图可查看 ${visibleHotspots.length} 件 3D 家具`}>
             {visibleHotspots.map((hotspot) => {
               const [x, y, width, height] = hotspot.bbox
@@ -129,6 +146,19 @@ export function ImageFeedCarousel({
               )
             })}
           </div>
+        )}
+        {imageReady && onPause && (
+          <button
+            type="button"
+            className="image-feed-lasso-trigger"
+            aria-label="圈选图片里的家具"
+            onClick={(event) => {
+              event.stopPropagation()
+              onPause()
+            }}
+          >
+            <span aria-hidden="true">◌</span>圈选家具
+          </button>
         )}
       </div>
       <div className="image-feed-dots" aria-label="图片页码">

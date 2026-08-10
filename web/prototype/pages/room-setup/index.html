@@ -108,8 +108,8 @@
   <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
   <script type="module">
     import { getAssets, getFavorites, isSupportedFloorplan } from '../shared/asset-library-data.js?v=20260722c';
-    import { createLivePreview } from '../shared/template-preview-3d.js';
-    import { ROOM_PRESETS, ROOM_LIMITS, clampRoom, presetRoom, isDefaultRoom, isPresetId } from '../shared/room-presets.js';
+    import { createLivePreview } from '../shared/template-preview-3d.js?v=20260810b';
+    import { ROOM_PRESETS, ROOM_LIMITS, clampRoom, presetRoom, isDefaultRoom, isPresetId } from '../shared/room-presets.js?v=20260810b';
 
     const QUERY = new URLSearchParams(location.search);
     const MY_HOME = '../my-home/index.html';
