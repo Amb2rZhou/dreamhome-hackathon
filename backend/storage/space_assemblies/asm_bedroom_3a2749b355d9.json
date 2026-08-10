@@ -1,0 +1,273 @@
+{
+  "schema_version": "dreamhome-space-assembly/v1",
+  "assembly_id": "asm_bedroom_3a2749b355d9",
+  "project_seed_id": "home_demo_bedroom_3a2749b355d9",
+  "title": "复古暖棕卧室",
+  "status": "ready",
+  "source": {
+    "type": "image_post_reconstruction",
+    "image_post_id": "imgpost_ba7a0419c9ca155a",
+    "slide_index": 0,
+    "reference_image": "codex-clipboard-f32107b0-7833-43ef-a41d-90770fe638b4.png",
+    "layout_method": "agent_assembled_from_canonical_assets",
+    "dimensions_estimated": true
+  },
+  "coordinate_system": {
+    "unit": "meter",
+    "up_axis": "y",
+    "origin": "room_center_floor",
+    "rotation_unit": "radian"
+  },
+  "envelope": {
+    "width": 3.6,
+    "depth": 5.4,
+    "height": 2.8
+  },
+  "walls": [
+    {"id": "wall_back", "axis": "x", "at": -2.7, "from": -1.8, "to": 1.8, "role": "exterior"},
+    {"id": "wall_front", "axis": "x", "at": 2.7, "from": -1.8, "to": 1.8, "role": "exterior"},
+    {"id": "wall_left", "axis": "z", "at": -1.8, "from": -2.7, "to": 2.7, "role": "exterior"},
+    {"id": "wall_right", "axis": "z", "at": 1.8, "from": -2.7, "to": 2.7, "role": "exterior"}
+  ],
+  "surfaces": [
+    {"id": "surface_floor", "kind": "floor", "room_id": "room_bedroom"},
+    {"id": "surface_ceiling", "kind": "ceiling", "room_id": "room_bedroom"}
+  ],
+  "rooms": [
+    {
+      "id": "room_bedroom",
+      "name": "卧室",
+      "label": "复古暖棕卧室",
+      "type": "bedroom",
+      "zone": "private",
+      "x": 0,
+      "z": 0,
+      "width": 3.6,
+      "depth": 5.4
+    }
+  ],
+  "window_slots": [
+    {
+      "id": "window_left_1",
+      "roomId": "room_bedroom",
+      "edge": "west",
+      "occupied": true,
+      "width": 1.25,
+      "height": 2.05,
+      "position": {"x": -1.76, "y": 1.28, "z": -1.15, "rotationY": 1.5707963268}
+    }
+  ],
+  "finishes": {
+    "floor": {"material": "light_oak", "color": "#C7A77A"},
+    "wall": {"material": "warm_textured_plaster", "color": "#8D5D46"},
+    "accent_wall": {"wall_id": "wall_right", "material": "fabric_panel", "color": "#C3A47F"}
+  },
+  "environment": {
+    "light": "warm_day",
+    "view": "soft_daylight",
+    "estimated": true,
+    "windows": [
+      {"id": "window_left_1", "wall": "left", "type": "tall", "style": "sheer", "center": -1.15, "width": 1.25, "height": 2.05, "sill": 0.25}
+    ],
+    "camera": {"position": [0.0, 2.0, 4.9], "target": [0.0, 0.9, -0.4], "fov_deg": 48}
+  },
+  "placements": [
+    {
+      "placement_id": "plc_bed",
+      "asset_id": "ast_240c9a5c1586",
+      "name": "双人床",
+      "room_id": "room_bedroom",
+      "model_url": "/storage/models/363253d4cff24aa583def090363f5dee.glb",
+      "mount": "floor",
+      "position": {"x": 0.73, "y": 0.0, "z": 0.22},
+      "rotation": {"x": 0.0, "y": 1.5707963268, "z": 0.0},
+      "scale": {"x": 2.15, "y": 2.16, "z": 1.86},
+      "target_size_m": {"width": 2.15, "height": 0.85, "depth": 1.75},
+      "visible": true
+    },
+    {
+      "placement_id": "plc_armchair",
+      "asset_id": "ast_4c747bd203f6",
+      "name": "扶手椅",
+      "room_id": "room_bedroom",
+      "model_url": "/storage/models/29c97b4588c2676000e9d0c4cabef3ff.glb",
+      "mount": "floor",
+      "position": {"x": -1.18, "y": 0.0, "z": -1.12},
+      "rotation": {"x": 0.0, "y": 0.3490658504, "z": 0.0},
+      "scale": {"x": 1.61, "y": 1.81, "z": 1.59},
+      "target_size_m": {"width": 0.95, "height": 0.85, "depth": 0.9},
+      "visible": true
+    },
+    {
+      "placement_id": "plc_tall_cabinet",
+      "asset_id": "ast_9f0025ead5db",
+      "name": "高柜",
+      "room_id": "room_bedroom",
+      "model_url": "/storage/models/7574f1b5214c4ee8d42cb8d76119d53e.glb",
+      "mount": "floor",
+      "position": {"x": 0.0, "y": 0.0, "z": -2.42},
+      "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
+      "scale": {"x": 1.85, "y": 1.85, "z": 1.87},
+      "target_size_m": {"width": 0.65, "height": 1.85, "depth": 0.42},
+      "visible": true
+    },
+    {
+      "placement_id": "plc_rug",
+      "asset_id": "ast_97844e55748d",
+      "name": "几何长方形地毯",
+      "room_id": "room_bedroom",
+      "model_url": "/storage/models/5bf7152b4d2410c8e4cda2040cfaa278.glb",
+      "mount": "floor",
+      "position": {"x": 0.0, "y": 0.01, "z": 0.35},
+      "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
+      "scale": {"x": 3.2, "y": 3.0, "z": 4.86},
+      "target_size_m": {"width": 3.2, "height": 0.02, "depth": 3.9},
+      "visible": true
+    },
+    {
+      "placement_id": "plc_coffee_table",
+      "asset_id": "ast_e6f9788d4101",
+      "name": "深棕实木前景茶几",
+      "room_id": "room_bedroom",
+      "model_url": "/storage/models/4621f946cf40921fed08ee94dbb626c8.glb",
+      "mount": "floor",
+      "position": {"x": -0.55, "y": 0.0, "z": 1.85},
+      "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
+      "scale": {"x": 1.05, "y": 1.18, "z": 1.05},
+      "target_size_m": {"width": 1.05, "height": 0.58, "depth": 1.05},
+      "visible": true
+    },
+    {
+      "placement_id": "plc_ornament_white",
+      "asset_id": "ast_26d5964ad0ab",
+      "name": "白黄堆叠摆件",
+      "room_id": "room_bedroom",
+      "model_url": "/storage/models/c960da9490e72212cc786481490c78ad.glb",
+      "mount": "surface",
+      "position": {"x": -0.77, "y": 0.59, "z": 1.78},
+      "rotation": {"x": 0.0, "y": -0.1745329252, "z": 0.0},
+      "scale": {"x": 0.47, "y": 0.4, "z": 0.48},
+      "target_size_m": {"width": 0.22, "height": 0.4, "depth": 0.22},
+      "visible": true
+    },
+    {
+      "placement_id": "plc_ornament_color",
+      "asset_id": "ast_0f84e275ae15",
+      "name": "多色堆叠摆件",
+      "room_id": "room_bedroom",
+      "model_url": "/storage/models/2b4d2a67d00a8284550523d5ea80e092.glb",
+      "mount": "surface",
+      "position": {"x": -0.37, "y": 0.59, "z": 1.88},
+      "rotation": {"x": 0.0, "y": 0.2094395102, "z": 0.0},
+      "scale": {"x": 0.79, "y": 0.7, "z": 0.82},
+      "target_size_m": {"width": 0.24, "height": 0.55, "depth": 0.24},
+      "visible": true
+    },
+    {
+      "placement_id": "plc_plant",
+      "asset_id": "ast_c3e4fcb6e414",
+      "name": "花艺盆栽",
+      "room_id": "room_bedroom",
+      "model_url": "/storage/models/227f02741f62ab4bf6fb7442f04bd4ad.glb",
+      "mount": "surface",
+      "position": {"x": 0.02, "y": 1.86, "z": -2.42},
+      "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
+      "scale": {"x": 0.46, "y": 0.55, "z": 0.59},
+      "target_size_m": {"width": 0.4, "height": 0.55, "depth": 0.4},
+      "visible": true
+    },
+    {
+      "placement_id": "plc_ceiling_light",
+      "asset_id": "ast_2f33e0f44197",
+      "name": "褶皱吸顶灯",
+      "room_id": "room_bedroom",
+      "model_url": "/storage/models/120d4d414a740d90a92acb84e76715d8.glb",
+      "mount": "ceiling",
+      "position": {"x": 0.0, "y": 2.72, "z": -0.25},
+      "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
+      "scale": {"x": 1.52, "y": 1.4, "z": 1.41},
+      "target_size_m": {"width": 1.0, "height": 0.4, "depth": 1.0},
+      "visible": true
+    },
+    {
+      "placement_id": "plc_wall_sconce",
+      "asset_id": "ast_e894f0881c57",
+      "name": "双头壁灯",
+      "room_id": "room_bedroom",
+      "model_url": "/storage/models/6a8520d12877c0f63002c9261fcd0c41.glb",
+      "mount": "wall",
+      "position": {"x": 1.72, "y": 1.55, "z": -0.25},
+      "rotation": {"x": 0.0, "y": -1.5707963268, "z": 0.0},
+      "scale": {"x": 2.24, "y": 0.75, "z": 2.22},
+      "target_size_m": {"width": 0.5, "height": 0.75, "depth": 0.5},
+      "visible": true
+    },
+    {
+      "placement_id": "plc_art_large",
+      "asset_id": "ast_f6439396bdae",
+      "name": "抽象挂画",
+      "room_id": "room_bedroom",
+      "model_url": "/storage/models/061ed8065f04b75bf08e2fd4383c73b7.glb",
+      "mount": "wall",
+      "position": {"x": -1.76, "y": 1.35, "z": 0.15},
+      "rotation": {"x": 0.0, "y": 1.5707963268, "z": 0.0},
+      "scale": {"x": 1.0, "y": 1.05, "z": 1.0},
+      "target_size_m": {"width": 0.75, "height": 1.05, "depth": 0.03},
+      "visible": true
+    },
+    {
+      "placement_id": "plc_art_portrait",
+      "asset_id": "ast_9ed9391bccce",
+      "name": "人物挂画",
+      "room_id": "room_bedroom",
+      "model_url": "/storage/models/571838384d30fb25c1bca04e5eeba641.glb",
+      "mount": "wall",
+      "position": {"x": -0.58, "y": 1.55, "z": -2.66},
+      "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
+      "scale": {"x": 0.68, "y": 0.65, "z": 0.05},
+      "target_size_m": {"width": 0.5, "height": 0.65, "depth": 0.05},
+      "visible": true
+    }
+  ],
+  "relationships": [
+    {"type": "contained_by", "subject": "plc_bed", "object": "room_bedroom"},
+    {"type": "contained_by", "subject": "plc_armchair", "object": "room_bedroom"},
+    {"type": "contained_by", "subject": "plc_tall_cabinet", "object": "room_bedroom"},
+    {"type": "contained_by", "subject": "plc_rug", "object": "room_bedroom"},
+    {"type": "contained_by", "subject": "plc_coffee_table", "object": "room_bedroom"},
+    {"type": "attached_to", "subject": "plc_ceiling_light", "object": "surface_ceiling"},
+    {"type": "attached_to", "subject": "plc_wall_sconce", "object": "wall_right"},
+    {"type": "attached_to", "subject": "plc_art_large", "object": "wall_left"},
+    {"type": "attached_to", "subject": "plc_art_portrait", "object": "wall_back"},
+    {"type": "supported_by", "subject": "plc_ornament_white", "object": "plc_coffee_table"},
+    {"type": "supported_by", "subject": "plc_ornament_color", "object": "plc_coffee_table"},
+    {"type": "supported_by", "subject": "plc_plant", "object": "plc_tall_cabinet"},
+    {"type": "layered_under", "subject": "plc_rug", "object": "plc_bed"},
+    {"type": "layered_under", "subject": "plc_rug", "object": "plc_armchair"},
+    {"type": "layered_under", "subject": "plc_rug", "object": "plc_coffee_table"},
+    {"type": "adjacent_to", "subject": "plc_bed", "object": "wall_right"},
+    {"type": "adjacent_to", "subject": "plc_tall_cabinet", "object": "wall_back"},
+    {"type": "adjacent_to", "subject": "plc_armchair", "object": "wall_left"},
+    {"type": "faces", "subject": "plc_armchair", "object": "plc_bed"}
+  ],
+  "consumer_bindings": [
+    {
+      "binding_id": "binding_inspiration_featured_2",
+      "surface": "inspiration_library",
+      "region": "featured_cards",
+      "slot": 2,
+      "mode": "read_only_case",
+      "resource_path": "/api/space-assemblies/asm_bedroom_3a2749b355d9/scene",
+      "title": "复古暖棕卧室"
+    },
+    {
+      "binding_id": "binding_personal_demo_primary",
+      "surface": "personal_demo",
+      "region": "home_projects",
+      "slot": "primary",
+      "mode": "editable_project_seed",
+      "resource_path": "/api/space-assemblies/asm_bedroom_3a2749b355d9/home-project",
+      "project_seed_id": "home_demo_bedroom_3a2749b355d9"
+    }
+  ]
+}

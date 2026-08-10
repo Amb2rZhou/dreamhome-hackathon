@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from .config import settings
 from .store import GenerationQueueFull, restore_persisted_jobs
 from .services.selection_production import production_readiness
-from .routers import video, photo, sketch, voice, jobs, assets, videos, library, tracks_fix, annotations, agent, scenes, review_qc, frame_assets, libraries, home_projects, image_posts, recommendations
+from .routers import video, photo, sketch, voice, jobs, assets, videos, library, tracks_fix, annotations, agent, scenes, review_qc, frame_assets, libraries, home_projects, image_posts, recommendations, space_assemblies
 
 app = FastAPI(
     title="DreamHome API",
@@ -54,6 +54,8 @@ app.include_router(libraries.router)
 app.include_router(home_projects.router)
 app.include_router(image_posts.router)
 app.include_router(recommendations.router)
+# 空间拼装只保存户型、canonical asset 引用、变换与关系；前端展示入口通过 binding 复用同一份数据。
+app.include_router(space_assemblies.router)
 
 
 @app.exception_handler(GenerationQueueFull)

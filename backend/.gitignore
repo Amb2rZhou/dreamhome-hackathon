@@ -8,3 +8,4 @@ storage/*
 !storage/qc/
 !storage/feed/
 !storage/catalog/
+!storage/space_assemblies/
