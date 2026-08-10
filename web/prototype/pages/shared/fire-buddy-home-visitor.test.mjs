@@ -49,6 +49,9 @@ test('sleep strategy approaches semantic furniture through safe navigation', asy
   assert.match(source, /function findRestSurface\(THREE, group\)/);
   assert.match(source, /score: area \/ \(1 \+ Math\.max\(0, size\.y - \.62\) \* \.8\)/);
   assert.match(source, /box\.max\.y > 1\.20/);
+  assert.match(source, /bed\|daybed\/\.test\(semantic\)\) \{ longCap = 2\.9; shortCap = 2\.2; \}/);
+  assert.match(source, /obstaclePadding: \.52/);
+  assert.match(source, /scheduleSleep\(5000 \+ random\(\) \* 7000\)/);
 });
 
 test('furniture reaction faces the camera and pokes toward screen left or right', async () => {

@@ -17,7 +17,8 @@ function floorFootprint(name, category, rawWidth, rawDepth) {
   if (/吊灯|壁灯|吸顶灯|电视|地毯|挂画|摆件|坐垫|lamp|light|television|rug|decor/.test(semantic)) return null;
   let longCap = 1.25;
   let shortCap = .9;
-  if (/沙发|sofa/.test(semantic)) { longCap = 2.6; shortCap = 1.15; }
+  if (/床|床榻|bed|daybed/.test(semantic)) { longCap = 2.9; shortCap = 2.2; }
+  else if (/沙发|sofa/.test(semantic)) { longCap = 2.7; shortCap = 1.25; }
   else if (/桌|table|desk/.test(semantic)) { longCap = 1.9; shortCap = 1.15; }
   else if (/柜|cabinet|shelf/.test(semantic)) { longCap = 2.2; shortCap = .72; }
   else if (/椅|chair/.test(semantic)) { longCap = .9; shortCap = .82; }
@@ -156,7 +157,7 @@ export function mountFireBuddyHomeVisitor({
     camera,
     rooms,
     placements: entities,
-    navigationOptions: { margin: .34, obstaclePadding: .38, maxPoints: 14 },
+    navigationOptions: { margin: .42, obstaclePadding: .52, maxPoints: 16 },
     texture: transparentPixel,
     overlayRoot,
     viewportElement: renderer.domElement,
@@ -223,7 +224,7 @@ export function mountFireBuddyHomeVisitor({
     if (!obstacle) return null;
     const centerX = (obstacle.minX + obstacle.maxX) / 2;
     const centerZ = (obstacle.minZ + obstacle.maxZ) / 2;
-    const candidates = [.08, .22, .38].flatMap((gap) => [
+    const candidates = [.18, .34, .52].flatMap((gap) => [
       { x: centerX, y: 0, z: obstacle.minZ - gap },
       { x: centerX, y: 0, z: obstacle.maxZ + gap },
       { x: obstacle.minX - gap, y: 0, z: centerZ },
@@ -271,7 +272,7 @@ export function mountFireBuddyHomeVisitor({
     return [...ranked.slice(offset), ...ranked.slice(0, offset)];
   };
 
-  const scheduleInspection = (delay = 14000 + random() * 6000) => {
+  const scheduleInspection = (delay = 12000 + random() * 7000) => {
     clearTimer(inspectTimer);
     inspectTimer = setTimeout(() => {
       inspectTimer = null;
@@ -301,13 +302,13 @@ export function mountFireBuddyHomeVisitor({
     return true;
   };
 
-  const scheduleSleep = (delay = 26000 + random() * 10000) => {
+  const scheduleSleep = (delay = 9000 + random() * 9000) => {
     clearTimer(sleepTimer);
     sleepTimer = setTimeout(() => {
       sleepTimer = null;
       if (disposed) return;
       const started = !sleeping && !pendingSleep && !pendingInspection && restCandidates().some(approachRestFurniture);
-      if (!started) scheduleSleep(6500 + random() * 3500);
+      if (!started) scheduleSleep(5000 + random() * 5000);
     }, delay);
   };
 
@@ -418,8 +419,9 @@ export function mountFireBuddyHomeVisitor({
   };
   frame = requestAnimationFrame(tick);
   scheduleCopy(1200);
-  scheduleInspection(6200 + random() * 2600);
-  if (restCandidates().length) scheduleSleep(12000 + random() * 5000);
+  scheduleInspection(7000 + random() * 6000);
+  // Sleep is a peer activity in the random visitor loop, not a rare fallback.
+  if (restCandidates().length) scheduleSleep(5000 + random() * 7000);
 
   const dispose = () => {
     if (disposed) return;

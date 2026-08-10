@@ -57,13 +57,13 @@ export function findCollectedHome(homes, currentUserId, sourceHomeId) {
   return (homes || []).find((home) => home?.ownerId === currentUserId && home?.sourceHomeId === sourceHomeId) || null;
 }
 
-export function createCollectedHome({ sourceHome, currentUserId, sourceShareId = null, originalOwnerId = null, createId, createdAt }) {
+export function createCollectedHome({ sourceHome, currentUserId, sourceHomeId = null, sourceShareId = null, originalOwnerId = null, createId, createdAt }) {
   if (!sourceHome?.id || !currentUserId) throw new Error('收藏小屋缺少来源或当前用户');
   const snapshot = JSON.stringify(sourceHome);
   const copy = JSON.parse(snapshot);
   copy.id = createId('home');
   copy.ownerId = currentUserId;
-  copy.sourceHomeId = sourceHome.id;
+  copy.sourceHomeId = sourceHomeId || sourceHome.sourceHomeId || sourceHome.id;
   copy.sourceShareId = sourceShareId || sourceHome.sourceShareId || null;
   copy.originalOwnerId = originalOwnerId || sourceHome.ownerId || sourceHome.originalOwnerId || null;
   copy.readOnly = true;
