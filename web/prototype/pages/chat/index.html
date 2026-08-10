@@ -42,19 +42,19 @@
     .home-card { display:block; position:relative; width:100%; padding:6px; border:0; color:inherit; text-align:left; background:rgba(255,250,240,.58); cursor:pointer; transition:transform .18s ease,box-shadow .18s ease; -webkit-backdrop-filter:blur(16px) saturate(1.08); backdrop-filter:blur(16px) saturate(1.08); }
     .home-card:active { transform:scale(.985); }
     .home-card:focus-visible { outline:3px solid rgba(237,174,65,.5); outline-offset:-3px; }
-    .home-visual { position:relative; z-index:2; height:172px; overflow:visible; }
-    .home-photo { position:absolute; z-index:1; inset:0; overflow:hidden; border-radius:15px; background:linear-gradient(145deg,#eadac4 0 42%,#b9c3aa 43% 58%,#947259 59% 100%); clip-path:path("M 0 0 H 212 V 172 H 168 C 156 172 151 164 146 157 C 139 147 130 143 117 143 H 0 Z"); }
+    .home-visual { position:relative; z-index:2; height:152px; overflow:visible; }
+    .home-photo { position:absolute; z-index:1; inset:0; overflow:hidden; border-radius:15px; background:linear-gradient(145deg,#eadac4 0 42%,#b9c3aa 43% 58%,#947259 59% 100%); clip-path:path("M 0 0 H 212 V 152 H 169 C 158 152 153 145 147 139 C 139 130 128 126 114 126 H 0 Z"); }
     .home-photo img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
     .home-photo::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(255,250,240,.02) 48%,rgba(71,47,20,.12)); pointer-events:none; }
     .home-brand { position:absolute; z-index:4; top:5px; right:5px; min-height:20px; padding:3px 5px 3px 4px; display:flex; align-items:center; gap:3px; border:1px solid rgba(255,255,255,.68); border-radius:9px; background:var(--share-glass); color:#5c472e; box-shadow:0 3px 9px rgba(75,52,24,.09),inset 0 1px rgba(255,255,255,.66); -webkit-backdrop-filter:blur(14px) saturate(1.08); backdrop-filter:blur(14px) saturate(1.08); }
     .home-brand svg { width:12px; height:12px; flex:none; fill:none; stroke:#6f4c26; stroke-width:1.55; stroke-linecap:round; stroke-linejoin:round; }
     .home-brand b { font-size:5.8px; line-height:1; white-space:nowrap; }
-    .home-invite-bubble { position:absolute; z-index:4; left:75px; bottom:68px; width:67px; padding:7px 8px; border:1px solid rgba(255,255,255,.68); border-radius:17px; background:var(--share-glass); color:#493721; box-shadow:0 4px 12px rgba(69,45,18,.11); -webkit-backdrop-filter:blur(14px) saturate(1.08); backdrop-filter:blur(14px) saturate(1.08); font-size:7.5px; font-weight:var(--dh-font-weight-bold); line-height:1.35; }
-    .home-invite-bubble::after { content:""; position:absolute; right:8px; bottom:-5px; width:11px; height:11px; background:inherit; transform:rotate(45deg); }
+    .home-invite-bubble { position:absolute; z-index:6; left:74px; bottom:24px; width:max-content; max-width:93px; padding:7px 9px; border:0; border-radius:14px 14px 4px 14px; background:rgba(250,250,251,.97); color:#292d33; filter:drop-shadow(0 7px 11px rgba(31,38,48,.14)); -webkit-backdrop-filter:blur(18px) saturate(1.14); backdrop-filter:blur(18px) saturate(1.14); text-align:left; font-size:7.2px; font-weight:var(--dh-font-weight-bold); line-height:1.3; }
+    .home-invite-bubble::after { content:""; position:absolute; z-index:-1; right:-8px; bottom:-1px; width:18px; height:15px; background:rgba(250,250,251,.97); clip-path:polygon(0 0,100% 100%,0 100%); }
     .home-invite-bubble em { position:relative; z-index:1; color:#efb34b; font-style:normal; }
-    .home-mascot-slot { position:absolute; z-index:5; right:0; bottom:0; width:75px; height:112px; overflow:hidden; pointer-events:none; }
-    .home-mascot { position:absolute; right:-22px; bottom:-29px; width:112px; height:112px; object-fit:contain; transform:rotate(-8deg); transform-origin:54% 100%; filter:drop-shadow(0 6px 7px rgba(62,42,20,.14)); }
-    .home-copy { position:relative; z-index:1; min-height:123px; margin-top:-29px; padding:23px 10px 10px; border:1px solid rgba(255,255,255,.58); border-radius:0 0 15px 15px; background:var(--share-glass); box-shadow:inset 0 1px rgba(255,255,255,.5); -webkit-backdrop-filter:blur(18px) saturate(1.08); backdrop-filter:blur(18px) saturate(1.08); }
+    .home-mascot-slot { position:absolute; z-index:7; right:-3px; bottom:-15px; width:100px; height:100px; overflow:visible; pointer-events:none; }
+    .home-mascot { position:absolute; right:-10px; bottom:-3px; width:104px; height:91px; object-fit:contain; object-position:center bottom; filter:drop-shadow(0 5px 7px rgba(62,42,20,.17)); }
+    .home-copy { position:relative; z-index:1; min-height:102px; margin-top:-18px; padding:17px 10px 9px; border:1px solid rgba(255,255,255,.58); border-radius:0 0 15px 15px; background:var(--share-glass); box-shadow:inset 0 1px rgba(255,255,255,.5); -webkit-backdrop-filter:blur(18px) saturate(1.08); backdrop-filter:blur(18px) saturate(1.08); }
     .home-eyebrow,.home-title,.home-copy small { display:block; }
     .home-eyebrow { color:#48331f; font-size:10px; font-weight:var(--dh-font-weight-heavy); line-height:1.2; }
     .home-title { position:relative; z-index:1; width:max-content; max-width:100%; margin-top:3px; color:#392615; font-size:var(--home-title-size,20px); font-weight:900; line-height:1.15; letter-spacing:-.045em; white-space:nowrap; }
@@ -66,10 +66,10 @@
     .home-copy-mark.strokes::before,.home-copy-mark.strokes::after { content:""; position:absolute; width:5px; border-top:2px solid #efb548; }
     .home-copy-mark.strokes::before { top:4px; right:-1px; transform:rotate(27deg); }
     .home-copy-mark.strokes::after { top:-5px; left:2px; transform:rotate(70deg); }
-    .home-card-foot { margin-top:15px; display:flex; align-items:flex-end; justify-content:space-between; gap:6px; }
+    .home-card-foot { margin-top:10px; display:flex; align-items:flex-end; justify-content:space-between; gap:6px; }
     .home-copy small { max-width:115px; color:#836d53; font-size:7px; line-height:1.45; }
-    .home-cta { min-height:30px; padding:0 4px 0 10px; display:flex; align-items:center; gap:6px; border-radius:999px; background:linear-gradient(180deg,#ffd478,#f4b83f); color:#4c3519; box-shadow:0 5px 12px rgba(193,126,26,.22); font-size:8px; font-weight:var(--dh-font-weight-heavy); white-space:nowrap; }
-    .home-cta i { width:23px; height:23px; display:grid; place-items:center; border-radius:50%; background:#fffaf0; color:#5c4326; font-size:17px; font-style:normal; line-height:1; }
+    .home-cta { min-height:27px; padding:0 3px 0 9px; display:flex; align-items:center; gap:5px; border-radius:999px; background:linear-gradient(180deg,#ffd478,#f4b83f); color:#4c3519; box-shadow:0 5px 12px rgba(193,126,26,.22); font-size:7.5px; font-weight:var(--dh-font-weight-heavy); white-space:nowrap; }
+    .home-cta i { width:21px; height:21px; display:grid; place-items:center; border-radius:50%; background:#fffaf0; color:#5c4326; font-size:15px; font-style:normal; line-height:1; }
     .read { margin-top:4px; color:#999; font-size:7px; text-align:right; }
     .composer { min-height:60px; flex:none; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:7px; padding:8px 9px 17px; background:#f2f2f2; border-top:1px solid rgba(0,0,0,.04); }
     .composer textarea { width:100%; height:36px; resize:none; border:0; border-radius:8px; outline:none; padding:10px 9px; background:#fff; color:#222; font-size:10px; line-height:16px; }
@@ -224,7 +224,7 @@
       const name = home.name || project?.name || '我的家';
       ui.detailTitle.textContent = name;
       ui.detailScene.innerHTML = preview ? `<img src="${escapeText(preview)}" alt="${escapeText(name)} 3D 缩略图" />` : '';
-      ui.detailEnter3d.href = `../my-home/index.html?home=${encodeURIComponent(home.id)}&mode=locked`;
+      ui.detailEnter3d.href = `../my-home/index.html?home=${encodeURIComponent(home.id)}&mode=locked&source=friend-share&friend=${encodeURIComponent(friend.id)}`;
       renderFurniture(home);
       ui.detailSheet.classList.remove('is-full');
       ui.detailExpand.setAttribute('aria-label', '扩大至整屏');
@@ -268,7 +268,7 @@
         const homeName = home.name || '我的家';
         const roomType = roomTypeLabel(home);
         const subtitle = roomType === '理想家' ? '喜欢这里的家具或户型，可以收藏到你的灵感库' : `喜欢这个${roomType}的家具和布局，可以收藏到你的灵感库`;
-        return `<article class="message ${outgoing ? 'outgoing' : 'incoming'}"><span class="avatar message-avatar" style="--avatar:${escapeText(avatarColor)}">${escapeText(avatar)}</span><div><div class="home-share"><button class="home-card" type="button" data-home-detail="${escapeText(home.id)}" aria-label="查看 ${escapeText(homeName)} 的详情，并收藏喜欢的家具"><div class="home-visual"><div class="home-photo">${preview?`<img src="${escapeText(preview)}" alt="${escapeText(homeName)} 预览" />`:''}</div><span class="home-brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 10.5 8-6.5 8 6.5"/><path d="M6.5 9.2V20h11V9.2"/><circle cx="10" cy="13" r=".8"/><circle cx="14" cy="13" r=".8"/><path d="M10.5 20v-4h3v4"/></svg><b>DreamHome理想家</b></span><span class="home-invite-bubble">来我家<br>一起看看吧！ <em>♥</em></span><span class="home-mascot-slot"><img class="home-mascot" src="../../assets/mascot/dreamhome-master-share-v2.png" alt="" aria-hidden="true" /></span></div><div class="home-copy"><span class="home-copy-mark star">✦</span><span class="home-copy-mark heart">♥</span><span class="home-copy-mark strokes"></span><span class="home-eyebrow">邀请你来参观我的</span><b class="home-title" style="--home-title-size:${titleSize(homeName)}px">「${escapeText(homeName)}」</b><div class="home-card-foot"><small>${escapeText(subtitle)}</small><span class="home-cta">一起看看 <i>›</i></span></div></div></button></div><div class="read">${escapeText(timeLabel(message.createdAt))}${outgoing ? ' · 已送达' : ''}</div></div></article>`;
+        return `<article class="message ${outgoing ? 'outgoing' : 'incoming'}"><span class="avatar message-avatar" style="--avatar:${escapeText(avatarColor)}">${escapeText(avatar)}</span><div><div class="home-share"><button class="home-card" type="button" data-home-detail="${escapeText(home.id)}" aria-label="查看 ${escapeText(homeName)} 的详情，并收藏喜欢的家具"><div class="home-visual"><div class="home-photo">${preview?`<img src="${escapeText(preview)}" alt="${escapeText(homeName)} 预览" />`:''}</div><span class="home-brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 10.5 8-6.5 8 6.5"/><path d="M6.5 9.2V20h11V9.2"/><circle cx="10" cy="13" r=".8"/><circle cx="14" cy="13" r=".8"/><path d="M10.5 20v-4h3v4"/></svg><b>DreamHome理想家</b></span><span class="home-invite-bubble">来我家<br>一起看看吧！ <em>♥</em></span><span class="home-mascot-slot"><img class="home-mascot" src="../../assets/mascot/dreamhome-master-share-card.png" alt="" aria-hidden="true" /></span></div><div class="home-copy"><span class="home-copy-mark star">✦</span><span class="home-copy-mark heart">♥</span><span class="home-copy-mark strokes"></span><span class="home-eyebrow">邀请你来参观我的</span><b class="home-title" style="--home-title-size:${titleSize(homeName)}px">「${escapeText(homeName)}」</b><div class="home-card-foot"><small>${escapeText(subtitle)}</small><span class="home-cta">一起看看 <i>›</i></span></div></div></button></div><div class="read">${escapeText(timeLabel(message.createdAt))}${outgoing ? ' · 已送达' : ''}</div></div></article>`;
       }
       return `<article class="message ${outgoing ? 'outgoing' : 'incoming'}"><span class="avatar message-avatar" style="--avatar:${escapeText(avatarColor)}">${escapeText(avatar)}</span><div><div class="bubble">${escapeText(message.text)}</div><div class="read">${escapeText(timeLabel(message.createdAt))}</div></div></article>`;
     }
@@ -291,7 +291,7 @@
       const card = event.target.closest('[data-home-detail]');
       if (!card) return;
       const home = [...getConversation(friend.id)].reverse().find((message) => message.type === 'home_share' && message.home?.id === card.dataset.homeDetail)?.home;
-      if (home) openHomeDetail(home);
+      if (home) location.href = `../my-home/index.html?home=${encodeURIComponent(home.id)}&mode=locked&source=friend-share&friend=${encodeURIComponent(friend.id)}`;
     });
     ui.detailBackdrop.addEventListener('click', closeHomeDetail);
     ui.detailClose.addEventListener('click', closeHomeDetail);
