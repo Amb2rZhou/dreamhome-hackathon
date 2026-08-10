@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { getAssets, getDreamHomeUserId, sourceFeedHref, syncBackendUserAssets } from '../web/prototype/pages/shared/asset-library-data.js'
+import { addCanonicalAssetToLibrary, getAssets, getDreamHomeUserId, getFavorites, sourceFeedHref, syncBackendUserAssets } from '../web/prototype/pages/shared/asset-library-data.js'
 
 describe('Mia library backend synchronization', () => {
   beforeEach(() => {
@@ -66,5 +66,33 @@ describe('Mia library backend synchronization', () => {
       materials: ['待确认材质'],
     }))
     expect(sourceFeedHref(component)).toBe('')
+  })
+
+  it('attaches a friend furniture canonical id to the current backend user before local collection', async () => {
+    window.__DREAMHOME_USER_ID__ = 'amber-test'
+    const assetId = 'ast_7a6844fdf7e6'
+    const libraryRecord = {
+      asset_id: assetId,
+      name: '原资产',
+      status: 'ready',
+      labels: { category: '柜子', materials: ['实木'], styles: ['北欧'] },
+      glb_url: '/storage/models/friend.glb',
+      source: {},
+    }
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ added: 1, total: 1 }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify([libraryRecord]), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify([libraryRecord]), { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await addCanonicalAssetToLibrary(assetId, 'friend-share')
+
+    expect(fetchMock.mock.calls[0][0]).toBe('http://127.0.0.1:8000/api/library/batch-add')
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
+      asset_ids: [assetId],
+      via: 'friend-share',
+      user_id: 'amber-test',
+    })
+    expect(getFavorites().has(assetId)).toBe(true)
   })
 })

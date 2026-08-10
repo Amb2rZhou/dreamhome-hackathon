@@ -243,6 +243,31 @@ export async function syncBackendUserAssets() {
   return liveAssets;
 }
 
+// 好友分享里的“收藏家具”只新增当前用户与 canonical asset 的关联。
+// 后端确认入库后再更新本地收藏，避免网络失败时出现假成功或复制资产。
+export async function addCanonicalAssetToLibrary(assetId, via = 'friend-share') {
+  const id = String(assetId || '').trim();
+  if (!id || !getAsset(id)) throw new Error('Unknown canonical asset');
+  const userId = getDreamHomeUserId();
+  const response = await fetch(`${apiBase()}/api/library/batch-add`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ asset_ids: [id], via, user_id: userId }),
+  });
+  if (!response.ok) throw new Error(`DreamHome library add failed (${response.status})`);
+  const recordsResponse = await fetch(`${apiBase()}/api/library?user_id=${encodeURIComponent(userId)}`);
+  if (!recordsResponse.ok) throw new Error(`DreamHome library verification failed (${recordsResponse.status})`);
+  const records = await recordsResponse.json();
+  if (!Array.isArray(records) || !records.some((record) => record?.asset_id === id)) {
+    throw new Error('DreamHome library verification failed');
+  }
+  await syncBackendUserAssets();
+  const favorites = getFavorites();
+  favorites.add(id);
+  setFavorites(favorites);
+  return { assetId: id, userId };
+}
+
 // 首次生成的用户组件自动收藏；已在收藏或曾被本人取消过则不强行加入。
 function autoCollectOwn(id) {
   const seededKey = USER_ASSETS_KEY + '.autocollected';

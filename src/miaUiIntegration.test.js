@@ -68,4 +68,37 @@ describe('Mia interaction with DreamHome data', () => {
     expect(home).toContain('homeSceneService.saveProject(project)');
     expect(home).toContain("project?.source?.type==='space_assembly'&&!queryHomeUserId");
   });
+
+  it('opens the editor on lightweight AI recommendations without exposing the old mascot assistant', () => {
+    const home = readPage('my-home');
+
+    expect(home).toContain("drawerMode:'ai'");
+    expect(home).toContain('data-drawer-mode="ai">✦ AI 推荐</button>');
+    expect(home).toContain('function getDrawerAiRecommendations()');
+    expect(home).toContain('commonMatchTags(tags.styles,profile.styles)');
+    expect(home).toContain('commonMatchTags(tags.colors,profile.colors)');
+    expect(home).toContain('commonMatchTags(tags.materials,profile.materials)');
+    expect(home).toContain('data-ai-refresh');
+    expect(home).toContain('function canUseMatchAssistant() { return false; }');
+  });
+
+  it('integrates Sunny friend sharing while preserving backend canonical assets', () => {
+    const home = readPage('my-home');
+    const chat = readPage('chat');
+    const social = readShared('social-demo-data.js');
+    const assets = readShared('asset-library-data.js');
+
+    expect(home).toContain("import { getFriends, addMessage, getConversation }");
+    expect(home).toContain('id="shareFriendRow"');
+    expect(home).toContain("type:'home_share'");
+    expect(home).toContain('sourceShareMessage()');
+    expect(home).toContain('sourceHomeId:state.project.sourceHomeId||state.project.id');
+    expect(chat).toContain('data-share-id=');
+    expect(chat).toContain('&shareId=${encodeURIComponent(message.id)}');
+    expect(chat).toContain('addCanonicalAssetToLibrary(assetId');
+    expect(assets).toContain('/api/library/batch-add');
+    expect(assets).toContain('record?.asset_id === id');
+    expect(social).toContain('export function addMessage');
+    expect(home).not.toContain('fire-buddy-home-visitor.js');
+  });
 });
