@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#f5fbf6" />
+  <meta name="dreamhome-capability" content="published-home-v1" />
   <link rel="icon" href="data:," />
   <title>DreamHome · 我的家</title>
   <link rel="stylesheet" href="./dreamhome-d-system.css" />
@@ -701,7 +702,7 @@
       {id:'plant-moss',name:'龟背竹绿植',category:'软装',sourceType:'photo',defaultScale:1,accent:'#779b72'},
       {id:'cabinet-sage',name:'鼠尾草边柜',category:'收纳',sourceType:'draw',defaultScale:1,accent:'#8da184'}
     ];
-    const state = { phase:'setup', project:null, selectedTemplateId:null, roomOverride:null, drawingFile:null, selectedRoomId:null, selectedPlacementId:null, activeAssetCategory:'全部', activeAssetStyle:'', styleRowOpen:false, drawerMode:'ai', drawerExpanded:false, drawerAiSeenIds:[], drawerAiBatchIds:[], selectedFloorPreset:'warm-long-plank', selectedWallColor:'#f3ecdc', selectedWindowStyle:'dark-grid', interaction:{mode:'orbit', pendingAssetId:null, pointerDown:null}, job:null, dirty:false, caseMode:false, friendMode:false, ownReadOnly:false, collectedCopy:null, detailAssetId:null, trialPlacementId:null, recommendation:{status:'idle',displayedIds:new Set(),timer:null,index:0}, assistantOpen:false, assistantIntent:'complete', assistantQuery:'', assistantTargetCategory:'', assistantDetailAssetId:'', assistantEntryKind:'passive', assistantHasAsked:false, assistantRecommendationOffset:0, assistantRemoteRecommendations:null, assistantSeenItemIds:[], assistantClarificationQuestion:'', assistantRecommendationLoading:false, assistantNudgeKind:'cold', assistantActiveCase:'', assistantColdShown:false, assistantPassiveIndex:0, assistantNudgeCount:0, assistantTrialAssetId:'', assistantTrialPlacementId:'', assistantTrialOriginalPlacementId:'' };
+    const state = { phase:'setup', project:null, selectedTemplateId:null, roomOverride:null, drawingFile:null, selectedRoomId:null, selectedPlacementId:null, activeAssetCategory:'全部', activeAssetStyle:'', styleRowOpen:false, drawerMode:'ai', drawerExpanded:false, drawerAiSeenIds:[], drawerAiBatchIds:[], assemblyAssetIds:[], selectedFloorPreset:'warm-long-plank', selectedWallColor:'#f3ecdc', selectedWindowStyle:'dark-grid', interaction:{mode:'orbit', pendingAssetId:null, pointerDown:null}, job:null, dirty:false, caseMode:false, friendMode:false, ownReadOnly:false, publishedMode:false, activeShareUrl:'', collectedCopy:null, detailAssetId:null, trialPlacementId:null, recommendation:{status:'idle',displayedIds:new Set(),timer:null,index:0}, assistantOpen:false, assistantIntent:'complete', assistantQuery:'', assistantTargetCategory:'', assistantDetailAssetId:'', assistantEntryKind:'passive', assistantHasAsked:false, assistantRecommendationOffset:0, assistantRemoteRecommendations:null, assistantSeenItemIds:[], assistantClarificationQuestion:'', assistantRecommendationLoading:false, assistantNudgeKind:'cold', assistantActiveCase:'', assistantColdShown:false, assistantPassiveIndex:0, assistantNudgeCount:0, assistantTrialAssetId:'', assistantTrialPlacementId:'', assistantTrialOriginalPlacementId:'' };
     const runtimeAssets = new Map();
     const ui = Object.fromEntries(['videoSceneBox','videoSceneGrid','setupPhase','generationPhase','generationMascotStage','editorPhase','templateGrid','continueBox','homeGrid','confirmModal','drawingInput','uploadName','setupError','generateButton','generationTitle','generationCopy','progressBar','backToSetup','retryButton','sceneHost','homeCompanion','editorHomeName','editorHomeMeta','editorBack','shareButton','shareSheet','daylightButton','realTimeControl','realTimeSlider','realTimeOutput','transformConfirm','transformDelete','transformHeight','heightUp','heightDown','caseCollectAll','caseCollectOne','caseLayoutActions','caseSaveLayout','caseApplyLayout','caseEditButton','roomSelector','inspector','inspectorTitle','inspectorCopy','placementHint','modelLoadStatus','assetDrawer','drawerToggle','drawerSummary','drawerModes','categoryTabs','styleTabs','assetRail','assetDetail','assetDetailClose','assetDetailMedia','assetDetailName','assetDetailCopy','assetDetailTags','assetDetailCollect','assetDetailTry','aiLauncher','aiPanel','aiClose','aiChat','recommendGrid','aiInput','aiSend','aiQuick','trialActions','trialUndo','trialKeep','matchAssistantLauncher','matchAssistantNudge','matchAssistantNudgeTitle','matchAssistantNudgeCopy','matchAssistantScrim','matchAssistantPanel','matchAssistantClose','matchAssistantListView','matchAssistantIntents','matchAssistantPopular','matchAssistantConversation','matchAssistantQueryForm','matchAssistantQuery','matchAssistantContext','matchAssistantContextTitle','matchAssistantRefresh','matchAssistantCards','matchIntentSpaceImage','matchIntentReplaceImage','matchDetailView','toast','liveRegion','resetViewButton','rotateLeft','rotateRight','scaleDown','scaleUp','moveSelected','deleteSelected'].map((id) => [id, document.getElementById(id)]));
     ui.shareFriendRow = document.getElementById('shareFriendRow');
@@ -797,8 +798,8 @@
     function hideToast(){ui.toast.classList.remove('show','has-action','is-share-success');ui.toast.replaceChildren();}
     function tell(message,action=null) { ui.liveRegion.textContent = message; ui.toast.replaceChildren(document.createTextNode(message));if(action){const button=document.createElement('button');button.className='toast-action';button.type='button';button.textContent=action.label;button.addEventListener('click',()=>{hideToast();action.onClick();},{once:true});ui.toast.append(button);ui.toast.classList.add('has-action');if(action.variant==='share')ui.toast.classList.add('is-share-success');else{const close=document.createElement('button');close.className='toast-close';close.type='button';close.setAttribute('aria-label','关闭');close.textContent='✕';close.addEventListener('click',hideToast,{once:true});ui.toast.append(close);}}ui.toast.classList.add('show');clearTimeout(toastTimer);if(!action)toastTimer=setTimeout(hideToast,1800); }
     function sourceShareMessage() { return IS_FRIEND_SHARE_VISIT ? getConversation(FRIEND_SHARE_VIEWER_ID).find((message)=>message.id===SOURCE_SHARE_ID&&message.type==='home_share'&&message.home?.id===QUERY.get('home')) || null : null; }
-    async function persistProjectNow(){if(!state.project||state.caseMode||state.ownReadOnly)return true;try{const previewImage=sceneRuntime?.capturePreview?.();if(previewImage)state.project.previewImage=previewImage;const project={...state.project,updatedAt:now()};homeSceneService.saveProject(project);const result=await homeSceneService.syncProject(project);if(result?.revision)state.project.revision=result.revision;state.dirty=false;ui.editorHomeMeta.textContent=HOME_USER_ID?'3D 布局已同步':'3D 布局已保存在本机';return true;}catch(error){state.dirty=true;ui.editorHomeMeta.textContent='布局同步失败';tell('布局已保存在本机，后端同步失败');return false;}}
-    function saveSoon() { if(state.caseMode||state.ownReadOnly)return;state.dirty = true; clearTimeout(saveTimer);ui.editorHomeMeta.textContent = '正在保存布局';saveTimer=setTimeout(persistProjectNow,360); }
+    async function persistProjectNow(){if(!state.project||state.caseMode||state.ownReadOnly||state.publishedMode)return true;try{const previewImage=sceneRuntime?.capturePreview?.();if(previewImage)state.project.previewImage=previewImage;const project={...state.project,updatedAt:now()};homeSceneService.saveProject(project);const result=await homeSceneService.syncProject(project);if(result?.revision)state.project.revision=result.revision;state.dirty=false;ui.editorHomeMeta.textContent=HOME_USER_ID?'3D 布局已同步':'3D 布局已保存在本机';return true;}catch(error){state.dirty=true;ui.editorHomeMeta.textContent='布局同步失败';tell('布局已保存在本机，后端同步失败');return false;}}
+    function saveSoon() { if(state.caseMode||state.ownReadOnly||state.publishedMode)return;state.dirty = true; clearTimeout(saveTimer);ui.editorHomeMeta.textContent = '正在保存布局';saveTimer=setTimeout(persistProjectNow,360); }
     const MockHomeSceneService = {
       async submitHomeGeneration({templateId, drawingFile, roomOverride}) { return { id: uid('job'), templateId: templateId || 'two-one', drawingName: drawingFile?.name || null, roomOverride: roomOverride || null, startedAt: Date.now() }; },
       async getJob(job) { const elapsed = Date.now() - job.startedAt; if (MOCK_FAILURE && elapsed > 1100) return {status:'failed', progress:64, error:'户型识别暂时中断，请重新尝试'}; if (elapsed < 850) return {status:'queued', progress:18}; if (elapsed < 1750) return {status:'processing', progress:48}; if (elapsed < 2650) return {status:'processing', progress:78}; return {status:'ready', progress:100, result: buildProject(job.templateId, job.drawingName, job.roomOverride)}; },
@@ -1059,13 +1060,25 @@
         history.replaceState(null,'',location.pathname);
       }));
     }
-    async function openHome(id, requestedAssetId='') {
+    function activateAssemblyTray(assetIds) {
+      const ids=[...new Set(assetIds)].filter((id)=>getAsset(id)?.kind==='furniture');
+      if(!ids.length){tell('没有找到可拼装的家具');return;}
+      state.assemblyAssetIds=ids;
+      state.drawerExpanded=true;
+      state.drawerMode='furniture';
+      state.activeAssetCategory='全部';
+      state.activeAssetStyle='';
+      renderAssetDrawer();
+      tell(`拼装清单已就位 · ${ids.length} 件，点家具后放入房间`);
+    }
+    async function openHome(id, requestedAssetId='', assemblyIds=[]) {
       const home = homeSceneService.loadHomes().find((item) => item.id === id);
       if (!home) return;
-      state.friendMode=IS_FRIEND_SHARE_VISIT;state.ownReadOnly=!state.friendMode&&home.source?.type==='collected_home'&&home.readOnly===true;state.caseMode=state.friendMode||state.ownReadOnly;state.collectedCopy=state.ownReadOnly?home:null;
-      if(home.source?.type==='video_rebuild'){await openVideoScene(home.source.videoId,home.name,false,requestedAssetId);return;}
+      state.friendMode=IS_FRIEND_SHARE_VISIT;state.ownReadOnly=!state.friendMode&&home.source?.type==='collected_home'&&home.readOnly===true;state.publishedMode=false;state.activeShareUrl='';state.caseMode=state.friendMode||state.ownReadOnly;state.collectedCopy=state.ownReadOnly?home:null;
+      if(home.source?.type==='video_rebuild'){await openVideoScene(home.source.videoId,home.name,false,requestedAssetId,assemblyIds);return;}
       enterProjectEditor(home);
       if(requestedAssetId)beginRequestedAssetPlacement(requestedAssetId);
+      else if(assemblyIds.length)activateAssemblyTray(assemblyIds);
     }
     const sceneDataCache=new Map();
     const DEFAULT_DEMO_SCENE_IDS=['vid_40734d7f2e6c','vid_91fe552c5f7d'];
@@ -1179,8 +1192,8 @@
         ui.editorHomeMeta.textContent='Demo 草稿 · 调整后会保存在当前浏览器';
       } catch(error) {pendingSceneStartedAt=0;pendingSceneTitle='';state.phase='setup';updatePhases();tell(error.message);}
     }
-    async function openVideoScene(videoId, title='视频户型重建', caseMode=false, requestedAssetId='') {
-      state.caseMode=caseMode;state.friendMode=caseMode;state.ownReadOnly=false;state.collectedCopy=null;
+    async function openVideoScene(videoId, title='视频户型重建', caseMode=false, requestedAssetId='', assemblyIds=[]) {
+      state.caseMode=caseMode;state.friendMode=caseMode;state.ownReadOnly=false;state.publishedMode=false;state.activeShareUrl='';state.collectedCopy=null;
       disposeScene();
       delete document.documentElement.dataset.sceneLoadMs;
       delete document.documentElement.dataset.sceneVisibleMs;
@@ -1195,9 +1208,10 @@
         if(caseMode)enterProjectEditor(project,{loading:true,title:project.name});
         else{homeSceneService.saveProject(project);syncProjectInBackground(project);updateGeneration('processing',58);enterProjectEditor(project,{loading:true,title});}
         if(requestedAssetId)beginRequestedAssetPlacement(requestedAssetId);
+        else if(assemblyIds.length)activateAssemblyTray(assemblyIds);
       } catch(error) { pendingSceneStartedAt=0;pendingSceneTitle='';state.phase='setup'; updatePhases(); tell(error.message); }
     }
-    function updatePhases() { const root=document.querySelector('.dh-root'),sceneLoading=state.phase==='scene-loading',generating=['submitting','polling','error'].includes(state.phase)||sceneLoading,editor=state.phase==='editor'||sceneLoading,real=editor&&!!state.project?.realScene,roomTemplate=editor&&TEMPLATES.find(item=>item.id===state.project?.source?.templateId)?.scope==='room';ui.setupPhase.style.display=state.phase==='setup'?'flex':'none';ui.generationPhase.classList.toggle('is-visible',generating);ui.generationPhase.setAttribute('aria-busy',String(generating));ui.editorPhase.classList.toggle('is-visible',editor);ui.editorPhase.inert=sceneLoading;root.classList.toggle('is-editor',editor);root.classList.toggle('is-real-scene',real);root.classList.toggle('is-scene-editor',real||roomTemplate);root.classList.toggle('is-case',editor&&state.friendMode);root.classList.toggle('is-owned-readonly',editor&&state.ownReadOnly);root.classList.toggle('is-assistant-open',editor&&state.assistantOpen);if(generating)genVideo?.play().catch(()=>{});else genVideo?.pause(); }
+    function updatePhases() { const root=document.querySelector('.dh-root'),sceneLoading=state.phase==='scene-loading',generating=['submitting','polling','error'].includes(state.phase)||sceneLoading,editor=state.phase==='editor'||sceneLoading,real=editor&&!!state.project?.realScene,roomTemplate=editor&&TEMPLATES.find(item=>item.id===state.project?.source?.templateId)?.scope==='room';ui.setupPhase.style.display=state.phase==='setup'?'flex':'none';ui.generationPhase.classList.toggle('is-visible',generating);ui.generationPhase.setAttribute('aria-busy',String(generating));ui.editorPhase.classList.toggle('is-visible',editor);ui.editorPhase.inert=sceneLoading;root.classList.toggle('is-editor',editor);root.classList.toggle('is-real-scene',real);root.classList.toggle('is-scene-editor',real||roomTemplate);root.classList.toggle('is-case',editor&&(state.friendMode||state.publishedMode));root.classList.toggle('is-owned-readonly',editor&&state.ownReadOnly);root.classList.toggle('is-assistant-open',editor&&state.assistantOpen);if(generating)genVideo?.play().catch(()=>{});else genVideo?.pause(); }
     function updateGeneration(status, progress, error = '') { const loadingScene=state.phase==='scene-loading',copy=loadingScene&&status==='processing'?['包工球正在粉刷和摆放家具',`已经装好 ${modelLoadProgress.done}/${modelLoadProgress.total} 件，全部就绪后再进入`]:{queued:['正在准备空间','正在读取你的户型信息'],processing:['正在生成 3D 户型','包工球正在装修你的梦想之家'],ready:['空间已准备好','正在进入你的 3D 家'],failed:['生成没有完成',error || '请检查图片或重新尝试']}[status] || ['正在准备空间','']; ui.generationMascotStage.dataset.status = status; ui.generationMascotStage.classList.toggle('is-constructing', status === 'processing'); ui.generationTitle.textContent = copy[0]; ui.generationCopy.textContent = copy[1]; ui.progressBar.style.width = `${progress}%`; ui.retryButton.hidden = status !== 'failed'; ui.backToSetup.textContent = status === 'failed' ? '返回选择' : '取消'; }
     async function startGeneration() { if (!state.selectedTemplateId && !state.drawingFile) { ui.setupError.textContent = '请选择一个户型模板，或上传一张设计图。'; return; } state.phase = 'submitting'; updatePhases(); updateGeneration('queued', 4); try { state.job = await homeSceneService.submitHomeGeneration({templateId:state.selectedTemplateId, drawingFile:state.drawingFile, roomOverride:state.roomOverride}); state.phase='polling'; pollJob(); } catch (error) { failGeneration(error.message); } }
     // 选了模板 → 先去中间页调尺寸；上传设计图 → 维持原有直接生成
@@ -1205,11 +1219,11 @@
       if (state.selectedTemplateId && !state.drawingFile) { location.href = `../room-setup/index.html?template=${encodeURIComponent(state.selectedTemplateId)}`; return; }
       startGeneration();
     }
-    async function pollJob() { clearTimeout(pollTimer); try { const jobState = await homeSceneService.getJob(state.job); const copyStatus = jobState.status === 'ready' ? 'ready' : jobState.status === 'failed' ? 'failed' : jobState.status; updateGeneration(copyStatus, jobState.progress, jobState.error); if (jobState.status === 'ready') { const project=normalizeHomeProject(jobState.result);project.placements.forEach((placement) => placement.homeId = project.id);homeSceneService.saveProject(project);syncProjectInBackground(project);enterProjectEditor(project);tell('3D 户型已生成，可以开始摆放');return; } if (jobState.status === 'failed') { state.phase='error'; updatePhases(); return; } pollTimer = setTimeout(pollJob, 680); } catch (error) { failGeneration(error.message); } }
+    async function pollJob() { clearTimeout(pollTimer); try { const jobState = await homeSceneService.getJob(state.job); const copyStatus = jobState.status === 'ready' ? 'ready' : jobState.status === 'failed' ? 'failed' : jobState.status; updateGeneration(copyStatus, jobState.progress, jobState.error); if (jobState.status === 'ready') { const project=normalizeHomeProject(jobState.result);project.placements.forEach((placement) => placement.homeId = project.id);homeSceneService.saveProject(project);syncProjectInBackground(project);enterProjectEditor(project);if(state.assemblyAssetIds.length)activateAssemblyTray(state.assemblyAssetIds);else tell('3D 户型已生成，可以开始摆放');return; } if (jobState.status === 'failed') { state.phase='error'; updatePhases(); return; } pollTimer = setTimeout(pollJob, 680); } catch (error) { failGeneration(error.message); } }
     function failGeneration(message) { clearTimeout(pollTimer); state.phase='error'; updatePhases(); updateGeneration('failed', 0, message); }
-    function returnToSetup() { clearTimeout(pollTimer);clearTimeout(saveTimer);if(state.friendMode){location.href=IS_FRIEND_SHARE_VISIT?`../chat/index.html?friend=${encodeURIComponent(FRIEND_SHARE_VIEWER_ID)}`:'../inspiration-library/index.html';return;}if(state.project&&!persistProjectNow())return;disposeScene();state.project=null;state.selectedRoomId=null;state.selectedPlacementId=null;state.selectedWindowSlotId=null;state.caseMode=false;state.friendMode=false;state.ownReadOnly=false;state.phase='setup';renderSavedHomes();renderVideoScenes();updatePhases();ui.setupPhase.scrollTop=0; }
+    function returnToSetup() { clearTimeout(pollTimer);clearTimeout(saveTimer);if(state.publishedMode){if(history.length>1)history.back();else location.href='../discover/index.html';return;}if(state.friendMode){location.href=IS_FRIEND_SHARE_VISIT?`../chat/index.html?friend=${encodeURIComponent(FRIEND_SHARE_VIEWER_ID)}`:'../inspiration-library/index.html';return;}if(state.project&&!persistProjectNow())return;disposeScene();state.project=null;state.selectedRoomId=null;state.selectedPlacementId=null;state.selectedWindowSlotId=null;state.caseMode=false;state.friendMode=false;state.ownReadOnly=false;state.publishedMode=false;state.activeShareUrl='';state.phase='setup';renderSavedHomes();renderVideoScenes();updatePhases();ui.setupPhase.scrollTop=0; }
 
-    function initEditor() { disposeScene(); const real=!!state.project.realScene; if(state.project.decor){state.selectedFloorPreset=state.project.decor.floorPreset||state.selectedFloorPreset;state.selectedWallColor=state.project.decor.wallColor||state.selectedWallColor;state.selectedWindowStyle=state.project.decor.windowStyle||state.selectedWindowStyle;} ui.editorHomeName.value = state.friendMode?`同款 · ${state.project.name}`:state.project.name; ui.editorHomeName.readOnly=state.friendMode||state.ownReadOnly; ui.editorHomeName.setAttribute('aria-label',state.friendMode?'好友小屋名称':state.ownReadOnly?'已收藏小屋名称':'给我的家起个名字');ui.editorHomeMeta.textContent = state.friendMode?'好友小屋 · 只读参观':state.ownReadOnly?'已收藏到我的家 · 点击试摆会进入编辑':'';ui.editorBack.setAttribute('aria-label',state.friendMode?'返回灵感库':'返回我的家');ui.shareButton.setAttribute('aria-label',state.friendMode?'转发好友小屋':'分享我的家');ui.homeCompanion?.classList.toggle('is-visible',QUERY.get('visitor')==='1'||QUERY.get('entry')==='shared'); ui.daylightButton.textContent = state.project.daylight === 'night' ? '🌙' : '☀'; renderRooms(); renderAssetDrawer(); updateCaseLayoutActions();resetModelLoadProgress(state.project); sceneRuntime = createScene(state.project); if(state.phase==='scene-loading')scheduleScenePreviewReveal(state.project.id); const savedTime=state.project.decor?.timeValue,initialName=real?state.project.realScene?.cfg?.light:state.project.daylight,index=REAL_TIME_SEQUENCE.indexOf(initialName);applyRealTimeProgress(savedTime!=null?savedTime:(index>=0?index*100:200)); renderMatchIntentPreviews();if(canEditProject())scheduleMatchAssistantNudge(900,'auto'); syncInspector(); }
+    function initEditor() { disposeScene(); const real=!!state.project.realScene; if(state.project.decor){state.selectedFloorPreset=state.project.decor.floorPreset||state.selectedFloorPreset;state.selectedWallColor=state.project.decor.wallColor||state.selectedWallColor;state.selectedWindowStyle=state.project.decor.windowStyle||state.selectedWindowStyle;} ui.editorHomeName.value = state.friendMode?`同款 · ${state.project.name}`:state.project.name; ui.editorHomeName.readOnly=state.friendMode||state.ownReadOnly||state.publishedMode; ui.editorHomeName.setAttribute('aria-label',state.publishedMode?'分享空间名称':state.friendMode?'好友小屋名称':state.ownReadOnly?'已收藏小屋名称':'给我的家起个名字');ui.editorHomeMeta.textContent = state.publishedMode?'公开分享快照 · 可旋转查看':state.friendMode?'好友小屋 · 只读参观':state.ownReadOnly?'已收藏到我的家 · 点击试摆会进入编辑':'';ui.editorBack.setAttribute('aria-label',state.publishedMode?'返回上一页':state.friendMode?'返回灵感库':'返回我的家');ui.shareButton.setAttribute('aria-label',state.publishedMode?'转发这个空间':state.friendMode?'转发好友小屋':'分享我的家');ui.homeCompanion?.classList.toggle('is-visible',QUERY.get('visitor')==='1'||QUERY.get('entry')==='shared'||state.publishedMode); ui.daylightButton.textContent = state.project.daylight === 'night' ? '🌙' : '☀'; renderRooms(); renderAssetDrawer(); updateCaseLayoutActions();resetModelLoadProgress(state.project); sceneRuntime = createScene(state.project); if(state.phase==='scene-loading')scheduleScenePreviewReveal(state.project.id); const savedTime=state.project.decor?.timeValue,initialName=real?state.project.realScene?.cfg?.light:state.project.daylight,index=REAL_TIME_SEQUENCE.indexOf(initialName);applyRealTimeProgress(savedTime!=null?savedTime:(index>=0?index*100:200)); renderMatchIntentPreviews();if(canEditProject())scheduleMatchAssistantNudge(900,'auto'); syncInspector(); }
 
     function applyRealTimeProgress(rawValue,announce=false){
       if(!realSceneLighting)return;
@@ -1226,6 +1240,7 @@
     function renderRooms() { ui.roomSelector.innerHTML = `<button class="room-pill ${state.selectedRoomId === null ? 'is-active' : ''}" data-room-id="">全屋</button>${state.project.rooms.map((room) => `<button class="room-pill ${state.selectedRoomId === room.id ? 'is-active' : ''}" data-room-id="${room.id}">${room.name}</button>`).join('')}`; }
     function getFavoriteAssets(kind) { const favorites=getFavorites(); return getAssets(kind).filter((asset)=>favorites.has(asset.id)); }
     function getDrawerAssets() {
+      if(state.assemblyAssetIds.length)return state.assemblyAssetIds.map((id)=>getAsset(id)).filter((asset)=>asset?.kind==='furniture');
       return getFavoriteAssets('furniture');
     }
     function refreshTransformActions() { const placement=state.selectedPlacementId&&state.project?.placements.find((item)=>item.id===state.selectedPlacementId),show=Boolean(placement&&!state.drawerExpanded&&!state.caseMode);ui.transformConfirm.classList.toggle('is-visible',show);ui.transformDelete.classList.toggle('is-visible',show);ui.transformHeight.classList.toggle('is-visible',show); }
@@ -1271,13 +1286,50 @@
       return {...asset,primitive,dimensions};
     }
     function resolveAsset(assetId) { const runtime=runtimeAssets.get(assetId); const shared=getAsset(assetId); const legacy=ASSETS.find((asset)=>asset.id===assetId); return runtime || shared || (legacy && legacyAssetMetadata(legacy)) || { id:assetId, name:'未知组件', category:'其他', primitive:'plant', accent:'#a27b5b', dimensions:[.7,.7,.7] }; }
+    function publishableMediaUrl(value){if(!value||String(value).startsWith('data:'))return '';try{return new URL(String(value),location.href).href;}catch{return '';}}
+    function projectAssetRecords(project){
+      const ids=[...new Set((project?.placements||[]).map((item)=>item.assetId).filter(Boolean))];
+      return ids.map((id)=>{const asset=resolveAsset(id),modelUrl=publishableMediaUrl(asset?.modelUrl);if(!modelUrl)return null;return {asset_id:id,name:asset.name||'3D 资产',model_url:modelUrl,thumbnail_url:publishableMediaUrl(asset.thumbnail||asset.frameUrl),labels:{category:asset.category||''},dimensions:Array.isArray(asset.dimensions)?asset.dimensions.slice(0,3):[],mount:asset.mount||'floor'};}).filter(Boolean);
+    }
+    function registerPublishedAssets(records=[]){
+      records.forEach((record)=>{
+        const id=record.asset_id||record.id,modelUrl=record.model_url||record.modelUrl;
+        if(!id||!modelUrl)return;
+        const dimensions=Array.isArray(record.dimensions)&&record.dimensions.length===3?record.dimensions:[.8,.8,.8];
+        const category=record.labels?.category||record.category||'装饰';
+        const runtime={id,name:record.name||'3D 资产',category,tags:[category],primitive:'cabinet',modelUrl,fallbackModelUrl:'',dimensions,sizePrior:null,mount:record.mount||'floor',rawModel:true};
+        runtimeAssets.set(id,runtime);
+        addUserAsset({id,kind:'furniture',name:runtime.name,category,primitive:'cabinet',color:'#c9b18f',accent:'#e8dcc8',dimensions,rawModel:true,mount:runtime.mount,modelUrl,thumbnail:record.thumbnail_url||'',sourceType:'published_share'});
+      });
+    }
+    async function fetchPublishedShare(slug){
+      const response=await fetch(`${BACKEND}/api/publishes/${encodeURIComponent(slug)}`);
+      if(!response.ok)throw new Error(`分享内容读取失败 (${response.status})`);
+      return response.json();
+    }
+    async function openPublishedHome(slug){
+      const payload=await fetchPublishedShare(slug);
+      if(payload.kind!=='home'||!payload.document?.project)throw new Error('这个链接不是可用的空间分享');
+      const project=normalizeHomeProject(payload.document.project);
+      registerPublishedAssets(payload.document.assets||project.assets||[]);
+      state.caseMode=true;state.friendMode=false;state.ownReadOnly=false;state.publishedMode=true;state.activeShareUrl=payload.share_url||location.href;state.collectedCopy=null;
+      enterProjectEditor(project,{loading:true,title:project.name});
+    }
+    async function openPublishedAssets(slug){
+      const payload=await fetchPublishedShare(slug),records=payload.document?.assets||[];
+      if(payload.kind!=='asset'||!records.length)throw new Error('这个链接没有可组装的 3D 资产');
+      registerPublishedAssets(records);
+      state.caseMode=false;state.friendMode=false;state.ownReadOnly=false;state.publishedMode=false;state.activeShareUrl='';
+      const ids=records.map((item)=>item.asset_id||item.id).filter(Boolean),home=homeSceneService.loadHomes()[0];
+      if(home)await openHome(home.id,'',ids);else{state.assemblyAssetIds=ids;tell('请先选择一个户型，再放入分享的 3D 资产');}
+    }
 
     // Recommendations only use the shared canonical catalog. This keeps the
     // assistant, the inspiration library and saved room placements on one ID.
     function getRecommendationAssets() { return getAssets('furniture'); }
     function ensureCatalogAssetRegistered(assetId) { return Boolean(getAsset(assetId)); }
 
-    function canEditProject() { return Boolean(state.project)&&!state.caseMode&&!state.friendMode&&!state.ownReadOnly; }
+    function canEditProject() { return Boolean(state.project)&&!state.caseMode&&!state.friendMode&&!state.ownReadOnly&&!state.publishedMode; }
 
     const MATCH_CATEGORY_PRIORITY=['沙发','桌子','灯具','单椅','柜子','地毯','绿植','装饰'];
     const MATCH_CATEGORY_KEYWORDS={沙发:['沙发'],桌子:['桌','茶几','餐桌'],灯具:['灯'],单椅:['椅','凳'],柜子:['柜','收纳'],地毯:['毯'],绿植:['绿植','植物','花'],装饰:['装饰','摆件','挂画'],床:['床']};
@@ -1625,7 +1677,7 @@
           : '';
         const assets=inCategory;
         ui.assetRail.innerHTML=assets.length ? assets.map((asset)=>`<button class="asset-option" data-asset-id="${escapeText(asset.id)}" aria-label="放置${escapeText(asset.name)}"><div class="asset-preview">${asset.thumbnail?`<img src="${escapeText(asset.thumbnail)}" alt="" loading="lazy" />`:`<i class="asset-silhouette ${silhouetteType(asset)}"></i>`}</div><b>${escapeText(shortAssetName(asset.name))}</b><span>${assetCategoryLabel(asset)}</span></button>`).join('') : '<p class="asset-empty">暂未有收藏可用的家具组件，请先在灵感库挑选收藏～</p>';
-        ui.drawerSummary.textContent=state.drawerExpanded ? (assets.length ? '已收藏家具 · 点选后放入房间' : '收藏家具会显示在这里') : '家具 · 地板 · 墙面 · 窗户';
+        ui.drawerSummary.textContent=state.drawerExpanded ? (assets.length ? (state.assemblyAssetIds.length?`拼装清单 · ${assets.length} 件`:'已收藏家具 · 点选后放入房间') : '收藏家具会显示在这里') : '家具 · 地板 · 墙面 · 窗户';
       } else if(state.drawerMode==='floor') {
         ui.assetRail.innerHTML=FLOOR_PRESETS.map(({id,name,color,url})=>`<button class="decor-option ${state.selectedFloorPreset===id?'is-selected':''}" data-floor-preset="${id}" aria-label="选择${name}地板" aria-pressed="${state.selectedFloorPreset===id}"><div class="decor-preview" data-kind="floor" style="--preview:${color};--floor-image:url('${url}')"></div><b>${name}</b></button>`).join('');
         ui.drawerSummary.textContent=state.drawerExpanded?'选择地板 · 即时预览':'家具 · 地板 · 墙面 · 窗户';
@@ -1886,8 +1938,15 @@
     function openShareSheet() { renderShareFriends();ui.shareSheet.hidden=false; requestAnimationFrame(()=>ui.shareSheet.classList.add('is-open')); }
     function closeShareSheet() { ui.shareSheet.classList.remove('is-open'); setTimeout(()=>{ ui.shareSheet.hidden=true; }, 260); }
     async function sendHomeToFriend(friendId){const friend=getFriends().find((item)=>item.id===friendId);if(!friend||!state.project)return;await persistProjectNow();const seen=new Set(),furniture=(state.project.placements||[]).map((placement)=>{const assetId=placement.assetId;if(!assetId||seen.has(assetId))return null;seen.add(assetId);const asset=resolveAsset(assetId);return{id:assetId,name:asset.name,category:asset.category||'家具',thumbnail:asset.thumbnail||''};}).filter(Boolean);const message=addMessage({friendId:friend.id,senderId:'me',type:'home_share',text:'分享了一个家的 3D 预览',home:{id:state.project.id,name:state.project.name,roomType:state.project.rooms?.[0]?.type||'理想家',furnitureCount:furniture.length,furniture,coverImage:state.project.previewImage||'',previewImage:state.project.previewImage||'',sourceHomeId:state.project.sourceHomeId||state.project.id,sourceShareId:state.project.sourceShareId||SOURCE_SHARE_ID||'',originalOwnerId:state.project.originalOwnerId||(IS_FRIEND_SHARE_VISIT?ORIGINAL_OWNER_ID:CURRENT_USER_ID)}});closeShareSheet();tell(`已发送给 ${friend.name}`,{label:'去看看',variant:'share',onClick:()=>{location.href=`../chat/index.html?friend=${encodeURIComponent(friend.id)}&shareId=${encodeURIComponent(message.id)}`;}});}
-    function currentShareUrl(){const videoId=state.project?.source?.videoId;if(videoId){const url=new URL('../same-home/index.html',location.href);url.searchParams.set('case',videoId);url.searchParams.set('visitor','1');return url.href;}const url=new URL(location.href);url.search='';url.searchParams.set('shared',state.project?.id||'demo-home');url.searchParams.set('visitor','1');return url.href;}
-    async function shareCurrentHome(target){const url=currentShareUrl(),title=state.caseMode?'DreamHome 同款小家':`DreamHome · ${state.project?.name||'我的家'}`;if(target!=='link'&&navigator.share){await navigator.share({title,text:'来我的 DreamHome 空间看看，小火人也住在这里。',url});return '已打开系统分享';}await navigator.clipboard.writeText(url);return '分享链接已复制';}
+    async function publishCurrentHome(){
+      if(state.publishedMode&&state.activeShareUrl)return {share_url:state.activeShareUrl};
+      await persistProjectNow();
+      const project=clone(state.project);project.assets=projectAssetRecords(project);
+      const response=await fetch(`${BACKEND}/api/publishes`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'home',title:project.name||'我的 DreamHome',project,assets:project.assets})});
+      if(!response.ok){const detail=await response.json().catch(()=>null);throw new Error(detail?.detail||`发布失败 (${response.status})`);}
+      const result=await response.json(),interactiveUrl=new URL(location.href);interactiveUrl.search='';interactiveUrl.searchParams.set('shared',result.slug);interactiveUrl.searchParams.set('apiBase',BACKEND);interactiveUrl.searchParams.set('visitor','1');result.share_url=interactiveUrl.href;state.activeShareUrl=result.share_url;return result;
+    }
+    async function shareCurrentHome(target){const published=await publishCurrentHome(),url=published.share_url,title=state.publishedMode?`DreamHome · ${state.project?.name||'分享空间'}`:state.caseMode?'DreamHome 同款小家':`DreamHome · ${state.project?.name||'我的家'}`;if(target!=='link'&&navigator.share){await navigator.share({title,text:'来我的 DreamHome 空间看看，小火人也住在这里。',url});return '已打开系统分享';}await navigator.clipboard.writeText(url);return '公开分享链接已复制';}
     // 删除户型 二次确认
     let pendingDeleteId = null;
     function openDeleteConfirm(id) { pendingDeleteId = id; ui.confirmModal.hidden = false; requestAnimationFrame(()=>ui.confirmModal.classList.add('is-open')); }
@@ -1926,12 +1985,16 @@
     ui.editorBack.addEventListener('click',returnToSetup); ui.shareButton.addEventListener('click',openShareSheet); ui.shareSheet.addEventListener('click',async(event)=>{ if(event.target.closest('[data-share-close]')){ closeShareSheet(); return; } const friend=event.target.closest('[data-friend-id]');if(friend){await sendHomeToFriend(friend.dataset.friendId);return;}const button=event.target.closest('[data-share]'); if(button){ closeShareSheet();try{tell(await shareCurrentHome(button.dataset.share));}catch(error){if(error?.name!=='AbortError')tell('分享没有完成，请重试');} } });
     document.addEventListener('keydown',(event)=>{if(event.key==='Escape'&&state.assistantDetailAssetId){closeMatchDetail();return;}if(event.key==='Escape'&&state.assistantOpen){closeMatchAssistant();return;}if(event.key==='Escape' && state.interaction.mode!=='orbit') exitInteraction();}); window.addEventListener('pagehide',()=>{clearTimeout(saveTimer);cancelAssistantTrial({announce:false});persistProjectNow();disposeMatchDetailPreview();});window.addEventListener('beforeunload',()=>{clearTimeout(saveTimer);cancelAssistantTrial({announce:false});persistProjectNow();disposeMatchDetailPreview();disposeScene();});
     state.phase='setup';renderTemplates();renderSavedHomes();renderVideoScenes();updatePhases();
-    const requestedAssetId=QUERY.get('addAsset');
+    const requestedAssetId=QUERY.get('addAsset'),sharedSlug=QUERY.get('shared')?.trim(),assetShareSlug=QUERY.get('assetShare')?.trim();
     const requestedHomeId=QUERY.get('home')?.trim();
     Promise.allSettled([homeSceneService.hydrate(),syncBackendUserAssets()]).then(async(results)=>{
       const projectResult=results[0];
       if(projectResult.status==='rejected')console.warn('[DreamHome] 后端项目暂不可用，继续使用本地布局',projectResult.reason);
       renderSavedHomes();renderVideoScenes();
+      try{
+        if(sharedSlug){await openPublishedHome(sharedSlug);return;}
+        if(assetShareSlug){await openPublishedAssets(assetShareSlug);return;}
+      }catch(error){console.warn('[DreamHome] 公共分享读取失败',error);tell(error.message||'分享内容暂时无法打开');return;}
       if(requestedHomeId&&!requestedAssetId){if(FRIEND_SHARE_REQUEST&&!sourceShareMessage()){location.replace(`../chat/index.html?friend=${encodeURIComponent(FRIEND_SHARE_VIEWER_ID)}`);return;}await openHome(requestedHomeId);return;}
       if(requestedAssetId){
         const home=homeSceneService.loadHomes()[0];
