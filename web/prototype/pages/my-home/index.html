@@ -1874,8 +1874,9 @@
     function existingCaseCopy(project=state.project){return findCollectedHome(homeSceneService.loadHomes(),CURRENT_USER_ID,sourceHomeIdFor(project));}
     function updateCaseLayoutActions(){
       if(!ui.caseApplyLayout)return;
-      state.collectedCopy=state.friendMode?existingCaseCopy():state.collectedCopy;
-      document.querySelector('.dh-root').classList.toggle('has-collected-copy',Boolean(state.friendMode&&state.collectedCopy));
+      const collectingSharedHome=state.friendMode||IS_FRIEND_SHARE_VISIT;
+      state.collectedCopy=collectingSharedHome?existingCaseCopy():state.collectedCopy;
+      document.querySelector('.dh-root').classList.toggle('has-collected-copy',Boolean(collectingSharedHome&&state.collectedCopy));
       ui.caseApplyLayout.textContent=state.collectedCopy?'✓ 已收藏到我的家':'收藏同款小屋';
     }
     function updateFriendHomeAction(){
@@ -1893,7 +1894,7 @@
       if(edit)tell('正在编辑你自己的副本');
     }
     function collectCaseHome(){
-      if(!state.friendMode||!state.project)return;
+      if((!state.friendMode&&!IS_FRIEND_SHARE_VISIT)||!state.project)return;
       try{
         const existing=existingCaseCopy();
         if(existing){state.collectedCopy=existing;updateCaseLayoutActions();updateFriendHomeAction();openCollectedCopy(existing,{edit:true});return;}
@@ -1989,7 +1990,7 @@
     ui.caseCollectOne.addEventListener('click',()=>{});
     ui.caseSaveLayout.addEventListener('click',collectCaseHome);
     ui.caseApplyLayout.addEventListener('click',collectCaseHome);
-    ui.friendHomeAction.addEventListener('click',collectCaseHome);
+    ui.friendHomeAction.addEventListener('click',(event)=>{event.preventDefault();event.stopPropagation();collectCaseHome();});
     ui.caseEditButton.addEventListener('click',()=>openCollectedCopy(state.collectedCopy||existingCaseCopy(),{edit:true}));
     ui.assetDetailClose.addEventListener('click',closeAssetDetail);ui.assetDetail.addEventListener('click',(event)=>{if(event.target===ui.assetDetail)closeAssetDetail();});ui.assetDetailCollect.addEventListener('click',collectDetailAsset);ui.assetDetailTry.addEventListener('click',()=>{const id=state.detailAssetId;closeAssetDetail();startTryPlacement(id,ui.assetDetailTry);});
     ui.aiLauncher.addEventListener('click',()=>{ui.aiPanel.hidden=false;ui.aiInput.focus();});ui.aiClose.addEventListener('click',()=>{stopRecommendationThinking();ui.aiPanel.hidden=true;});

@@ -16,6 +16,8 @@ describe('friend shared home visit', () => {
     expect(home).toContain("sourceShareId:QUERY.get('shareId')")
     expect(home).toContain('currentUserId:CURRENT_USER_ID')
     expect(home).toContain('createCollectedHome({sourceHome:state.project')
+    expect(home).toContain("if((!state.friendMode&&!IS_FRIEND_SHARE_VISIT)||!state.project)return")
+    expect(home).toContain("event.preventDefault();event.stopPropagation();collectCaseHome()")
   })
 
   it('mounts the visitor buddy only from a friend share card and leaves editing clean', () => {
