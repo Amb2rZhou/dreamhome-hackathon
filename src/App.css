@@ -417,6 +417,31 @@ textarea { font-family: inherit; }
   animation: feed-video-enter 260ms cubic-bezier(.2,.78,.25,1) both;
 }
 
+.feed-video-playback-retry {
+  position: absolute;
+  z-index: 118;
+  top: 43%;
+  left: 50%;
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  padding: 0 0 0 4px;
+  border: 1px solid rgba(255, 255, 255, .82);
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(22, 18, 13, .68);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .34);
+  font-size: 22px;
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+}
+
+.feed-video-playback-retry:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
 @keyframes feed-video-enter {
   from { opacity: .72; transform: translateY(3.5%) scale(1.015); }
   to { opacity: 1; transform: translateY(0) scale(1); }

@@ -163,10 +163,15 @@ class ImagePostTests(unittest.TestCase):
     def test_verified_demo_bindings_seed_a_fresh_runtime_store(self):
         with tempfile.TemporaryDirectory() as tmp, patch.object(main.settings, "STORAGE_DIR", tmp):
             bindings = image_posts._load_asset_bindings("imgpost_178d69ed78142afc")["bindings"]
-            self.assertEqual(len(bindings), 24)
+            self.assertEqual(len(bindings), 23)
             self.assertEqual(len({item["asset_id"] for item in bindings}), 12)
             bed = next(item for item in bindings if item["asset_id"] == "ast_66867682801e")
             self.assertEqual(bed["bbox"], [0.08, 0.56, 0.76, 0.30])
+            sofa_slides = [
+                item["slide_index"] for item in bindings
+                if item["asset_id"] == "ast_fe736b8ec699"
+            ]
+            self.assertEqual(sofa_slides, [0, 1])
 
     def test_image_post_production_uses_supported_persisted_job_kind(self):
         labels = {"category": "单椅", "styles": [], "materials": []}

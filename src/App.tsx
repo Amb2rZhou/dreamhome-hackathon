@@ -750,6 +750,7 @@ function App() {
   const [imagePostAssets, setImagePostAssets] = useState(IMAGE_POST_ASSETS)
   const [backendVideoAssets, setBackendVideoAssets] = useState<Record<string, LibraryComponent[]>>({})
   const [readyVideoId, setReadyVideoId] = useState<string | null>(null)
+  const [playbackBlocked, setPlaybackBlocked] = useState(false)
   const reuseDecisionRef = useRef<((reuse: boolean) => void) | null>(null)
   // 教学只由冷启动气泡的“开始逛逛”启动；普通暂停不会擅自拉起新手引导。
   const [sessionGuideStage, setSessionGuideStage] = useState<SessionGuideStage>('idle')
@@ -946,15 +947,65 @@ function App() {
     return startDreamHomePerformanceMonitoring()
   }, [])
 
-  useEffect(() => {
-    const v = videoRef.current
-    if (!v) return
-    if (state.videoPlaying) {
-      v.play().catch(() => {})
-    } else {
-      v.pause()
+  const requestVideoPlayback = useCallback(async () => {
+    const video = videoRef.current
+    if (!video || !state.videoPlaying) return false
+    // Safari may drop these properties after a keyed source change. Reassert
+    // them immediately before play, including when retrying in a user gesture.
+    video.muted = true
+    video.playsInline = true
+    try {
+      await video.play()
+      setPlaybackBlocked(false)
+      return true
+    } catch {
+      setPlaybackBlocked(true)
+      return false
     }
-  }, [state.videoPlaying, state.feed.index])
+  }, [state.videoPlaying])
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+    setPlaybackBlocked(false)
+    if (!state.videoPlaying) {
+      video.pause()
+      return
+    }
+
+    void requestVideoPlayback()
+    const retryPlayback = () => { void requestVideoPlayback() }
+    const retryWhenVisible = () => {
+      if (document.visibilityState === 'visible') retryPlayback()
+    }
+    const markPlaying = () => setPlaybackBlocked(false)
+    const markUnexpectedPause = () => {
+      if (state.videoPlaying && !video.ended) setPlaybackBlocked(true)
+    }
+
+    video.addEventListener('loadeddata', retryPlayback)
+    video.addEventListener('canplay', retryPlayback)
+    video.addEventListener('playing', markPlaying)
+    video.addEventListener('pause', markUnexpectedPause)
+    window.addEventListener('pageshow', retryPlayback)
+    document.addEventListener('visibilitychange', retryWhenVisible)
+    // Low Power Mode can reject muted autoplay in Safari. Retry inside the
+    // first ordinary interaction and expose a play button if it stays blocked.
+    document.addEventListener('pointerdown', retryPlayback, { once: true })
+    document.addEventListener('touchend', retryPlayback, { once: true })
+    document.addEventListener('keydown', retryPlayback, { once: true })
+    return () => {
+      video.removeEventListener('loadeddata', retryPlayback)
+      video.removeEventListener('canplay', retryPlayback)
+      video.removeEventListener('playing', markPlaying)
+      video.removeEventListener('pause', markUnexpectedPause)
+      window.removeEventListener('pageshow', retryPlayback)
+      document.removeEventListener('visibilitychange', retryWhenVisible)
+      document.removeEventListener('pointerdown', retryPlayback)
+      document.removeEventListener('touchend', retryPlayback)
+      document.removeEventListener('keydown', retryPlayback)
+    }
+  }, [state.videoPlaying, state.feed.index, requestVideoPlayback])
 
   useEffect(() => {
     const next = FEED_VIDEOS[(state.feed.index + 1) % FEED_VIDEOS.length]
@@ -1341,6 +1392,7 @@ function App() {
                 recordFeedMediaEvent(activeFeedVideo.id, 'loadeddata')
               }}
               onCanPlay={() => recordFeedMediaEvent(activeFeedVideo.id, 'canplay')}
+              onPlaying={() => setPlaybackBlocked(false)}
               onLoadedMetadata={(event) => {
                 const target = pendingFeedTargetRef.current
                 if (!target || target.videoId !== activeFeedVideo.id) return
@@ -1354,6 +1406,19 @@ function App() {
                 if (!target.assetId) pendingFeedTargetRef.current = null
               }}
             />
+            {playbackBlocked && state.videoPlaying && state.feed.overlay === 'none' && (
+              <button
+                type="button"
+                className="feed-video-playback-retry"
+                aria-label="播放视频"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  void requestVideoPlayback()
+                }}
+              >
+                <span aria-hidden="true">▶</span>
+              </button>
+            )}
           </>
         )}
 

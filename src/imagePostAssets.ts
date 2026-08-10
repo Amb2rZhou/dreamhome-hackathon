@@ -176,7 +176,6 @@ const SEEDS: ImagePostAssetSeed[] = [
     bbox: [0.62,0.54,0.34,0.2] as [number, number, number, number],
     additionalHotspots: [
       { slideIndex: 1, bbox: [0.66, 0.60, 0.34, 0.32] },
-      { slideIndex: 8, bbox: [0.00, 0.27, 0.42, 0.43] },
     ],
     category: "沙发" as FurnitureCategory,
     sourceCategory: "沙发",

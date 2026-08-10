@@ -17,6 +17,13 @@ describe('image post asset appearances', () => {
     expect(bed?.bbox).toEqual([0.08, 0.56, 0.76, 0.30])
   })
 
+  it('does not reuse the sofa appearance for the bed on slide nine', () => {
+    const sofaSlides = IMAGE_POST_HOTSPOTS
+      .filter((hotspot) => hotspot.assetId === 'ast_fe736b8ec699')
+      .map((hotspot) => hotspot.slideIndex)
+    expect(sofaSlides).toEqual([0, 1])
+  })
+
   it('merges persisted appearances without cloning canonical assets', () => {
     const merged = mergeImagePostAssetBindings([
       {
