@@ -1,5 +1,8 @@
 import unittest
+import json
 from math import cos, sin
+from pathlib import Path
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
@@ -9,7 +12,29 @@ from app.main import app
 class SpaceAssemblyTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        def canonical_asset(asset_id):
+            return {
+                "asset_id": asset_id,
+                "name": asset_id,
+                "status": "ready",
+                "glb_url": f"http://localhost:8000/storage/models/{asset_id}.glb",
+                "thumb_url": f"http://localhost:8000/storage/thumbs/{asset_id}.png",
+                "labels": {
+                    "category": "家具", "styles": ["复古"],
+                    "materials": ["木质"], "mount": "floor",
+                },
+            }
+
+        cls.asset_patcher = patch(
+            "app.routers.space_assemblies.db.get_asset",
+            side_effect=canonical_asset,
+        )
+        cls.asset_patcher.start()
         cls.client = TestClient(app)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.asset_patcher.stop()
 
     def test_bedroom_assembly_has_canonical_placements_and_valid_relationships(self):
         response = self.client.get("/api/space-assemblies/asm_bedroom_3a2749b355d9")
@@ -20,6 +45,7 @@ class SpaceAssemblyTests(unittest.TestCase):
         self.assertEqual(len(doc["placements"]), 12)
         self.assertEqual(len({item["asset_id"] for item in doc["placements"]}), 12)
         self.assertTrue(all(item["asset_id"].startswith("ast_") for item in doc["placements"]))
+        self.assertTrue(all("model_url" not in item for item in doc["placements"]))
 
         nodes = (
             {item["placement_id"] for item in doc["placements"]}
@@ -106,6 +132,25 @@ class SpaceAssemblyTests(unittest.TestCase):
         self.assertTrue(all(len(item["pos"]) == 3 for item in scene["items"]))
         self.assertTrue(all(len(item["scale"]) == 3 for item in scene["items"]))
         self.assertTrue(all(item["glb"].endswith(".glb") for item in scene["items"]))
+        self.assertTrue(all(item["labels"]["styles"] for item in scene["items"]))
+        self.assertTrue(all(item["labels"]["materials"] for item in scene["items"]))
+        self.assertTrue(all(item["dimensionSource"] == "scene_estimate" for item in scene["items"]))
+
+    def test_checked_in_catalog_covers_every_assembly_asset(self):
+        root = Path(__file__).resolve().parents[2]
+        assembly = json.loads((
+            root / "backend/storage/space_assemblies/asm_bedroom_3a2749b355d9.json"
+        ).read_text(encoding="utf-8"))
+        supplemental = json.loads((
+            root / "backend/storage/feed/supplemental-assets.v1.json"
+        ).read_text(encoding="utf-8"))
+        catalog = {item["asset_id"]: item for item in supplemental}
+        for placement in assembly["placements"]:
+            with self.subTest(asset_id=placement["asset_id"]):
+                asset = catalog[placement["asset_id"]]
+                self.assertTrue(asset["labels"]["styles"])
+                self.assertTrue(asset["labels"]["materials"])
+                self.assertTrue(asset["media"]["model_3d"].endswith(".glb"))
 
 
 if __name__ == "__main__":

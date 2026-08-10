@@ -18,7 +18,7 @@ class RecommendationTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_proactive_reuses_structured_catalog(self):
         result = await recommend({"mode": "proactive", "limit": 5}, CATALOG_PATH)
-        self.assertEqual(result["catalogSize"], 178)
+        self.assertEqual(result["catalogSize"], 190)
         self.assertFalse(result["clarificationRequired"])
         self.assertEqual(len(result["items"]), 5)
         self.assertTrue(all(isinstance(item["trialAvailable"], bool) for item in result["items"]))

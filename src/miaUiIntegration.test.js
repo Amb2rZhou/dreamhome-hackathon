@@ -51,4 +51,16 @@ describe('Mia interaction with DreamHome data', () => {
     expect(home).toContain('function beginPlacement(assetId)');
     expect(home).toContain('function applyProjectFinish(kind, assetId)');
   });
+
+  it('opens canonical space assemblies as editable projects without cloning assets', () => {
+    const home = readPage('my-home');
+
+    expect(home).toContain("const assemblyId=QUERY.get('assembly')");
+    expect(home).toContain('function projectFromSpaceAssembly(sceneData, projectData)');
+    expect(home).toContain('/api/space-assemblies/${encoded}/scene');
+    expect(home).toContain('/api/space-assemblies/${encoded}/home-project');
+    expect(home).toContain("type:'space_assembly'");
+    expect(home).toContain('homeSceneService.saveProject(project)');
+    expect(home).toContain("project?.source?.type==='space_assembly'&&!queryHomeUserId");
+  });
 });

@@ -57,7 +57,7 @@ class FeedManifestTests(unittest.TestCase):
 
         self.assertEqual(first, second)
         self.assertFalse(first["source_policy"]["runtime_database_available"])
-        self.assertEqual(len(first["canonical_assets"]), 178)
+        self.assertEqual(len(first["canonical_assets"]), 190)
         self.assertEqual(len(first["appearances"]), 195)
         self.assertEqual(len(first["tracks"]), 0)
         self.assertEqual(len(first["same_home_templates"]), 2)

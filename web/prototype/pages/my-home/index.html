@@ -821,6 +821,7 @@
       saveProject: (project) => MockHomeSceneService.saveProject(project),
       deleteHome: (id) => MockHomeSceneService.deleteHome(id),
       async syncProject(project) {
+        if (project?.source?.type==='space_assembly'&&!queryHomeUserId) return null;
         if (!HOME_USER_ID) return null;
         const response=await fetch(`${BACKEND}/api/home-projects/${encodeURIComponent(project.id)}?user_id=${encodeURIComponent(HOME_USER_ID)}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(project),keepalive:true});
         if(!response.ok)throw new Error(`保存项目失败 (${response.status})`);
@@ -1126,7 +1127,37 @@
       try{if(!localStorage.getItem(sceneBaselineKey(sceneData.video_id)))localStorage.setItem(sceneBaselineKey(sceneData.video_id),JSON.stringify({...baseline,createdAt:now()}));const saved=homeSceneService.loadHomes().find(home=>home.id===baseline.id)||JSON.parse(localStorage.getItem(sceneProjectKey(sceneData.video_id))||'null');if(saved?.source?.videoId===sceneData.video_id&&Array.isArray(saved.placements)){const sources=new Map(baseline.placements.map(placement=>[placement.id,placement.sourceScale]));const placements=saved.placements.map(placement=>({...placement,sourceScale:placement.sourceScale||sources.get(placement.id)}));return normalizeHomeProject({...baseline,...saved,placements,id:baseline.id,source:baseline.source,realScene:baseline.realScene,envelope:baseline.envelope,walls:baseline.walls,rooms:baseline.rooms});}}catch{}
       return normalizeHomeProject({...baseline,createdAt:now(),updatedAt:now()});
     }
+    function projectFromSpaceAssembly(sceneData, projectData) {
+      runtimeAssets.clear();
+      const itemsByPlacementId=new Map((sceneData.items||[]).map((item)=>[item.placementId,item]));
+      (sceneData.items||[]).forEach((item)=>{
+        const modelUrl=/^https?:\/\//.test(item.glb)?item.glb:`${BACKEND}${item.glb.startsWith('/')?'':'/'}${item.glb}`;
+        const sizePrior=item.sizePrior||null;
+        runtimeAssets.set(item.id,{id:item.id,name:item.name,category:item.labels?.category||'真实组件',tags:item.tags||[],primitive:inferRuntimePrimitive(item),modelUrl,fallbackModelUrl:'',staticFallbackModelUrl:'',dimensions:sizePrior?[sizePrior.w,sizePrior.h,sizePrior.d]:[.7,.7,.7],sizePrior,mount:item.mount||item.labels?.mount||'floor',rawModel:true});
+      });
+      const placements=(projectData.placements||[]).map((placement)=>{
+        const item=itemsByPlacementId.get(placement.id);
+        const estimated=item?.sizePrior?{width:item.sizePrior.w,height:item.sizePrior.h,depth:item.sizePrior.d}:null;
+        return {...placement,sourceScale:placement.sourceScale||placement.scale,customSize:placement.customSize||estimated};
+      });
+      const project=normalizeHomeProject({...projectData,placements,source:{...(projectData.source||{}),type:'space_assembly',assemblyId:sceneData.assembly_id},realScene:{...(projectData.realScene||{}),room:sceneData.room,balcony:sceneData.balcony||null,extras:sceneData.extras||[],cfg:sceneData.cfg||{}},decor:{floorPreset:'light-natural-oak',wallColor:projectData.finishes?.wall?.color||'#8D5D46',windowStyle:'dark-grid',timeValue:100},daylight:'day',createdAt:projectData.createdAt||now(),updatedAt:now()});
+      return project;
+    }
     function enterProjectEditor(project,{loading=false,title=''}={}){state.project=normalizeHomeProject(project);state.selectedRoomId=null;state.selectedPlacementId=null;state.selectedWindowSlotId=null;state.interaction.mode='orbit';state.phase=loading?'scene-loading':'editor';if(loading)pendingSceneTitle=title||state.project.name;updatePhases();initEditor();}
+    async function openSpaceAssembly(assemblyId) {
+      state.caseMode=false;state.friendMode=false;state.ownReadOnly=false;state.collectedCopy=null;
+      disposeScene();pendingSceneStartedAt=performance.now();pendingSceneTitle='正在准备 Demo 草稿';state.phase='submitting';updatePhases();updateGeneration('queued',18);
+      try {
+        const encoded=encodeURIComponent(assemblyId);
+        const [sceneResponse,projectResponse]=await Promise.all([fetch(`${BACKEND}/api/space-assemblies/${encoded}/scene`),fetch(`${BACKEND}/api/space-assemblies/${encoded}/home-project`)]);
+        if(!sceneResponse.ok||!projectResponse.ok)throw new Error(`Demo 载入失败 (${sceneResponse.status}/${projectResponse.status})`);
+        const project=projectFromSpaceAssembly(await sceneResponse.json(),await projectResponse.json());
+        homeSceneService.saveProject(project);
+        updateGeneration('processing',62);
+        enterProjectEditor(project,{loading:true,title:project.name});
+        ui.editorHomeMeta.textContent='Demo 草稿 · 调整后会保存在当前浏览器';
+      } catch(error) {pendingSceneStartedAt=0;pendingSceneTitle='';state.phase='setup';updatePhases();tell(error.message);}
+    }
     async function openVideoScene(videoId, title='视频户型重建', caseMode=false, requestedAssetId='') {
       state.caseMode=caseMode;state.friendMode=caseMode;state.ownReadOnly=false;state.collectedCopy=null;
       disposeScene();
@@ -1842,6 +1873,8 @@
     // 从灵感库 banner 案例卡进入：只读案例模式（复用拼装编辑器，去掉抽屉与移动/调整，加收藏）
     const caseVideoId=QUERY.get('case');
     if(caseVideoId&&!requestedAssetId){ openVideoScene(caseVideoId,'案例空间',true); }
+    const assemblyId=QUERY.get('assembly');
+    if(assemblyId&&!caseVideoId&&!requestedAssetId){ openSpaceAssembly(assemblyId); }
     if(new URLSearchParams(location.search).get('focus')==='templates'){requestAnimationFrame(()=>requestAnimationFrame(()=>{document.getElementById('templateBox')?.scrollIntoView({block:'center'});history.replaceState(null,'',location.pathname);}));}
     // 从 room-setup 中间页回跳：?template=&w=&d=&h=&autogen=1
     // URL 是用户可改的，w/d/h 一律经 clampRoom 夹取后才进 state
@@ -1853,7 +1886,7 @@
         state.roomOverride=clampRoom({w:QUERY.get('w'),d:QUERY.get('d'),h:QUERY.get('h')},templateId);
       }
       history.replaceState(null,'',location.pathname);
-      if(QUERY.get('autogen')==='1'&&!caseVideoId&&!requestedAssetId)startGeneration();
+      if(QUERY.get('autogen')==='1'&&!caseVideoId&&!assemblyId&&!requestedAssetId)startGeneration();
     })();
   </script>
 </body>

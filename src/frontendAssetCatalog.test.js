@@ -11,8 +11,8 @@ describe('frontend asset catalog', () => {
   const records = buildFrontendAssetRecords(feed, catalog);
 
   it('contains every canonical asset exactly once', () => {
-    expect(records).toHaveLength(178);
-    expect(new Set(records.map((asset) => asset.asset_id)).size).toBe(178);
+    expect(records).toHaveLength(190);
+    expect(new Set(records.map((asset) => asset.asset_id)).size).toBe(190);
   });
 
   it('keeps filter tags complete without inventing physical dimensions', () => {

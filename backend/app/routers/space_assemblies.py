@@ -8,12 +8,40 @@ compatible home-project projection.
 import json
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 from fastapi import APIRouter, HTTPException, Query
+
+from .. import db
 
 router = APIRouter(prefix="/api/space-assemblies", tags=["space-assemblies"])
 
 ASSEMBLY_DIR = Path(__file__).resolve().parents[2] / "storage" / "space_assemblies"
+
+
+def _consumer_media_url(value: str) -> str:
+    """Keep canonical storage portable across local and Hong Kong hosts."""
+    parsed = urlparse(str(value or ""))
+    if parsed.path.startswith("/storage/"):
+        return parsed.path
+    return str(value or "")
+
+
+def _canonical_asset(asset_id: str, path: Path) -> dict[str, Any]:
+    asset = db.get_asset(asset_id)
+    if not asset:
+        raise RuntimeError(f"unknown canonical asset {asset_id} in {path}")
+    if asset.get("status") != "ready":
+        raise RuntimeError(f"canonical asset {asset_id} is not ready in {path}")
+    labels = asset.get("labels") or {}
+    if not labels.get("category"):
+        raise RuntimeError(f"canonical asset {asset_id} has no category in {path}")
+    for field in ("styles", "materials"):
+        if not isinstance(labels.get(field), list) or not labels[field]:
+            raise RuntimeError(f"canonical asset {asset_id} has no {field} tags in {path}")
+    if not asset.get("glb_url"):
+        raise RuntimeError(f"canonical asset {asset_id} has no 3D model in {path}")
+    return asset
 
 
 def _documents() -> list[dict[str, Any]]:
@@ -43,6 +71,7 @@ def _validate(doc: dict[str, Any], path: Path) -> None:
             raise RuntimeError(f"unknown room for {placement.get('placement_id')} in {path}")
         if not str(placement.get("asset_id", "")).startswith("ast_"):
             raise RuntimeError(f"invalid canonical asset reference in {path}")
+        _canonical_asset(placement["asset_id"], path)
     for relation in doc.get("relationships", []):
         if relation.get("subject") not in node_ids or relation.get("object") not in node_ids:
             raise RuntimeError(f"unknown relationship node in {path}: {relation}")
@@ -114,14 +143,21 @@ def get_scene_projection(assembly_id: str):
             {
                 "id": placement["asset_id"],
                 "placementId": placement["placement_id"],
-                "name": placement["name"],
-                "glb": placement["model_url"],
-                "tags": placement.get("tags", []),
+                "name": placement.get("name") or asset["name"],
+                "glb": _consumer_media_url(asset["glb_url"]),
+                "thumbnail": _consumer_media_url(asset.get("thumb_url", "")),
+                "tags": [
+                    asset["labels"]["category"],
+                    *asset["labels"].get("styles", []),
+                    *asset["labels"].get("materials", []),
+                ],
+                "labels": asset["labels"],
                 "sizePrior": {
                     "w": placement["target_size_m"]["width"],
                     "h": placement["target_size_m"]["height"],
                     "d": placement["target_size_m"]["depth"],
                 },
+                "dimensionSource": "scene_estimate",
                 "pos": [
                     placement["position"]["x"],
                     placement["position"]["y"],
@@ -136,6 +172,7 @@ def get_scene_projection(assembly_id: str):
                 "mount": placement["mount"],
             }
             for placement in doc.get("placements", [])
+            for asset in [_canonical_asset(placement["asset_id"], ASSEMBLY_DIR / f"{assembly_id}.json")]
         ],
         "relationships": doc.get("relationships", []),
     }

@@ -6,6 +6,7 @@ describe('DreamHome model-backed scenes', () => {
   it('keeps both video scenes and copied same-home scenes behind the loading gate', () => {
     expect(isModelBackedHome({ source: { type: 'video_rebuild' } })).toBe(true);
     expect(isModelBackedHome({ source: { type: 'case_copy' } })).toBe(true);
+    expect(isModelBackedHome({ source: { type: 'space_assembly' } })).toBe(true);
     expect(isModelBackedHome({ source: { type: 'template' } })).toBe(false);
   });
 

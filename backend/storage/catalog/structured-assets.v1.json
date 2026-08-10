@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_version": "bf061121058e0224d101c12ef7ff90810fc09af1ea400219cb6841acfe5fcdde",
+  "catalog_version": "a1a63a0219ba313f630a4ca1e26da75065b92ebd497289169a7cdb6b99dc0d1e",
   "source_manifest_version": 1,
   "contract": {
     "identity": "asset_id is canonical; appearances reference it and never clone the asset",
@@ -8,9 +8,9 @@
     "confidence": "null means the historical source did not preserve a calibrated score"
   },
   "summary": {
-    "canonical_assets": 178,
-    "ready_assets": 178,
-    "tag_complete_assets": 178,
+    "canonical_assets": 190,
+    "ready_assets": 190,
+    "tag_complete_assets": 190,
     "tag_review_queue": 0,
     "tag_human_reviewed": 9,
     "known_physical_size": 7
@@ -19,35 +19,35 @@
     "categories": [
       {
         "value": "灯具",
-        "count": 31
+        "count": 33
       },
       {
         "value": "柜子",
-        "count": 30
+        "count": 31
       },
       {
         "value": "桌子",
-        "count": 20
+        "count": 21
       },
       {
         "value": "单椅",
-        "count": 19
+        "count": 20
       },
       {
         "value": "绿植",
-        "count": 18
+        "count": 19
       },
       {
         "value": "装饰",
-        "count": 13
+        "count": 17
+      },
+      {
+        "value": "地毯",
+        "count": 12
       },
       {
         "value": "家电",
         "count": 12
-      },
-      {
-        "value": "地毯",
-        "count": 11
       },
       {
         "value": "沙发",
@@ -55,7 +55,7 @@
       },
       {
         "value": "床",
-        "count": 9
+        "count": 10
       },
       {
         "value": "其他",
@@ -69,7 +69,7 @@
     "styles": [
       {
         "value": "现代",
-        "count": 150
+        "count": 155
       },
       {
         "value": "北欧",
@@ -77,7 +77,7 @@
       },
       {
         "value": "复古",
-        "count": 25
+        "count": 31
       },
       {
         "value": "简约",
@@ -93,7 +93,7 @@
       },
       {
         "value": "奶油风",
-        "count": 6
+        "count": 7
       },
       {
         "value": "卡通",
@@ -108,6 +108,10 @@
         "count": 2
       },
       {
+        "value": "抽象艺术",
+        "count": 1
+      },
+      {
         "value": "可爱风",
         "count": 1
       },
@@ -119,11 +123,11 @@
     "colors": [
       {
         "value": "白色",
-        "count": 53
+        "count": 57
       },
       {
         "value": "棕色",
-        "count": 48
+        "count": 52
       },
       {
         "value": "黑色",
@@ -131,23 +135,23 @@
       },
       {
         "value": "米色",
-        "count": 28
+        "count": 30
       },
       {
         "value": "绿色",
-        "count": 21
+        "count": 22
+      },
+      {
+        "value": "灰色",
+        "count": 19
       },
       {
         "value": "米白色",
-        "count": 17
+        "count": 19
       },
       {
         "value": "浅木色",
         "count": 17
-      },
-      {
-        "value": "灰色",
-        "count": 16
       },
       {
         "value": "银色",
@@ -155,10 +159,18 @@
       },
       {
         "value": "蓝色",
-        "count": 8
+        "count": 10
       },
       {
         "value": "红色",
+        "count": 9
+      },
+      {
+        "value": "黄色",
+        "count": 7
+      },
+      {
+        "value": "深棕色",
         "count": 7
       },
       {
@@ -170,14 +182,6 @@
         "count": 6
       },
       {
-        "value": "深棕色",
-        "count": 6
-      },
-      {
-        "value": "黄色",
-        "count": 5
-      },
-      {
         "value": "金色",
         "count": 4
       },
@@ -186,15 +190,23 @@
         "count": 4
       },
       {
+        "value": "橙色",
+        "count": 3
+      },
+      {
         "value": "彩色",
         "count": 1
       },
       {
-        "value": "橙色",
+        "value": "粉色",
         "count": 1
       },
       {
-        "value": "粉色",
+        "value": "蓝",
+        "count": 1
+      },
+      {
+        "value": "绿",
         "count": 1
       },
       {
@@ -210,26 +222,38 @@
         "count": 1
       },
       {
+        "value": "浅棕色",
+        "count": 1
+      },
+      {
         "value": "深褐色",
         "count": 1
       },
       {
         "value": "深灰色",
         "count": 1
+      },
+      {
+        "value": "紫色",
+        "count": 1
+      },
+      {
+        "value": "棕",
+        "count": 1
       }
     ],
     "materials": [
       {
         "value": "金属",
-        "count": 71
+        "count": 72
       },
       {
         "value": "实木",
-        "count": 53
+        "count": 56
       },
       {
         "value": "布艺",
-        "count": 35
+        "count": 39
       },
       {
         "value": "玻璃",
@@ -237,18 +261,18 @@
       },
       {
         "value": "陶瓷",
-        "count": 23
+        "count": 25
       },
       {
         "value": "植物",
+        "count": 16
+      },
+      {
+        "value": "塑料",
         "count": 15
       },
       {
         "value": "板材",
-        "count": 13
-      },
-      {
-        "value": "塑料",
         "count": 13
       },
       {
@@ -257,7 +281,7 @@
       },
       {
         "value": "木质",
-        "count": 7
+        "count": 8
       },
       {
         "value": "藤编",
@@ -269,6 +293,10 @@
       },
       {
         "value": "干草",
+        "count": 2
+      },
+      {
+        "value": "画布",
         "count": 2
       },
       {
@@ -284,11 +312,19 @@
         "count": 2
       },
       {
+        "value": "布面",
+        "count": 1
+      },
+      {
         "value": "干花",
         "count": 1
       },
       {
-        "value": "画布",
+        "value": "画框",
+        "count": 1
+      },
+      {
+        "value": "框架",
         "count": 1
       },
       {
@@ -333,6 +369,10 @@
       },
       {
         "value": "叶片",
+        "count": 1
+      },
+      {
+        "value": "织物",
         "count": 1
       }
     ],
@@ -1412,6 +1452,93 @@
       }
     },
     {
+      "asset_id": "ast_0f84e275ae15",
+      "name": "堆叠摆件",
+      "status": "ready",
+      "classification": {
+        "category": "装饰",
+        "subcategory": "堆叠摆件"
+      },
+      "tags": {
+        "raw": {
+          "colors": [
+            "紫色",
+            "橙色",
+            "灰色",
+            "米色"
+          ],
+          "materials": [
+            "塑料",
+            "布艺"
+          ],
+          "styles": [
+            "现代",
+            "奶油风"
+          ],
+          "features": [
+            "多层堆叠",
+            "圆柱形",
+            "顶部尖锥",
+            "表面纹理",
+            "不规则形状"
+          ]
+        },
+        "normalized": {
+          "colors": [
+            "紫色",
+            "橙色",
+            "灰色",
+            "米色"
+          ],
+          "materials": [
+            "塑料",
+            "布艺"
+          ],
+          "styles": [
+            "现代",
+            "奶油风"
+          ],
+          "features": [
+            "多层堆叠",
+            "圆柱形",
+            "顶部尖锥",
+            "表面纹理",
+            "不规则形状"
+          ]
+        },
+        "completeness": "complete",
+        "missing_fields": [],
+        "provenance": {
+          "source": "image_selection_pipeline",
+          "confidence": null,
+          "human_review_status": "unreviewed",
+          "reviewed_at": null,
+          "record_source": "backend/storage/feed/supplemental-assets.v1.json"
+        }
+      },
+      "dimensions": {
+        "status": "unknown",
+        "physical_m": null,
+        "model_unit": null
+      },
+      "media": {
+        "model_3d": "/dreamhome-api/storage/models/2b4d2a67d00a8284550523d5ea80e092.glb",
+        "thumbnail": "/dreamhome-api/storage/thumbs/selection_ast_0f84e275ae15.png"
+      },
+      "source": {
+        "source_type": "image_post_selection",
+        "image_post_id": "imgpost_ba7a0419c9ca155a",
+        "slide_index": 0
+      },
+      "appearance_count": 0,
+      "asset_quality_review": {
+        "scope": "asset_quality_not_tag_accuracy",
+        "verdict": "unreviewed",
+        "reason": "",
+        "reviewed_at": null
+      }
+    },
+    {
       "asset_id": "ast_108a3cf096de",
       "name": "吊灯",
       "status": "ready",
@@ -2212,6 +2339,87 @@
       }
     },
     {
+      "asset_id": "ast_240c9a5c1586",
+      "name": "双人床",
+      "status": "ready",
+      "classification": {
+        "category": "床",
+        "subcategory": "双人床"
+      },
+      "tags": {
+        "raw": {
+          "colors": [
+            "米色",
+            "红色",
+            "棕色"
+          ],
+          "materials": [
+            "布艺",
+            "实木"
+          ],
+          "styles": [
+            "复古"
+          ],
+          "features": [
+            "格纹床品",
+            "条纹靠枕",
+            "床头板",
+            "床尾垫"
+          ]
+        },
+        "normalized": {
+          "colors": [
+            "米色",
+            "红色",
+            "棕色"
+          ],
+          "materials": [
+            "布艺",
+            "实木"
+          ],
+          "styles": [
+            "复古"
+          ],
+          "features": [
+            "格纹床品",
+            "条纹靠枕",
+            "床头板",
+            "床尾垫"
+          ]
+        },
+        "completeness": "complete",
+        "missing_fields": [],
+        "provenance": {
+          "source": "image_selection_pipeline",
+          "confidence": null,
+          "human_review_status": "unreviewed",
+          "reviewed_at": null,
+          "record_source": "backend/storage/feed/supplemental-assets.v1.json"
+        }
+      },
+      "dimensions": {
+        "status": "unknown",
+        "physical_m": null,
+        "model_unit": null
+      },
+      "media": {
+        "model_3d": "/dreamhome-api/storage/models/363253d4cff24aa583def090363f5dee.glb",
+        "thumbnail": "/dreamhome-api/storage/thumbs/selection_ast_240c9a5c1586.png"
+      },
+      "source": {
+        "source_type": "image_post_selection",
+        "image_post_id": "imgpost_ba7a0419c9ca155a",
+        "slide_index": 0
+      },
+      "appearance_count": 0,
+      "asset_quality_review": {
+        "scope": "asset_quality_not_tag_accuracy",
+        "verdict": "unreviewed",
+        "reason": "",
+        "reviewed_at": null
+      }
+    },
+    {
       "asset_id": "ast_251c115561c7",
       "name": "花艺摆件",
       "status": "ready",
@@ -2454,6 +2662,89 @@
         "verdict": "pass",
         "reason": "",
         "reviewed_at": "2026-07-22T09:36:38.288Z"
+      }
+    },
+    {
+      "asset_id": "ast_26d5964ad0ab",
+      "name": "摆件",
+      "status": "ready",
+      "classification": {
+        "category": "装饰",
+        "subcategory": "摆件"
+      },
+      "tags": {
+        "raw": {
+          "colors": [
+            "白色",
+            "黄色",
+            "灰色"
+          ],
+          "materials": [
+            "陶瓷",
+            "塑料"
+          ],
+          "styles": [
+            "现代"
+          ],
+          "features": [
+            "多层堆叠",
+            "圆柱形底座",
+            "顶部球形",
+            "中间环状",
+            "底部发光"
+          ]
+        },
+        "normalized": {
+          "colors": [
+            "白色",
+            "黄色",
+            "灰色"
+          ],
+          "materials": [
+            "陶瓷",
+            "塑料"
+          ],
+          "styles": [
+            "现代"
+          ],
+          "features": [
+            "多层堆叠",
+            "圆柱形底座",
+            "顶部球形",
+            "中间环状",
+            "底部发光"
+          ]
+        },
+        "completeness": "complete",
+        "missing_fields": [],
+        "provenance": {
+          "source": "image_selection_pipeline",
+          "confidence": null,
+          "human_review_status": "unreviewed",
+          "reviewed_at": null,
+          "record_source": "backend/storage/feed/supplemental-assets.v1.json"
+        }
+      },
+      "dimensions": {
+        "status": "unknown",
+        "physical_m": null,
+        "model_unit": null
+      },
+      "media": {
+        "model_3d": "/dreamhome-api/storage/models/c960da9490e72212cc786481490c78ad.glb",
+        "thumbnail": "/dreamhome-api/storage/thumbs/selection_ast_26d5964ad0ab.png"
+      },
+      "source": {
+        "source_type": "image_post_selection",
+        "image_post_id": "imgpost_ba7a0419c9ca155a",
+        "slide_index": 0
+      },
+      "appearance_count": 0,
+      "asset_quality_review": {
+        "scope": "asset_quality_not_tag_accuracy",
+        "verdict": "unreviewed",
+        "reason": "",
+        "reviewed_at": null
       }
     },
     {
@@ -2854,6 +3145,79 @@
       }
     },
     {
+      "asset_id": "ast_2f33e0f44197",
+      "name": "吸顶灯",
+      "status": "ready",
+      "classification": {
+        "category": "灯具",
+        "subcategory": "吸顶灯"
+      },
+      "tags": {
+        "raw": {
+          "colors": [
+            "米白色"
+          ],
+          "materials": [
+            "布艺"
+          ],
+          "styles": [
+            "复古"
+          ],
+          "features": [
+            "褶皱灯罩",
+            "多层结构",
+            "圆形"
+          ]
+        },
+        "normalized": {
+          "colors": [
+            "米白色"
+          ],
+          "materials": [
+            "布艺"
+          ],
+          "styles": [
+            "复古"
+          ],
+          "features": [
+            "褶皱灯罩",
+            "多层结构",
+            "圆形"
+          ]
+        },
+        "completeness": "complete",
+        "missing_fields": [],
+        "provenance": {
+          "source": "image_selection_pipeline",
+          "confidence": null,
+          "human_review_status": "unreviewed",
+          "reviewed_at": null,
+          "record_source": "backend/storage/feed/supplemental-assets.v1.json"
+        }
+      },
+      "dimensions": {
+        "status": "unknown",
+        "physical_m": null,
+        "model_unit": null
+      },
+      "media": {
+        "model_3d": "/dreamhome-api/storage/models/120d4d414a740d90a92acb84e76715d8.glb",
+        "thumbnail": "/dreamhome-api/storage/thumbs/selection_ast_2f33e0f44197.png"
+      },
+      "source": {
+        "source_type": "image_post_selection",
+        "image_post_id": "imgpost_ba7a0419c9ca155a",
+        "slide_index": 0
+      },
+      "appearance_count": 0,
+      "asset_quality_review": {
+        "scope": "asset_quality_not_tag_accuracy",
+        "verdict": "unreviewed",
+        "reason": "",
+        "reviewed_at": null
+      }
+    },
+    {
       "asset_id": "ast_3141d754dd57",
       "name": "波斯地毯",
       "status": "ready",
@@ -3230,7 +3594,11 @@
       },
       "dimensions": {
         "status": "unknown",
-        "physical_m": null,
+        "physical_m": {
+          "width": null,
+          "height": null,
+          "depth": null
+        },
         "model_unit": null
       },
       "media": {
@@ -4724,6 +5092,89 @@
       }
     },
     {
+      "asset_id": "ast_4c747bd203f6",
+      "name": "扶手椅",
+      "status": "ready",
+      "classification": {
+        "category": "单椅",
+        "subcategory": "扶手椅"
+      },
+      "tags": {
+        "raw": {
+          "colors": [
+            "棕色",
+            "白色",
+            "红色"
+          ],
+          "materials": [
+            "布艺",
+            "木质"
+          ],
+          "styles": [
+            "复古"
+          ],
+          "features": [
+            "圆弧扶手",
+            "格纹图案",
+            "木质框架",
+            "靠背",
+            "坐垫"
+          ]
+        },
+        "normalized": {
+          "colors": [
+            "棕色",
+            "白色",
+            "红色"
+          ],
+          "materials": [
+            "布艺",
+            "木质"
+          ],
+          "styles": [
+            "复古"
+          ],
+          "features": [
+            "圆弧扶手",
+            "格纹图案",
+            "木质框架",
+            "靠背",
+            "坐垫"
+          ]
+        },
+        "completeness": "complete",
+        "missing_fields": [],
+        "provenance": {
+          "source": "image_selection_pipeline",
+          "confidence": null,
+          "human_review_status": "unreviewed",
+          "reviewed_at": null,
+          "record_source": "backend/storage/feed/supplemental-assets.v1.json"
+        }
+      },
+      "dimensions": {
+        "status": "unknown",
+        "physical_m": null,
+        "model_unit": null
+      },
+      "media": {
+        "model_3d": "/dreamhome-api/storage/models/29c97b4588c2676000e9d0c4cabef3ff.glb",
+        "thumbnail": "/dreamhome-api/storage/thumbs/selection_ast_4c747bd203f6.png"
+      },
+      "source": {
+        "source_type": "image_post_selection",
+        "image_post_id": "imgpost_ba7a0419c9ca155a",
+        "slide_index": 0
+      },
+      "appearance_count": 0,
+      "asset_quality_review": {
+        "scope": "asset_quality_not_tag_accuracy",
+        "verdict": "unreviewed",
+        "reason": "",
+        "reviewed_at": null
+      }
+    },
+    {
       "asset_id": "ast_4d362c616d1d",
       "name": "吊灯",
       "status": "ready",
@@ -5930,7 +6381,11 @@
       },
       "dimensions": {
         "status": "unknown",
-        "physical_m": null,
+        "physical_m": {
+          "width": null,
+          "height": null,
+          "depth": null
+        },
         "model_unit": null
       },
       "media": {
@@ -6085,7 +6540,11 @@
       },
       "dimensions": {
         "status": "unknown",
-        "physical_m": null,
+        "physical_m": {
+          "width": null,
+          "height": null,
+          "depth": null
+        },
         "model_unit": null
       },
       "media": {
@@ -7852,7 +8311,11 @@
       },
       "dimensions": {
         "status": "unknown",
-        "physical_m": null,
+        "physical_m": {
+          "width": null,
+          "height": null,
+          "depth": null
+        },
         "model_unit": null
       },
       "media": {
@@ -8597,6 +9060,85 @@
       }
     },
     {
+      "asset_id": "ast_97844e55748d",
+      "name": "客厅地毯",
+      "status": "ready",
+      "classification": {
+        "category": "地毯",
+        "subcategory": "客厅地毯"
+      },
+      "tags": {
+        "raw": {
+          "colors": [
+            "蓝",
+            "绿",
+            "米白",
+            "棕"
+          ],
+          "materials": [
+            "织物"
+          ],
+          "styles": [
+            "复古"
+          ],
+          "features": [
+            "几何图案",
+            "多色拼接",
+            "铺满地面"
+          ]
+        },
+        "normalized": {
+          "colors": [
+            "蓝",
+            "绿",
+            "米白色",
+            "棕"
+          ],
+          "materials": [
+            "织物"
+          ],
+          "styles": [
+            "复古"
+          ],
+          "features": [
+            "几何图案",
+            "多色拼接",
+            "铺满地面"
+          ]
+        },
+        "completeness": "complete",
+        "missing_fields": [],
+        "provenance": {
+          "source": "image_selection_pipeline",
+          "confidence": null,
+          "human_review_status": "unreviewed",
+          "reviewed_at": null,
+          "record_source": "backend/storage/feed/supplemental-assets.v1.json"
+        }
+      },
+      "dimensions": {
+        "status": "unknown",
+        "physical_m": null,
+        "model_unit": null
+      },
+      "media": {
+        "model_3d": "/dreamhome-api/storage/models/5bf7152b4d2410c8e4cda2040cfaa278.glb",
+        "thumbnail": "/dreamhome-api/storage/thumbs/selection_ast_97844e55748d.png"
+      },
+      "source": {
+        "source_type": "image_post_selection",
+        "image_post_id": "imgpost_ba7a0419c9ca155a",
+        "slide_index": 0
+      },
+      "appearance_count": 0,
+      "asset_quality_review": {
+        "scope": "asset_quality_not_tag_accuracy",
+        "verdict": "unreviewed",
+        "reason": "",
+        "reviewed_at": null
+      }
+    },
+    {
       "asset_id": "ast_97854ca2b58d",
       "name": "现代一体式餐边柜",
       "status": "ready",
@@ -9311,6 +9853,154 @@
         "verdict": "pass",
         "reason": "",
         "reviewed_at": "2026-07-22T10:05:14.314Z"
+      }
+    },
+    {
+      "asset_id": "ast_9ed9391bccce",
+      "name": "挂画",
+      "status": "ready",
+      "classification": {
+        "category": "装饰",
+        "subcategory": "挂画"
+      },
+      "tags": {
+        "raw": {
+          "colors": [
+            "蓝色",
+            "灰色"
+          ],
+          "materials": [
+            "画布",
+            "框架"
+          ],
+          "styles": [
+            "现代"
+          ],
+          "features": [
+            "矩形边框",
+            "人物肖像"
+          ]
+        },
+        "normalized": {
+          "colors": [
+            "蓝色",
+            "灰色"
+          ],
+          "materials": [
+            "画布",
+            "框架"
+          ],
+          "styles": [
+            "现代"
+          ],
+          "features": [
+            "矩形边框",
+            "人物肖像"
+          ]
+        },
+        "completeness": "complete",
+        "missing_fields": [],
+        "provenance": {
+          "source": "image_selection_pipeline",
+          "confidence": null,
+          "human_review_status": "unreviewed",
+          "reviewed_at": null,
+          "record_source": "backend/storage/feed/supplemental-assets.v1.json"
+        }
+      },
+      "dimensions": {
+        "status": "unknown",
+        "physical_m": null,
+        "model_unit": null
+      },
+      "media": {
+        "model_3d": "/dreamhome-api/storage/models/571838384d30fb25c1bca04e5eeba641.glb",
+        "thumbnail": "/dreamhome-api/storage/thumbs/selection_ast_9ed9391bccce.png"
+      },
+      "source": {
+        "source_type": "image_post_selection",
+        "image_post_id": "imgpost_ba7a0419c9ca155a",
+        "slide_index": 0
+      },
+      "appearance_count": 0,
+      "asset_quality_review": {
+        "scope": "asset_quality_not_tag_accuracy",
+        "verdict": "unreviewed",
+        "reason": "",
+        "reviewed_at": null
+      }
+    },
+    {
+      "asset_id": "ast_9f0025ead5db",
+      "name": "高柜",
+      "status": "ready",
+      "classification": {
+        "category": "柜子",
+        "subcategory": "高柜"
+      },
+      "tags": {
+        "raw": {
+          "colors": [
+            "浅棕色"
+          ],
+          "materials": [
+            "实木"
+          ],
+          "styles": [
+            "现代"
+          ],
+          "features": [
+            "多层抽屉",
+            "竖向排列",
+            "细长条形把手"
+          ]
+        },
+        "normalized": {
+          "colors": [
+            "浅棕色"
+          ],
+          "materials": [
+            "实木"
+          ],
+          "styles": [
+            "现代"
+          ],
+          "features": [
+            "多层抽屉",
+            "竖向排列",
+            "细长条形把手"
+          ]
+        },
+        "completeness": "complete",
+        "missing_fields": [],
+        "provenance": {
+          "source": "image_selection_pipeline",
+          "confidence": null,
+          "human_review_status": "unreviewed",
+          "reviewed_at": null,
+          "record_source": "backend/storage/feed/supplemental-assets.v1.json"
+        }
+      },
+      "dimensions": {
+        "status": "unknown",
+        "physical_m": null,
+        "model_unit": null
+      },
+      "media": {
+        "model_3d": "/dreamhome-api/storage/models/7574f1b5214c4ee8d42cb8d76119d53e.glb",
+        "thumbnail": "/dreamhome-api/storage/thumbs/selection_ast_9f0025ead5db.png"
+      },
+      "source": {
+        "source_type": "image_post_selection",
+        "image_post_id": "imgpost_ba7a0419c9ca155a",
+        "slide_index": 0
+      },
+      "appearance_count": 0,
+      "asset_quality_review": {
+        "scope": "asset_quality_not_tag_accuracy",
+        "verdict": "unreviewed",
+        "reason": "",
+        "reviewed_at": null
       }
     },
     {
@@ -10893,7 +11583,11 @@
       },
       "dimensions": {
         "status": "unknown",
-        "physical_m": null,
+        "physical_m": {
+          "width": null,
+          "height": null,
+          "depth": null
+        },
         "model_unit": null
       },
       "media": {
@@ -11070,6 +11764,79 @@
         "verdict": "fail",
         "reason": "吊灯 没有灯主体啊",
         "reviewed_at": "2026-07-22T10:08:38.846Z"
+      }
+    },
+    {
+      "asset_id": "ast_c3e4fcb6e414",
+      "name": "盆栽",
+      "status": "ready",
+      "classification": {
+        "category": "绿植",
+        "subcategory": "盆栽"
+      },
+      "tags": {
+        "raw": {
+          "colors": [
+            "棕色",
+            "绿色"
+          ],
+          "materials": [
+            "植物"
+          ],
+          "styles": [
+            "复古"
+          ],
+          "features": [
+            "多枝干",
+            "带果实"
+          ]
+        },
+        "normalized": {
+          "colors": [
+            "棕色",
+            "绿色"
+          ],
+          "materials": [
+            "植物"
+          ],
+          "styles": [
+            "复古"
+          ],
+          "features": [
+            "多枝干",
+            "带果实"
+          ]
+        },
+        "completeness": "complete",
+        "missing_fields": [],
+        "provenance": {
+          "source": "image_selection_pipeline",
+          "confidence": null,
+          "human_review_status": "unreviewed",
+          "reviewed_at": null,
+          "record_source": "backend/storage/feed/supplemental-assets.v1.json"
+        }
+      },
+      "dimensions": {
+        "status": "unknown",
+        "physical_m": null,
+        "model_unit": null
+      },
+      "media": {
+        "model_3d": "/dreamhome-api/storage/models/227f02741f62ab4bf6fb7442f04bd4ad.glb",
+        "thumbnail": "/dreamhome-api/storage/thumbs/selection_ast_c3e4fcb6e414.png"
+      },
+      "source": {
+        "source_type": "image_post_selection",
+        "image_post_id": "imgpost_ba7a0419c9ca155a",
+        "slide_index": 0
+      },
+      "appearance_count": 0,
+      "asset_quality_review": {
+        "scope": "asset_quality_not_tag_accuracy",
+        "verdict": "unreviewed",
+        "reason": "",
+        "reviewed_at": null
       }
     },
     {
@@ -11771,7 +12538,11 @@
       },
       "dimensions": {
         "status": "unknown",
-        "physical_m": null,
+        "physical_m": {
+          "width": null,
+          "height": null,
+          "depth": null
+        },
         "model_unit": null
       },
       "media": {
@@ -13002,6 +13773,83 @@
       }
     },
     {
+      "asset_id": "ast_e6f9788d4101",
+      "name": "茶几",
+      "status": "ready",
+      "classification": {
+        "category": "桌子",
+        "subcategory": "茶几"
+      },
+      "tags": {
+        "raw": {
+          "colors": [
+            "深棕色"
+          ],
+          "materials": [
+            "实木"
+          ],
+          "styles": [
+            "现代"
+          ],
+          "features": [
+            "方形桌面",
+            "方框式框架",
+            "直角边框",
+            "四条直腿",
+            "底部横梁支撑"
+          ]
+        },
+        "normalized": {
+          "colors": [
+            "深棕色"
+          ],
+          "materials": [
+            "实木"
+          ],
+          "styles": [
+            "现代"
+          ],
+          "features": [
+            "方形桌面",
+            "方框式框架",
+            "直角边框",
+            "四条直腿",
+            "底部横梁支撑"
+          ]
+        },
+        "completeness": "complete",
+        "missing_fields": [],
+        "provenance": {
+          "source": "image_selection_pipeline",
+          "confidence": null,
+          "human_review_status": "unreviewed",
+          "reviewed_at": null,
+          "record_source": "backend/storage/feed/supplemental-assets.v1.json"
+        }
+      },
+      "dimensions": {
+        "status": "unknown",
+        "physical_m": null,
+        "model_unit": null
+      },
+      "media": {
+        "model_3d": "/dreamhome-api/storage/models/4621f946cf40921fed08ee94dbb626c8.glb",
+        "thumbnail": "/dreamhome-api/storage/thumbs/selection_ast_e6f9788d4101.png"
+      },
+      "source": {
+        "source_type": "image_post_selection",
+        "image_post_id": "imgpost_3a2749b355d9697c",
+        "slide_index": 0
+      },
+      "appearance_count": 0,
+      "asset_quality_review": {
+        "scope": "asset_quality_not_tag_accuracy",
+        "verdict": "unreviewed",
+        "reason": "",
+        "reviewed_at": null
+      }
+    },
+    {
       "asset_id": "ast_e7dddcb4b337",
       "name": "衣柜",
       "status": "ready",
@@ -13164,6 +14012,83 @@
       }
     },
     {
+      "asset_id": "ast_e894f0881c57",
+      "name": "壁灯",
+      "status": "ready",
+      "classification": {
+        "category": "灯具",
+        "subcategory": "壁灯"
+      },
+      "tags": {
+        "raw": {
+          "colors": [
+            "白色",
+            "棕色"
+          ],
+          "materials": [
+            "金属",
+            "陶瓷"
+          ],
+          "styles": [
+            "复古"
+          ],
+          "features": [
+            "双头灯罩",
+            "弯曲灯臂",
+            "墙面安装"
+          ]
+        },
+        "normalized": {
+          "colors": [
+            "白色",
+            "棕色"
+          ],
+          "materials": [
+            "金属",
+            "陶瓷"
+          ],
+          "styles": [
+            "复古"
+          ],
+          "features": [
+            "双头灯罩",
+            "弯曲灯臂",
+            "墙面安装"
+          ]
+        },
+        "completeness": "complete",
+        "missing_fields": [],
+        "provenance": {
+          "source": "image_selection_pipeline",
+          "confidence": null,
+          "human_review_status": "unreviewed",
+          "reviewed_at": null,
+          "record_source": "backend/storage/feed/supplemental-assets.v1.json"
+        }
+      },
+      "dimensions": {
+        "status": "unknown",
+        "physical_m": null,
+        "model_unit": null
+      },
+      "media": {
+        "model_3d": "/dreamhome-api/storage/models/6a8520d12877c0f63002c9261fcd0c41.glb",
+        "thumbnail": "/dreamhome-api/storage/thumbs/selection_ast_e894f0881c57.png"
+      },
+      "source": {
+        "source_type": "image_post_selection",
+        "image_post_id": "imgpost_ba7a0419c9ca155a",
+        "slide_index": 0
+      },
+      "appearance_count": 0,
+      "asset_quality_review": {
+        "scope": "asset_quality_not_tag_accuracy",
+        "verdict": "unreviewed",
+        "reason": "",
+        "reviewed_at": null
+      }
+    },
+    {
       "asset_id": "ast_e8e7b81eba5c",
       "name": "三人沙发",
       "status": "ready",
@@ -13291,7 +14216,11 @@
       },
       "dimensions": {
         "status": "unknown",
-        "physical_m": null,
+        "physical_m": {
+          "width": null,
+          "height": null,
+          "depth": null
+        },
         "model_unit": null
       },
       "media": {
@@ -14208,6 +15137,87 @@
       }
     },
     {
+      "asset_id": "ast_f6439396bdae",
+      "name": "挂画",
+      "status": "ready",
+      "classification": {
+        "category": "装饰",
+        "subcategory": "挂画"
+      },
+      "tags": {
+        "raw": {
+          "colors": [
+            "蓝色",
+            "橙色",
+            "白色",
+            "黄色"
+          ],
+          "materials": [
+            "布面",
+            "画框"
+          ],
+          "styles": [
+            "抽象艺术"
+          ],
+          "features": [
+            "竖向长方形",
+            "有画框",
+            "色彩丰富"
+          ]
+        },
+        "normalized": {
+          "colors": [
+            "蓝色",
+            "橙色",
+            "白色",
+            "黄色"
+          ],
+          "materials": [
+            "布面",
+            "画框"
+          ],
+          "styles": [
+            "抽象艺术"
+          ],
+          "features": [
+            "竖向长方形",
+            "有画框",
+            "色彩丰富"
+          ]
+        },
+        "completeness": "complete",
+        "missing_fields": [],
+        "provenance": {
+          "source": "image_selection_pipeline",
+          "confidence": null,
+          "human_review_status": "unreviewed",
+          "reviewed_at": null,
+          "record_source": "backend/storage/feed/supplemental-assets.v1.json"
+        }
+      },
+      "dimensions": {
+        "status": "unknown",
+        "physical_m": null,
+        "model_unit": null
+      },
+      "media": {
+        "model_3d": "/dreamhome-api/storage/models/061ed8065f04b75bf08e2fd4383c73b7.glb",
+        "thumbnail": "/dreamhome-api/storage/thumbs/selection_ast_f6439396bdae.png"
+      },
+      "source": {
+        "source_type": "image_post_selection",
+        "image_post_id": "imgpost_ba7a0419c9ca155a",
+        "slide_index": 0
+      },
+      "appearance_count": 0,
+      "asset_quality_review": {
+        "scope": "asset_quality_not_tag_accuracy",
+        "verdict": "unreviewed",
+        "reason": "",
+        "reviewed_at": null
+      }
+    },
+    {
       "asset_id": "ast_f7189ad0a9a2",
       "name": "电视柜",
       "status": "ready",
@@ -14258,7 +15268,11 @@
       },
       "dimensions": {
         "status": "unknown",
-        "physical_m": null,
+        "physical_m": {
+          "width": null,
+          "height": null,
+          "depth": null
+        },
         "model_unit": null
       },
       "media": {
@@ -14567,7 +15581,11 @@
       },
       "dimensions": {
         "status": "unknown",
-        "physical_m": null,
+        "physical_m": {
+          "width": null,
+          "height": null,
+          "depth": null
+        },
         "model_unit": null
       },
       "media": {
