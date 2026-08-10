@@ -175,9 +175,22 @@ async def _run(job: Job, image_path: str, texture: bool) -> None:
             source_path = image_path
             if job.kind == "photo":
                 job.status = JobStatus.running
-                job.stage = "prepare_photo"
+                job.stage = "identify_labels" if job.require_labels else "prepare_photo"
                 job.progress = max(job.progress, 5)
                 _persist(job)
+                if job.require_labels:
+                    from .services.labels import extract_labels
+
+                    job.labels = await extract_labels(
+                        image_path,
+                        category_hint=job.category or "",
+                        strict=True,
+                    )
+                    job.style = next(iter(job.labels.get("styles") or []), None)
+                    job.material = next(iter(job.labels.get("materials") or []), None)
+                    job.stage = "prepare_photo"
+                    job.progress = max(job.progress, 8)
+                    _persist(job)
                 from .services.prepare import prepare_photo
 
                 source_path, _preparation = await prepare_photo(

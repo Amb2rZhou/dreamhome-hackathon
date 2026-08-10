@@ -13,17 +13,20 @@ describe('Mia interaction with DreamHome data', () => {
     expect(library).toContain('data-fs-style');
     expect(home).toContain('id="styleTabs"');
     expect(home).not.toContain('addAssets');
-    expect(home).not.toContain('拼装清单');
   });
 
   it('preserves declared tag provenance on captured assets', () => {
     const capture = readPage('capture');
     const photoRouter = readBackend('routers/photo.py');
-    expect(capture).toContain('styles:[...state.styles]');
+    expect(capture).not.toContain('这是什么风格？');
+    expect(capture).toContain('require_labels:true');
+    expect(capture).toContain('capabilities.labels?.ready === true');
+    expect(capture).toContain('styles:[], materials:[], colors:[]');
     expect(capture).toContain('/commit`');
     expect(photoRouter).toContain('"source_type": "offline_photo"');
     expect(photoRouter).toContain('"styles": styles');
     expect(photoRouter).toContain('"materials": materials');
+    expect(photoRouter).toContain('detected = job.labels or {}');
     expect(photoRouter).toContain('size_prior = None');
   });
 

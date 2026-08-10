@@ -75,7 +75,9 @@ export const dreamHomeApiBase = apiBase;
 const backendMediaUrl = (value = '') => {
   if (!value) return '';
   if (/^https?:\/\//.test(value)) return value;
-  return `${apiBase()}${value.startsWith('/') ? value : `/${value}`}`;
+  if (value.startsWith('/dreamhome-api/')) return `${apiBase()}${value.slice('/dreamhome-api'.length)}`;
+  if (value.startsWith('/storage/')) return `${apiBase()}${value}`;
+  return value;
 };
 const lightenHex = (hex, amount = .3) => {
   const n = parseInt(hex.slice(1), 16);
@@ -115,9 +117,9 @@ export const adaptBackendAsset = (rec) => {
     sizePriorVersion: known ? 1 : 2,
     legacySizePrior: known ? null : { w: categoryDims[0], h: categoryDims[1], d: categoryDims[2] },
     mount: 'floor',
-    sizeStatus: rec.size_status, thumbnail: rec.thumbnail, videoId: rec.video_id,
-    modelUrl: rec.model_url || null, frameUrl: rec.frame_url || null,
-    videoUrl: rec.video_url || null, videoSec: rec.representative_sec ?? null,
+    sizeStatus: rec.size_status, thumbnail: backendMediaUrl(rec.thumbnail), videoId: rec.video_id,
+    modelUrl: backendMediaUrl(rec.model_url) || null, frameUrl: backendMediaUrl(rec.frame_url) || null,
+    videoUrl: backendMediaUrl(rec.video_url) || null, videoSec: rec.representative_sec ?? null,
     colors: rec.labels?.colors ?? [], materials: rec.labels?.materials ?? [], styles: rec.labels?.styles ?? [],
     tagProvenance: rec.tag_provenance ?? null,
   };

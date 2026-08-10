@@ -50,6 +50,42 @@ class PhotoAssetCommitTests(unittest.TestCase):
                 db._conn.close()
             db._conn = previous_connection
 
+    def test_commit_uses_backend_detected_tags_when_user_does_not_choose_style(self):
+        previous_connection = db._conn
+        db._conn = None
+        try:
+            with tempfile.TemporaryDirectory() as tmp, patch.object(
+                db.settings, "DB_PATH", os.path.join(tmp, "photo-detected.sqlite")
+            ), patch.object(photo, "get_job", return_value=Job(
+                job_id="photo-job-detected",
+                kind="photo",
+                status=JobStatus.succeeded,
+                model_url="/storage/results/photo-job-detected.glb",
+                labels={
+                    "styles": ["北欧"],
+                    "materials": ["实木"],
+                    "colors": ["深棕色"],
+                    "features": ["开放格"],
+                    "size_class": "中",
+                    "mount": "floor",
+                },
+            )):
+                request = photo.PhotoAssetCommitRequest(
+                    user_id="local-profile-owner",
+                    name="拍摄·边柜",
+                    category="柜子",
+                )
+                result = asyncio.run(photo.commit_photo_asset("photo-job-detected", request))
+                labels = db.get_asset(result.asset_id)["labels"]
+                self.assertEqual(labels["styles"], ["北欧"])
+                self.assertEqual(labels["materials"], ["实木"])
+                self.assertEqual(labels["colors"], ["深棕色"])
+                self.assertEqual(labels["features"], ["开放格"])
+        finally:
+            if db._conn is not None:
+                db._conn.close()
+            db._conn = previous_connection
+
 
 if __name__ == "__main__":
     unittest.main()

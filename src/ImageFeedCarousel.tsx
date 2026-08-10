@@ -147,19 +147,6 @@ export function ImageFeedCarousel({
             })}
           </div>
         )}
-        {imageReady && onPause && (
-          <button
-            type="button"
-            className="image-feed-lasso-trigger"
-            aria-label="圈选图片里的家具"
-            onClick={(event) => {
-              event.stopPropagation()
-              onPause()
-            }}
-          >
-            <span aria-hidden="true">◌</span>圈选家具
-          </button>
-        )}
       </div>
       <div className="image-feed-dots" aria-label="图片页码">
         {images.map((image, dotIndex) => (

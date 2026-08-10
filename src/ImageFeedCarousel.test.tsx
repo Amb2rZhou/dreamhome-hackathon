@@ -117,7 +117,8 @@ describe('ImageFeedCarousel', () => {
 
     fireEvent.load(image)
     expect(screen.getByRole('button', { name: '查看休闲椅3D' })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: '圈选图片里的家具' }))
+    expect(screen.queryByRole('button', { name: '圈选图片里的家具' })).not.toBeInTheDocument()
+    fireEvent.click(image)
     expect(onPause).toHaveBeenCalledOnce()
   })
 })

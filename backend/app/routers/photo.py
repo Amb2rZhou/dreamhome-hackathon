@@ -70,9 +70,10 @@ async def commit_photo_asset(job_id: str, req: PhotoAssetCommitRequest):
     if job.status != JobStatus.succeeded or not job.model_url:
         raise HTTPException(status_code=409, detail="photo generation is not ready")
 
-    styles = list(dict.fromkeys(value.strip() for value in req.styles if value.strip()))[:2]
-    materials = list(dict.fromkeys(value.strip() for value in req.materials if value.strip()))
-    colors = list(dict.fromkeys(value.strip() for value in req.colors if value.strip()))
+    detected = job.labels or {}
+    styles = list(dict.fromkeys(value.strip() for value in (req.styles or detected.get("styles", [])) if value.strip()))[:2]
+    materials = list(dict.fromkeys(value.strip() for value in (req.materials or detected.get("materials", [])) if value.strip()))
+    colors = list(dict.fromkeys(value.strip() for value in (req.colors or detected.get("colors", [])) if value.strip()))
     if not styles:
         raise HTTPException(status_code=422, detail="at least one style tag is required")
     if not materials:
@@ -88,9 +89,9 @@ async def commit_photo_asset(job_id: str, req: PhotoAssetCommitRequest):
             "styles": styles,
             "materials": materials,
             "colors": colors,
-            "features": [],
-            "size_class": "" if size_prior is None else "已估算",
-            "mount": "floor",
+            "features": detected.get("features", []),
+            "size_class": detected.get("size_class", "") if size_prior is None else "已估算",
+            "mount": detected.get("mount", "floor"),
         },
         size_prior=size_prior,
         glb_url=job.model_url,

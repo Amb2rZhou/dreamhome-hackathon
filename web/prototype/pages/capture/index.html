@@ -153,10 +153,6 @@
                 <span class="category-label">这是什么家具？</span>
                 <div class="category-tabs" id="categoryTabs" role="group" aria-label="家具品类"></div>
               </div>
-              <div class="category-row">
-                <span class="category-label">这是什么风格？</span>
-                <div class="category-tabs" id="styleTabs" role="group" aria-label="家具风格"></div>
-              </div>
               <button class="primary-button" id="generateBtn" type="button" disabled>生成</button>
             </section>
 
@@ -210,7 +206,6 @@
     const cameraInput = document.getElementById('cameraInput');
     const galleryInput = document.getElementById('galleryInput');
     const categoryTabs = document.getElementById('categoryTabs');
-    const styleTabs = document.getElementById('styleTabs');
     const generateBtn = document.getElementById('generateBtn');
     const toast = document.getElementById('toast');
     const serviceStatus = document.getElementById('serviceStatus');
@@ -230,7 +225,7 @@
     const DEFAULT_CATEGORY = FURNITURE_CATEGORIES[0].id; // 默认选中首个真实分类（列表首位、可见即高亮）
     const ACTIVE_JOB_KEY = 'dreamhome.capture.active-job.v1';
     const ACTIVE_JOB_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
-    const state = { categories:[], styles:[], photoUrl:null, photoFile:null, hasPhoto:false, backendReady:false, photoColor:'#9a8163', pollTimer:null, pollFailures:0, job:null, generatedAssets:[] };
+    const state = { categories:[], photoUrl:null, photoFile:null, hasPhoto:false, backendReady:false, photoColor:'#9a8163', pollTimer:null, pollFailures:0, job:null, generatedAssets:[] };
     const dracoLoader = new DRACOLoader().setDecoderPath('/vendor/three-addons/libs/draco/');
     const generatedModelLoader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).setDRACOLoader(dracoLoader);
     const resultPreviewDisposers = [];
@@ -259,7 +254,6 @@
         status:job.status || previous?.status || 'queued',
         progress:Number(job.progress || previous?.progress || 0),
         categoryId:state.categories[0] || previous?.categoryId || DEFAULT_CATEGORY,
-        styles:state.styles.length ? [...state.styles] : (previous?.styles || []),
         photoColor:state.photoColor || previous?.photoColor || '#9a8163',
         submittedAt:previous?.jobId === job.job_id ? previous.submittedAt : Date.now(),
         updatedAt:Date.now(),
@@ -332,7 +326,7 @@
     function resetPhoto() {
       if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
       state.photoUrl = null; state.photoFile = null; state.hasPhoto = false;
-      state.categories = []; state.styles = []; syncCategoryTabs(); syncStyleTabs();
+      state.categories = []; syncCategoryTabs();
       photoPreview.hidden = true; photoPreview.removeAttribute('src');
       videoPreview.hidden = true; videoPreview.pause(); videoPreview.removeAttribute('src');
       photoEmpty.classList.remove('is-hidden');
@@ -357,30 +351,10 @@
       syncGenerateBtn();
     });
 
-    // 风格控件（多选，上限 2，可全不选）。放在生成前：用户线下看着实物拍，
-    // 那一刻对风格最有判断；生成完再问反而要重新回忆。
-    // 选项＝平台资产实际在用的词表，不开放自由输入：词表归 Amber，自由输入会把标签体系打散。
-    const STYLE_VOCAB = () => {
-      const count = new Map();
-      getAssets('furniture').forEach((asset) => (asset.styles || []).forEach((style) => count.set(style, (count.get(style) || 0) + 1)));
-      return [...count.entries()].sort((a, b) => b[1] - a[1]).map(([name]) => name);
-    };
-    // 生成可用条件集中在一处：有照片 + 后端就绪 + 选了品类 + 选了风格。
-    // 品类与风格都必填且无默认值——默认选中会让用户直接略过，错的标签比没标签更难查。
+    // 用户只选家具品类；风格、材质和颜色由后端结构化标签服务识别。
     function syncGenerateBtn() {
-      generateBtn.disabled = !state.hasPhoto || !state.backendReady || !state.categories.length || !state.styles.length;
+      generateBtn.disabled = !state.hasPhoto || !state.backendReady || !state.categories.length;
     }
-    styleTabs.innerHTML = STYLE_VOCAB().map((style) => `<button class="category-tab" data-style="${style}" type="button" aria-pressed="false">${style}</button>`).join('');
-    function syncStyleTabs() {
-      styleTabs.querySelectorAll('[data-style]').forEach((el) => el.setAttribute('aria-pressed', String(state.styles.includes(el.dataset.style))));
-    }
-    styleTabs.addEventListener('click', (event) => {
-      const tab = event.target.closest('[data-style]');
-      if (!tab) return;
-      state.styles = [tab.dataset.style]; // 单选：选中即替换，与品类同构
-      syncStyleTabs();
-      syncGenerateBtn();
-    });
 
     function setPhase(name) { Object.entries(phases).forEach(([key, el]) => el.classList.toggle('is-active', key === name)); }
 
@@ -403,7 +377,8 @@
           && capabilities.completion?.ready === true
           && capabilities.single_object_check?.ready === true
           && capabilities.identity_check?.ready === true
-          && capabilities.material_postprocess?.ready === true;
+          && capabilities.material_postprocess?.ready === true
+          && capabilities.labels?.ready === true;
         if (!ready) throw new Error('pipeline not ready');
         state.backendReady = true;
         serviceStatus.dataset.state = 'ready';
@@ -422,7 +397,7 @@
       const form = new FormData();
       form.append('file', state.photoFile, state.photoFile.name || 'photo.jpg');
       form.append('texture', 'true');
-      form.append('meta', JSON.stringify({ category:categoryLabel(state.categories[0]) }));
+      form.append('meta', JSON.stringify({ category:categoryLabel(state.categories[0]), require_labels:true }));
       const response = await fetch(`${API_BASE}/api/photo-to-3d`, { method:'POST', body:form });
       if (!response.ok) {
         const detail = await response.json().catch(() => null);
@@ -584,9 +559,7 @@
             user_id:getDreamHomeUserId(),
             name:`拍摄·${categoryLabel(categoryId)}`,
             category:categoryId,
-            styles:[...state.styles],
-            materials:job.material ? [job.material] : ['待确认材质'],
-            colors:[],
+            styles:[], materials:[], colors:[],
           }),
         });
         if (!commitResponse.ok) {
@@ -615,10 +588,6 @@
       if (FURNITURE_CATEGORIES.some((item) => item.id === active.categoryId)) {
         state.categories = [active.categoryId];
         syncCategoryTabs();
-      }
-      if (Array.isArray(active.styles) && active.styles.length) {
-        state.styles = active.styles.slice(0, 1);
-        syncStyleTabs();
       }
       state.photoColor = active.photoColor || state.photoColor;
       state.job = { job_id:active.jobId, status:active.status, progress:active.progress };
@@ -663,7 +632,7 @@
     });
 
     // 前进按钮只负责跳转（已入库）；查看我的收藏直达首个组件所属细分标签全部页
-    generateBtn.addEventListener('click', () => { if (state.hasPhoto && state.categories.length && state.styles.length) startGeneration(); });
+    generateBtn.addEventListener('click', () => { if (state.hasPhoto && state.categories.length) startGeneration(); });
     genBack.addEventListener('click', () => { clearTimeout(state.pollTimer); setPhase('capture'); });
     genRetry.addEventListener('click', () => {
       if (state.photoFile) {
