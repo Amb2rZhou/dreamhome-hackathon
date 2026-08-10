@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from .config import settings
 from .store import GenerationQueueFull, restore_persisted_jobs
 from .services.selection_production import production_readiness
-from .routers import video, photo, sketch, voice, jobs, assets, videos, library, tracks_fix, annotations, agent, scenes, review_qc, frame_assets, libraries, home_projects, image_posts
+from .routers import video, photo, sketch, voice, jobs, assets, videos, library, tracks_fix, annotations, agent, scenes, review_qc, frame_assets, libraries, home_projects, image_posts, recommendations
 
 app = FastAPI(
     title="DreamHome API",
@@ -53,6 +53,7 @@ app.include_router(frame_assets.router)
 app.include_router(libraries.router)
 app.include_router(home_projects.router)
 app.include_router(image_posts.router)
+app.include_router(recommendations.router)
 
 
 @app.exception_handler(GenerationQueueFull)

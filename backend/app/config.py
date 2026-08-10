@@ -56,6 +56,14 @@ class Settings:
     ANTHROPIC_API_KEY: str = _env("ANTHROPIC_API_KEY")
     ANTHROPIC_MODEL: str = _env("ANTHROPIC_MODEL", "claude-opus-4-8")
 
+    # 搭配推荐只用 LLM 解析自然语言意图；商品始终从 canonical 目录召回。
+    DEEPSEEK_API_KEY: str = _env("DEEPSEEK_API_KEY")
+    DEEPSEEK_BASE_URL: str = _env("DEEPSEEK_BASE_URL", "https://api.deepseek.com").rstrip("/")
+    DEEPSEEK_MODEL: str = _env("DEEPSEEK_MODEL", "deepseek-chat")
+    RECOMMENDER_LLM_ENABLED: bool = _env("RECOMMENDER_LLM_ENABLED", "false").lower() in {
+        "1", "true", "yes", "on"
+    }
+
     # ---- 资产库(asset-library-plan.md) ----
     # SQLite 库文件；默认放 storage 同级
     DB_PATH: str = _env("DB_PATH", os.path.join(os.path.dirname(__file__), "..", "storage", "dreamhome.db"))

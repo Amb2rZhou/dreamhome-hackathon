@@ -165,6 +165,271 @@
     .dh-root.is-real-scene .asset-preview img { position:absolute; z-index:1; inset:3px; width:calc(100% - 6px); height:calc(100% - 6px); object-fit:contain; }
     .dh-root.is-real-scene .asset-option b { margin-top:3px; font-size:7.5px; }
     .dh-root.is-real-scene .asset-option span { display:none; }
+    /* 包工球 AI 搭配助手：页面级常驻入口、Feed 同款气泡与对话抽屉。 */
+    .match-assistant-launcher { position:absolute; z-index:54; right:9px; bottom:72px; width:80px; height:80px; overflow:visible; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; cursor:pointer; transition:transform .2s ease,opacity .2s ease; }
+    .dh-root.is-editor .match-assistant-launcher { bottom:132px; }
+    .match-assistant-launcher:active { transform:scale(.94); }
+    .match-assistant-idle { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+    .match-assistant-cutout-canvas { width:100%; height:100%; display:block; object-fit:contain; pointer-events:none; }
+    .match-assistant-launcher .match-assistant-cutout-canvas { transform:none; filter:drop-shadow(0 8px 12px rgba(63,86,64,.22)); }
+    .match-assistant-nudge { position:absolute; z-index:53; right:72px; bottom:104px; width:218px; box-sizing:border-box; padding:13px 15px 12px; border:0; border-radius:18px 18px 5px 18px; background:rgba(248,249,251,.96); color:#25282d; box-shadow:0 9px 24px rgba(25,31,37,.16); backdrop-filter:blur(18px) saturate(1.08); opacity:0; transform:translateY(6px) scale(.97); pointer-events:none; transition:opacity .22s ease,transform .22s ease; text-align:left; }
+    .dh-root.is-editor .match-assistant-nudge { bottom:165px; }
+    .match-assistant-nudge::before { content:''; position:absolute; right:-18px; bottom:0; width:30px; height:22px; background:inherit; clip-path:polygon(0 0,100% 100%,0 100%); }
+    .match-assistant-nudge.is-visible { opacity:1; transform:none; pointer-events:auto; }
+    .match-assistant-nudge b { display:block; margin-bottom:4px; font-size:11px; line-height:1.38; }
+    .match-assistant-nudge span { display:block; color:#3f4349; font-size:9px; font-weight:650; line-height:1.5; }
+    .match-assistant-nudge::after { content:'去逛逛'; position:relative; z-index:1; float:right; display:inline-block; margin-top:8px; padding:5px 12px; border-radius:999px; background:#404248; color:#fff; font-size:8px; font-weight:850; }
+    .match-assistant-nudge[data-nudge-kind="active"]::after { content:'查看推荐'; }
+    .match-assistant-panel { position:absolute; z-index:61; left:12px; right:12px; bottom:70px; max-height:78%; display:flex; flex-direction:column; overflow:hidden; border:0; border-radius:34px; background:radial-gradient(circle at 12% 0,rgba(255,255,255,.98),transparent 34%),linear-gradient(158deg,rgba(255,253,246,.99),rgba(249,238,213,.98)); box-shadow:0 18px 48px rgba(62,43,22,.25); backdrop-filter:blur(22px) saturate(1.12); opacity:0; transform:translateY(calc(100% + 24px)); pointer-events:none; transition:transform .3s cubic-bezier(.32,.72,0,1),opacity .2s ease; }
+    .dh-root.is-editor .match-assistant-panel { bottom:8px; }
+    .match-assistant-panel.is-open { opacity:1; transform:none; pointer-events:auto; }
+    .match-assistant-handle { flex:none; width:40px; height:4px; margin:11px auto 2px; border-radius:999px; background:rgba(127,94,47,.23); }
+    .match-assistant-head { position:relative; flex:none; min-height:105px; display:flex; align-items:center; gap:7px; padding:0 16px 4px; }
+    .match-assistant-avatar { width:112px; height:112px; flex:none; display:grid; place-items:end center; overflow:visible; background:transparent; }
+    .match-assistant-avatar img { width:118px; height:118px; display:block; object-fit:contain; transform:translate(-3px,7px); filter:drop-shadow(0 9px 12px rgba(120,78,21,.16)); }
+    .match-assistant-title { min-width:0; flex:1; }
+    .match-assistant-title b { display:block; color:#3f3020; font-size:18px; letter-spacing:-.3px; }
+    .match-assistant-title span { display:block; margin-top:6px; color:#806b4d; font-size:9px; font-weight:700; line-height:1.45; }
+    .match-assistant-close { width:34px; height:34px; flex:none; border:0; border-radius:50%; background:rgba(238,222,194,.72); color:#725b38; font-size:17px; cursor:pointer; }
+    .match-assistant-list { min-height:0; display:flex; flex-direction:column; }
+    .match-assistant-list[hidden],.match-detail-view[hidden] { display:none; }
+    .match-assistant-profile { flex:none; margin:0 16px 13px; padding:12px 15px; border:0; border-radius:18px; background:rgba(255,255,255,.82); color:#594225; box-shadow:0 7px 20px rgba(109,76,31,.06); font-size:10px; font-weight:750; line-height:1.5; }
+    .match-assistant-intents { flex:none; display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 16px 13px; }
+    .match-assistant-panel:not(.is-cold-start) .match-assistant-intents,.match-assistant-panel:not(.is-cold-start) .match-assistant-profile { display:none; }
+    .match-assistant-panel.has-results .match-assistant-list { overflow:hidden; }
+    .match-assistant-conversation { display:flex; flex-direction:column; gap:8px; padding:0 16px 10px; }
+    .match-assistant-conversation[hidden] { display:none; }
+    .match-chat-bubble { max-width:82%; box-sizing:border-box; padding:10px 12px; border-radius:16px; font-size:9.5px; font-weight:700; line-height:1.5; }
+    .match-chat-bubble--user { align-self:flex-end; border-bottom-right-radius:5px; background:linear-gradient(135deg,#8469f8,#6550dd); color:#fff; box-shadow:0 6px 14px rgba(101,80,221,.18); }
+    .match-chat-bubble--assistant { position:relative; align-self:flex-start; margin-left:25px; border-bottom-left-radius:5px; background:rgba(255,255,255,.92); color:#493620; box-shadow:0 6px 16px rgba(87,61,27,.08); }
+    .match-chat-bubble--assistant::before { content:''; position:absolute; left:-26px; top:5px; width:20px; height:20px; border-radius:50%; background:#fff url('../../assets/mascot/mascot-ui.png') center/contain no-repeat; box-shadow:0 3px 8px rgba(91,61,22,.12); }
+    .match-assistant-intents::-webkit-scrollbar { display:none; }
+    .match-intent { position:relative; min-height:104px; padding:15px 11px 12px 58px; overflow:hidden; border:1px solid rgba(220,164,72,.24); border-radius:19px; background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(255,242,216,.88)); color:#493620; box-shadow:0 7px 20px rgba(108,77,35,.06); font:inherit; text-align:left; cursor:pointer; }
+    .match-intent::before { content:'⌂'; position:absolute; left:10px; top:13px; z-index:2; width:29px; height:29px; display:grid; place-items:center; border-radius:50%; background:linear-gradient(145deg,#ffd37b,#eda940); color:#fff; font-size:20px; font-weight:900; box-shadow:0 5px 12px rgba(221,153,45,.22); }
+    .match-intent[data-match-intent="replace"] { background:linear-gradient(145deg,rgba(255,255,255,.9),rgba(244,245,225,.83)); }
+    .match-intent[data-match-intent="replace"]::before { content:'♧'; background:linear-gradient(145deg,#abb77b,#778649); box-shadow:0 5px 12px rgba(110,126,65,.2); font-size:17px; }
+    .match-intent-visual { position:absolute; left:-13px; bottom:-11px; width:78px; height:68px; display:block; pointer-events:none; }
+    .match-intent-visual .asset-silhouette { position:absolute; inset:7px; opacity:.2; transform:scale(.8); }
+    .match-intent-visual img { position:relative; z-index:1; width:100%; height:100%; display:block; object-fit:contain; filter:drop-shadow(0 7px 8px rgba(82,56,23,.16)); }
+    .match-intent::after { content:'›'; position:absolute; right:11px; top:16px; color:#c28a30; font-size:18px; line-height:1; }
+    .match-intent[data-match-intent="replace"]::after { color:#738044; }
+    .match-intent b { display:block; font-size:11.5px; line-height:1.2; }
+    .match-intent span { display:block; margin-top:6px; color:#806b4d; font-size:7.5px; font-weight:700; line-height:1.45; }
+    .match-intent i { display:inline-block; margin-top:7px; padding:3px 6px; border-radius:999px; background:#fae8c5; color:#976b25; font-size:6.5px; font-style:normal; font-weight:800; }
+    .match-intent[data-match-intent="replace"] i { background:#e9ecd8; color:#6d743d; }
+    .match-intent.is-active { border-color:#d9a441; box-shadow:inset 0 0 0 1px rgba(215,162,63,.25),0 8px 24px rgba(176,119,34,.1); }
+    .match-assistant-query { flex:none; display:flex; gap:7px; margin-top:2px; padding:10px 16px 15px; border-top:1px solid rgba(180,139,74,.1); background:rgba(255,252,244,.66); }
+    .match-assistant-query input { min-width:0; flex:1; height:42px; box-sizing:border-box; padding:0 14px; border:0; border-radius:16px; background:rgba(241,241,240,.96); color:#4a3824; box-shadow:inset 0 0 0 1px rgba(170,129,63,.1); font-size:9.5px; outline:none; }
+    .match-assistant-query input:focus { border-color:rgba(206,149,45,.6); box-shadow:0 0 0 3px rgba(223,172,75,.12); }
+    .match-assistant-query button { width:42px; border:0; border-radius:50%; background:linear-gradient(145deg,#b69267,#96724b); color:#fff; font-size:0; font-weight:850; cursor:pointer; }
+    .match-assistant-query button::before { content:'↑'; font-size:17px; }
+    .match-assistant-context { flex:none; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:1px 18px 9px; color:#8b7555; font-size:8px; font-weight:750; }
+    .match-assistant-context[hidden],.match-assistant-cards[hidden] { display:none !important; }
+    .match-assistant-context b { color:#4b371f; font-size:10px; }
+    .match-assistant-cards { min-height:0; display:flex; flex-direction:row; gap:9px; overflow-x:auto; padding:0 17px 10px; scroll-snap-type:x proximity; scrollbar-width:none; }
+    .match-assistant-cards::-webkit-scrollbar { display:none; }
+    .match-card { position:relative; flex:0 0 145px; scroll-snap-align:start; display:block; box-sizing:border-box; padding:7px; border:1px solid rgba(184,142,74,.16); border-radius:19px; background:rgba(255,255,255,.9); box-shadow:0 6px 18px rgba(111,77,31,.08); color:inherit; font:inherit; text-align:left; }
+    .match-card:active { transform:scale(.98); }
+    .match-card-media { position:relative; width:100%; height:91px; display:block; overflow:hidden; padding:0; border:0; border-radius:14px; background:linear-gradient(150deg,#fbf7ed,#ecdfca); cursor:pointer; }
+    .match-card-media img { position:relative; z-index:2; width:100%; height:100%; display:block; object-fit:contain; }
+    .match-card-copy { position:relative; min-width:0; padding:7px 2px 2px; }
+    .match-card-copy b { display:block; overflow:hidden; color:#42301d; font-size:10px; text-overflow:ellipsis; white-space:nowrap; }
+    .match-card-copy p { display:-webkit-box; overflow:hidden; min-height:23px; margin:4px 0 6px; color:#7c6748; font-size:7.2px; font-weight:650; line-height:1.5; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+    .match-card-tags { display:flex; gap:3px; overflow:hidden; }
+    .match-card-tags i { flex:none; padding:2px 5px; border-radius:999px; background:#f5e6c7; color:#8b672b; font-size:6.5px; font-style:normal; font-weight:800; }
+    .match-card-actions { display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:7px; }
+    .match-card-action { height:30px; padding:0 7px; border:1px solid rgba(139,103,43,.2); border-radius:10px; background:#fffaf0; color:#6f542d; font:inherit; font-size:7.5px; font-weight:850; cursor:pointer; }
+    .match-card-action.is-favorite { background:#4a3824; color:#fff; }
+    .match-card-action--trial { border-color:#d79d35; background:#e0aa49; color:#fff; }
+    .match-empty { margin:12px 4px 20px; color:#8b7555; font-size:9px; text-align:center; }
+    .match-detail-view { min-height:0; display:flex; flex-direction:column; padding:0 13px 13px; }
+    .match-detail-head { display:grid; grid-template-columns:32px minmax(0,1fr) 32px; align-items:center; gap:8px; margin-bottom:8px; }
+    .match-detail-head b { overflow:hidden; color:#4a3824; font-size:11px; text-align:center; text-overflow:ellipsis; white-space:nowrap; }
+    .match-detail-icon { width:32px; height:32px; display:grid; place-items:center; padding:0; border:0; border-radius:50%; background:rgba(238,222,194,.68); color:#725b38; font-size:15px; cursor:pointer; }
+    .match-detail-icon.is-favorite { background:#4a3824; color:#fff; }
+    .match-detail-stage { position:relative; flex:none; height:188px; overflow:hidden; border:1px solid rgba(185,142,70,.16); border-radius:19px; background:radial-gradient(circle at 50% 35%,#fffdf7 0,#f5ead4 72%,#ead8b8 100%); }
+    .match-detail-stage canvas { width:100%; height:100%; display:block; touch-action:none; }
+    .match-detail-hint { position:absolute; left:10px; bottom:9px; padding:4px 7px; border-radius:999px; background:rgba(255,252,244,.78); color:#8a704c; font-size:6.5px; font-weight:800; backdrop-filter:blur(10px); }
+    .match-detail-copy { padding:10px 3px 7px; }
+    .match-detail-copy p { margin:0 0 7px; color:#705a3b; font-size:8px; font-weight:700; line-height:1.48; }
+    .match-detail-tags { display:flex; gap:4px; overflow:hidden; }
+    .match-detail-tags i { flex:none; padding:3px 6px; border-radius:999px; background:#f3e3c2; color:#89652a; font-size:6.5px; font-style:normal; font-weight:850; }
+    .match-detail-actions { display:flex; align-items:center; justify-content:flex-end; gap:7px; margin-top:auto; }
+    .match-detail-place { min-width:64px; height:34px; padding:0 16px; border:0; border-radius:999px; background:#4a3824; color:#fff; font:inherit; font-size:9px; font-weight:850; cursor:pointer; }
+    .dh-root.is-assistant-open .asset-drawer { display:none !important; }
+    .dh-root.is-assistant-open .match-assistant-launcher,.dh-root.is-assistant-open .match-assistant-nudge { opacity:0; pointer-events:none; }
+    .dh-root.is-scene-loading .match-assistant-launcher,.dh-root.is-scene-loading .match-assistant-nudge,.dh-root.is-scene-loading .match-assistant-panel,
+    .dh-root.is-generating .match-assistant-launcher,.dh-root.is-generating .match-assistant-nudge,.dh-root.is-generating .match-assistant-panel,
+    .dh-root.is-case .match-assistant-launcher,.dh-root.is-case .match-assistant-nudge,.dh-root.is-case .match-assistant-panel { display:none !important; }
+    /* AI 助手 UI v2：桌宠、全宽抽屉、真实商品卡与灵感库同款详情。 */
+    .match-assistant-launcher { touch-action:none; user-select:none; will-change:left,top,transform; }
+    .match-assistant-launcher.is-dragging { cursor:grabbing; transition:none; transform:scale(1.04); }
+    .match-assistant-nudge.is-tail-left { border-radius:18px 18px 18px 5px; }
+    .match-assistant-nudge.is-tail-left::before { left:-18px; right:auto; transform:scaleX(-1); }
+    .match-assistant-panel,.dh-root.is-editor .match-assistant-panel { left:0; right:0; bottom:0; width:100%; height:66%; max-height:66%; box-sizing:border-box; overflow:visible; border-radius:34px 34px 0 0; background:linear-gradient(165deg,#fffdf8 0%,#fbefd9 100%); box-shadow:0 -14px 38px rgba(64,43,20,.2); }
+    .match-assistant-panel.has-results,.match-assistant-panel.needs-selection { height:82%; max-height:82%; }
+    .match-assistant-handle { position:relative; z-index:5; margin:11px auto 0; }
+    .match-assistant-head { min-height:105px; padding:0 19px 2px 42%; align-items:center; }
+    .match-assistant-avatar { position:absolute; left:17px; bottom:0; width:43%; height:148px; place-items:end center; pointer-events:none; }
+    .match-assistant-avatar img { width:148px; height:148px; transform:translateY(9px); }
+    .match-assistant-title b { font-size:18px; line-height:1.15; }
+    .match-assistant-title span { max-width:142px; margin-top:8px; font-size:9px; line-height:1.5; }
+    .match-assistant-close { position:absolute; right:19px; top:28px; }
+    .match-assistant-list { min-height:0; height:calc(100% - 120px); overflow:hidden; border-radius:0; }
+    .match-assistant-panel.has-results .match-assistant-head,.match-assistant-panel.needs-selection .match-assistant-head { display:none; }
+    .match-assistant-panel.has-results .match-assistant-handle,.match-assistant-panel.needs-selection .match-assistant-handle { margin-bottom:9px; }
+    .match-assistant-panel.has-results .match-assistant-list,.match-assistant-panel.needs-selection .match-assistant-list { height:calc(100% - 24px); }
+    .match-assistant-intents { height:calc(100% - 66px); box-sizing:border-box; gap:10px; padding:8px 14px 12px; }
+    .match-intent { display:grid; grid-template-columns:46% 54%; min-height:0; height:100%; padding:0; border:1px solid rgba(205,153,65,.25); border-radius:21px; background:linear-gradient(145deg,#fffaf0,#fcedcf); box-shadow:0 8px 20px rgba(112,76,28,.08); }
+    .match-intent[data-match-intent="replace"] { background:linear-gradient(145deg,#fffdf8,#eff0df); }
+    .match-intent::before,.match-intent::after { display:none; }
+    .match-intent-visual { position:relative; left:auto; bottom:auto; width:100%; height:100%; align-self:stretch; overflow:hidden; }
+    .match-intent-visual img { width:118%; height:100%; object-fit:contain; object-position:center bottom; transform:translateX(-5%); filter:drop-shadow(0 8px 9px rgba(82,56,23,.15)); }
+    .match-intent-copy { position:relative; display:flex !important; flex-direction:column; align-items:flex-start; justify-content:center; min-width:0; box-sizing:border-box; margin:0 !important; padding:12px 9px 10px 4px; color:#493620 !important; }
+    .match-intent-icon { width:31px; height:31px; display:grid !important; place-items:center; margin:0 0 8px !important; border-radius:50%; background:#ffc45c; color:#fff !important; }
+    .match-intent[data-match-intent="replace"] .match-intent-icon { background:#94a55b; }
+    .match-intent-icon svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .match-intent-copy b { font-size:13px; line-height:1.15; }
+    .match-intent-copy > span:not(.match-intent-icon) { margin-top:6px; font-size:8px; line-height:1.45; }
+    .match-intent-copy i { margin-top:9px; font-size:6.5px; }
+    .match-assistant-query { height:66px; box-sizing:border-box; margin:0; padding:9px 14px 13px; background:#fffaf0; }
+    .match-assistant-query input { height:44px; font-size:10px; }
+    .match-assistant-query button { width:44px; flex:none; }
+    .match-assistant-conversation { flex:none; max-height:124px; overflow-y:auto; padding:0 16px 10px; }
+    .match-assistant-context { padding:1px 17px 9px; }
+    .match-assistant-cards { flex:1; align-items:stretch; gap:10px; padding:0 13px 10px; }
+    .match-card { flex:0 0 calc(50% - 5px); min-height:0; display:flex; flex-direction:column; padding:0; overflow:hidden; border:0; border-radius:20px; background:#fff; box-shadow:0 7px 19px rgba(91,62,28,.09); }
+    .match-card-media { flex:none; height:116px; border-radius:18px 18px 0 0; background:#f2e7d2; }
+    .match-card-media img { width:100%; height:100%; object-fit:contain; }
+    .match-card-copy { flex:1; display:flex; flex-direction:column; padding:9px 9px 10px; }
+    .match-card-copy b { font-size:10px; }
+    .match-card-copy p { min-height:31px; margin:5px 0 7px; }
+    .match-card-tags { min-height:16px; }
+    .match-card-actions { margin-top:auto; gap:6px; }
+    .match-card-action { height:34px; border-radius:11px; font-size:8px; }
+    .match-card-action.is-favorite { border-color:#503820; background:#503820; }
+    .match-card-action--trial { border-color:#edae36; background:#edae36; }
+    .match-card-action:disabled { opacity:.58; }
+    .match-assistant-panel.is-detail { left:22px; right:22px; bottom:50%; width:auto; height:auto; max-height:76%; padding:14px; border-radius:24px; background:#fff; transform:translateY(50%); box-shadow:0 18px 44px rgba(29,36,31,.32); }
+    .match-assistant-panel.is-detail.is-open { transform:translateY(50%); }
+    .match-assistant-panel.is-detail .match-assistant-handle,.match-assistant-panel.is-detail .match-assistant-head,.match-assistant-panel.is-detail .match-assistant-list { display:none; }
+    .match-detail-view { position:relative; min-height:0; padding:0; text-align:center; }
+    .match-detail-close { position:absolute; z-index:3; right:0; top:0; width:30px; height:30px; border:0; border-radius:50%; background:rgba(240,240,238,.92); color:#806b4d; font-size:15px; cursor:pointer; }
+    .match-detail-stage { width:100%; height:auto; aspect-ratio:1; border:0; border-radius:17px; background:radial-gradient(circle at 42% 34%,#fbfdf9,#f4ecdb 70%,#dbe6d4); }
+    .match-detail-photo { position:absolute; z-index:1; inset:0; width:100%; height:100%; display:block; object-fit:contain; }
+    .match-detail-stage canvas { position:relative; z-index:2; opacity:0; transition:opacity .18s ease; }
+    .match-detail-hint { z-index:3; left:50%; transform:translateX(-50%); bottom:9px; white-space:nowrap; background:rgba(29,36,31,.55); color:#fff; }
+    .match-detail-copy { padding:12px 3px 8px; }
+    .match-detail-copy b { display:block; color:#3e3022; font-size:17px; }
+    .match-detail-copy p { margin:7px 0 8px; font-size:8px; }
+    .match-detail-tags { justify-content:center; }
+    .match-detail-actions { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:4px; }
+    .match-detail-favorite,.match-detail-place { min-width:0; height:36px; padding:0 12px; border-radius:999px; font:inherit; font-size:9px; font-weight:850; cursor:pointer; }
+    .match-detail-favorite { border:1px solid rgba(80,56,32,.22); background:#fffaf0; color:#503820; }
+    .match-detail-favorite.is-favorite { border-color:#503820; background:#503820; color:#fff; }
+    .match-detail-place { border:0; background:#edae36; color:#fff; }
+    /* AI 助手 UI v3：紧凑结果、对话内嵌详情与 3D 场景专属入口。 */
+    .dh-root:not(.is-editor) .match-assistant-launcher,.dh-root:not(.is-editor) .match-assistant-nudge,.dh-root:not(.is-editor) .match-assistant-scrim,.dh-root:not(.is-editor) .match-assistant-panel { display:none!important; }
+    .match-assistant-scrim { position:absolute; z-index:59; inset:0; display:none; padding:0; border:0; background:rgba(35,28,19,.08); }
+    .dh-root.is-assistant-open .match-assistant-scrim { display:block; }
+    .match-assistant-panel,.dh-root.is-editor .match-assistant-panel,.match-assistant-panel.has-results,.match-assistant-panel.needs-selection { height:auto; max-height:75%; }
+    .match-assistant-panel.is-cold-start { max-height:72%; }
+    .match-assistant-list { height:auto; max-height:calc(75vh - 24px); }
+    .match-assistant-intents { flex:none; height:154px; padding:6px 14px 8px; }
+    .match-intent { height:auto; min-height:138px; }
+    .match-intent-visual img { width:108%; }
+    .match-popular { flex:none; align-self:center; min-width:116px; height:31px; margin:0 auto 6px; padding:0 15px; border:0; border-radius:999px; background:linear-gradient(135deg,#5b4228,#8a663d); color:#fff; font:inherit; font-size:8px; font-weight:850; box-shadow:0 6px 14px rgba(79,55,29,.18); cursor:pointer; }
+    .match-assistant-panel:not(.is-cold-start) .match-popular { display:none; }
+    .match-assistant-query { height:58px; padding:7px 14px 9px; }
+    .match-assistant-query input { height:40px; }
+    .match-assistant-query button { width:40px; height:40px; }
+    .match-assistant-conversation { max-height:112px; padding:0 15px 8px; }
+    .match-chat-bubble { width:max-content; max-width:76%; padding:8px 10px; }
+    .match-chat-bubble--assistant { margin-left:35px; }
+    .match-chat-bubble--assistant::before { left:-36px; top:0; width:29px; height:29px; box-sizing:border-box; border:3px solid #ece7ff; background-color:#f5f2ff; }
+    .match-chat-bubble--assistant::after { content:''; position:absolute; left:-5px; bottom:0; width:10px; height:10px; background:inherit; clip-path:polygon(0 100%,100% 0,100% 100%); }
+    .match-chat-bubble--user::after { content:''; position:absolute; right:-5px; bottom:0; width:10px; height:10px; background:#6550dd; clip-path:polygon(0 0,100% 100%,0 100%); }
+    .match-chat-bubble--user { position:relative; }
+    .match-assistant-context { min-height:26px; padding:0 15px 6px; }
+    .match-assistant-context b { font-size:10px; }
+    .match-assistant-context b i { color:#e1a53a; font-style:normal; }
+    .match-assistant-context button { padding:4px 0; border:0; background:transparent; color:#7f6949; font:inherit; font-size:8px; font-weight:750; cursor:pointer; }
+    .match-assistant-cards { flex:none; align-items:flex-start; min-height:0; padding:0 12px 8px; }
+    .match-card { flex-basis:calc(50% - 5px); height:auto; padding:6px; overflow:visible; border:1px solid rgba(255,255,255,.76); border-radius:18px; background:rgba(255,255,255,.58); box-shadow:0 8px 22px rgba(91,62,28,.1),inset 0 1px rgba(255,255,255,.75); backdrop-filter:blur(14px) saturate(1.08); }
+    .match-card-media { height:82px; border-radius:13px; background:#fff; box-shadow:inset 0 0 0 1px rgba(119,87,50,.05); }
+    .match-card-copy { flex:none; padding:6px 2px 1px; }
+    .match-card-copy p { min-height:0; margin:3px 0 4px; -webkit-line-clamp:1; }
+    .match-card-tags { min-height:0; margin-top:0; }
+    .match-card-actions { margin-top:6px; }
+    .match-card-action { height:28px; padding:0 5px; font-size:7px; }
+    .match-card-action svg { width:12px; height:12px; margin-right:3px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linejoin:round; vertical-align:-2px; }
+    .match-assistant-nudge { width:max-content!important; min-width:0; max-width:205px; padding:10px 12px; }
+    .match-assistant-nudge::after { display:none; }
+    .match-assistant-nudge::before { right:-7px; bottom:9px; width:14px; height:14px; clip-path:polygon(0 0,100% 100%,0 100%); }
+    .match-assistant-nudge.is-tail-left::before { left:-7px; right:auto; }
+    .match-assistant-panel.is-detail,.match-assistant-panel.is-detail.is-open { left:0; right:0; bottom:0; width:100%; height:auto; max-height:75%; padding:0; border-radius:34px 34px 0 0; background:linear-gradient(165deg,#fffdf8,#fbefd9); transform:none!important; }
+    .match-assistant-panel.is-detail .match-assistant-list { display:flex; }
+    .match-assistant-panel.is-detail .match-assistant-conversation { display:flex; }
+    .match-assistant-panel.is-detail .match-assistant-context,.match-assistant-panel.is-detail .match-assistant-cards,.match-assistant-panel.is-detail .match-assistant-query { display:none!important; }
+    .match-detail-view { flex:none; margin:0 14px 12px; padding:8px; border-radius:19px; background:rgba(255,255,255,.72); box-shadow:0 7px 20px rgba(91,62,28,.08); }
+    .match-detail-stage { width:42%; max-width:138px; margin:0 auto; }
+    .match-detail-close { right:4px; top:4px; }
+    .match-detail-copy { padding:7px 3px 5px; }
+    .match-detail-copy b { font-size:13px; }
+    .match-detail-copy p { margin:4px 0 5px; }
+    .match-detail-actions { max-width:230px; margin:5px auto 0; }
+    /* AI 助手 UI v4：冷启动即推荐、主题色对话、居中详情与选中家具语义提示。 */
+    .match-assistant-panel.is-cold-start { height:56%; max-height:56%; }
+    .match-assistant-panel.is-cold-start .match-assistant-list { max-height:calc(56vh - 108px); overflow-y:auto; scrollbar-width:thin; scrollbar-color:rgba(166,111,37,.34) transparent; }
+    .match-assistant-panel.is-cold-start .match-assistant-list::-webkit-scrollbar { width:3px; }
+    .match-assistant-panel.is-cold-start .match-assistant-list::-webkit-scrollbar-track { background:transparent; }
+    .match-assistant-panel.is-cold-start .match-assistant-list::-webkit-scrollbar-thumb { border-radius:999px; background:rgba(166,111,37,.3); }
+    .match-assistant-head { padding-left:45%; }
+    .match-assistant-head::after { content:''; position:absolute; z-index:0; left:-8px; bottom:-8px; width:59%; height:52px; border-radius:50% 48% 44% 18%; background:linear-gradient(180deg,rgba(168,108,32,.42) 0%,rgba(214,159,71,.25) 42%,rgba(246,225,186,.09) 76%,transparent 100%); filter:blur(.2px); pointer-events:none; }
+    .match-assistant-avatar { z-index:2; left:-20px; width:50%; height:158px; }
+    .match-assistant-avatar img { width:166px; height:166px; transform:translate(-4px,10px); }
+    .match-assistant-title,.match-assistant-close { position:relative; z-index:2; }
+    .match-assistant-panel.is-cold-start .match-assistant-close { display:none; }
+    .match-assistant-intents { height:118px; gap:8px; padding:8px 12px 6px; }
+    .match-intent { position:relative; display:block; min-height:104px; overflow:hidden; text-align:left; background:linear-gradient(145deg,#fffdf9 0%,#fff8ea 66%,#ffe9bd 100%); }
+    .match-intent[data-match-intent="replace"] { background:linear-gradient(145deg,#fffdf9 0%,#fbfbf2 66%,#e6e8c9 100%); }
+    .match-intent::after { content:''; display:block; position:absolute; right:-22px; bottom:-26px; width:82px; height:82px; border-radius:48% 52% 0 50%; background:rgba(255,206,111,.25); }
+    .match-intent[data-match-intent="replace"]::after { background:rgba(155,166,95,.18); }
+    .match-intent-visual { position:absolute; z-index:1; left:-4px; bottom:-1px; width:49%; height:78%; }
+    .match-intent-visual img { width:112%; height:100%; object-position:center bottom; transform:none; }
+    .match-intent-copy { position:absolute; z-index:2; left:45%; right:5px; top:7px; bottom:6px; display:flex!important; padding:0!important; justify-content:center; }
+    .match-intent-icon { width:25px; height:25px; margin-bottom:4px!important; }
+    .match-intent-icon svg { width:15px; height:15px; }
+    .match-intent-copy b { font-size:11px; }
+    .match-intent-copy > span:not(.match-intent-icon) { margin-top:5px; font-size:7.5px; line-height:1.42; }
+    .match-intent-copy i { display:none; }
+    .match-popular { display:none!important; }
+    .match-assistant-panel.is-cold-start .match-assistant-context { margin-top:0; }
+    .match-assistant-panel.is-cold-start .match-card-media { height:68px; }
+    .match-assistant-panel.is-cold-start .match-card-copy p { display:none; }
+    /* 入口视觉直接使用用户确认的原图，按钮仅保留左右两块点击热区。 */
+    .match-assistant-panel.is-cold-start .match-intent { border:1px solid rgba(201,148,62,.42); background-color:#fffaf1; background-image:url('./assistant-entry-reference.png'); background-repeat:no-repeat; background-size:230.5% auto; box-shadow:0 6px 16px rgba(94,61,25,.09); transition:transform .16s ease,filter .16s ease,box-shadow .16s ease,border-color .16s ease; }
+    .match-assistant-panel.is-cold-start .match-intent[data-match-intent="complete"] { background-position:9% 49%; }
+    .match-assistant-panel.is-cold-start .match-intent[data-match-intent="replace"] { background-position:90.5% 49%; }
+    .match-assistant-panel.is-cold-start .match-intent::after { display:none; }
+    .match-assistant-panel.is-cold-start .match-intent > * { visibility:hidden; }
+    .match-assistant-panel.is-cold-start .match-intent.is-active { box-shadow:0 0 0 1.5px rgba(215,153,49,.82),0 7px 18px rgba(94,61,25,.12); }
+    .match-assistant-panel.is-cold-start .match-intent:active { transform:scale(.975); filter:brightness(.94) saturate(1.08); border-color:rgba(177,111,25,.72); box-shadow:inset 0 0 0 2px rgba(154,94,19,.13),0 3px 9px rgba(94,61,25,.13); }
+    .match-chat-bubble--user { background:linear-gradient(135deg,#d9982d,#b77723); color:#fffdf8; box-shadow:0 6px 15px rgba(159,101,26,.18); }
+    .match-chat-bubble--user::after { background:#b77723; }
+    .match-chat-bubble--assistant { background:linear-gradient(145deg,#fffaf0,#f6e7cb); color:#4b361f; border:1px solid rgba(196,139,53,.12); }
+    .match-chat-bubble--assistant::before { left:-40px; top:auto; bottom:-10px; width:34px; height:34px; border:1px solid #dca443; background-color:#fff6e4; box-shadow:0 4px 10px rgba(139,89,26,.18); }
+    .match-chat-bubble--assistant { margin-left:40px; }
+    .match-selected-context { align-self:flex-end; display:flex; align-items:center; gap:6px; max-width:76%; padding:7px 10px; border:1px solid rgba(194,133,43,.28); border-radius:13px; background:#fff7e7; color:#65491f; font-size:8px; font-weight:800; }
+    .match-selected-context svg { width:18px; height:18px; flex:none; padding:4px; border-radius:50%; background:#e6a43b; color:white; fill:none; stroke:currentColor; stroke-width:1.8; }
+    .match-assistant-panel.is-detail .match-assistant-list { position:relative; display:flex; overflow:hidden; }
+    .match-assistant-panel.is-detail .match-assistant-list > :not(.match-detail-view) { filter:blur(4px); opacity:.58; pointer-events:none; }
+    .match-assistant-panel.is-detail .match-assistant-context,.match-assistant-panel.is-detail .match-assistant-cards,.match-assistant-panel.is-detail .match-assistant-query { display:flex!important; }
+    .match-assistant-panel.is-detail .match-assistant-context { display:flex!important; }
+    .match-detail-view { position:absolute; z-index:8; left:50%; top:50%; width:68%; max-width:270px; box-sizing:border-box; margin:0; padding:9px; transform:translate(-50%,-50%); border:1px solid rgba(255,255,255,.86); border-radius:22px; background:rgba(255,253,248,.94); box-shadow:0 18px 44px rgba(66,44,20,.28),0 0 0 999px rgba(53,40,24,.16); backdrop-filter:blur(18px) saturate(1.08); }
+    .match-detail-stage { width:66%; max-width:148px; }
+    .match-detail-actions { width:max-content; max-width:100%; grid-template-columns:auto auto; gap:7px; }
+    .match-detail-favorite,.match-detail-place { width:auto; min-width:72px; height:31px; padding:0 13px; font-size:8px; }
     .decor-option { flex:0 0 66px; padding:0; border:0; background:transparent; color:var(--dh-fg-primary); text-align:left; cursor:pointer; }
     .decor-option.is-selected .decor-preview { box-shadow:inset 0 0 0 2px #fff,0 0 0 2px var(--dh-color-sage-600),var(--dh-shadow-soft); }
     .decor-preview { position:relative; height:43px; overflow:hidden; border:1px solid rgba(92,112,91,.16); border-radius:11px; background:var(--preview,#e8e6de); box-shadow:inset 0 -8px rgba(29,36,31,.06); }
@@ -305,11 +570,27 @@
             <div class="room-selector" id="roomSelector" aria-label="选择查看空间"></div>
             <div class="inspector" id="inspector"><div class="inspector-copy"><b id="inspectorTitle">胡桃木单椅</b><span id="inspectorCopy">已选中 · 可拖动摆放</span></div><div class="inspector-actions"><button class="mini-tool" id="rotateLeft" aria-label="向左旋转">↶</button><button class="mini-tool" id="rotateRight" aria-label="向右旋转">↷</button><button class="mini-tool" id="scaleDown" aria-label="缩小组件">－</button><button class="mini-tool" id="scaleUp" aria-label="放大组件">＋</button><button class="mini-tool" id="moveSelected" aria-label="移动组件">↔</button><button class="mini-tool is-danger" id="deleteSelected" aria-label="删除组件">×</button></div></div>
             <div class="placement-hint" id="placementHint"></div><div class="model-load-status" id="modelLoadStatus" role="status" aria-live="polite"></div>
-            <button class="ai-launcher" id="aiLauncher" type="button" aria-label="打开包工球推荐">✦</button>
-            <div class="trial-actions" id="trialActions" aria-label="试摆操作"><button id="trialUndo" type="button">撤销</button><button class="trial-keep" id="trialKeep" type="button">留下</button></div>
+            <button class="ai-launcher" id="aiLauncher" type="button" aria-label="旧版推荐入口" hidden>✦</button>
+            <div class="trial-actions" id="trialActions" aria-label="旧版试摆操作" hidden><button id="trialUndo" type="button">撤销</button><button class="trial-keep" id="trialKeep" type="button">留下</button></div>
             <section class="asset-drawer" id="assetDrawer" aria-label="装修与收藏组件抽屉"><button class="drawer-toggle" id="drawerToggle" aria-expanded="false" aria-label="展开装修抽屉">⌃</button><div class="drawer-summary"><b>装修</b><span id="drawerSummary">家具 · 地板 · 墙面 · 窗户</span></div><div class="drawer-content"><div class="drawer-modes" id="drawerModes" aria-label="装修类型"><button class="drawer-mode is-active" data-drawer-mode="furniture">家具</button><button class="drawer-mode" data-drawer-mode="floor">地板</button><button class="drawer-mode" data-drawer-mode="wall">墙面</button><button class="drawer-mode" data-drawer-mode="window">窗户</button></div><div class="category-tabs" id="categoryTabs" aria-label="资产品类"></div><div class="style-tabs" id="styleTabs" aria-label="按风格筛选"></div><div class="asset-rail" id="assetRail" aria-label="可用装修选项"></div></div></section>
           </section>
         </div>
+        <button class="match-assistant-launcher" id="matchAssistantLauncher" aria-label="打开包工球搭配助手"><video class="match-assistant-idle" src="../../../mascot-motion/idle.mp4" poster="../../../mascot-idle.png" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video></button>
+        <button class="match-assistant-nudge" id="matchAssistantNudge" aria-label="查看包工球的搭配建议"><b id="matchAssistantNudgeTitle">嗨，我是包工球！</b><span id="matchAssistantNudgeCopy">一起把路过的灵感，慢慢装进家里。</span></button>
+        <button class="match-assistant-scrim" id="matchAssistantScrim" aria-label="返回 3D 场景"></button>
+        <section class="match-assistant-panel is-cold-start" id="matchAssistantPanel" role="dialog" aria-modal="false" aria-labelledby="matchAssistantTitle" aria-hidden="true">
+          <div class="match-assistant-handle" aria-hidden="true"></div>
+          <header class="match-assistant-head"><span class="match-assistant-avatar"><img src="../../assets/mascot/mascot-assistant-wave.png" alt="" aria-hidden="true" /></span><div class="match-assistant-title"><b id="matchAssistantTitle">嗨，我是包工球</b><span>想怎么搭？我可以帮你推荐更合适的家具。</span></div><button class="match-assistant-close" id="matchAssistantClose" aria-label="关闭搭配助手">×</button></header>
+          <div class="match-assistant-list" id="matchAssistantListView">
+            <div class="match-assistant-intents" id="matchAssistantIntents" aria-label="选择搭配需求"><button class="match-intent is-active" data-match-intent="complete"><span class="match-intent-visual"><img id="matchIntentSpaceImage" alt="" aria-hidden="true" /></span><span class="match-intent-copy"><span class="match-intent-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 11.2 12 4l8.5 7.2v8.3h-5.2v-5.7H8.7v5.7H3.5z"/></svg></span><b>空间推荐</b><span>看整个空间，推荐同风格与互补家具</span><i>默认画面理解</i></span></button><button class="match-intent" data-match-intent="replace"><span class="match-intent-visual"><img id="matchIntentReplaceImage" alt="" aria-hidden="true" /></span><span class="match-intent-copy"><span class="match-intent-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 10V7.8a5 5 0 0 1 10 0V10M5 10h14a2 2 0 0 1 2 2v5H3v-5a2 2 0 0 1 2-2Zm0 7v3m14-3v3"/></svg></span><b>单品换搭</b><span>围绕这件家具，推荐更合适的同类</span><i>点选可选</i></span></button></div>
+            <button class="match-popular" id="matchAssistantPopular" type="button"><span aria-hidden="true">✦</span> 为我推荐</button>
+            <div class="match-assistant-conversation" id="matchAssistantConversation" aria-live="polite" hidden></div>
+            <section class="match-detail-view" id="matchDetailView" aria-label="家具 3D 详情" hidden></section>
+            <div class="match-assistant-context" id="matchAssistantContext"><b id="matchAssistantContextTitle">为你推荐 <i>✦</i></b><button id="matchAssistantRefresh" type="button" aria-label="换一批推荐">↻ 换一换</button></div>
+            <div class="match-assistant-cards" id="matchAssistantCards"></div>
+            <form class="match-assistant-query" id="matchAssistantQueryForm"><input id="matchAssistantQuery" name="bao-query" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false" data-1p-ignore placeholder="也可以直接告诉我你想怎么搭…" aria-label="告诉包工球你的搭配需求" /><button type="submit" aria-label="发送">发送</button></form>
+          </div>
+        </section>
         <nav class="dh-tabbar dh-tabbar--main" id="mainTabbar" aria-label="主功能导航"><a class="dh-tab" href="../capture/index.html" aria-label="拍一张"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8.7 4.6c-.6 0-1.15.32-1.44.84l-.7 1.24H4.6A2.6 2.6 0 0 0 2 9.32v8.28a2.6 2.6 0 0 0 2.6 2.6h14.8a2.6 2.6 0 0 0 2.6-2.6V9.32a2.6 2.6 0 0 0-2.6-2.6h-1.96l-.7-1.24a1.65 1.65 0 0 0-1.44-.84H8.7Zm3.3 5.1a3.55 3.55 0 1 0 0 7.1 3.55 3.55 0 0 0 0-7.1Z"/></svg></span></a><a class="dh-tab" href="../discover/index.html" aria-label="刷一刷"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M6.4 3.2h11.2A3.4 3.4 0 0 1 21 6.6v10.8a3.4 3.4 0 0 1-3.4 3.4H6.4A3.4 3.4 0 0 1 3 17.4V6.6a3.4 3.4 0 0 1 3.4-3.4Zm3.5 5.05c-.5-.3-1.14.06-1.14.65v6.3c0 .59.64.95 1.14.65l5.2-3.15c.48-.29.48-1.01 0-1.3l-5.2-3.15Z"/></svg></span></a><a class="dh-tab" href="../inspiration-library/index.html" aria-label="灵感库"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12 2.6a6.4 6.4 0 0 0-3.9 11.48c.46.36.74.9.82 1.48l.13.94h5.84l.13-.94c.08-.58.36-1.12.82-1.48A6.4 6.4 0 0 0 12 2.6Z"/><rect x="8.7" y="17.4" width="6.6" height="1.9" rx=".95"/><rect x="9.6" y="20" width="4.8" height="1.9" rx=".95"/></svg></span></a><a class="dh-tab" href="../my-favorites/index.html" aria-label="我的收藏"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7 3.6h10a2.2 2.2 0 0 1 2.2 2.2v13.9c0 .86-.94 1.38-1.66.92L12 17.2l-5.54 3.42c-.72.46-1.66-.06-1.66-.92V5.8A2.2 2.2 0 0 1 7 3.6Z"/></svg></span></a><a class="dh-tab dh-tab--active" href="./index.html" aria-label="我的家" aria-current="page"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10.7 3.3a2 2 0 0 1 2.6 0l6.8 5.86c.44.38.7.94.7 1.53v7.71a2 2 0 0 1-2 2h-2.8a1 1 0 0 1-1-1v-4.4a1 1 0 0 0-1-1h-2.4a1 1 0 0 0-1 1v4.4a1 1 0 0 1-1 1H6.2a2 2 0 0 1-2-2V10.7c0-.59.26-1.15.7-1.53L10.7 3.3Z"/></svg></span></a></nav>
         <div class="share-sheet" id="shareSheet" hidden>
           <div class="share-backdrop" data-share-close></div>
@@ -337,7 +618,7 @@
           </div>
         </div>
         <section class="asset-detail" id="assetDetail" hidden aria-label="家具详情"><article class="asset-detail-card" role="dialog" aria-modal="true" aria-labelledby="assetDetailName"><button class="asset-detail-close" id="assetDetailClose" aria-label="关闭">✕</button><div class="asset-detail-media" id="assetDetailMedia"></div><h2 id="assetDetailName"></h2><p id="assetDetailCopy"></p><div class="asset-detail-tags" id="assetDetailTags"></div><div class="asset-detail-actions"><button class="asset-detail-collect" id="assetDetailCollect" type="button">收藏</button><button class="asset-detail-try" id="assetDetailTry" type="button" hidden>试摆</button></div></article></section>
-        <section class="ai-panel" id="aiPanel" hidden aria-label="包工球推荐助手"><div class="ai-head"><b>包工球推荐</b><button class="ai-close" id="aiClose" aria-label="关闭">✕</button></div><div class="ai-entries"><button class="ai-entry" data-ai-fill="帮我推荐适合这个空间的家具"><img src="../../assets/scenes/templates/wide-living.png?v=3" alt=""><span>空间推荐</span></button><button class="ai-entry" data-ai-fill="帮我给选中的单品换个搭配"><img src="../../assets/scenes/templates/bay-bedroom.png?v=3" alt=""><span>单品换搭</span></button></div><div class="ai-chat" id="aiChat">告诉包工球你想找什么，推荐只会从真实家具库里挑选。</div><div class="recommend-grid" id="recommendGrid"></div><div class="ai-input-row"><input class="ai-input" id="aiInput" placeholder="例如：帮我推荐一把适合书房的白色现代办公椅" aria-label="推荐需求"><button class="ai-send" id="aiSend" aria-label="发送">➤</button></div><button class="ai-quick" id="aiQuick" type="button">帮我推荐一把适合书房的白色现代办公椅</button></section>
+      <section class="ai-panel" id="aiPanel" hidden aria-label="旧版包工球推荐助手"><div class="ai-head"><b>包工球推荐</b><button class="ai-close" id="aiClose" aria-label="关闭">✕</button></div><div class="ai-entries"><button class="ai-entry" data-ai-fill="帮我推荐适合这个空间的家具"><img src="../../assets/scenes/templates/wide-living.png?v=3" alt=""><span>空间推荐</span></button><button class="ai-entry" data-ai-fill="帮我给选中的单品换个搭配"><img src="../../assets/scenes/templates/bay-bedroom.png?v=3" alt=""><span>单品换搭</span></button></div><div class="ai-chat" id="aiChat">告诉包工球你想找什么，推荐只会从真实家具库里挑选。</div><div class="recommend-grid" id="recommendGrid"></div><div class="ai-input-row"><input class="ai-input" id="aiInput" placeholder="例如：帮我推荐一把适合书房的白色现代办公椅" aria-label="推荐需求"><button class="ai-send" id="aiSend" aria-label="发送">➤</button></div><button class="ai-quick" id="aiQuick" type="button">帮我推荐一把适合书房的白色现代办公椅</button></section>
         <div class="toast" id="toast" role="status"></div><div class="sr-only" aria-live="polite" id="liveRegion"></div><div class="dh-home-indicator" aria-hidden="true"></div>
       </div>
     </section>
@@ -363,7 +644,7 @@
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
     import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-    import { FURNITURE_CATEGORIES, getAsset, getAssets, getFavorites, setFavorites, addUserAsset, getDreamHomeUserId, isSupportedFloorplan } from '../shared/asset-library-data.js?v=20260722c';
+    import { FURNITURE_CATEGORIES, DEFAULT_FAVORITE_IDS, getAsset, getAssets, getFavorites, setFavorites, addUserAsset, getDreamHomeUserId, isSupportedFloorplan } from '../shared/asset-library-data.js?v=20260722c';
     import { RECOMMENDATION_THINKING_MESSAGES, buildRecommendationRequest, recommendFromCatalog, findCollectedHome, createCollectedHome } from '../shared/home-experience.js?v=20260810a';
     import { renderTemplatePreviews, disposeTemplatePreviews } from '../shared/template-preview-3d.js';
     import { DEFAULT_HOMES } from '../shared/default-homes.generated.js';
@@ -419,15 +700,48 @@
       {id:'plant-moss',name:'龟背竹绿植',category:'软装',sourceType:'photo',defaultScale:1,accent:'#779b72'},
       {id:'cabinet-sage',name:'鼠尾草边柜',category:'收纳',sourceType:'draw',defaultScale:1,accent:'#8da184'}
     ];
-    const state = { phase:'setup', project:null, selectedTemplateId:null, drawingFile:null, selectedRoomId:null, selectedPlacementId:null, activeAssetCategory:'全部', activeAssetStyle:'', styleRowOpen:false, drawerMode:'furniture', drawerExpanded:false, selectedFloorPreset:'warm-long-plank', selectedWallColor:'#f3ecdc', selectedWindowStyle:'dark-grid', interaction:{mode:'orbit', pendingAssetId:null, pointerDown:null}, job:null, dirty:false, caseMode:false, friendMode:false, ownReadOnly:false, collectedCopy:null, detailAssetId:null, trialPlacementId:null, recommendation:{status:'idle',displayedIds:new Set(),timer:null,index:0} };
+    const state = { phase:'setup', project:null, selectedTemplateId:null, drawingFile:null, selectedRoomId:null, selectedPlacementId:null, activeAssetCategory:'全部', activeAssetStyle:'', styleRowOpen:false, drawerMode:'furniture', drawerExpanded:false, selectedFloorPreset:'warm-long-plank', selectedWallColor:'#f3ecdc', selectedWindowStyle:'dark-grid', interaction:{mode:'orbit', pendingAssetId:null, pointerDown:null}, job:null, dirty:false, caseMode:false, friendMode:false, ownReadOnly:false, collectedCopy:null, detailAssetId:null, trialPlacementId:null, recommendation:{status:'idle',displayedIds:new Set(),timer:null,index:0}, assistantOpen:false, assistantIntent:'complete', assistantQuery:'', assistantTargetCategory:'', assistantDetailAssetId:'', assistantEntryKind:'passive', assistantHasAsked:false, assistantRecommendationOffset:0, assistantRemoteRecommendations:null, assistantSeenItemIds:[], assistantClarificationQuestion:'', assistantRecommendationLoading:false, assistantNudgeKind:'cold', assistantActiveCase:'', assistantColdShown:false, assistantPassiveIndex:0, assistantNudgeCount:0, assistantTrialAssetId:'', assistantTrialPlacementId:'', assistantTrialOriginalPlacementId:'' };
     const runtimeAssets = new Map();
-    const ui = Object.fromEntries(['videoSceneBox','videoSceneGrid','setupPhase','generationPhase','generationMascotStage','editorPhase','templateGrid','continueBox','homeGrid','confirmModal','drawingInput','uploadName','setupError','generateButton','customWidth','customDepth','customWindowEdge','customPlanButton','generationTitle','generationCopy','progressBar','backToSetup','retryButton','sceneHost','homeCompanion','editorHomeName','editorHomeMeta','editorBack','shareButton','shareSheet','daylightButton','realTimeControl','realTimeSlider','realTimeOutput','transformConfirm','transformDelete','transformHeight','heightUp','heightDown','caseCollectAll','caseCollectOne','caseLayoutActions','caseSaveLayout','caseApplyLayout','caseEditButton','roomSelector','inspector','inspectorTitle','inspectorCopy','placementHint','modelLoadStatus','assetDrawer','drawerToggle','drawerSummary','drawerModes','categoryTabs','styleTabs','assetRail','assetDetail','assetDetailClose','assetDetailMedia','assetDetailName','assetDetailCopy','assetDetailTags','assetDetailCollect','assetDetailTry','aiLauncher','aiPanel','aiClose','aiChat','recommendGrid','aiInput','aiSend','aiQuick','trialActions','trialUndo','trialKeep','toast','liveRegion','resetViewButton','rotateLeft','rotateRight','scaleDown','scaleUp','moveSelected','deleteSelected'].map((id) => [id, document.getElementById(id)]));
+    const ui = Object.fromEntries(['videoSceneBox','videoSceneGrid','setupPhase','generationPhase','generationMascotStage','editorPhase','templateGrid','continueBox','homeGrid','confirmModal','drawingInput','uploadName','setupError','generateButton','customWidth','customDepth','customWindowEdge','customPlanButton','generationTitle','generationCopy','progressBar','backToSetup','retryButton','sceneHost','homeCompanion','editorHomeName','editorHomeMeta','editorBack','shareButton','shareSheet','daylightButton','realTimeControl','realTimeSlider','realTimeOutput','transformConfirm','transformDelete','transformHeight','heightUp','heightDown','caseCollectAll','caseCollectOne','caseLayoutActions','caseSaveLayout','caseApplyLayout','caseEditButton','roomSelector','inspector','inspectorTitle','inspectorCopy','placementHint','modelLoadStatus','assetDrawer','drawerToggle','drawerSummary','drawerModes','categoryTabs','styleTabs','assetRail','assetDetail','assetDetailClose','assetDetailMedia','assetDetailName','assetDetailCopy','assetDetailTags','assetDetailCollect','assetDetailTry','aiLauncher','aiPanel','aiClose','aiChat','recommendGrid','aiInput','aiSend','aiQuick','trialActions','trialUndo','trialKeep','matchAssistantLauncher','matchAssistantNudge','matchAssistantNudgeTitle','matchAssistantNudgeCopy','matchAssistantScrim','matchAssistantPanel','matchAssistantClose','matchAssistantListView','matchAssistantIntents','matchAssistantPopular','matchAssistantConversation','matchAssistantQueryForm','matchAssistantQuery','matchAssistantContext','matchAssistantContextTitle','matchAssistantRefresh','matchAssistantCards','matchIntentSpaceImage','matchIntentReplaceImage','matchDetailView','toast','liveRegion','resetViewButton','rotateLeft','rotateRight','scaleDown','scaleUp','moveSelected','deleteSelected'].map((id) => [id, document.getElementById(id)]));
     const genVideo=document.getElementById('genVideo');
     const syncGenerationMascot=()=>ui.generationMascotStage.classList.toggle('is-video-ready',genVideo.readyState>=2);
     genVideo.addEventListener('loadeddata',syncGenerationMascot);
     genVideo.addEventListener('error',()=>ui.generationMascotStage.classList.remove('is-video-ready'));
     syncGenerationMascot();
-    let sceneRuntime = null, realSceneLighting = null, pollTimer = null, toastTimer = null, saveTimer = null;
+    function mountMascotVideoCutout(video) {
+      const canvas=document.createElement('canvas'),size=144,context=canvas.getContext('2d',{willReadFrequently:true});canvas.width=canvas.height=size;canvas.className='match-assistant-cutout-canvas';canvas.setAttribute('aria-hidden','true');video.insertAdjacentElement('afterend',canvas);
+      let started=false;const draw=()=>{
+        if(video.readyState>=2){
+          const sourceWidth=video.videoWidth||size,sourceHeight=video.videoHeight||size,scale=Math.min(size/sourceWidth,size/sourceHeight),drawWidth=sourceWidth*scale,drawHeight=sourceHeight*scale,drawX=(size-drawWidth)/2,drawY=(size-drawHeight)/2;
+          context.clearRect(0,0,size,size);context.drawImage(video,drawX,drawY,drawWidth,drawHeight);const frame=context.getImageData(0,0,size,size),data=frame.data,visited=new Uint8Array(size*size),queue=new Int32Array(size*size);let head=0,tail=0;
+          const dark=(index,limit=92)=>Math.max(data[index*4],data[index*4+1],data[index*4+2])<limit;
+          const seed=(index)=>{if(!visited[index]&&dark(index,72)){visited[index]=1;queue[tail++]=index;}};
+          for(let x=0;x<size;x+=1){seed(x);seed((size-1)*size+x);}for(let y=1;y<size-1;y+=1){seed(y*size);seed(y*size+size-1);}
+          while(head<tail){const index=queue[head++],x=index%size,y=(index/size)|0;data[index*4+3]=0;const neighbors=[index-1,index+1,index-size,index+size];for(const next of neighbors){if(next<0||next>=size*size||visited[next])continue;const nx=next%size,ny=(next/size)|0;if(Math.abs(nx-x)+Math.abs(ny-y)!==1)continue;if(dark(next)){visited[next]=1;queue[tail++]=next;}}}
+          for(let index=0;index<size*size;index+=1){if(visited[index]||!dark(index,132))continue;const x=index%size,y=(index/size)|0,edge=(x>0&&visited[index-1])||(x<size-1&&visited[index+1])||(y>0&&visited[index-size])||(y<size-1&&visited[index+size]);if(edge)data[index*4+3]=Math.min(data[index*4+3],72);}
+          context.putImageData(frame,0,0);canvas.dataset.cutoutReady='true';
+        }
+        if('requestVideoFrameCallback'in video)video.requestVideoFrameCallback(draw);else requestAnimationFrame(draw);
+      };
+      const start=()=>{if(started||video.readyState<2)return;started=true;draw();};video.defaultMuted=true;video.muted=true;video.addEventListener('loadeddata',start,{once:true});video.play().then(start).catch(()=>{});
+    }
+    document.querySelectorAll('.match-assistant-idle').forEach(mountMascotVideoCutout);
+    let mascotDrag=null,mascotSuppressClick=false;
+    function positionMatchAssistantNudge() {
+      if(!ui.matchAssistantLauncher||!ui.matchAssistantNudge)return;
+      const root=document.querySelector('.dh-root')?.getBoundingClientRect(),launcher=ui.matchAssistantLauncher.getBoundingClientRect();if(!root)return;
+      const width=Math.min(ui.matchAssistantNudge.getBoundingClientRect().width||180,root.width-24),leftSpace=launcher.left-root.left,placeLeft=leftSpace>width+16;
+      const left=placeLeft?launcher.left-root.left-width+7:launcher.right-root.left-7;
+      const top=Math.max(56,Math.min(root.height-130,launcher.top-root.top-22));
+      ui.matchAssistantNudge.style.left=`${Math.max(8,Math.min(root.width-width-8,left))}px`;ui.matchAssistantNudge.style.top=`${top}px`;ui.matchAssistantNudge.style.right='auto';ui.matchAssistantNudge.style.bottom='auto';
+      ui.matchAssistantNudge.classList.toggle('is-tail-left',!placeLeft);
+    }
+    ui.matchAssistantLauncher.addEventListener('pointerdown',(event)=>{if(event.button!==0)return;const root=document.querySelector('.dh-root')?.getBoundingClientRect(),box=ui.matchAssistantLauncher.getBoundingClientRect();if(!root)return;mascotDrag={pointerId:event.pointerId,root,startX:event.clientX,startY:event.clientY,offsetX:event.clientX-box.left,offsetY:event.clientY-box.top,moved:false};ui.matchAssistantLauncher.setPointerCapture(event.pointerId);ui.matchAssistantLauncher.classList.add('is-dragging');ui.matchAssistantNudge.classList.remove('is-visible');event.preventDefault();});
+    ui.matchAssistantLauncher.addEventListener('pointermove',(event)=>{if(!mascotDrag||mascotDrag.pointerId!==event.pointerId)return;const dx=event.clientX-mascotDrag.startX,dy=event.clientY-mascotDrag.startY;if(Math.hypot(dx,dy)>5)mascotDrag.moved=true;const left=Math.max(6,Math.min(mascotDrag.root.width-86,event.clientX-mascotDrag.root.left-mascotDrag.offsetX)),top=Math.max(50,Math.min(mascotDrag.root.height-88,event.clientY-mascotDrag.root.top-mascotDrag.offsetY));ui.matchAssistantLauncher.style.left=`${left}px`;ui.matchAssistantLauncher.style.top=`${top}px`;ui.matchAssistantLauncher.style.right='auto';ui.matchAssistantLauncher.style.bottom='auto';});
+    ui.matchAssistantLauncher.addEventListener('pointerup',(event)=>{if(!mascotDrag||mascotDrag.pointerId!==event.pointerId)return;mascotSuppressClick=mascotDrag.moved;mascotDrag=null;ui.matchAssistantLauncher.classList.remove('is-dragging');ui.matchAssistantLauncher.releasePointerCapture?.(event.pointerId);positionMatchAssistantNudge();});
+    ui.matchAssistantLauncher.addEventListener('pointercancel',()=>{mascotDrag=null;ui.matchAssistantLauncher.classList.remove('is-dragging');});
+    ui.matchAssistantLauncher.addEventListener('click',(event)=>{if(!mascotSuppressClick)return;mascotSuppressClick=false;event.preventDefault();event.stopImmediatePropagation();},{capture:true});
+    let sceneRuntime = null, matchDetailRuntime = null, realSceneLighting = null, pollTimer = null, toastTimer = null, saveTimer = null;
     const REAL_TIME_SEQUENCE=['morning','day','dusk','night'];
     const REAL_TIME_LABELS={morning:'早晨',day:'白天',dusk:'黄昏',night:'夜晚'};
     const REAL_TIME_VIEWS={morning:'../../assets/scenes/window-views/morning.webp',day:'../../assets/scenes/window-views/day.webp',dusk:'../../assets/scenes/window-views/dusk.webp',night:'../../assets/scenes/window-views/night.webp'};
@@ -450,11 +764,15 @@
     const sceneNameKey = (videoId) => `dreamhome_scene_name_${videoId}`;
     const sceneProjectKey = (videoId) => `dreamhome_video_project_${videoId}_v1`;
     const sceneBaselineKey = (videoId) => `dreamhome_video_baseline_${videoId}_v1`;
+    const DEMO_VIDEO_TEMPLATE_IDS = {'vid_40734d7f2e6c':'bay-bedroom','vid_91fe552c5f7d':'long-living'};
     const displaySceneName = (scene) => localStorage.getItem(sceneNameKey(scene.video_id))?.trim() || scene.title;
     const uid = (prefix) => `${prefix}-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)}`;
     const now = () => new Date().toISOString();
     const QUERY = new URLSearchParams(location.search);
-    const BACKEND = QUERY.get('apiBase')?.trim() || window.DREAMHOME_API_BASE_URL || 'http://127.0.0.1:8000';
+    const IS_FRIEND_SHARE_VISIT = QUERY.get('source') === 'friend-share' && QUERY.get('mode') === 'locked';
+    const FRIEND_SHARE_VIEWER_ID = QUERY.get('friend')?.trim() || 'visitor';
+    const DEFAULT_BACKEND = ['dreamhouse.top','www.dreamhouse.top'].includes(location.hostname) ? '/dreamhome-api' : 'http://127.0.0.1:8000';
+    const BACKEND = (QUERY.get('apiBase')?.trim() || window.__DREAMHOME_API_BASE_URL__ || window.DREAMHOME_API_BASE_URL || DEFAULT_BACKEND).replace(/\/$/,'');
     const HOME_USER_KEY = 'dreamhome.home-user-id.v1';
     const queryHomeUserId = QUERY.get('userId')?.trim();
     if (queryHomeUserId) localStorage.setItem(HOME_USER_KEY, queryHomeUserId);
@@ -793,14 +1111,14 @@
         if(requestedAssetId)beginRequestedAssetPlacement(requestedAssetId);
       } catch(error) { pendingSceneStartedAt=0;pendingSceneTitle='';state.phase='setup'; updatePhases(); tell(error.message); }
     }
-    function updatePhases() { const root=document.querySelector('.dh-root'),sceneLoading=state.phase==='scene-loading',generating=['submitting','polling','error'].includes(state.phase)||sceneLoading,editor=state.phase==='editor'||sceneLoading,real=editor&&!!state.project?.realScene,roomTemplate=editor&&TEMPLATES.find(item=>item.id===state.project?.source?.templateId)?.scope==='room';ui.setupPhase.style.display=state.phase==='setup'?'flex':'none';ui.generationPhase.classList.toggle('is-visible',generating);ui.editorPhase.classList.toggle('is-visible',editor);root.classList.toggle('is-editor',editor);root.classList.toggle('is-real-scene',real);root.classList.toggle('is-scene-editor',real||roomTemplate);root.classList.toggle('is-case',editor&&state.friendMode);root.classList.toggle('is-owned-readonly',editor&&state.ownReadOnly);if(generating)genVideo?.play().catch(()=>{});else genVideo?.pause(); }
+    function updatePhases() { const root=document.querySelector('.dh-root'),sceneLoading=state.phase==='scene-loading',generating=['submitting','polling','error'].includes(state.phase)||sceneLoading,editor=state.phase==='editor'||sceneLoading,real=editor&&!!state.project?.realScene,roomTemplate=editor&&TEMPLATES.find(item=>item.id===state.project?.source?.templateId)?.scope==='room';ui.setupPhase.style.display=state.phase==='setup'?'flex':'none';ui.generationPhase.classList.toggle('is-visible',generating);ui.editorPhase.classList.toggle('is-visible',editor);root.classList.toggle('is-editor',editor);root.classList.toggle('is-real-scene',real);root.classList.toggle('is-scene-editor',real||roomTemplate);root.classList.toggle('is-case',editor&&state.friendMode);root.classList.toggle('is-owned-readonly',editor&&state.ownReadOnly);root.classList.toggle('is-assistant-open',editor&&state.assistantOpen);if(generating)genVideo?.play().catch(()=>{});else genVideo?.pause(); }
     function updateGeneration(status, progress, error = '') { const copy = {queued:['正在准备空间','正在读取你的户型信息'],processing:['正在生成 3D 户型','包工球正在装修你的梦想之家'],ready:['空间已准备好','正在进入你的 3D 家'],failed:['生成没有完成',error || '请检查图片或重新尝试']}[status] || ['正在准备空间','']; ui.generationMascotStage.dataset.status = status; ui.generationMascotStage.classList.toggle('is-constructing', status === 'processing'); ui.generationTitle.textContent = copy[0]; ui.generationCopy.textContent = copy[1]; ui.progressBar.style.width = `${progress}%`; ui.retryButton.hidden = status !== 'failed'; ui.backToSetup.textContent = status === 'failed' ? '返回选择' : '取消'; }
     async function startGeneration() { if (!state.selectedTemplateId && !state.drawingFile) { ui.setupError.textContent = '请选择一个户型模板，或上传一张设计图。'; return; } state.phase = 'submitting'; updatePhases(); updateGeneration('queued', 4); try { state.job = await homeSceneService.submitHomeGeneration({templateId:state.selectedTemplateId, drawingFile:state.drawingFile}); state.phase='polling'; pollJob(); } catch (error) { failGeneration(error.message); } }
     async function pollJob() { clearTimeout(pollTimer); try { const jobState = await homeSceneService.getJob(state.job); const copyStatus = jobState.status === 'ready' ? 'ready' : jobState.status === 'failed' ? 'failed' : jobState.status; updateGeneration(copyStatus, jobState.progress, jobState.error); if (jobState.status === 'ready') { const project=normalizeHomeProject(jobState.result);project.placements.forEach((placement) => placement.homeId = project.id);homeSceneService.saveProject(project);syncProjectInBackground(project);enterProjectEditor(project);tell('3D 户型已生成，可以开始摆放');return; } if (jobState.status === 'failed') { state.phase='error'; updatePhases(); return; } pollTimer = setTimeout(pollJob, 680); } catch (error) { failGeneration(error.message); } }
     function failGeneration(message) { clearTimeout(pollTimer); state.phase='error'; updatePhases(); updateGeneration('failed', 0, message); }
     function returnToSetup() { clearTimeout(pollTimer);clearTimeout(saveTimer);if(state.friendMode){location.href='../inspiration-library/index.html';return;}if(state.project&&!persistProjectNow())return;disposeScene();state.project=null;state.selectedRoomId=null;state.selectedPlacementId=null;state.selectedWindowSlotId=null;state.caseMode=false;state.friendMode=false;state.ownReadOnly=false;state.phase='setup';renderSavedHomes();renderVideoScenes();updatePhases();ui.setupPhase.scrollTop=0; }
 
-    function initEditor() { disposeScene(); const real=!!state.project.realScene; if(state.project.decor){state.selectedFloorPreset=state.project.decor.floorPreset||state.selectedFloorPreset;state.selectedWallColor=state.project.decor.wallColor||state.selectedWallColor;state.selectedWindowStyle=state.project.decor.windowStyle||state.selectedWindowStyle;} ui.editorHomeName.value = state.friendMode?`同款 · ${state.project.name}`:state.project.name; ui.editorHomeName.readOnly=state.friendMode||state.ownReadOnly; ui.editorHomeName.setAttribute('aria-label',state.friendMode?'好友小屋名称':state.ownReadOnly?'已收藏小屋名称':'给我的家起个名字');ui.editorHomeMeta.textContent = state.friendMode?'好友小屋 · 只读参观':state.ownReadOnly?'已收藏到我的家 · 点击试摆会进入编辑':'';ui.editorBack.setAttribute('aria-label',state.friendMode?'返回灵感库':'返回我的家');ui.shareButton.setAttribute('aria-label',state.friendMode?'转发好友小屋':'分享我的家');ui.homeCompanion?.classList.toggle('is-visible',QUERY.get('visitor')==='1'||QUERY.get('entry')==='shared'); ui.daylightButton.textContent = state.project.daylight === 'night' ? '🌙' : '☀'; renderRooms(); renderAssetDrawer(); updateCaseLayoutActions();resetModelLoadProgress(state.project); sceneRuntime = createScene(state.project); if(state.phase==='scene-loading')scheduleScenePreviewReveal(state.project.id); const savedTime=state.project.decor?.timeValue,initialName=real?state.project.realScene?.cfg?.light:state.project.daylight,index=REAL_TIME_SEQUENCE.indexOf(initialName);applyRealTimeProgress(savedTime!=null?savedTime:(index>=0?index*100:200)); syncInspector(); }
+    function initEditor() { disposeScene(); const real=!!state.project.realScene; if(state.project.decor){state.selectedFloorPreset=state.project.decor.floorPreset||state.selectedFloorPreset;state.selectedWallColor=state.project.decor.wallColor||state.selectedWallColor;state.selectedWindowStyle=state.project.decor.windowStyle||state.selectedWindowStyle;} ui.editorHomeName.value = state.friendMode?`同款 · ${state.project.name}`:state.project.name; ui.editorHomeName.readOnly=state.friendMode||state.ownReadOnly; ui.editorHomeName.setAttribute('aria-label',state.friendMode?'好友小屋名称':state.ownReadOnly?'已收藏小屋名称':'给我的家起个名字');ui.editorHomeMeta.textContent = state.friendMode?'好友小屋 · 只读参观':state.ownReadOnly?'已收藏到我的家 · 点击试摆会进入编辑':'';ui.editorBack.setAttribute('aria-label',state.friendMode?'返回灵感库':'返回我的家');ui.shareButton.setAttribute('aria-label',state.friendMode?'转发好友小屋':'分享我的家');ui.homeCompanion?.classList.toggle('is-visible',QUERY.get('visitor')==='1'||QUERY.get('entry')==='shared'); ui.daylightButton.textContent = state.project.daylight === 'night' ? '🌙' : '☀'; renderRooms(); renderAssetDrawer(); updateCaseLayoutActions();resetModelLoadProgress(state.project); sceneRuntime = createScene(state.project); if(state.phase==='scene-loading')scheduleScenePreviewReveal(state.project.id); const savedTime=state.project.decor?.timeValue,initialName=real?state.project.realScene?.cfg?.light:state.project.daylight,index=REAL_TIME_SEQUENCE.indexOf(initialName);applyRealTimeProgress(savedTime!=null?savedTime:(index>=0?index*100:200)); renderMatchIntentPreviews();if(canEditProject())scheduleMatchAssistantNudge(900,'auto'); syncInspector(); }
 
     function applyRealTimeProgress(rawValue,announce=false){
       if(!realSceneLighting)return;
@@ -862,6 +1180,276 @@
       return {...asset,primitive,dimensions};
     }
     function resolveAsset(assetId) { const runtime=runtimeAssets.get(assetId); const shared=getAsset(assetId); const legacy=ASSETS.find((asset)=>asset.id===assetId); return runtime || shared || (legacy && legacyAssetMetadata(legacy)) || { id:assetId, name:'未知组件', category:'其他', primitive:'plant', accent:'#a27b5b', dimensions:[.7,.7,.7] }; }
+
+    // Recommendations only use the shared canonical catalog. This keeps the
+    // assistant, the inspiration library and saved room placements on one ID.
+    function getRecommendationAssets() { return getAssets('furniture'); }
+    function ensureCatalogAssetRegistered(assetId) { return Boolean(getAsset(assetId)); }
+
+    function canEditProject() { return Boolean(state.project)&&!state.caseMode&&!state.friendMode&&!state.ownReadOnly; }
+
+    const MATCH_CATEGORY_PRIORITY=['沙发','桌子','灯具','单椅','柜子','地毯','绿植','装饰'];
+    const MATCH_CATEGORY_KEYWORDS={沙发:['沙发'],桌子:['桌','茶几','餐桌'],灯具:['灯'],单椅:['椅','凳'],柜子:['柜','收纳'],地毯:['毯'],绿植:['绿植','植物','花'],装饰:['装饰','摆件','挂画'],床:['床']};
+    const MATCH_COMPLEMENTS={沙发:['桌子','灯具','单椅','地毯'],桌子:['单椅','灯具','装饰'],灯具:['沙发','桌子','单椅'],单椅:['桌子','灯具','地毯'],柜子:['装饰','灯具','绿植'],地毯:['沙发','桌子','单椅'],绿植:['柜子','灯具','装饰'],装饰:['柜子','桌子','灯具'],床:['灯具','柜子','地毯']};
+    const MATCH_INTENT_COPY={complete:['为你补齐空间','优先找当前房间还没有的品类'],match:['围绕这件家具搭配','延续它的风格、颜色和材质'],replace:['找一个更合适的同类','保留功能，换成更协调的选择']};
+    let matchAssistantNudgeTimer=null,matchAssistantNudgeHideTimer=null,matchAssistantPassiveTimer=null;
+
+    function canonicalMatchCategory(asset) {
+      const raw=`${asset?.category||''} ${asset?.subcategory||''} ${asset?.name||''}`;
+      return Object.entries(MATCH_CATEGORY_KEYWORDS).find(([,keywords])=>keywords.some((word)=>raw.includes(word)))?.[0]||asset?.category||'其他';
+    }
+    function cleanMatchTags(values) { return [...new Set((Array.isArray(values)?values:[]).map((value)=>String(value||'').trim()).filter(Boolean))]; }
+    function assetMatchTags(asset) { return {styles:cleanMatchTags(asset?.styles),colors:cleanMatchTags(asset?.colors),materials:cleanMatchTags(asset?.materials)}; }
+    function commonMatchTags(left,right) { const rightSet=new Set(right); return left.filter((item)=>rightSet.has(item)); }
+    function countMatchTags(list) { const counts=new Map();list.forEach((item)=>counts.set(item,(counts.get(item)||0)+1));return [...counts.entries()].sort((a,b)=>b[1]-a[1]).map(([tag,count])=>({tag,count})); }
+    function currentMatchReference() {
+      const selected=state.selectedPlacementId&&state.project?.placements.find((item)=>item.id===state.selectedPlacementId);
+      const placement=selected||state.project?.placements?.at(-1)||null;
+      return placement?resolveAsset(placement.assetId):null;
+    }
+    function buildProfileFromAssets(assets) {
+      const styles=countMatchTags(assets.flatMap((asset)=>assetMatchTags(asset).styles));
+      const colors=countMatchTags(assets.flatMap((asset)=>assetMatchTags(asset).colors));
+      const materials=countMatchTags(assets.flatMap((asset)=>assetMatchTags(asset).materials));
+      const categories=new Set(assets.map(canonicalMatchCategory));
+      const dominant=[...styles.slice(0,2),...colors.slice(0,2),...materials.slice(0,1)].map((item)=>item.tag);
+      return {assets,styles:styles.map((item)=>item.tag),colors:colors.map((item)=>item.tag),materials:materials.map((item)=>item.tag),categories,dominant};
+    }
+    function buildMatchProfile() { return buildProfileFromAssets((state.project?.placements||[]).map((placement)=>resolveAsset(placement.assetId)).filter(Boolean)); }
+    function getPreferenceFavorites() {
+      const defaults=new Set(DEFAULT_FAVORITE_IDS),favorites=getFavorites();
+      return getRecommendationAssets().filter((asset)=>favorites.has(asset.id)&&!defaults.has(asset.id));
+    }
+    function getRecentViewedAssets() {
+      try{const raw=JSON.parse(localStorage.getItem('dreamhome.recent-asset-views.v1')||'null'),ids=Array.isArray(raw)?raw:Array.isArray(raw?.ids)?raw.ids:[];return ids.map((item)=>resolveAsset(typeof item==='string'?item:item?.id)).filter((asset)=>asset?.id).slice(0,12);}catch{return [];}
+    }
+    function recommendationProfile() {
+      const current=buildMatchProfile();if(current.assets.length)return current;
+      const favorites=getPreferenceFavorites();if(favorites.length)return buildProfileFromAssets(favorites);
+      const recent=getRecentViewedAssets();if(recent.length)return buildProfileFromAssets(recent);
+      return current;
+    }
+    function buildActiveRecommendationContext() {
+      const current=buildMatchProfile(),count=current.assets.length,tags=current.dominant.slice(0,2),room=state.project?.rooms?.find((item)=>item.id===state.selectedRoomId)||state.project?.rooms?.[0],roomName=room?.label||room?.name||'空间';
+      if(count>=3)return{caseId:'A',title:'我按你家现在的搭配挑好了',copy:`我看你家现在以${tags.join('、')||'这些家具'}为主，帮你挑了 3 件搭起来很顺的家具，要看看吗？`};
+      if(count>=1){const anchor=currentMatchReference();return{caseId:'B',title:'我照着这件家具挑了几件',copy:`我照着你刚放进来的${anchor?.name||'家具'}，挑了几件适合一起搭的，要看看吗？`};}
+      const favorites=getPreferenceFavorites();if(favorites.length){const profile=buildProfileFromAssets(favorites),preference=profile.dominant.slice(0,2).join('、')||'这些家具';return{caseId:'C',title:'我按你的收藏挑了几件',copy:`我看了看你收藏的家具，感觉你挺喜欢${preference}。我按这个感觉挑了几件，要看看吗？`};}
+      const recent=getRecentViewedAssets();if(recent.length){const profile=buildProfileFromAssets(recent),preference=profile.dominant.slice(0,2).join('、')||'最近看的风格';return{caseId:'D',title:'我按你最近看的风格挑好了',copy:`你最近看得比较多的是${preference}，我照着这个方向挑了几件，要看看吗？`};}
+      return{caseId:'E',title:'我帮这个空间配了套起步组合',copy:`这个${roomName}还很空，我从图库里常用的搭配中挑了几件适合先放进去的，要看看吗？`};
+    }
+    function matchTargetCategoryFromQuery(query) {
+      const text=String(query||'');
+      const hits=Object.entries(MATCH_CATEGORY_KEYWORDS).map(([category,keywords])=>({category,index:Math.max(...keywords.map((word)=>text.lastIndexOf(word)))})).filter((item)=>item.index>=0).sort((a,b)=>b.index-a.index);
+      return hits[0]?.category||'';
+    }
+    function matchTargets(intent,profile,reference) {
+      if(state.assistantTargetCategory)return [state.assistantTargetCategory];
+      const referenceCategory=reference&&canonicalMatchCategory(reference);
+      if(intent==='replace'&&referenceCategory)return [referenceCategory];
+      if(intent==='match'&&referenceCategory)return MATCH_COMPLEMENTS[referenceCategory]||MATCH_CATEGORY_PRIORITY;
+      const missing=MATCH_CATEGORY_PRIORITY.filter((category)=>!profile.categories.has(category));
+      return missing.length?missing:MATCH_CATEGORY_PRIORITY;
+    }
+    function matchScore(asset,{profile,reference,targets,intent}) {
+      const tags=assetMatchTags(asset),referenceTags=assetMatchTags(reference||{}),category=canonicalMatchCategory(asset),targetIndex=targets.indexOf(category);
+      let score=targetIndex<0?0:30-Math.min(targetIndex,5)*3;
+      score+=commonMatchTags(tags.styles,profile.styles).length*11;
+      score+=commonMatchTags(tags.colors,profile.colors).length*7;
+      score+=commonMatchTags(tags.materials,profile.materials).length*6;
+      if(reference){score+=commonMatchTags(tags.styles,referenceTags.styles).length*9;score+=commonMatchTags(tags.colors,referenceTags.colors).length*5;score+=commonMatchTags(tags.materials,referenceTags.materials).length*5;}
+      if(intent==='complete'&&!profile.categories.has(category))score+=12;
+      if(state.assistantQuery&&/[暖温奶油柔和]/.test(state.assistantQuery)&&[...tags.colors,...tags.styles].some((tag)=>/[暖米奶油木北欧原木]/.test(tag)))score+=13;
+      if(state.assistantQuery&&[asset.name,asset.subcategory].filter(Boolean).some((value)=>state.assistantQuery.includes(value)))score+=40;
+      if(asset.thumbnail)score+=3;if(asset.modelUrl)score+=2;
+      score+=(String(asset.id).split('').reduce((sum,char)=>sum+char.charCodeAt(0),0)%17)/100;
+      return score;
+    }
+    function matchReason(asset,profile,reference,intent) {
+      const tags=assetMatchTags(asset),referenceTags=assetMatchTags(reference||{});
+      const style=commonMatchTags(tags.styles,reference?[...referenceTags.styles,...profile.styles]:profile.styles)[0];
+      const color=commonMatchTags(tags.colors,reference?[...referenceTags.colors,...profile.colors]:profile.colors)[0];
+      const material=commonMatchTags(tags.materials,reference?[...referenceTags.materials,...profile.materials]:profile.materials)[0];
+      if(intent==='replace'&&reference)return `保留${canonicalMatchCategory(reference)}的功能，用${style||color||material||'更轻盈的细节'}衔接现在的空间。`;
+      if(style&&color)return `延续你家现在的${style}和${color}，放进来不会显得突兀。`;
+      if(style&&material)return `${style}基调相近，${material}材质能让整体更有层次。`;
+      if(color)return `${color}能接住当前空间的主色，适合作为${canonicalMatchCategory(asset)}补位。`;
+      if(material)return `${material}和现有家具呼应，补齐功能的同时保持统一。`;
+      return `当前空间还缺少${canonicalMatchCategory(asset)}，它适合先放进去试一试。`;
+    }
+    function getMatchRecommendations() {
+      const profile=recommendationProfile(),intent=state.assistantIntent,selectedPlacement=state.selectedPlacementId&&state.project?.placements.find((item)=>item.id===state.selectedPlacementId),reference=intent==='replace'?(selectedPlacement?resolveAsset(selectedPlacement.assetId):null):currentMatchReference(),targets=matchTargets(intent,profile,reference);
+      if(Array.isArray(state.assistantRemoteRecommendations)){
+        const recommendations=state.assistantRemoteRecommendations.map((item)=>({asset:{...(resolveAsset(item.id)||{}),...item},reason:item.reason||'',score:item.score||0}));
+        return {profile,reference,targets,recommendations};
+      }
+      if(intent==='replace'&&!reference)return {profile,reference,targets,recommendations:[]};
+      const placedIds=new Set((state.project?.placements||[]).map((item)=>item.assetId));
+      let candidates=getRecommendationAssets().filter((asset)=>asset?.id&&!placedIds.has(asset.id)&&targets.includes(canonicalMatchCategory(asset)));
+      if(intent!=='replace'&&candidates.length<3)candidates=getRecommendationAssets().filter((asset)=>asset?.id&&!placedIds.has(asset.id));
+      const ranked=candidates.map((asset)=>({asset,score:matchScore(asset,{profile,reference,targets,intent}),category:canonicalMatchCategory(asset)})).sort((a,b)=>b.score-a.score),offset=ranked.length?state.assistantRecommendationOffset%ranked.length:0,ordered=[...ranked.slice(offset),...ranked.slice(0,offset)];
+      const picked=[];
+      for(const item of ordered){if(picked.length>=3)break;if(intent!=='replace'&&picked.some((entry)=>entry.category===item.category))continue;picked.push(item);}
+      for(const item of ordered){if(picked.length>=3)break;if(!picked.includes(item))picked.push(item);}
+      return {profile,reference,targets,recommendations:picked};
+    }
+    function matchProfileCopy(profile) {
+      if(!profile.assets.length)return '这里还是一张干净画布。我先从客厅最需要的主体家具和照明开始推荐。';
+      const tags=profile.dominant.slice(0,4);
+      if(!tags.length)return `我看到了 ${profile.assets.length} 件家具，先按品类和空间功能帮你补齐。`;
+      return `我看了看：现在以${tags.join('、')}为主。下面的建议会尽量延续这个基调，再加一点层次。`;
+    }
+    let matchRecommendationRequestId=0;
+    async function requestMatchRecommendations({resetSeen=false}={}) {
+      const requestId=++matchRecommendationRequestId,selectedPlacement=state.selectedPlacementId&&state.project?.placements?.find((item)=>item.id===state.selectedPlacementId),profile=recommendationProfile();
+      if(resetSeen)state.assistantSeenItemIds=[];
+      state.assistantRecommendationLoading=true;state.assistantClarificationQuestion='';
+      const mode=state.assistantIntent==='replace'?'replacement':state.assistantEntryKind==='active'?'proactive':'space';
+      try{
+        const response=await fetch(`${BACKEND}/api/recommendations`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode,query:state.assistantQuery,selectedItemId:selectedPlacement?.assetId||'',targetCategory:state.assistantTargetCategory||'',styles:profile.styles.slice(0,5),colors:profile.colors.slice(0,5),seenItemIds:state.assistantSeenItemIds,limit:6})});
+        if(!response.ok)throw new Error(`recommendations ${response.status}`);
+        const payload=await response.json();if(requestId!==matchRecommendationRequestId)return;
+        state.assistantClarificationQuestion=payload.clarificationRequired?String(payload.clarificationQuestion||'可以再告诉我具体想调整哪一件家具吗？'):'';
+        state.assistantRemoteRecommendations=payload.clarificationRequired?[]:Array.isArray(payload.items)?payload.items:[];
+        if(Array.isArray(payload.nextSeenItemIds))state.assistantSeenItemIds=payload.nextSeenItemIds;
+        state.assistantHasAsked=state.assistantHasAsked||Boolean(state.assistantClarificationQuestion);state.assistantRecommendationLoading=false;renderMatchAssistant();
+      }catch(error){
+        if(requestId!==matchRecommendationRequestId)return;
+        state.assistantRecommendationLoading=false;state.assistantRemoteRecommendations=null;state.assistantClarificationQuestion='';renderMatchAssistant();
+      }
+    }
+    function renderMatchAssistant() {
+      const {profile,reference,recommendations}=getMatchRecommendations(),copy=MATCH_INTENT_COPY[state.assistantIntent]||MATCH_INTENT_COPY.complete;
+      const awaitingQuestion=!state.assistantHasAsked&&state.assistantEntryKind!=='active';
+      const selectedPlacement=state.selectedPlacementId&&state.project?.placements?.find((item)=>item.id===state.selectedPlacementId),selectedAsset=selectedPlacement&&resolveAsset(selectedPlacement.assetId),selected=Boolean(selectedPlacement),needsSelection=state.assistantIntent==='replace'&&!selected;
+      const assistantReply=state.assistantClarificationQuestion||[needsSelection?(state.project?'请先点一下画面里想换的家具，我再围绕它找更搭的同类。':'先进入一个家并点选想换的家具，我就能帮你做单品换搭。'):state.assistantEntryKind==='active'?(state.assistantIntent==='replace'?`我发现「${selectedAsset?.name||'这件家具'}」还有更搭的选择，先替你挑了几件。`:'我发现这个空间还可以继续搭配，先替你挑了几件。'):(selected&&state.assistantIntent==='complete'?`我会参考已选的「${selectedAsset?.name||'家具'}」，也会兼顾整个空间。`:matchProfileCopy(profile))][0];
+      ui.matchAssistantPanel.classList.toggle('is-cold-start',awaitingQuestion);ui.matchAssistantPanel.classList.toggle('has-results',!awaitingQuestion&&!needsSelection);ui.matchAssistantPanel.classList.toggle('needs-selection',needsSelection);
+      const selectedContext=selectedAsset?`<div class="match-selected-context" aria-label="已识别选中家具"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7.8a5 5 0 0 1 10 0V10M5 10h14a2 2 0 0 1 2 2v5H3v-5a2 2 0 0 1 2-2Zm0 7v3m14-3v3"/></svg><span>已识别：${escapeText(selectedAsset.name)} · ${escapeText(canonicalMatchCategory(selectedAsset))}</span></div>`:'';
+      ui.matchAssistantConversation.hidden=awaitingQuestion&&!selectedContext;
+      ui.matchAssistantConversation.innerHTML=awaitingQuestion?selectedContext:`${selectedContext}${state.assistantQuery?`<div class="match-chat-bubble match-chat-bubble--user">${escapeText(state.assistantQuery)}</div>`:''}<div class="match-chat-bubble match-chat-bubble--assistant">${escapeText(assistantReply)}</div>`;
+      ui.matchAssistantContext.hidden=Boolean(state.assistantClarificationQuestion);ui.matchAssistantCards.hidden=Boolean(state.assistantClarificationQuestion);
+      ui.matchAssistantContextTitle.innerHTML='为你推荐 <i>✦</i>';
+      ui.matchAssistantIntents.querySelectorAll('[data-match-intent]').forEach((button)=>button.classList.toggle('is-active',button.dataset.matchIntent===state.assistantIntent));
+      const trialAvailable=Boolean(state.project)&&canEditProject();
+      ui.matchAssistantCards.innerHTML=recommendations.length?recommendations.map(({asset,reason:remoteReason},index)=>{
+        const tags=assetMatchTags(asset),reason=remoteReason||matchReason(asset,profile,reference,state.assistantIntent),chips=[...tags.styles,...tags.colors,...tags.materials,canonicalMatchCategory(asset)].filter(Boolean).slice(0,3),favorite=getFavorites().has(asset.id);
+        return `<article class="match-card"><button class="match-card-media" data-match-detail="${escapeText(asset.id)}" aria-label="查看 ${escapeText(asset.name)} 的 3D 详情">${asset.thumbnail?`<img src="${escapeText(asset.thumbnail)}" alt="" loading="lazy" onerror="this.closest('.match-card-media')?.classList.add('is-image-missing');this.remove()" />`:''}</button><div class="match-card-copy"><b>${escapeText(asset.name)}</b><p>${escapeText(reason)}</p><span class="match-card-tags">${chips.slice(0,2).map((tag)=>`<i>${escapeText(tag)}</i>`).join('')}</span><div class="match-card-actions"><button class="match-card-action ${favorite?'is-favorite':''}" data-match-card-favorite="${escapeText(asset.id)}" aria-label="${favorite?'取消收藏':'收藏'}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.8-5.4 2.8 1-6-4.3-4.2 6-.9z"/></svg>${favorite?'已收藏':'收藏'}</button><button class="match-card-action match-card-action--trial" data-match-card-trial="${escapeText(asset.id)}" ${trialAvailable?'':'disabled aria-disabled="true" title="进入编辑态后可试摆"'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9"/></svg>试摆</button></div></div></article>`;
+      }).join(''):`<p class="match-empty">${needsSelection?'点一下画面中的家具，再回来选择单品换搭。':'暂时没有找到足够匹配的家具，换一种问法试试吧。'}</p>`;
+    }
+    function disposeMatchDetailPreview() {
+      if(!matchDetailRuntime)return;
+      matchDetailRuntime.dispose();matchDetailRuntime=null;
+    }
+    function fitMatchDetailObject(object) {
+      object.updateMatrixWorld(true);
+      const box=new THREE.Box3().setFromObject(object),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3()),largest=Math.max(size.x,size.y,size.z)||1,scale=1.55/largest;
+      object.scale.multiplyScalar(scale);object.position.set(-center.x*scale,.06-box.min.y*scale,-center.z*scale);object.updateMatrixWorld(true);
+    }
+    function mountMatchDetailPreview(asset) {
+      disposeMatchDetailPreview();
+      const canvas=ui.matchDetailView.querySelector('#matchDetailCanvas'),stage=canvas?.parentElement,status=ui.matchDetailView.querySelector('#matchDetailHint');if(!canvas||!stage)return;
+      if(!asset.modelUrl&&!asset.fallbackModelUrl){if(status)status.textContent='真实商品图';return;}
+      const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=true;
+      const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(33,1,.1,100);camera.position.set(2.4,1.55,3.2);
+      const controls=new OrbitControls(camera,canvas);controls.target.set(0,.68,0);controls.enableDamping=true;controls.enablePan=false;controls.minDistance=2;controls.maxDistance=5;controls.autoRotate=true;controls.autoRotateSpeed=1.25;
+      scene.add(new THREE.HemisphereLight('#fffaf0','#b99c72',2.1));const key=new THREE.DirectionalLight('#fff1d2',3);key.position.set(3,5,4);key.castShadow=true;scene.add(key);const fill=new THREE.DirectionalLight('#bfd2e3',1.15);fill.position.set(-3,2,-2);scene.add(fill);
+      const floor=new THREE.Mesh(new THREE.CircleGeometry(1.45,64),new THREE.MeshStandardMaterial({color:'#e8d5b4',roughness:.92,transparent:true,opacity:.72}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
+      let displayed=null;
+      let frame=0,disposed=false;const resize=()=>{const width=Math.max(1,stage.clientWidth),height=Math.max(1,stage.clientHeight);renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();};resize();
+      const observer=new ResizeObserver(resize);observer.observe(stage);
+      const animate=()=>{if(disposed)return;controls.update();renderer.render(scene,camera);frame=requestAnimationFrame(animate);};animate();
+      fetchAndParseModel(asset).then((gltf)=>{if(disposed)return;const model=gltf.scene;model.traverse((node)=>{if(node.isMesh){node.castShadow=true;node.receiveShadow=true;}});fitMatchDetailObject(model);displayed=model;scene.add(displayed);canvas.style.opacity='1';const photo=stage.querySelector('.match-detail-photo');if(photo)photo.hidden=true;if(status)status.textContent='拖动可 360° 查看';}).catch(()=>{if(status)status.textContent='真实商品图';});
+      matchDetailRuntime={dispose(){disposed=true;cancelAnimationFrame(frame);observer.disconnect();controls.dispose();scene.traverse((node)=>{node.geometry?.dispose?.();if(Array.isArray(node.material))node.material.forEach((item)=>item.dispose?.());else node.material?.dispose?.();});renderer.dispose();}};
+    }
+    function openMatchDetail(assetId) {
+      const asset=resolveAsset(assetId);if(!asset?.id)return;
+      const {profile,reference}=getMatchRecommendations(),tags=assetMatchTags(asset),chips=[...tags.styles,...tags.colors,...tags.materials,canonicalMatchCategory(asset)].filter(Boolean).slice(0,4),favorite=getFavorites().has(asset.id),reason=matchReason(asset,profile,reference,state.assistantIntent);
+      state.assistantDetailAssetId=asset.id;ui.matchDetailView.hidden=false;ui.matchAssistantPanel.classList.add('is-detail');
+      ui.matchDetailView.innerHTML=`<button class="match-detail-close" data-match-detail-back aria-label="关闭商品详情">×</button><div class="match-detail-stage">${asset.thumbnail?`<img class="match-detail-photo" src="${escapeText(asset.thumbnail)}" alt="" />`:''}<canvas id="matchDetailCanvas" aria-label="${escapeText(asset.name)} 的可旋转 3D 预览"></canvas><span class="match-detail-hint" id="matchDetailHint">${asset.modelUrl||asset.fallbackModelUrl?'正在加载 3D':'真实商品图'}</span></div><div class="match-detail-copy"><b>${escapeText(asset.name)}</b><p>${escapeText(reason)}</p><span class="match-detail-tags">${chips.map((tag)=>`<i>${escapeText(tag)}</i>`).join('')}</span></div><div class="match-detail-actions"><button class="match-detail-favorite ${favorite?'is-favorite':''}" data-match-favorite="${escapeText(asset.id)}" aria-label="${favorite?'取消收藏':'收藏'}">${favorite?'♥ 已收藏':'♡ 收藏'}</button><button class="match-detail-place" data-match-place="${escapeText(asset.id)}">试摆</button></div>`;
+      requestAnimationFrame(()=>mountMatchDetailPreview(asset));
+    }
+    function closeMatchDetail() {
+      disposeMatchDetailPreview();state.assistantDetailAssetId='';ui.matchDetailView.hidden=true;ui.matchDetailView.innerHTML='';ui.matchAssistantPanel.classList.remove('is-detail');
+    }
+    function toggleMatchFavorite(assetId) {
+      const favorites=getFavorites(),asset=resolveAsset(assetId),next=!favorites.has(assetId);ensureCatalogAssetRegistered(assetId,favorites);if(next)favorites.add(assetId);else favorites.delete(assetId);setFavorites(favorites);
+      const button=ui.matchDetailView.querySelector('[data-match-favorite]');if(button){button.classList.toggle('is-favorite',next);button.textContent=next?'♥ 已收藏':'♡ 收藏';button.setAttribute('aria-label',next?'取消收藏':'收藏');}renderMatchAssistant();renderAssetDrawer();tell(next?`已收藏「${asset.name}」`:`已取消收藏「${asset.name}」`);
+    }
+    function clearMatchAssistantNudgeTimers() { clearTimeout(matchAssistantNudgeTimer);clearTimeout(matchAssistantNudgeHideTimer);clearInterval(matchAssistantPassiveTimer);matchAssistantNudgeTimer=null;matchAssistantNudgeHideTimer=null;matchAssistantPassiveTimer=null; }
+    function canUseMatchAssistant() { return !state.caseMode&&state.phase==='editor'; }
+    function openMatchAssistant(intent=state.assistantIntent,entryKind='passive') {
+      if(!canUseMatchAssistant())return;
+      clearMatchAssistantNudgeTimers();ui.matchAssistantNudge.classList.remove('is-visible');
+      closeMatchDetail();state.assistantEntryKind=entryKind;state.assistantHasAsked=entryKind==='active';state.assistantIntent=intent;state.assistantOpen=true;state.drawerExpanded=false;if(state.project)renderAssetDrawer();renderMatchAssistant();
+      ui.matchAssistantQuery.value=state.assistantQuery;
+      ui.matchAssistantPanel.classList.add('is-open');ui.matchAssistantPanel.setAttribute('aria-hidden','false');updatePhases();void requestMatchRecommendations({resetSeen:true});
+    }
+    function closeMatchAssistant() {
+      disposeMatchDetailPreview();state.assistantDetailAssetId='';state.assistantOpen=false;ui.matchAssistantPanel?.classList.remove('is-open','is-detail');ui.matchAssistantPanel?.setAttribute('aria-hidden','true');updatePhases();
+    }
+    const PASSIVE_NUDGE_LINES=[['不知道怎么搭？','要不要让我帮你挑几件？'],['这里还缺点什么？','要不要让我帮你看看？'],['这件家具配什么好？','要不要让我帮你挑几件？'],['想换个风格，但不知道从哪里开始？','可以来问我哦。'],['家具拿不准？','我可以陪你一起挑。']];
+    function renderPassiveNudgeLine() { const line=PASSIVE_NUDGE_LINES[state.assistantPassiveIndex%PASSIVE_NUDGE_LINES.length];ui.matchAssistantNudgeTitle.textContent=line[0];ui.matchAssistantNudgeCopy.textContent=line[1];state.assistantPassiveIndex=(state.assistantPassiveIndex+1)%PASSIVE_NUDGE_LINES.length; }
+    function showMatchAssistantNudge(kind) {
+      if(kind==='cold'){
+        state.assistantColdShown=true;ui.matchAssistantNudgeTitle.textContent='嗨，我是包工球。';ui.matchAssistantNudgeCopy.textContent='一起把路过的灵感，慢慢装进家里。';
+      }else if(kind==='active'){
+        const context=buildActiveRecommendationContext();state.assistantActiveCase=context.caseId;ui.matchAssistantNudgeTitle.textContent=context.title;ui.matchAssistantNudgeCopy.textContent=context.copy;
+      }else{
+        renderPassiveNudgeLine();matchAssistantPassiveTimer=setInterval(renderPassiveNudgeLine,3000);
+      }
+      state.assistantNudgeKind=kind;ui.matchAssistantNudge.dataset.nudgeKind=kind;ui.matchAssistantNudge.dataset.matchIntent=kind==='active'&&state.selectedPlacementId?'replace':'complete';positionMatchAssistantNudge();ui.matchAssistantNudge.classList.add('is-visible');state.assistantNudgeCount+=1;
+      const visibleMs=kind==='cold'?12000:kind==='active'?12000:15000;
+      matchAssistantNudgeHideTimer=setTimeout(()=>{ui.matchAssistantNudge.classList.remove('is-visible');clearInterval(matchAssistantPassiveTimer);matchAssistantPassiveTimer=null;if(kind==='cold')scheduleMatchAssistantNudge(1800,'active');else if(kind==='active')scheduleMatchAssistantNudge(2200,'passive');},visibleMs);
+    }
+    function scheduleMatchAssistantNudge(delay=1000,requestedKind='auto') {
+      clearMatchAssistantNudgeTimers();
+      matchAssistantNudgeTimer=setTimeout(()=>{
+        if(!canUseMatchAssistant()||state.assistantOpen||(state.assistantNudgeCount>=3&&requestedKind!=='active'))return;
+        const kind=requestedKind==='auto'?(state.assistantColdShown?'passive':'cold'):requestedKind;showMatchAssistantNudge(kind);
+      },delay);
+    }
+    function parseMatchAssistantQuery(query) {
+      const text=String(query||'').trim();if(!text)return;
+      state.assistantQuery=text;state.assistantTargetCategory=matchTargetCategoryFromQuery(text);state.assistantRecommendationOffset=0;
+      state.assistantIntent=/换|替换|不搭|突兀/.test(text)?'replace':/配|搭|一起|适合/.test(text)?'match':'complete';
+      state.assistantHasAsked=true;state.assistantRemoteRecommendations=null;state.assistantSeenItemIds=[];state.assistantClarificationQuestion='';closeMatchDetail();renderMatchAssistant();void requestMatchRecommendations({resetSeen:true});
+    }
+    function chooseMatchAssistantIntent(intent) {
+      const prompts={complete:state.project?'请根据现在的布局推荐一下其他家具吧':'请按大家常用和我收藏的风格，推荐一套好搭的家具',replace:'请帮我给选中的家具换一个更协调的同类'};
+      state.assistantEntryKind='passive';state.assistantHasAsked=true;state.assistantIntent=intent;state.assistantQuery=prompts[intent]||prompts.complete;state.assistantTargetCategory='';state.assistantRecommendationOffset=0;state.assistantRemoteRecommendations=null;state.assistantSeenItemIds=[];state.assistantClarificationQuestion='';ui.matchAssistantQuery.value='';closeMatchDetail();renderMatchAssistant();void requestMatchRecommendations({resetSeen:true});
+    }
+    function choosePopularRecommendation() { state.assistantEntryKind='active';state.assistantHasAsked=true;state.assistantIntent='complete';state.assistantQuery='给我推荐大家最近常用的家具';state.assistantTargetCategory='';state.assistantRecommendationOffset=0;state.assistantRemoteRecommendations=null;state.assistantSeenItemIds=[];state.assistantClarificationQuestion='';ui.matchAssistantQuery.value='';closeMatchDetail();renderMatchAssistant();void requestMatchRecommendations({resetSeen:true}); }
+    function renderMatchIntentPreviews() {
+      const assets=getRecommendationAssets(),spaceAsset=assets.find((asset)=>canonicalMatchCategory(asset)==='沙发'&&asset.thumbnail)||assets.find((asset)=>asset.thumbnail),replaceAsset=assets.find((asset)=>canonicalMatchCategory(asset)==='椅子'&&asset.thumbnail)||assets.find((asset)=>asset.thumbnail&&asset.id!==spaceAsset?.id);
+      [[ui.matchIntentSpaceImage,spaceAsset],[ui.matchIntentReplaceImage,replaceAsset]].forEach(([image,asset])=>{if(!image||!asset?.thumbnail)return;image.hidden=false;image.src=asset.thumbnail;image.onerror=()=>{image.hidden=true;};});
+    }
+    function beginRecommendedPlacement(assetId) {
+      const asset=resolveAsset(assetId);if(!asset||!canEditProject())return;
+      const replacementId=state.assistantIntent==='replace'?state.selectedPlacementId:'';
+      if(state.assistantIntent==='replace'&&!replacementId){tell('请先点选一件家具');return;}
+      cancelAssistantTrial({announce:false});
+      state.assistantTrialAssetId=assetId;state.assistantTrialPlacementId='';
+      closeMatchAssistant();state.assistantQuery='';state.assistantTargetCategory='';
+      ui.matchAssistantQuery.value='';
+      if(replacementId)sceneRuntime?.beginReplacementTrial(assetId,replacementId);else sceneRuntime?.beginPlacement(assetId);
+      tell(replacementId?`已原位试换为「${asset.name}」，可选择留下或撤销`:`「${asset.name}」进入临时试摆，摆好后可选择留下或撤销`);
+    }
+    function cancelAssistantTrial({announce=true}={}) {
+      const placementId=state.assistantTrialPlacementId,originalId=state.assistantTrialOriginalPlacementId;
+      if(state.interaction.mode==='placing'&&state.assistantTrialAssetId)exitInteraction();
+      if(placementId&&state.project){
+        if(state.selectedPlacementId===placementId)sceneRuntime?.clearSelection(true,true);
+        const group=sceneRuntime?.groups?.placements?.get(placementId);
+        if(group)group.parent?.remove(group);
+        sceneRuntime?.groups?.placements?.delete(placementId);
+        if(sceneRuntime?.groups)sceneRuntime.groups.selectable=sceneRuntime.groups.selectable.filter((item)=>item!==group);
+        state.project.placements=state.project.placements.filter((item)=>item.id!==placementId);
+      }
+      const originalGroup=originalId&&sceneRuntime?.groups?.placements?.get(originalId);if(originalGroup)originalGroup.visible=true;
+      state.assistantTrialAssetId='';state.assistantTrialPlacementId='';state.assistantTrialOriginalPlacementId='';
+      if(originalId&&state.project?.placements.some((item)=>item.id===originalId))sceneRuntime?.selectPlacement(originalId);else syncInspector();
+      if(announce&&placementId)tell('已撤销试摆，原来的家没有改变');
+    }
+
     function renderAssetDrawer() {
       ui.drawerModes?.querySelectorAll('[data-drawer-mode]').forEach((button)=>button.classList.toggle('is-active',button.dataset.drawerMode===state.drawerMode));
       ui.categoryTabs.innerHTML='';
@@ -915,6 +1503,9 @@
       if(project.realScene) addRealSceneShell(root,project,groups);
       else { const viewMaterial=createSceneViewMaterial(),templateId=project.source?.templateId,windowSlots=['wide-living','l-living'].includes(templateId)?project.windowSlots.filter(slot=>slot.edge==='north'):project.windowSlots;project.rooms.forEach((room, index) => addRoom(root, room, index, groups)); addWalls(root, project, groups); windowSlots.forEach((slot) => addWindow(root, slot, groups,viewMaterial,{floorToCeiling:templateId==='wide-living'&&slot.edge==='north',largeWindow:templateId==='l-living'&&slot.edge==='north'}));setupSceneViewLighting(root,viewMaterial,ambient,sun,roomGlow); }
       project.placements.forEach((placement) => addPlacement(root, placement, groups)); if(!project.realScene) applyFinishesToGroups(project,groups);
+      // Friend-home viewing continues through the existing read-only project
+      // flow. Sunny's separate fire-buddy visitor module is not present in the
+      // integration baseline, so it must not become a hidden runtime dependency.
       const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2(), floorPlane = new THREE.Plane(new THREE.Vector3(0,1,0),0); const resize = () => { const w=ui.sceneHost.clientWidth,h=ui.sceneHost.clientHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }; const observer = new ResizeObserver(resize); observer.observe(ui.sceneHost);
       let frame, disposed=false, dragLast=null, transformDirty=false, editSnapshot=null, gizmo=null, gesture=null; const activePointers=new Map();
       function updateViewOcclusion(){const offset=camera.position.clone().sub(controls.target),horizontal=Math.hypot(offset.x,offset.z),sideThreshold=horizontal*.08,fromAbove=horizontal<.01||offset.y/horizontal>.58,hideCeiling=fromAbove||camera.position.y>2.65,facesViewer=(wallName)=>wallName==='left'?offset.x<-sideThreshold:wallName==='right'?offset.x>sideThreshold:wallName==='back'?offset.z<-sideThreshold:wallName==='front'?offset.z>sideThreshold:false;for(const wall of groups.walls){const viewWall=wall.userData.viewWall;wall.visible=!fromAbove&&(!viewWall||!facesViewer(viewWall));}for(const part of groups.windowParts){const viewWall=part.userData.viewWall;part.visible=!fromAbove&&(!viewWall||!facesViewer(viewWall));}root.traverse(item=>{if(item.userData.isSceneCeiling||item.name==='real-scene-ceiling')item.visible=!hideCeiling;else if(item.userData.isSceneCrown||item.name==='real-scene-crown')item.visible=!fromAbove&&!facesViewer(item.userData.viewWall);});}
@@ -934,12 +1525,12 @@
       function pointerUp(event) { activePointers.delete(event.pointerId);if(gesture){renderer.domElement.releasePointerCapture?.(event.pointerId);if(gesture.type==='scale'&&activePointers.size===1)return;gesture=null;state.interaction.mode='orbit';controls.enabled=true;saveSoon();return;} if (state.interaction.mode === 'moving') { renderer.domElement.releasePointerCapture?.(event.pointerId); state.interaction.mode='orbit'; controls.enabled=true; clearGhost(); tell('组件位置已保存'); saveSoon(); return; } const start=state.interaction.pointerDown; if (!start || Math.hypot(event.clientX-start.x,event.clientY-start.y)>10 || state.interaction.mode !== 'orbit') return; const hit=placementHit(event); if (hit) { const group=findPlacementGroup(hit.object); if (group) selectPlacement(group.userData.placementId); return; } clearSelection(); }
       function pointerCancel(event){activePointers.delete(event.pointerId);renderer.domElement.releasePointerCapture?.(event.pointerId);if(!activePointers.size){gesture=null;state.interaction.mode='orbit';controls.enabled=true;}}
       function updateGhost(event) { const hit=floorHit(event); if (!hit || !isFloorAllowed(hit.object.userData.roomId)) return; const ghost = getGhost(); if (!ghost) return; ghost.visible=true; ghost.position.copy(hit.point); ghost.position.y=0; }
-      function placeFromHit(event) { const hit=floorHit(event); if (!hit || !isFloorAllowed(hit.object.userData.roomId)) { tell(state.selectedRoomId ? '请放入当前房间' : '请选择一个房间地面'); return; } const assetId=state.interaction.pendingAssetId, isTrial=state.interaction.trial===true, roomId=hit.object.userData.roomId, placement={id:uid('placement'),homeId:project.id,assetId,roomId,userAdded:true,temporaryTrial:isTrial,position:{x:hit.point.x,y:0,z:hit.point.z},rotation:{x:0,y:0,z:0},scale:{x:1,y:1,z:1}}; project.placements.push(placement); addPlacement(root,placement,groups); const addedGroup=groups.placements.get(placement.id);if(addedGroup)addedGroup.userData.userAdded=true;clearGhost(); state.interaction.mode='orbit'; state.interaction.pendingAssetId=null;state.interaction.trial=false;state.interaction.pointerDown=null;controls.enabled=true; selectPlacement(placement.id);refreshTransformActions();if(isTrial){state.trialPlacementId=placement.id;ui.trialActions.classList.add('is-visible');ui.transformConfirm.classList.remove('is-visible');ui.transformDelete.classList.remove('is-visible');tell('试摆已放下：留下或撤销');}else{tell('已放入我的家');saveSoon();} }
+      function placeFromHit(event) { const hit=floorHit(event); if (!hit || !isFloorAllowed(hit.object.userData.roomId)) { tell(state.selectedRoomId ? '请放入当前房间' : '请选择一个房间地面'); return; } const assetId=state.interaction.pendingAssetId, roomId=hit.object.userData.roomId, placement={id:uid('placement'),homeId:project.id,assetId,roomId,userAdded:true,position:{x:hit.point.x,y:0,z:hit.point.z},rotation:{x:0,y:0,z:0},scale:{x:1,y:1,z:1}}; project.placements.push(placement); addPlacement(root,placement,groups); const addedGroup=groups.placements.get(placement.id);if(addedGroup)addedGroup.userData.userAdded=true;if(state.assistantTrialAssetId===assetId)state.assistantTrialPlacementId=placement.id;clearGhost(); state.interaction.mode='orbit'; state.interaction.pendingAssetId=null;state.interaction.pointerDown=null;controls.enabled=true; selectPlacement(placement.id);refreshTransformActions();tell(state.assistantTrialPlacementId===placement.id?'试摆中 · 选择留下或撤销':'已放入我的家');if(!state.assistantTrialPlacementId)saveSoon(); }
       function updateMove(event) { const hit=floorHit(event), placement=findPlacement(state.selectedPlacementId); if (!hit || !placement) return; const room=findRoom(placement.roomId); const pos=clampPosition(hit.point,room,placement.id), y=placement.position.y||0; placement.position={x:pos.x,y,z:pos.z}; const group=groups.placements.get(placement.id); group.position.set(pos.x,y,pos.z);transformDirty=true; }
       function restorePendingTransform(){if(!transformDirty||!editSnapshot)return;const placement=findPlacement(editSnapshot.id),group=groups.placements.get(editSnapshot.id);if(placement){placement.position=clone(editSnapshot.position);placement.rotation=clone(editSnapshot.rotation);placement.scale=clone(editSnapshot.placementScale);}if(group){group.position.copy(editSnapshot.groupPosition);group.rotation.copy(editSnapshot.groupRotation);group.scale.copy(editSnapshot.groupScale);}}
-      function selectPlacement(id) { if(state.caseMode){const placement=findPlacement(id);if(placement)openCaseAssetDetail(placement.assetId);return;}if(state.selectedPlacementId===id)return;if(state.selectedPlacementId)clearSelection(true);state.selectedPlacementId=id; state.interaction.mode='orbit'; transformDirty=false;const placement=findPlacement(id),group=groups.placements.get(id);editSnapshot=placement&&group?{id,position:clone(placement.position),rotation:clone(placement.rotation),placementScale:clone(placement.scale),groupPosition:group.position.clone(),groupRotation:group.rotation.clone(),groupScale:group.scale.clone()}:null;groups.placements.forEach((item,placementId)=>setSelectedLook(item, placementId===id));updateGizmo();syncInspector();refreshTransformActions();tell('拖动物体移动 · 拖动圆环旋转 · 双指或滚轮缩放'); }
-      function clearSelection(commit=true) { if(!commit)restorePendingTransform();if(commit&&transformDirty)saveSoon();state.selectedPlacementId=null; transformDirty=false;editSnapshot=null;ui.transformConfirm.classList.remove('is-visible');ui.transformDelete.classList.remove('is-visible');ui.transformHeight.classList.remove('is-visible');if(gizmo){root.remove(gizmo);gizmo=null;}groups.placements.forEach((group)=>setSelectedLook(group,false)); syncInspector(); }
-      function confirmTransform(){if(!state.selectedPlacementId)return;const changed=transformDirty;clearSelection(true);tell(changed?'组件调整已保存':'组件已保存');saveSoon();}
+      function selectPlacement(id) { if(state.caseMode){const placement=findPlacement(id);if(placement)openCaseAssetDetail(placement.assetId);return;}if(!canEditProject()||state.selectedPlacementId===id)return;if(state.selectedPlacementId)clearSelection(true);state.selectedPlacementId=id; state.interaction.mode='orbit'; transformDirty=false;const placement=findPlacement(id),group=groups.placements.get(id);editSnapshot=placement&&group?{id,position:clone(placement.position),rotation:clone(placement.rotation),placementScale:clone(placement.scale),groupPosition:group.position.clone(),groupRotation:group.rotation.clone(),groupScale:group.scale.clone()}:null;groups.placements.forEach((item,placementId)=>setSelectedLook(item, placementId===id));updateGizmo();syncInspector();refreshTransformActions();tell('拖动物体移动 · 拖动圆环旋转 · 双指或滚轮缩放');if(id!==state.assistantTrialPlacementId&&!state.assistantOpen)setTimeout(()=>{if(state.selectedPlacementId===id&&!state.assistantOpen)openMatchAssistant('replace','active');},260); }
+      function clearSelection(commit=true,force=false) { if(!force&&state.selectedPlacementId===state.assistantTrialPlacementId){tell('请先选择留下或撤销这次试摆');return;}if(!commit)restorePendingTransform();if(commit&&transformDirty)saveSoon();state.selectedPlacementId=null; transformDirty=false;editSnapshot=null;ui.transformConfirm.classList.remove('is-visible');ui.transformDelete.classList.remove('is-visible');ui.transformHeight.classList.remove('is-visible');if(gizmo){root.remove(gizmo);gizmo=null;}groups.placements.forEach((group)=>setSelectedLook(group,false)); syncInspector(); }
+      function confirmTransform(){if(!state.selectedPlacementId)return;const placement=findPlacement(state.selectedPlacementId),trial=placement?.id===state.assistantTrialPlacementId,changed=transformDirty;if(trial){const favorites=getFavorites(),wasFavorite=favorites.has(placement.assetId),originalId=state.assistantTrialOriginalPlacementId;if(!wasFavorite){favorites.add(placement.assetId);setFavorites(favorites);renderAssetDrawer();}if(originalId){const originalGroup=groups.placements.get(originalId);if(originalGroup)originalGroup.parent?.remove(originalGroup);groups.placements.delete(originalId);groups.selectable=groups.selectable.filter((item)=>item!==originalGroup);project.placements=project.placements.filter((item)=>item.id!==originalId);}state.assistantTrialAssetId='';state.assistantTrialPlacementId='';state.assistantTrialOriginalPlacementId='';clearSelection(true,true);tell(wasFavorite?'已留下这件家具':'已留下，并自动加入收藏');saveSoon();scheduleMatchAssistantNudge(1800,'active');return;}clearSelection(true);tell(changed?'组件调整已保存':'组件已保存');saveSoon();}
       function syncInspector() { window.syncInspector(); }
       function getGhost() { return root.getObjectByName('placement-ghost'); }
       function clearGhost() { const ghost=getGhost(); if (ghost) root.remove(ghost); }
@@ -949,7 +1540,8 @@
       function placementWallInsets(placementId){const group=groups.placements.get(placementId);if(!group)return{x:.02,z:.02};group.updateMatrixWorld(true);const box=new THREE.Box3().setFromObject(group),x=Math.max(group.position.x-box.min.x,box.max.x-group.position.x,0)+.02,z=Math.max(group.position.z-box.min.z,box.max.z-group.position.z,0)+.02;return{x,z};}
       function clampPosition(point,room,placementId) { const inset=placementWallInsets(placementId);if(!room&&project.realScene){const real=project.realScene.room;return{x:THREE.MathUtils.clamp(point.x,-real.w/2+inset.x,real.w/2-inset.x),z:THREE.MathUtils.clamp(point.z,-real.d/2+inset.z,real.d/2-inset.z)};} return {x:THREE.MathUtils.clamp(point.x,room.x-room.width/2+inset.x,room.x+room.width/2-inset.x),z:THREE.MathUtils.clamp(point.z,room.z-room.depth/2+inset.z,room.z+room.depth/2-inset.z)}; }
       function collides(placement,ignoreId='') { const radius=assetFootprint(placement.assetId)/2; return project.placements.some((other)=>other.id!==ignoreId && other.roomId===placement.roomId && Math.hypot(other.position.x-placement.position.x,other.position.z-placement.position.z)<radius+(assetFootprint(other.assetId)/2)+.12); }
-      function beginPlacement(assetId,{trial=false}={}) { if(state.interaction.mode==='placing'&&state.interaction.pendingAssetId===assetId)return;if(state.trialPlacementId){tell('请先留下或撤销当前试摆');return;}if(state.selectedPlacementId)clearSelection(true);state.interaction.mode='placing'; state.interaction.pendingAssetId=assetId;state.interaction.trial=trial; state.drawerExpanded=false; renderAssetDrawer(); controls.enabled=false; const ghost=createAssetGroup(assetId,true); ghost.name='placement-ghost'; ghost.visible=false; root.add(ghost); ui.placementHint.textContent=state.selectedRoomId ? '点按当前房间地面试摆' : '点按任意房间地面试摆'; ui.placementHint.classList.add('is-visible'); tell(trial?'点击地面放下临时家具':'选择一个房间地面摆放'); }
+      function beginPlacement(assetId) { if(!canEditProject())return;if(state.interaction.mode==='placing'&&state.interaction.pendingAssetId===assetId)return;if(state.assistantTrialPlacementId){tell('请先留下或撤销当前试摆');return;}if(state.selectedPlacementId)clearSelection(true);state.interaction.mode='placing'; state.interaction.pendingAssetId=assetId; state.drawerExpanded=false; renderAssetDrawer(); controls.enabled=false; const ghost=createAssetGroup(assetId,true); ghost.name='placement-ghost'; ghost.visible=false; root.add(ghost); ui.placementHint.textContent=state.selectedRoomId ? '点按当前房间地面放入组件' : '点按任意房间地面放入组件'; ui.placementHint.classList.add('is-visible'); tell(state.assistantTrialAssetId?'点击地面放下临时家具':'选择一个房间地面摆放'); }
+      function beginReplacementTrial(assetId,originalId) { if(!canEditProject())return;const original=findPlacement(originalId),originalGroup=groups.placements.get(originalId);if(!original||!originalGroup){tell('没有找到要换搭的家具');return;}clearSelection(true,true);state.assistantTrialOriginalPlacementId=originalId;originalGroup.visible=false;const placement={id:uid('placement'),homeId:project.id,assetId,roomId:original.roomId,userAdded:true,position:clone(original.position),rotation:clone(original.rotation),scale:clone(original.scale)};project.placements.push(placement);addPlacement(root,placement,groups);state.assistantTrialPlacementId=placement.id;state.interaction.mode='orbit';state.interaction.pendingAssetId=null;selectPlacement(placement.id);refreshTransformActions(); }
       function beginMove() { if (!state.selectedPlacementId) return; state.interaction.mode='moving'; controls.enabled=false; ui.placementHint.textContent='拖动组件到合适的位置'; ui.placementHint.classList.add('is-visible'); }
       function focusRoom(id) { state.selectedRoomId=id || null; renderRooms(); applyRoomFocus(); resetView(); }
       function applyRoomFocus() { groups.rooms.forEach((group,roomId)=>{ const emphasis=!state.selectedRoomId || roomId===state.selectedRoomId; group.traverse((object)=>{ if (object.material?.transparent !== undefined && object.userData.baseOpacity !== undefined) { object.material.transparent=!emphasis; object.material.opacity=emphasis?object.userData.baseOpacity:Math.min(object.userData.baseOpacity,.22); object.material.needsUpdate=true; } }); }); applyFinishesToGroups(project,groups); }
@@ -965,7 +1557,7 @@
       function applyFloorPreset(name,silent){const preset=FLOOR_PRESETS.find(item=>item.id===name)||FLOOR_PRESETS[0];state.selectedFloorPreset=preset.id;if(project.decor)project.decor.floorPreset=preset.id;groups.floors.forEach(mesh=>{mesh.material.color.set(preset.color);mesh.material.map=null;mesh.material.bumpMap=null;mesh.material.roughness=.76;mesh.material.needsUpdate=true;});renderAssetDrawer();getFloorTexture(preset,texture=>{groups.floors.forEach(mesh=>{mesh.material.color.set('#ffffff');mesh.material.map=texture;mesh.material.bumpMap=null;mesh.material.roughness=.74;mesh.material.needsUpdate=true;});});if(!silent)tell(`已切换为${preset.name}`);}
       function applyWallColor(color,silent){state.selectedWallColor=color;if(project.decor)project.decor.wallColor=color;groups.walls.forEach(mesh=>{mesh.material.map=null;mesh.material.color.set(color);mesh.material.needsUpdate=true;});renderAssetDrawer();if(!silent)tell('墙面颜色已更新');}
       function applyWindowStyle(name,silent){const colors={"dark-grid":'#30383e',"white-minimal":'#e6e3da',"wood-slim":'#8b684d'},color=colors[name]||colors['dark-grid'];state.selectedWindowStyle=colors[name]?name:'dark-grid';if(project.decor)project.decor.windowStyle=state.selectedWindowStyle;groups.windowParts.filter(part=>part.userData.windowRole==='frame').forEach(part=>{part.material.color.set(color);part.material.needsUpdate=true;});renderAssetDrawer();if(!silent)tell('窗户样式已更新');}
-      applyFloorPreset(state.selectedFloorPreset,true);applyWallColor(state.selectedWallColor,true);applyWindowStyle(state.selectedWindowStyle,true);resetView(); window.beginPlacement=beginPlacement; window.beginMove=beginMove; window.focusRoom=focusRoom; window.resetSceneView=resetView; window.clearSceneSelection=clearSelection; return {dispose,capturePreview,captureView,restoreView,removePlacement,groups,root,controls,resetView,topView,focusRoom,selectPlacement,clearSelection,beginPlacement,beginMove,applyFinishes,applyFloorPreset,applyWallColor,applyWindowStyle,confirmTransform,scalePlacement,movePlacementHeight};
+      applyFloorPreset(state.selectedFloorPreset,true);applyWallColor(state.selectedWallColor,true);applyWindowStyle(state.selectedWindowStyle,true);resetView(); window.beginPlacement=beginPlacement; window.beginMove=beginMove; window.focusRoom=focusRoom; window.resetSceneView=resetView; window.clearSceneSelection=clearSelection; return {dispose,capturePreview,captureView,restoreView,removePlacement,groups,root,controls,resetView,topView,focusRoom,selectPlacement,clearSelection,beginPlacement,beginReplacementTrial,beginMove,applyFinishes,applyFloorPreset,applyWallColor,applyWindowStyle,confirmTransform,scalePlacement,movePlacementHeight};
     }
 
     function addRealSceneShell(root, project, groups) {
@@ -1131,14 +1723,14 @@
     }
     function undoTrial(){const id=state.trialPlacementId;if(!id)return;sceneRuntime?.removePlacement?.(id);state.trialPlacementId=null;ui.trialActions.classList.remove('is-visible');tell('已撤销试摆，收藏仍保留');}
     function keepTrial(){const id=state.trialPlacementId,placement=state.project?.placements.find((item)=>item.id===id);if(!placement)return;delete placement.temporaryTrial;state.trialPlacementId=null;ui.trialActions.classList.remove('is-visible');sceneRuntime?.clearSelection?.(true);saveSoon();tell('已留下并保存到我的家');}
-    function syncInspector() { if (!sceneRuntime) return; updateCaseCollectOne(); const placement=state.selectedPlacementId && state.project.placements.find((item)=>item.id===state.selectedPlacementId); ui.inspector.classList.toggle('is-visible',Boolean(placement)&&!state.caseMode); refreshTransformActions(); ui.placementHint.classList.toggle('is-visible',['placing','moving'].includes(state.interaction.mode)); if (!placement) return; const asset=resolveAsset(placement.assetId); ui.inspectorTitle.textContent=asset.name; ui.inspectorCopy.textContent='已选中 · 可移动、旋转、等比缩放'; ui.rotateLeft.hidden=false; ui.rotateRight.hidden=false; ui.scaleDown.hidden=false; ui.scaleUp.hidden=false; ui.moveSelected.hidden=false; ui.deleteSelected.hidden=false; }
+    function syncInspector() { if (!sceneRuntime) return; updateCaseCollectOne(); const placement=state.selectedPlacementId && state.project.placements.find((item)=>item.id===state.selectedPlacementId); ui.inspector.classList.toggle('is-visible',Boolean(placement)&&canEditProject()); refreshTransformActions(); ui.placementHint.classList.toggle('is-visible',canEditProject()&&['placing','moving'].includes(state.interaction.mode)); if (!placement) return; const asset=resolveAsset(placement.assetId); ui.inspectorTitle.textContent=asset.name; ui.inspectorCopy.textContent='已选中 · 可移动、旋转、等比缩放'; ui.rotateLeft.hidden=false; ui.rotateRight.hidden=false; ui.scaleDown.hidden=false; ui.scaleUp.hidden=false; ui.moveSelected.hidden=false; ui.deleteSelected.hidden=false; }
     window.syncInspector=syncInspector;
     function clearSelection() { sceneRuntime?.clearSelection(); }
     function selectRoom(id) { sceneRuntime?.focusRoom(id); }
     function rotateSelected(direction) { const placement=state.project.placements.find((item)=>item.id===state.selectedPlacementId); if (!placement) return; placement.rotation.y += direction*Math.PI/12; const group=sceneRuntime.groups.placements.get(placement.id); group.rotation.y=placement.rotation.y; tell('已旋转 15°'); saveSoon(); }
     function scaleSelected(factor) { sceneRuntime?.scalePlacement(factor,true); }
-    function deleteSelected() { const id=state.selectedPlacementId; if (!id) return; const group=sceneRuntime.groups.placements.get(id); sceneRuntime?.clearSelection(true); if (group) { group.parent.remove(group); sceneRuntime.groups.placements.delete(id); sceneRuntime.groups.selectable=sceneRuntime.groups.selectable.filter((item)=>item!==group); } state.project.placements=state.project.placements.filter((item)=>item.id!==id); syncInspector(); tell('组件已移除'); saveSoon(); }
-    function exitInteraction() { if (!sceneRuntime) return; if (state.interaction.mode === 'placing') { const ghost=sceneRuntime.root.getObjectByName('placement-ghost'); if (ghost) sceneRuntime.root.remove(ghost); } state.interaction.mode='orbit'; state.interaction.pendingAssetId=null; sceneRuntime.controls.enabled=true; ui.placementHint.classList.remove('is-visible'); tell('已取消当前操作'); }
+    function deleteSelected() { if(!canEditProject())return;const id=state.selectedPlacementId; if (!id) return;if(id===state.assistantTrialPlacementId){cancelAssistantTrial();return;} const group=sceneRuntime.groups.placements.get(id); sceneRuntime?.clearSelection(true,true); if (group) { group.parent.remove(group); sceneRuntime.groups.placements.delete(id); sceneRuntime.groups.selectable=sceneRuntime.groups.selectable.filter((item)=>item!==group); } state.project.placements=state.project.placements.filter((item)=>item.id!==id); syncInspector(); tell('组件已移除'); saveSoon(); }
+    function exitInteraction() { if (!sceneRuntime) return;const cancelledTrial=state.interaction.mode==='placing'&&Boolean(state.assistantTrialAssetId)&&!state.assistantTrialPlacementId;if(state.interaction.mode === 'placing') { const ghost=sceneRuntime.root.getObjectByName('placement-ghost'); if (ghost) sceneRuntime.root.remove(ghost); } state.interaction.mode='orbit'; state.interaction.pendingAssetId=null;if(cancelledTrial)state.assistantTrialAssetId=''; sceneRuntime.controls.enabled=true; ui.placementHint.classList.remove('is-visible'); tell(cancelledTrial?'已取消试摆':'已取消当前操作'); }
     // 分享同款案例或当前家。支持系统分享；不支持时复制可访问链接。
     function openShareSheet() { ui.shareSheet.hidden=false; requestAnimationFrame(()=>ui.shareSheet.classList.add('is-open')); }
     function closeShareSheet() { ui.shareSheet.classList.remove('is-open'); setTimeout(()=>{ ui.shareSheet.hidden=true; }, 260); }
@@ -1173,9 +1765,15 @@
     ui.aiQuick.addEventListener('click',()=>{ui.aiInput.value=ui.aiQuick.textContent.trim();ui.aiInput.focus();});ui.aiSend.addEventListener('click',submitRecommendation);ui.aiInput.addEventListener('keydown',(event)=>{if(event.key==='Enter'&&!event.isComposing){event.preventDefault();submitRecommendation();}});
     ui.recommendGrid.addEventListener('click',(event)=>{const collect=event.target.closest('[data-recommend-collect]');if(collect){collectRecommendedAsset(collect.dataset.recommendCollect);collect.textContent='✓ 已收藏';collect.disabled=true;return;}const trial=event.target.closest('[data-try-place]');if(trial)startTryPlacement(trial.dataset.tryPlace,trial);});
     ui.trialUndo.addEventListener('click',undoTrial);ui.trialKeep.addEventListener('click',keepTrial);
+    ui.matchAssistantLauncher.addEventListener('click',()=>openMatchAssistant('complete','passive'));ui.matchAssistantNudge.addEventListener('click',()=>openMatchAssistant(ui.matchAssistantNudge.dataset.matchIntent||'complete',state.assistantNudgeKind));ui.matchAssistantClose.addEventListener('click',closeMatchAssistant);
+    ui.matchAssistantIntents.addEventListener('click',(event)=>{const button=event.target.closest('[data-match-intent]');if(button)chooseMatchAssistantIntent(button.dataset.matchIntent);});
+    ui.matchAssistantPopular.addEventListener('click',choosePopularRecommendation);ui.matchAssistantRefresh.addEventListener('click',()=>{closeMatchDetail();void requestMatchRecommendations();});ui.matchAssistantScrim.addEventListener('click',()=>{if(state.assistantDetailAssetId)closeMatchDetail();else closeMatchAssistant();});
+    ui.matchAssistantQueryForm.addEventListener('submit',(event)=>{event.preventDefault();parseMatchAssistantQuery(ui.matchAssistantQuery.value);});
+    ui.matchAssistantCards.addEventListener('click',(event)=>{const favorite=event.target.closest('[data-match-card-favorite]');if(favorite){toggleMatchFavorite(favorite.dataset.matchCardFavorite);return;}const trial=event.target.closest('[data-match-card-trial]');if(trial){beginRecommendedPlacement(trial.dataset.matchCardTrial);return;}const card=event.target.closest('[data-match-detail]');if(card)openMatchDetail(card.dataset.matchDetail);});
+    ui.matchDetailView.addEventListener('click',(event)=>{if(event.target.closest('[data-match-detail-back]')){closeMatchDetail();return;}const favorite=event.target.closest('[data-match-favorite]');if(favorite){toggleMatchFavorite(favorite.dataset.matchFavorite);return;}const place=event.target.closest('[data-match-place]');if(place)beginRecommendedPlacement(place.dataset.matchPlace);});
     ui.daylightButton.addEventListener('click',()=>{ if(!state.project||state.project.source?.type==='video_rebuild') return; const next = state.project.daylight === 'night' ? 'day' : 'night'; state.project.daylight = next; ui.daylightButton.textContent = next === 'night' ? '🌙' : '☀'; saveSoon(); tell(next === 'night' ? '已切换到黑夜' : '已切换到白天'); }); ui.realTimeSlider.addEventListener('input',()=>applyRealTimeProgress(ui.realTimeSlider.value));ui.realTimeSlider.addEventListener('change',()=>{applyRealTimeProgress(ui.realTimeSlider.value,true);if(state.project?.decor){state.project.decor.timeValue=Number(ui.realTimeSlider.value);saveSoon();}}); ui.rotateLeft.addEventListener('click',()=>rotateSelected(-1)); ui.rotateRight.addEventListener('click',()=>rotateSelected(1)); ui.scaleDown.addEventListener('click',()=>scaleSelected(1/1.15)); ui.scaleUp.addEventListener('click',()=>scaleSelected(1.15)); ui.moveSelected.addEventListener('click',()=> sceneRuntime?.beginMove()); ui.deleteSelected.addEventListener('click',deleteSelected);ui.heightUp.addEventListener('click',()=>sceneRuntime?.movePlacementHeight(.1));ui.heightDown.addEventListener('click',()=>sceneRuntime?.movePlacementHeight(-.1));
     ui.editorBack.addEventListener('click',returnToSetup); ui.shareButton.addEventListener('click',openShareSheet); ui.shareSheet.addEventListener('click',async(event)=>{ if(event.target.closest('[data-share-close]')){ closeShareSheet(); return; } const button=event.target.closest('[data-share]'); if(button){ closeShareSheet();try{tell(await shareCurrentHome(button.dataset.share));}catch(error){if(error?.name!=='AbortError')tell('分享没有完成，请重试');} } });
-    document.addEventListener('keydown',(event)=>{if(event.key==='Escape' && state.interaction.mode!=='orbit') exitInteraction();}); window.addEventListener('pagehide',()=>{clearTimeout(saveTimer);persistProjectNow();});window.addEventListener('beforeunload',()=>{clearTimeout(saveTimer);persistProjectNow();disposeScene();});
+    document.addEventListener('keydown',(event)=>{if(event.key==='Escape'&&state.assistantDetailAssetId){closeMatchDetail();return;}if(event.key==='Escape'&&state.assistantOpen){closeMatchAssistant();return;}if(event.key==='Escape' && state.interaction.mode!=='orbit') exitInteraction();}); window.addEventListener('pagehide',()=>{clearTimeout(saveTimer);cancelAssistantTrial({announce:false});persistProjectNow();disposeMatchDetailPreview();});window.addEventListener('beforeunload',()=>{clearTimeout(saveTimer);cancelAssistantTrial({announce:false});persistProjectNow();disposeMatchDetailPreview();disposeScene();});
     state.phase='setup';renderTemplates();renderSavedHomes();renderVideoScenes();updatePhases();
     const requestedAssetId=QUERY.get('addAsset');
     homeSceneService.hydrate().then(async()=>{
