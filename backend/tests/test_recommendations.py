@@ -133,6 +133,15 @@ class RecommendationTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("functional_complement", items[0]["reasonCodes"])
         self.assertIn("missing_category", items[0]["reasonCodes"])
 
+    def test_room_priority_does_not_invent_a_functional_complement(self):
+        items = recommend_from_catalog(
+            [self.asset("bed", "床", styles=["现代"])],
+            {"mode": "space", "room": "bedroom", "styles": ["现代"], "limit": 1},
+            {"mode": "space", "room": "bedroom"},
+        )
+        self.assertNotIn("functional_complement", items[0]["reasonCodes"])
+        self.assertIn("missing_category", items[0]["reasonCodes"])
+
     def test_first_four_are_diverse_and_caps_category_and_same_video(self):
         categories = ["灯具", "柜子", "地毯", "装饰", "绿植", "桌子"]
         assets = []

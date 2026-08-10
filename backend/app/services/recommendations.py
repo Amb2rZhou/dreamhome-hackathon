@@ -248,6 +248,7 @@ def recommend_from_catalog(assets: list[dict], request: dict, intent: dict) -> l
         request = {**request, "targetCategory": _asset_category(selected)}
     room = _room_key(str(intent.get("room") or request.get("room") or ""))
     target_categories, complement_categories = _target_categories(mode, request, room, placed_categories)
+    explicit_target = _canonical_category(str(request.get("targetCategory") or ""))
     styles = _strings(request.get("styles")) + _strings(intent.get("styles"))
     colors = _strings(request.get("colors")) + _strings(intent.get("colors"))
     materials = _strings(request.get("materials"))
@@ -274,6 +275,7 @@ def recommend_from_catalog(assets: list[dict], request: dict, intent: dict) -> l
         score = 0.0
         if target_index >= 0:
             score += max(6, 34 - target_index * 4)
+        if category in complement_categories or (explicit_target and category == explicit_target):
             reason_codes.append("functional_complement")
         if category not in placed_categories and target_index >= 0:
             score += 14
