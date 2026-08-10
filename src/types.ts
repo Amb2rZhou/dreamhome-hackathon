@@ -15,6 +15,10 @@ export interface CraftJob {
   stage?: string
   error?: string
   backendJobId?: string
+  // The backend owns the untouched frame and lasso geometry under this id.
+  // Keeping only the id in UI state makes refresh-safe retry possible without
+  // duplicating large frame blobs in localStorage.
+  backendSelectionId?: string
   backendMode?: 'fal' | 'local-fallback' | 'retry' | 'waiting' | 'unavailable'
   sourceSelectionId?: string
   resultComponent?: LibraryComponent

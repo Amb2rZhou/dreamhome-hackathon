@@ -56,6 +56,24 @@ Content-Type: application/json
 
 响应包含 `select_id`、结构化 `labels` 和素材库内的疑似同款 `candidates`。
 
+当前 Feed 使用 multipart 上传完整 JPEG，并额外传入明确的 `user_id` 和
+`client_task_id`。后端在返回 `select_id` 前就把完整帧、上下文裁图、时间点、
+`bbox`、`polygon`、标签和候选同款写入 `selection_sessions`；浏览器不需要把大图
+复制进 localStorage。
+
+## 2.1 刷新后恢复小工坊任务
+
+```http
+GET /api/videos/selection-tasks?user_id=user_123
+GET /api/videos/selection-tasks/{select_id}?user_id=user_123
+```
+
+- 只返回该明确用户的任务，不使用隐式 `demo` 身份。
+- `ready` / `retryable` 可以继续使用原 `select_id` 调用 `/select/confirm`。
+- `submitted` 携带原 `job_id`，前端恢复轮询，不重新创建付费任务。
+- 生成提交失败会保留原始输入并标为 `retryable`；API 进程重启后仍可恢复。
+- 已成功复用或完成的任务不再出现在待处理列表中。
+
 ## 3A. 复用同款
 
 用户确认候选就是同一件时，不重新花费 3D 生成：
@@ -135,5 +153,7 @@ GET /api/library?user_id=user_123
 
 - `422 production mode requires a valid frame_data_uri`：`/select` 没有收到可解码的暂停帧。
 - `503 production pipeline is not ready`：查看响应里的 `capability.blockers`，由后端负责人补齐配置。
+- `503 selection production submission failed`：输入已经持久化，前端可在服务恢复后使用原
+  `select_id` 重试，不要求用户重新截取已经消失的视频帧。
 - job `failed` 且 `stage=input_qc/single_object_qc/identity_qc`：自动质量门拒绝了当前圈选；
   前端应提示用户换一个更完整、更清晰的视角重新圈选。

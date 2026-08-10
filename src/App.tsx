@@ -5,7 +5,14 @@ import { ImageFeedCarousel } from './ImageFeedCarousel'
 import { genSticker } from './stickerGen'
 import { captureBbox, captureImageBbox, captureImageSelectionGeometry, captureVideoSelectionUpload, saveTraceToBackend, loadTracesFromBackend, traceImageUrl, type ImageSelectionGeometry, type VideoSelectionUpload } from './segmentApi'
 import { falJobToComponent, getFalJob } from './falGenerationApi'
-import { confirmImagePostSelection, confirmVideoSelection, submitImagePostSelection, submitVideoSelection } from './videoSelectionApi'
+import {
+  confirmImagePostSelection,
+  confirmVideoSelection,
+  fetchPersistedVideoSelectionTask,
+  fetchPersistedVideoSelectionTasks,
+  submitImagePostSelection,
+  submitVideoSelection,
+} from './videoSelectionApi'
 import type { SelectionMatchCandidate } from './videoSelectionApi'
 import { AssetReuseDialog } from './AssetReuseDialog'
 import { labelsToCategory, reusableAssetToComponent } from './assetReuse'
@@ -136,6 +143,8 @@ type Action =
   | { type: 'CRAFT_FAILED'; id: string; error: string; stage?: string }
   | { type: 'CRAFT_WAITING'; id: string; error: string }
   | { type: 'CRAFT_BACKEND_SUBMITTED'; id: string; backendJobId: string; name: string; category: FurnitureCategory }
+  | { type: 'CRAFT_SELECTION_SAVED'; id: string; selectId: string }
+  | { type: 'RESTORE_CRAFT_TASKS'; batches: CraftBatch[] }
   | { type: 'RETRY_CRAFT'; id: string }
   | { type: 'SHOW_CRAFT_RESULT' }
   | { type: 'HIDE_CRAFT_RESULT' }
@@ -515,9 +524,48 @@ function reducer(state: State, action: Action): State {
         })),
       }
     }
+    case 'CRAFT_SELECTION_SAVED': {
+      const saveSelection = (job: CraftJob) => job.id === action.id
+        ? { ...job, backendSelectionId: action.selectId }
+        : job
+      return {
+        ...state,
+        currentCraft: state.currentCraft ? saveSelection(state.currentCraft) : null,
+        craftQueue: state.craftQueue.map(saveSelection),
+        batches: state.batches.map((batch) => ({
+          ...batch,
+          jobs: batch.jobs.map(saveSelection),
+        })),
+      }
+    }
+    case 'RESTORE_CRAFT_TASKS': {
+      const existingIds = new Set(state.batches.flatMap((batch) => batch.jobs.map((job) => job.id)))
+      const batches = action.batches
+        .map((batch) => ({
+          ...batch,
+          jobs: batch.jobs.filter((job) => !existingIds.has(job.id)),
+        }))
+        .filter((batch) => batch.jobs.length > 0)
+      if (batches.length === 0) return state
+      const active = batches.flatMap((batch) => batch.jobs)
+        .filter((job) => job.status === 'crafting' && job.backendMode === 'fal' && job.backendJobId)
+      if (state.currentCraft || active.length === 0) {
+        return { ...state, batches: [...state.batches, ...batches] }
+      }
+      return {
+        ...state,
+        batches: [...state.batches, ...batches],
+        currentCraft: active[0],
+        craftQueue: [...state.craftQueue, ...active.slice(1)],
+        mascot: 'working',
+      }
+    }
     case 'RETRY_CRAFT': {
       const waitingJob = state.batches.flatMap((batch) => batch.jobs)
-        .find((job) => job.id === action.id && job.status === 'waiting')
+        .find((job) => job.id === action.id && (
+          job.status === 'waiting'
+          || (job.status === 'failed' && Boolean(job.backendSelectionId))
+        ))
       if (!waitingJob) return state
       const retryJob: CraftJob = {
         ...waitingJob,
@@ -757,6 +805,45 @@ function App() {
     void refreshImagePostBindings()
   }, [refreshImagePostBindings])
   useEffect(() => {
+    let cancelled = false
+    void fetchPersistedVideoSelectionTasks(userIdRef.current).then((tasks) => {
+      if (cancelled || tasks.length === 0) return
+      const batches: CraftBatch[] = tasks.map((task) => {
+        const category = labelsToCategory(task.labels)
+        const isActive = task.status === 'submitted'
+          && (task.generation_status === 'queued' || task.generation_status === 'running')
+          && Boolean(task.job_id)
+        const job: CraftJob = {
+          id: task.client_task_id || `craft-restored-${task.select_id}`,
+          name: task.labels.sub || task.labels.category || '待分类家具',
+          category,
+          snapshot: task.preview_url || genSticker(category, CATEGORY_COLOR[category], 99),
+          color: CATEGORY_COLOR[category],
+          status: isActive ? 'crafting' : 'waiting',
+          backendMode: isActive ? 'fal' : 'waiting',
+          backendJobId: task.job_id || undefined,
+          backendSelectionId: task.select_id,
+          progress: isActive ? 10 : 0,
+          stage: isActive ? 'generate_3d' : 'waiting_backend',
+          error: task.error || undefined,
+        }
+        return {
+          id: `batch-restored-${task.select_id}`,
+          jobs: [job],
+          publicComponents: [],
+          createdAt: Math.round(task.created_at * 1000),
+          sourceFrame: { videoId: task.video_id, time: task.t },
+          notified: false,
+          dismissed: false,
+        }
+      })
+      dispatch({ type: 'RESTORE_CRAFT_TASKS', batches })
+    }).catch((error) => {
+      console.warn('[DreamHome API] saved selection tasks unavailable', error)
+    })
+    return () => { cancelled = true }
+  }, [])
+  useEffect(() => {
     if (activeFeedVideo.mediaType === 'image-carousel') return
     void refreshVideoBindings(activeFeedVideo.id)
   }, [activeFeedVideo.id, activeFeedVideo.mediaType, refreshVideoBindings])
@@ -966,45 +1053,67 @@ function App() {
             const pendingSelection = craft.sourceSelectionId
               ? selectionRequestsRef.current.get(craft.sourceSelectionId)
               : null
-            if (!pendingSelection) throw new Error('原始帧和圈选已丢失，请保持页面打开后重试')
+            const persistedTask = !pendingSelection && craft.backendSelectionId
+              ? await fetchPersistedVideoSelectionTask(
+                  craft.backendSelectionId,
+                  userIdRef.current,
+                )
+              : null
+            if (!pendingSelection && !persistedTask) {
+              throw new Error('原始帧和圈选尚未保存，请重新圈选')
+            }
             const categoryHint = craft.name === '待分类家具' ? '' : craft.name
-            const selected = pendingSelection.mediaType === 'image-carousel'
+            const selectionMediaType = pendingSelection?.mediaType ?? 'video'
+            const selectionVideoId = pendingSelection?.videoId ?? persistedTask!.video_id
+            const selected = persistedTask
+              ? {
+                  select_id: persistedTask.select_id,
+                  labels: persistedTask.labels,
+                  candidates: persistedTask.candidates,
+                  exact_match: persistedTask.exact_match,
+                }
+              : pendingSelection!.mediaType === 'image-carousel'
               ? await (async () => {
-                  const geometry = await pendingSelection.imageGeometryPromise
+                  const geometry = await pendingSelection!.imageGeometryPromise
                   if (!geometry) throw new Error('图文圈选坐标准备失败，请重新圈选')
                   return submitImagePostSelection({
-                    postId: pendingSelection.videoId,
-                    slideIndex: Math.round(pendingSelection.time),
+                    postId: pendingSelection!.videoId,
+                    slideIndex: Math.round(pendingSelection!.time),
                     geometry,
                     categoryHint,
                   })
                 })()
               : await (async () => {
-                  const upload = await pendingSelection.uploadPromise
+                  const upload = await pendingSelection!.uploadPromise
                   if (!upload) throw new Error('原始帧准备失败，请保持页面打开后重试')
                   return submitVideoSelection({
-                    videoId: pendingSelection.videoId,
-                    time: pendingSelection.time,
+                    videoId: pendingSelection!.videoId,
+                    time: pendingSelection!.time,
                     upload,
                     categoryHint,
+                    userId: userIdRef.current,
+                    clientTaskId: craft.id,
                   })
                 })()
+            if (selectionMediaType === 'video') {
+              dispatch({ type: 'CRAFT_SELECTION_SAVED', id: craft.id, selectId: selected.select_id })
+            }
             const candidate = selected.exact_match ?? selected.candidates[0]
             // Even an exact backend match must be visually confirmed: the user
             // needs to inspect the canonical GLB from every angle before binding it.
             const shouldReuse = candidate ? await requestReuseDecision(candidate) : false
             if (cancelled) return
             if (candidate && shouldReuse) {
-              const reused = pendingSelection.mediaType === 'image-carousel'
+              const reused = selectionMediaType === 'image-carousel'
                 ? await confirmImagePostSelection({
-                    postId: pendingSelection.videoId,
+                    postId: selectionVideoId,
                     selectId: selected.select_id,
                     userId: userIdRef.current,
                     useAssetId: candidate.asset.asset_id,
                     generateNew: false,
                   })
                 : await confirmVideoSelection({
-                    videoId: pendingSelection.videoId,
+                    videoId: selectionVideoId,
                     selectId: selected.select_id,
                     userId: userIdRef.current,
                     useAssetId: candidate.asset.asset_id,
@@ -1012,10 +1121,10 @@ function App() {
                   })
               if (!reused.asset_id) throw new Error('同款资产复用失败，请稍后重试')
               if (cancelled) return
-              if (pendingSelection.mediaType === 'image-carousel') {
+              if (selectionMediaType === 'image-carousel') {
                 await refreshImagePostBindings()
               } else {
-                await refreshVideoBindings(pendingSelection.videoId)
+                await refreshVideoBindings(selectionVideoId)
               }
               dispatch({
                 type: 'CRAFT_DONE',
@@ -1025,15 +1134,15 @@ function App() {
               dispatch({ type: 'SHOW_TOAST', msg: '找到已有同款 3D，已直接复用，没有重复生成。' })
               return
             }
-            const submitted = pendingSelection.mediaType === 'image-carousel'
+            const submitted = selectionMediaType === 'image-carousel'
               ? await confirmImagePostSelection({
-                  postId: pendingSelection.videoId,
+                  postId: selectionVideoId,
                   selectId: selected.select_id,
                   userId: userIdRef.current,
                   generateNew: true,
                 })
               : await confirmVideoSelection({
-                  videoId: pendingSelection.videoId,
+                  videoId: selectionVideoId,
                   selectId: selected.select_id,
                   userId: userIdRef.current,
                   generateNew: true,
@@ -1081,6 +1190,13 @@ function App() {
                 if (cancelled) return
               } else if (pendingSelection?.videoId) {
                 await refreshVideoBindings(pendingSelection.videoId)
+                if (cancelled) return
+              } else if (craft.backendSelectionId) {
+                const persisted = await fetchPersistedVideoSelectionTask(
+                  craft.backendSelectionId,
+                  userIdRef.current,
+                )
+                await refreshVideoBindings(persisted.video_id)
                 if (cancelled) return
               }
               dispatch({

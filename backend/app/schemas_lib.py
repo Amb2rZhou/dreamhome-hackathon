@@ -104,6 +104,8 @@ class SelectRequest(BaseModel):
     frame_height: Optional[int] = None
     category_hint: str = ""                # 检测框的品类(前端从 detect 结果透传)
     track_id: Optional[str] = None         # 圈的是 detect 返回的框时透传，复用该 track 不新建
+    user_id: str = ""                     # 明确浏览器身份；用于恢复该用户自己的失败任务
+    client_task_id: str = ""              # 前端工坊任务 id，仅用于刷新后恢复展示
 
 
 class MatchCandidate(BaseModel):

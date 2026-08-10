@@ -18,6 +18,7 @@ export interface WorkshopLassoTask {
   status: WorkshopTaskStatus
   progress?: number
   error?: string
+  retryable?: boolean
   resultComponentId?: string
   resultComponent?: LibraryComponent
 }
@@ -76,6 +77,7 @@ function lassoTask(job: CraftJob, batch: CraftBatch): WorkshopLassoTask {
     status,
     progress: status === 'completed' ? 100 : status === 'failed' ? job.progress ?? 0 : job.progress ?? (status === 'processing' ? 58 : 0),
     error: job.error,
+    retryable: Boolean(job.backendSelectionId),
     resultComponentId: job.resultComponent?.id,
     resultComponent: job.resultComponent,
   }

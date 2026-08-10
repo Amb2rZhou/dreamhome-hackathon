@@ -57,7 +57,11 @@ function TaskRow({
       {task.status === 'processing' && <span className="workshop-task-status is-processing"><i />加工中</span>}
       {task.status === 'completed' && <span className="workshop-task-status is-completed">查看 <b>›</b></span>}
       {task.status === 'waiting' && <span className="workshop-task-status is-waiting">重试生成</span>}
-      {task.status === 'failed' && <span className="workshop-task-status is-failed">重新圈选</span>}
+      {task.status === 'failed' && (
+        <span className="workshop-task-status is-failed">
+          {task.retryable ? '重试生成' : '重新圈选'}
+        </span>
+      )}
     </>
   )
 

@@ -3,7 +3,13 @@ import os
 
 
 def _load_dotenv() -> None:
-    env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
+    # Local worktrees may share one secret file without copying it into every
+    # checkout. Only the path is supplied here; secret values stay owned and
+    # loaded by the backend process.
+    configured_path = os.environ.get("DREAMHOME_ENV_FILE", "").strip()
+    env_path = os.path.abspath(configured_path) if configured_path else os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", ".env")
+    )
     if not os.path.exists(env_path):
         return
     with open(env_path, "r", encoding="utf-8") as f:

@@ -119,6 +119,18 @@ CREATE TABLE IF NOT EXISTS generation_jobs(
   updated_at REAL NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_generation_jobs_updated ON generation_jobs(updated_at);
+CREATE TABLE IF NOT EXISTS selection_sessions(
+  select_id     TEXT PRIMARY KEY,
+  video_id      TEXT NOT NULL,
+  user_id       TEXT NOT NULL DEFAULT '',
+  status        TEXT NOT NULL DEFAULT 'ready',
+  document_json TEXT NOT NULL DEFAULT '{}',
+  error         TEXT NOT NULL DEFAULT '',
+  created_at    REAL NOT NULL,
+  updated_at    REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_selection_sessions_user_updated
+  ON selection_sessions(user_id, updated_at);
 """
 
 
@@ -210,6 +222,81 @@ def list_generation_jobs(*, include_terminal: bool = True) -> list[dict]:
             "updated_at": row["updated_at"],
         })
     return result
+
+
+# ---- durable interactive selections ----
+
+def upsert_selection_session(
+    select_id: str,
+    video_id: str,
+    document: dict,
+    *,
+    user_id: str = "",
+    status: str = "ready",
+    error: str = "",
+) -> None:
+    now = time.time()
+    existing = _row(
+        "SELECT created_at,user_id FROM selection_sessions WHERE select_id=?",
+        (select_id,),
+    )
+    created_at = existing["created_at"] if existing else now
+    durable_user_id = user_id or (existing["user_id"] if existing else "")
+    _exec(
+        "INSERT INTO selection_sessions("
+        " select_id,video_id,user_id,status,document_json,error,created_at,updated_at"
+        ") VALUES(?,?,?,?,?,?,?,?)"
+        " ON CONFLICT(select_id) DO UPDATE SET"
+        " video_id=excluded.video_id,user_id=excluded.user_id,status=excluded.status,"
+        " document_json=excluded.document_json,error=excluded.error,updated_at=excluded.updated_at",
+        (
+            select_id,
+            video_id,
+            durable_user_id,
+            status,
+            json.dumps(document, ensure_ascii=False),
+            error,
+            created_at,
+            now,
+        ),
+    )
+
+
+def get_selection_session(select_id: str) -> Optional[dict]:
+    row = _row("SELECT * FROM selection_sessions WHERE select_id=?", (select_id,))
+    if not row:
+        return None
+    return {
+        "select_id": row["select_id"],
+        "video_id": row["video_id"],
+        "user_id": row["user_id"],
+        "status": row["status"],
+        "document": json.loads(row["document_json"] or "{}"),
+        "error": row["error"],
+        "created_at": row["created_at"],
+        "updated_at": row["updated_at"],
+    }
+
+
+def list_selection_sessions(user_id: str, *, include_consumed: bool = False) -> list[dict]:
+    where = "user_id=?"
+    params: tuple = (user_id,)
+    if not include_consumed:
+        where += " AND status NOT IN ('reused','completed','dismissed')"
+    rows = _rows(
+        f"SELECT * FROM selection_sessions WHERE {where} ORDER BY created_at DESC",
+        params,
+    )
+    return [{
+        "select_id": row["select_id"],
+        "video_id": row["video_id"],
+        "user_id": row["user_id"],
+        "status": row["status"],
+        "document": json.loads(row["document_json"] or "{}"),
+        "error": row["error"],
+        "created_at": row["created_at"],
+        "updated_at": row["updated_at"],
+    } for row in rows]
 
 
 # ---- videos ----

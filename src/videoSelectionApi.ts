@@ -44,6 +44,27 @@ export interface VideoSelectConfirmResponse {
   library_attached?: boolean
 }
 
+export interface PersistedVideoSelectionTask {
+  select_id: string
+  video_id: string
+  status: 'ready' | 'retryable' | 'submitted' | string
+  error?: string
+  created_at: number
+  updated_at: number
+  t: number
+  bbox: number[]
+  polygon: number[][]
+  labels: SelectionLabels
+  candidates: SelectionMatchCandidate[]
+  exact_match?: SelectionMatchCandidate | null
+  client_task_id?: string
+  preview_url?: string
+  job_id?: string | null
+  asset_id?: string | null
+  track_id?: string | null
+  generation_status?: 'queued' | 'running' | 'succeeded' | 'failed' | null
+}
+
 export interface VideoSelectionDraftResponse {
   job_id: string
   status: 'queued'
@@ -118,6 +139,8 @@ export async function submitVideoSelection(input: {
   upload: VideoSelectionUpload
   categoryHint?: string
   trackId?: string
+  userId: string
+  clientTaskId: string
 }): Promise<VideoSelectResponse> {
   const form = new FormData()
   form.append('t', String(input.time))
@@ -126,6 +149,8 @@ export async function submitVideoSelection(input: {
   form.append('frame_width', String(input.upload.frameWidth))
   form.append('frame_height', String(input.upload.frameHeight))
   form.append('category_hint', input.categoryHint || '')
+  form.append('user_id', input.userId)
+  form.append('client_task_id', input.clientTaskId)
   if (input.trackId) form.append('track_id', input.trackId)
   form.append('frame', input.upload.frame, `${input.videoId}-${input.time.toFixed(3)}.jpg`)
 
@@ -134,6 +159,25 @@ export async function submitVideoSelection(input: {
     body: form,
   })
   return responseJson<VideoSelectResponse>(response)
+}
+
+export async function fetchPersistedVideoSelectionTasks(
+  userId: string,
+): Promise<PersistedVideoSelectionTask[]> {
+  const response = await fetch(dreamHomeApiUrl(
+    `/api/videos/selection-tasks?user_id=${encodeURIComponent(userId)}`,
+  ))
+  return responseJson<PersistedVideoSelectionTask[]>(response)
+}
+
+export async function fetchPersistedVideoSelectionTask(
+  selectId: string,
+  userId: string,
+): Promise<PersistedVideoSelectionTask> {
+  const response = await fetch(dreamHomeApiUrl(
+    `/api/videos/selection-tasks/${encodeURIComponent(selectId)}?user_id=${encodeURIComponent(userId)}`,
+  ))
+  return responseJson<PersistedVideoSelectionTask>(response)
 }
 
 export async function confirmVideoSelection(input: {
