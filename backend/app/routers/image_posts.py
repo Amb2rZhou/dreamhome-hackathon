@@ -551,6 +551,7 @@ async def batch_produce_image_post(post_id: str, req: ImagePostBatchProduceReque
                 polygon=polygon,
                 isolation_mode=isolation_mode,
                 cutout_path=source_context,
+                identity_reference_path=recognition_context,
                 labels=labels,
                 user_id=req.user_id,
                 completion_path=completion_path,
@@ -661,7 +662,18 @@ async def confirm_image_post_selection(post_id: str, req: SelectConfirmRequest):
             "thumbnail_url": asset.get("thumb_url") or "",
         })
         _SELECTS.pop(req.select_id, None)
-        return SelectConfirmResponse(asset_id=req.use_asset_id, quality_mode="reuse")
+        library_attached = False
+        if req.user_id:
+            db.library_add(req.user_id, [req.use_asset_id], "image_selection_reuse", {
+                "image_post_id": post_id,
+                "slide_index": selection["slide_index"],
+            })
+            library_attached = True
+        return SelectConfirmResponse(
+            asset_id=req.use_asset_id,
+            quality_mode="reuse",
+            library_attached=library_attached,
+        )
     if not req.generate_new:
         raise HTTPException(400, "either use_asset_id or generate_new=true")
     if req.quality_mode != "production":
@@ -681,6 +693,7 @@ async def confirm_image_post_selection(post_id: str, req: SelectConfirmRequest):
         polygon=selection["polygon"],
         isolation_mode=selection["isolation_mode"],
         cutout_path=selection["source_crop"],
+        identity_reference_path=selection.get("recognition_context"),
         labels=selection["labels"],
         user_id=req.user_id,
         completion_path=selection.get("completion_path") or [],

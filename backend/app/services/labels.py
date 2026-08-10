@@ -15,6 +15,8 @@ import httpx
 from ..config import settings
 
 _PROMPT_FRAMED = """你是家具识别标注器。图中**红框**标出了一个物体(周围是它所在的环境,仅供参考)。
+标签只能描述红框内能直接看见的证据，不得按常见商品款式猜测。尤其是门、抽屉、柜腿、开放格、扶手、靠背等结构：
+只有边界、缝隙或连接关系清晰可见时才能写入 features。看不清的特征不写，不能用“玻璃门”、“带抽屉”等猜测补齐。
 只针对红框内的物体，输出 JSON(仅 JSON，无其他文字)：
 {"category": "沙发|单椅|床|柜子|桌子|灯具|地毯|绿植|窗帘|装饰|卫浴|家电|其他 之一",
  "sub": "更细的子品类，如 三人沙发/吊灯/边柜",
@@ -25,7 +27,8 @@ _PROMPT_FRAMED = """你是家具识别标注器。图中**红框**标出了一�
  "size_class": "小|中|大 之一，按该品类常规体量判断",
  "complete": "true|false，红框内物体主体是否完整可见：无被遮挡、未被画面截断"}"""
 
-_PROMPT = """你是家具识别标注器。观察图中的主体家具，输出 JSON(仅 JSON，无其他文字)：
+_PROMPT = """你是家具识别标注器。观察图中的主体家具。所有结构标签都需要可见证据；看不清的门、抽屉、柜腿、开放格等特征不写，不得按常见商品款式猜测。
+输出 JSON(仅 JSON，无其他文字)：
 {"category": "沙发|单椅|床|柜子|桌子|灯具|地毯|绿植|窗帘|装饰|卫浴|家电|其他 之一",
  "sub": "更细的子品类，如 三人沙发/吊灯/边柜",
  "colors": ["主要颜色，最多3个"],
@@ -55,7 +58,10 @@ async def extract_labels(image_path: Optional[str] = None, *,
     try:
         if provider in ("anthropic", "dashscope") and image_path:
             from . import cache
-            key = cache.content_key(image_path, extra=f"labels|{provider}|{category_hint}|{framed}")
+            key = cache.content_key(
+                image_path,
+                extra=f"labels-evidence-v2|{provider}|{category_hint}|{framed}",
+            )
             hit = cache.get("labels", key)
             if hit:
                 labels = hit["labels"]
@@ -156,7 +162,7 @@ async def _anthropic(image_path: str, category_hint: str = "", framed: bool = Fa
         "max_tokens": 512,
         "messages": [{"role": "user", "content": [
             {"type": "image", "source": {"type": "base64", "media_type": mime, "data": b64}},
-            {"type": "text", "text": _PROMPT_FRAMED if framed else _PROMPT},
+            {"type": "text", "text": _prompt_for(category_hint, framed)},
         ]}],
     }
     async with httpx.AsyncClient(timeout=60) as client:
@@ -178,7 +184,7 @@ async def _dashscope(image_path: str, category_hint: str = "", framed: bool = Fa
         "model": settings.DASHSCOPE_VL_MODEL,
         "messages": [{"role": "user", "content": [
             {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}},
-            {"type": "text", "text": _PROMPT_FRAMED if framed else _PROMPT},
+            {"type": "text", "text": _prompt_for(category_hint, framed)},
         ]}],
     }
     async with httpx.AsyncClient(timeout=60) as client:
@@ -190,6 +196,13 @@ async def _dashscope(image_path: str, category_hint: str = "", framed: bool = Fa
         r.raise_for_status()
         data = r.json()
     return _parse_json(data["choices"][0]["message"]["content"], category_hint)
+
+
+def _prompt_for(category_hint: str, framed: bool) -> str:
+    prompt = _PROMPT_FRAMED if framed else _PROMPT
+    if category_hint in CATEGORIES:
+        return f"已知上游品类是「{category_hint}」；请继续识别子品类和可见属性。" + prompt
+    return prompt
 
 
 # 文件名关键词 → mock 标签，保证无 key 时链路可跑、demo 数据像样

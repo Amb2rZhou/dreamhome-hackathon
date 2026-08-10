@@ -1,0 +1,58 @@
+.fire-buddy-social-stage {
+  position: relative;
+  isolation: isolate;
+}
+
+.dh-root.is-friend-share #editModeButton {
+  display: none !important;
+}
+
+/* Friend visits keep the recommendation entry, but do not show Package Ball
+   dialogue nudges over the shared room. */
+.dh-root.is-friend-share #matchAssistantNudge {
+  display: none !important;
+}
+
+.fire-buddy-social__bubble {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  max-width: min(123px, calc(100% - 24px));
+  padding: 5px 7px;
+  border: 1px solid rgba(121, 69, 47, .18);
+  border-radius: 10px 10px 10px 3px;
+  background: rgba(255, 251, 242, .94);
+  box-shadow: 0 8px 26px rgba(73, 43, 28, .16);
+  color: #633b2d;
+  font: 650 7.5px/1.38 system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+  pointer-events: none;
+  opacity: 0;
+  isolation: isolate;
+  transition: opacity .2s ease;
+  will-change: transform;
+}
+
+.fire-buddy-social__bubble.is-visible {
+  opacity: 1;
+}
+
+.fire-buddy-social__bubble::after {
+  position: absolute;
+  bottom: -5px;
+  left: calc(var(--fire-buddy-tail-x, 50%) - 4px);
+  width: 8px;
+  height: 8px;
+  border-right: 1px solid rgba(121, 69, 47, .14);
+  border-bottom: 1px solid rgba(121, 69, 47, .14);
+  background: inherit;
+  content: "";
+  transform: rotate(45deg);
+  z-index: -1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fire-buddy-social__bubble {
+    transition: none;
+  }
+}

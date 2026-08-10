@@ -29,18 +29,26 @@ def apply_compat_migrations(conn: sqlite3.Connection) -> list[str]:
             "SELECT name FROM sqlite_master WHERE type='table'"
         ).fetchall()
     }
-    if "tracks" not in tables:
-        return []
-
-    existing = {
-        row[1] for row in conn.execute("PRAGMA table_info(tracks)").fetchall()
-    }
     added: list[str] = []
-    for name, declaration in TRACK_QUALITY_COLUMNS.items():
-        if name in existing:
-            continue
-        conn.execute(f'ALTER TABLE tracks ADD COLUMN "{name}" {declaration}')
-        added.append(name)
+    if "tracks" in tables:
+        existing = {
+            row[1] for row in conn.execute("PRAGMA table_info(tracks)").fetchall()
+        }
+        for name, declaration in TRACK_QUALITY_COLUMNS.items():
+            if name in existing:
+                continue
+            conn.execute(f'ALTER TABLE tracks ADD COLUMN "{name}" {declaration}')
+            added.append(name)
+    if "user_library" in tables:
+        library_columns = {
+            row[1] for row in conn.execute("PRAGMA table_info(user_library)").fetchall()
+        }
+        if "context_json" not in library_columns:
+            conn.execute(
+                "ALTER TABLE user_library ADD COLUMN context_json "
+                "TEXT NOT NULL DEFAULT '{}'"
+            )
+            added.append("context_json")
     if added:
         conn.commit()
     return added

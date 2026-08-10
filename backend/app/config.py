@@ -3,7 +3,13 @@ import os
 
 
 def _load_dotenv() -> None:
-    env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
+    # Local worktrees may share one secret file without copying it into every
+    # checkout. Only the path is supplied here; secret values stay owned and
+    # loaded by the backend process.
+    configured_path = os.environ.get("DREAMHOME_ENV_FILE", "").strip()
+    env_path = os.path.abspath(configured_path) if configured_path else os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", ".env")
+    )
     if not os.path.exists(env_path):
         return
     with open(env_path, "r", encoding="utf-8") as f:
@@ -55,6 +61,14 @@ class Settings:
     # 语音编辑意图解析用的 LLM（缺 key 退化到关键词规则）
     ANTHROPIC_API_KEY: str = _env("ANTHROPIC_API_KEY")
     ANTHROPIC_MODEL: str = _env("ANTHROPIC_MODEL", "claude-opus-4-8")
+
+    # 搭配推荐只用 LLM 解析自然语言意图；商品始终从 canonical 目录召回。
+    DEEPSEEK_API_KEY: str = _env("DEEPSEEK_API_KEY")
+    DEEPSEEK_BASE_URL: str = _env("DEEPSEEK_BASE_URL", "https://api.deepseek.com").rstrip("/")
+    DEEPSEEK_MODEL: str = _env("DEEPSEEK_MODEL", "deepseek-chat")
+    RECOMMENDER_LLM_ENABLED: bool = _env("RECOMMENDER_LLM_ENABLED", "false").lower() in {
+        "1", "true", "yes", "on"
+    }
 
     # ---- 资产库(asset-library-plan.md) ----
     # SQLite 库文件；默认放 storage 同级

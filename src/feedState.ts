@@ -64,7 +64,9 @@ export function feedRuntimeReducer(
         index: action.index,
         videoId: action.videoId,
         pausedFrame: { videoId: action.videoId, time: action.time },
-        phase: 'browse',
+        // A source link is a request to inspect one exact occurrence, not to
+        // resume playback from approximately the same place.
+        phase: 'session',
         overlay: 'none',
       }
     case 'SET_PHASE':

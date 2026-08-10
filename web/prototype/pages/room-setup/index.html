@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#f5fbf6" />
+  <link rel="icon" href="data:," />
+  <title>DreamHome · 调整户型尺寸</title>
+  <link rel="stylesheet" href="./dreamhome-d-system.css" />
+  <style>
+    :root { color-scheme: light; }
+    body { margin:0; min-height:100vh; font-family:var(--dh-font-sans); color:var(--dh-fg-primary); background:linear-gradient(90deg,#faf4e6,#fefdf8 48%,#f8f2e3); }
+    button, input { font: inherit; }
+    .preview-stage { min-height:100vh; display:grid; place-items:center; padding:28px 18px; }
+    .status-icons { display:flex; align-items:center; gap:5px; height:17px; transform:translateY(-6px); }
+    .status-time { font-size:15px; font-weight:var(--dh-font-weight-bold); transform:translateY(-3px); }
+    .bars { display:flex; gap:2px; align-items:end; height:13px; }
+    .bars i { width:3px; border-radius:2px; background:currentColor; }
+    .bars i:nth-child(1){height:6px}.bars i:nth-child(2){height:9px}.bars i:nth-child(3){height:12px}
+    .bat { width:23px; height:12px; border:1.5px solid currentColor; border-radius:3px; position:relative; }
+    .bat::before { content:""; position:absolute; inset:2px; width:13px; background:currentColor; border-radius:1px; }
+    .bat::after { content:""; position:absolute; right:-4px; top:3px; width:2px; height:4px; background:currentColor; border-radius:2px; }
+    .dh-screen.dh-topwhite .dh-statusbar { background: var(--dh-bg-surface); }
+
+    .setup-app { display:flex; flex-direction:column; height:calc(100% - 50px); min-height:0; box-sizing:border-box; }
+    .setup-header { flex:none; display:grid; grid-template-columns:64px 1fr 64px; align-items:center; padding:2px 12px 8px; background:var(--dh-bg-surface); }
+    .setup-back { justify-self:start; margin:-4px 0; padding:0 10px 0 2px; border:0; background:transparent; color:var(--dh-color-sage-700); font-size:30px; line-height:1; cursor:pointer; }
+    .setup-back:active { transform:scale(.95); }
+    .setup-header h1 { margin:0; font-size:16px; font-weight:var(--dh-font-weight-heavy); letter-spacing:var(--dh-tracking-title); text-align:center; }
+    .setup-body { flex:1; min-height:0; display:flex; flex-direction:column; justify-content:center; gap:10px; padding:6px 12px; overflow-y:auto; scrollbar-width:none; }
+    .setup-body::-webkit-scrollbar { display:none; }
+
+    /* ---- 房间形状预设 ---- */
+    .preset-label { display:flex; align-items:baseline; justify-content:space-between; margin:0 2px 6px; }
+    .preset-label b { font-size:12px; font-weight:var(--dh-font-weight-heavy); }
+    .preset-label span { color:var(--dh-fg-muted); font-size:10px; font-weight:var(--dh-font-weight-semibold); }
+    .preset-row { display:flex; gap:6px; overflow-x:auto; padding:1px 1px 10px; scrollbar-width:none; touch-action:pan-x; }
+    .preset-row::-webkit-scrollbar { display:none; }
+    .preset-pill { flex:none; min-height:30px; padding:0 12px; border:0; border-radius:999px; background:rgba(255,255,255,.78); box-shadow:var(--dh-shadow-soft); color:var(--dh-fg-secondary); font-size:11px; font-weight:var(--dh-font-weight-bold); cursor:pointer; white-space:nowrap; }
+    .preset-pill.is-active { background:var(--dh-color-sage-600); color:#fff; }
+    .preset-pill:active { transform:scale(.97); }
+    .preset-more { flex:none; display:grid; place-items:center; min-height:30px; padding:0 12px; border-radius:999px; border:1px dashed rgba(112,136,111,.5); color:var(--dh-color-sage-700); font-size:11px; font-weight:var(--dh-font-weight-bold); text-decoration:none; white-space:nowrap; }
+
+    /* ---- 实时 3D 预览 ---- */
+    .preview-card { position:relative; flex:none; height:220px; overflow:hidden; border-radius:22px; border:1px solid rgba(255,255,255,.9); background:linear-gradient(160deg,#fdfaf2,#f4ece0); box-shadow:var(--dh-shadow-card); }
+    .preview-card canvas { display:block; width:100%; height:100%; }
+    .preview-area { position:absolute; left:12px; bottom:12px; display:flex; flex-direction:column; gap:1px; padding:7px 13px; border-radius:14px; background:rgba(255,253,247,.92); border:1px solid rgba(255,255,255,.9); box-shadow:var(--dh-shadow-soft); font-variant-numeric:tabular-nums; }
+    .preview-area b { font-size:13px; font-weight:var(--dh-font-weight-heavy); letter-spacing:var(--dh-tracking-body); }
+    .preview-area em { font-style:normal; color:var(--dh-fg-muted); font-weight:var(--dh-font-weight-semibold); font-size:11px; }
+    .preview-hint { position:absolute; right:12px; bottom:10px; color:var(--dh-fg-muted); font-size:9px; font-weight:var(--dh-font-weight-semibold); }
+
+    /* ---- 三条滑杆 ---- */
+    .dims { display:flex; flex-direction:column; gap:2px; padding:10px 12px 6px; border-radius:22px; border:1px solid rgba(255,255,255,.9); background:rgba(255,255,255,.72); box-shadow:var(--dh-shadow-soft); }
+    .dim-row { padding:5px 0 7px; }
+    .dim-head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:1px; }
+    .dim-head b { font-size:11px; font-weight:var(--dh-font-weight-bold); }
+    .dim-head b i { font-style:normal; color:var(--dh-fg-muted); font-weight:var(--dh-font-weight-semibold); }
+    .dim-value { font-size:13px; font-weight:var(--dh-font-weight-heavy); font-variant-numeric:tabular-nums; letter-spacing:var(--dh-tracking-body); }
+    .dim-value span { margin-left:1px; color:var(--dh-fg-muted); font-size:10px; font-weight:var(--dh-font-weight-semibold); }
+    .dim-range { display:block; width:100%; height:26px; margin:0; padding:0; appearance:none; -webkit-appearance:none; background:transparent; cursor:pointer; touch-action:pan-x; }
+    .dim-range::-webkit-slider-runnable-track { height:8px; border-radius:999px; background:linear-gradient(90deg,#f3e5c2,#faf0d6); }
+    .dim-range::-webkit-slider-thumb { width:22px; height:22px; margin-top:-7px; border:3px solid #fff; border-radius:50%; appearance:none; -webkit-appearance:none; background:var(--dh-color-sage-700); box-shadow:0 2px 8px rgba(150,102,29,.32); }
+    .dim-range::-moz-range-track { height:8px; border-radius:999px; background:linear-gradient(90deg,#f3e5c2,#faf0d6); }
+    .dim-range::-moz-range-thumb { width:18px; height:18px; border:3px solid #fff; border-radius:50%; background:var(--dh-color-sage-700); }
+    .dim-scale { display:flex; justify-content:space-between; margin-top:-2px; color:var(--dh-fg-muted); font-size:9px; font-weight:var(--dh-font-weight-semibold); }
+
+    .setup-hint { margin:8px 2px 2px; color:var(--dh-fg-muted); font-size:10px; font-weight:var(--dh-font-weight-semibold); text-align:center; }
+
+    .setup-foot { flex:none; display:flex; align-items:center; gap:8px; padding:10px 12px calc(12px + env(safe-area-inset-bottom)); }
+    .reset-button { flex:none; min-height:46px; padding:0 15px; border:0; border-radius:18px; background:rgba(255,255,255,.82); box-shadow:var(--dh-shadow-soft); color:var(--dh-fg-secondary); font-size:12px; font-weight:var(--dh-font-weight-bold); cursor:pointer; }
+    .reset-button:disabled { opacity:.42; cursor:not-allowed; }
+    .go-button { flex:1; min-height:46px; border:0; border-radius:18px; background:var(--dh-color-sage-600); color:#6b5330; box-shadow:0 12px 24px rgba(112,136,111,.22); font-size:14px; font-weight:var(--dh-font-weight-heavy); cursor:pointer; }
+    .go-button:active { transform:scale(.985); }
+    .empty-state { margin:26px 8px; color:var(--dh-fg-muted); font-size:12px; text-align:center; line-height:1.7; }
+
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition:none!important; animation:none!important; } }
+  </style>
+</head>
+<body>
+  <main class="preview-stage">
+    <section class="dh-phone-shell" aria-label="DreamHome 调整户型尺寸">
+      <div class="dh-screen dh-root dh-topwhite">
+        <div class="dh-island" aria-hidden="true"></div>
+        <div class="dh-statusbar"><span class="status-time">9:41</span><div class="status-icons" aria-hidden="true"><div class="bars"><i></i><i></i><i></i></div><span>5G</span><div class="bat"></div></div></div>
+        <div class="setup-app">
+          <header class="setup-header">
+            <button class="setup-back" id="backButton" aria-label="返回">‹</button>
+            <h1>调整户型尺寸</h1>
+          </header>
+          <div class="setup-body">
+            <section class="preview-card" aria-label="房间尺寸实时预览">
+              <canvas id="previewCanvas" aria-label="按当前尺寸实时渲染的 3D 房间"></canvas>
+              <div class="preview-area" id="areaBadge"></div>
+            </section>
+
+            <section class="dims" id="dimBox" aria-label="房间尺寸"></section>
+          </div>
+          <div class="setup-foot">
+            <button class="reset-button" id="resetButton">重置</button>
+            <button class="go-button" id="goButton">生成我的家</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+  <script type="module">
+    import { getAssets, getFavorites, isSupportedFloorplan } from '../shared/asset-library-data.js?v=20260810c';
+    import { createLivePreview } from '../shared/template-preview-3d.js?v=20260810c';
+    import { ROOM_PRESETS, ROOM_LIMITS, clampRoom, presetRoom, isDefaultRoom, isPresetId } from '../shared/room-presets.js?v=20260810c';
+
+    const QUERY = new URLSearchParams(location.search);
+    const MY_HOME = '../my-home/index.html';
+
+    // 预设行的数据源与 my-home 的 getFavoriteTemplates() 保持同一套过滤，
+    // 否则这里列出的形状会跟「从收藏户型生成」对不上。
+    function supportedFloorplans() {
+      return getAssets('floorplan')
+        .filter((asset) => isSupportedFloorplan(asset) && isPresetId(asset.templateId))
+        .map((asset) => ({ id: asset.id, templateId: asset.templateId, name: asset.name }));
+    }
+
+    function favoriteFloorplans() {
+      const favorites = getFavorites();
+      return supportedFloorplans().filter((item) => favorites.has(item.id));
+    }
+
+    const options = favoriteFloorplans();
+    const requested = QUERY.get('template');
+    // A valid deep link must still open before a new browser identity has
+    // finished syncing favorites. The library controls which templates exist;
+    // favorites only choose the fallback when no template was requested.
+    const initialId = (isPresetId(requested) && supportedFloorplans().some((item) => item.templateId === requested))
+      ? requested
+      : (options[0]?.templateId || '');
+
+    const el = Object.fromEntries(['previewCanvas','areaBadge','dimBox','backButton','resetButton','goButton']
+      .map((id) => [id, document.getElementById(id)]));
+
+    const state = { templateId: initialId, room: presetRoom(initialId) || { w: 5, d: 5, h: 2.8 } };
+    let preview = null;
+
+    // 初始化统一放在文件末尾的 boot()，避免用到下面才声明的 const（暂时性死区）
+
+    const DIMS = [
+      { key: 'w', label: '宽', hint: '左右' },
+      { key: 'd', label: '进深', hint: '前后' },
+      { key: 'h', label: '层高', hint: '地面到天花板' },
+    ];
+    function renderDims() {
+      el.dimBox.innerHTML = DIMS.map(({ key, label, hint }) => {
+        const [min, max] = ROOM_LIMITS[key];
+        return `<div class="dim-row">
+          <div class="dim-head"><b>${label} <i>${hint}<\/i><\/b><span class="dim-value" id="value-${key}"><\/span><\/div>
+          <input class="dim-range" type="range" id="range-${key}" min="${min}" max="${max}" step="${ROOM_LIMITS.step}"
+                 value="${state.room[key]}" aria-label="${label}（米）" />
+          <div class="dim-scale"><span>${min} m<\/span><span>${max} m<\/span><\/div>
+        <\/div>`;
+      }).join('') + '<p class="setup-hint">拖动滑杆调整尺寸</p>';
+    }
+
+    function paintReadouts() {
+      DIMS.forEach(({ key }) => {
+        const node = document.getElementById(`value-${key}`);
+        if (node) node.innerHTML = `${state.room[key].toFixed(1)}<span> m<\/span>`;
+      });
+      const area = state.room.w * state.room.d;
+      // 面积严格等于所显示的宽 × 进深，不另取整
+      el.areaBadge.innerHTML = `<b>${area.toFixed(2)} ㎡</b><em>${state.room.w.toFixed(1)} × ${state.room.d.toFixed(1)} m</em>`;
+      el.resetButton.disabled = isDefaultRoom(state.templateId, state.room);
+    }
+
+    function setRoom(next, nextTemplateId) {
+      state.room = clampRoom(next, nextTemplateId || state.templateId);
+      if (nextTemplateId) state.templateId = nextTemplateId;
+      paintReadouts();
+      preview?.update(state.room, state.templateId);
+    }
+
+    function bindEvents() {
+      el.dimBox.addEventListener('input', (event) => {
+        const input = event.target.closest('.dim-range');
+        if (!input) return;
+        const key = input.id.replace('range-', '');
+        setRoom({ ...state.room, [key]: Number(input.value) });
+      });
+
+      el.resetButton.addEventListener('click', () => {
+        setRoom(presetRoom(state.templateId));
+        DIMS.forEach(({ key }) => { const input = document.getElementById(`range-${key}`); if (input) input.value = state.room[key]; });
+      });
+
+      el.backButton.addEventListener('click', () => { location.href = MY_HOME; });
+
+      el.goButton.addEventListener('click', () => {
+        const { w, d, h } = state.room;
+        location.href = `${MY_HOME}?template=${encodeURIComponent(state.templateId)}&w=${w}&d=${d}&h=${h}&autogen=1`;
+      });
+
+      window.addEventListener('pagehide', () => preview?.dispose(), { once: true });
+    }
+
+    function boot() {
+      // 收藏里一个户型都没有时不该白屏，给一条去灵感库的出路
+      if (!initialId) {
+        const toLibrary = '../inspiration-library/index.html?from=myhome#catalog=floorplan';
+        document.querySelector('.setup-body').innerHTML =
+          '<p class="empty-state">还没有收藏任何户型。<br>先去灵感库挑一个房间形状，再回来调尺寸。</p>' +
+          `<a class="preset-more" style="margin:0 auto;display:inline-grid" href="${toLibrary}">去灵感库找户型</a>`;
+        el.resetButton.disabled = true;
+        el.goButton.textContent = '去灵感库';
+        el.goButton.addEventListener('click', () => { location.href = toLibrary; });
+        el.backButton.addEventListener('click', () => { location.href = MY_HOME; });
+        return;
+      }
+      renderDims();
+      paintReadouts();
+      preview = createLivePreview(el.previewCanvas, state.templateId, state.room);
+      bindEvents();
+    }
+
+    boot();
+  </script>
+</body>
+</html>

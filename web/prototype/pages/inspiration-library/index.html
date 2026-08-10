@@ -36,6 +36,9 @@
     .viewer-fav{display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 15px;border:1px solid rgba(190,105,89,.4);border-radius:999px;background:#fff4ef;color:#be6959;font:inherit;font-size:12px;font-weight:var(--dh-font-weight-bold);cursor:pointer;transition:background .15s ease,color .15s ease}
     .viewer-fav .vf-heart{font-size:13px;line-height:1}
     .viewer-fav[aria-pressed="true"]{background:#be6959;color:#fff;border-color:#be6959}
+    /* 弹窗左上角风格标识：文案即 tag 原文，不加「风格」字样。资产最多 2 个风格标签 */
+    .viewer-styles{position:absolute;z-index:2;left:22px;top:22px;display:flex;gap:4px;pointer-events:none}.viewer-styles:empty{display:none}
+    .vs-tag{padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.92);color:#8a5f2e;font-size:9px;font-weight:var(--dh-font-weight-heavy);line-height:1;letter-spacing:.01em;box-shadow:0 1px 4px rgba(44,59,45,.16)}
     .viewer-source{width:32px;height:32px;padding:0;border:1px solid rgba(110,132,107,.3);border-radius:50%;background:#fff;color:var(--dh-color-sage-700);display:inline-grid;place-items:center;cursor:pointer}.viewer-source svg{width:16px;height:16px}.viewer-source[hidden]{display:none}
     .confirm-modal{position:absolute;inset:0;z-index:64;display:flex;align-items:center;justify-content:center;padding:0 28px}.confirm-modal[hidden]{display:none}
     .confirm-backdrop{position:absolute;inset:0;background:rgba(20,26,21,.5);opacity:0;transition:opacity .2s ease}.confirm-modal.is-open .confirm-backdrop{opacity:1}
@@ -46,18 +49,96 @@
     .viewer-name-row{display:flex;justify-content:center}.viewer-name-wrap{position:relative;display:inline-flex;max-width:180px}.viewer-name-wrap .viewer-name{width:auto;max-width:180px}
     .viewer-stage .component-visual{width:100%;height:100%;border:0;border-radius:16px;box-shadow:none}
     /* 真实资产照片缩略图（卡片 + viewer） */
-    .visual--photo{background:#f4ecdb}.visual--photo img{width:100%;height:100%;object-fit:contain;display:block}
+    .visual--photo{background:#f4ecdb}.visual--photo img{width:100%;height:100%;object-fit:contain;display:block}.visual--photo .thumbnail-fallback{display:none}.visual--photo.is-broken img{display:none}.visual--photo.is-broken .thumbnail-fallback{display:block}
     .viewer-photo{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 42% 34%,#fbfdf9,#f4ecdb 70%,#dbe6d4)}.viewer-photo img{width:100%;height:100%;object-fit:contain}.viewer-photo-note{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);padding:4px 10px;border-radius:999px;background:rgba(29,36,31,.55);color:#fff;font-size:9px;font-weight:var(--dh-font-weight-semibold);pointer-events:none}
     .catalog-section { margin-bottom:16px; padding:11px 10px 12px; border:1px solid rgba(117,139,113,.18); border-radius:14px; background:rgba(255,255,255,.9); box-shadow:0 5px 14px rgba(69,89,67,.07); }.section-head { display:flex; align-items:center; justify-content:space-between; min-height:27px; margin-bottom:8px; }.section-tag { width:max-content; padding:5px 7px; border-radius:7px; background:var(--dh-color-sage-100); color:var(--dh-color-sage-800); font-size:11px; font-weight:var(--dh-font-weight-heavy); letter-spacing:0; }.all-button,.catalog-back { border:0; padding:4px 0; background:transparent; color:var(--dh-color-sage-700); font:inherit; font-size:11px; font-weight:var(--dh-font-weight-heavy); cursor:pointer; }
     .component-rail { display:flex; flex-wrap:nowrap; gap:9px; overflow-x:auto; overscroll-behavior-x:contain; margin:0 -2px; padding:3px 3px 7px; scrollbar-width:none; }.component-rail::-webkit-scrollbar{display:none}.component-card,.furniture-card { position:relative; }.component-card { flex:0 0 79px; min-width:0; border:0; padding:0; background:transparent; color:inherit; text-align:left; cursor:pointer; }.component-card--floorplan b{font-size:9px}.component-visual { position:relative; height:72px; overflow:hidden; border:var(--dh-card-border); border-radius:8px; background:#f7efe0; box-shadow:var(--dh-shadow-soft); }.component-card b{display:block;overflow:hidden;margin:6px 1px 0;font-size:10px;letter-spacing:0;text-overflow:ellipsis;white-space:nowrap}.favorite-control{position:absolute;z-index:3;right:4px;top:4px;width:21px;height:21px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.87);color:var(--dh-color-sage-600);font-size:12px;line-height:1;cursor:pointer;box-shadow:0 2px 5px rgba(44,59,45,.13)}.favorite-control[aria-pressed="true"]{color:#be6959;background:#fff4ef}.source-badge{position:absolute;z-index:2;left:4px;top:4px;max-width:calc(100% - 34px);overflow:hidden;padding:3px 5px;border-radius:999px;background:rgba(65,78,64,.82);color:#fff;font-size:8px;font-weight:var(--dh-font-weight-bold);line-height:1;letter-spacing:.01em;text-overflow:ellipsis;white-space:nowrap;pointer-events:none}
     .visual--floorplan{background:linear-gradient(135deg,#f7ecd5,#fffdf6)}.visual--floorplan canvas{display:block;width:100%;height:100%;background-size:cover;background-position:center;background-repeat:no-repeat}
     .furniture-tabs { display:flex; gap:6px; overflow-x:auto; margin:0 -2px; padding:1px 3px 9px; scrollbar-width:none; }.furniture-tabs::-webkit-scrollbar{display:none}.furniture-tab{flex:0 0 auto;border:1px solid rgba(110,132,107,.2);border-radius:999px;padding:5px 9px;background:rgba(255,255,255,.62);color:var(--dh-fg-secondary);font:inherit;font-size:10px;font-weight:var(--dh-font-weight-bold);cursor:pointer}.furniture-tab[aria-selected="true"]{border-color:var(--dh-color-sage-600);background:var(--dh-color-sage-600);color:white}
-    .style-first{margin-bottom:16px;padding:13px 12px;border-radius:16px;background:linear-gradient(135deg,rgba(255,250,240,.97),rgba(236,244,233,.96));box-shadow:0 5px 14px rgba(69,89,67,.08)}.style-first__head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.style-first__head b{display:block;font-size:13px;font-weight:var(--dh-font-weight-heavy)}.style-first__head span{display:block;margin-top:3px;color:var(--dh-fg-muted);font-size:9px;line-height:1.4}.assemble-button{flex:none;min-height:36px;padding:0 13px;border:0;border-radius:999px;background:var(--dh-color-sage-600);color:#fff;font:inherit;font-size:11px;font-weight:var(--dh-font-weight-heavy);box-shadow:0 6px 14px rgba(82,109,80,.2);cursor:pointer}.style-chips{display:flex;gap:7px;overflow-x:auto;margin:11px -2px 0;padding:1px 2px 4px;scrollbar-width:none}.style-chips::-webkit-scrollbar{display:none}.style-chip{flex:none;min-height:32px;padding:0 11px;border:1px solid rgba(110,132,107,.24);border-radius:999px;background:rgba(255,255,255,.82);color:var(--dh-fg-secondary);font:inherit;font-size:10px;font-weight:var(--dh-font-weight-bold);cursor:pointer}.style-chip[aria-pressed="true"]{border-color:var(--dh-color-sage-600);background:var(--dh-color-sage-600);color:#fff}.style-chip small{margin-left:3px;font-size:8px;opacity:.72}
     .furniture-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px 7px; }.furniture-card{min-width:0;border:0;padding:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.furniture-card .component-visual{height:62px}.furniture-card b{display:block;margin:5px 1px 0;overflow:hidden;font-size:9px;font-weight:var(--dh-font-weight-bold);text-overflow:ellipsis;white-space:nowrap}.visual--furniture{background:linear-gradient(145deg,#f7efe0,#fffaf2)}.object{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);background:var(--object);box-shadow:inset 0 8px rgba(255,255,255,.18)}.object--sofa{width:47px;height:22px;border-radius:12px 12px 5px 5px}.object--sofa::before{content:"";position:absolute;left:9px;top:-12px;width:29px;height:16px;border-radius:9px 9px 3px 3px;background:var(--accent)}.object--chair{width:25px;height:23px;border-radius:7px 7px 4px 4px}.object--chair::before{content:"";position:absolute;left:4px;top:-14px;width:17px;height:18px;border-radius:7px 7px 2px 2px;background:var(--accent)}.object--table{width:42px;height:15px;border-radius:50%;bottom:18px}.object--table::before{content:"";position:absolute;left:19px;top:12px;width:4px;height:20px;background:var(--accent)}.object--lamp{width:4px;height:36px;border-radius:2px;bottom:9px}.object--lamp::before{content:"";position:absolute;left:-10px;top:-10px;width:24px;height:13px;border-radius:50% 50% 3px 3px;background:var(--accent)}.object--bed{width:46px;height:25px;border-radius:5px}.object--bed::before{content:"";position:absolute;left:5px;top:4px;width:35px;height:10px;border-radius:4px;background:var(--accent)}.object--cabinet{width:39px;height:29px;border-radius:3px}.object--plant{width:22px;height:23px;border-radius:45% 55% 38% 62%;background:var(--accent)}.object--plant::before{content:"";position:absolute;left:-7px;top:-8px;width:15px;height:22px;border-radius:50% 0 50% 0;background:var(--object)}.all-card{display:grid;place-items:center;height:62px;align-self:start;border:1px dashed rgba(150,112,58,.5)!important;border-radius:8px!important;background:rgba(245,236,215,.52)!important;color:var(--dh-color-sage-800)!important;font-size:10px;font-weight:var(--dh-font-weight-heavy);text-align:center}.all-card span{max-width:46px}
-    .catalog-toolbar{display:grid;grid-template-columns:54px 1fr 88px;align-items:center}.catalog-toolbar h2{margin:0;font-size:16px;font-weight:var(--dh-font-weight-heavy);text-align:center;white-space:nowrap}.catalog-toolbar .catalog-back{justify-self:start;font-size:30px;line-height:1;padding:0 10px 0 2px;margin:-4px 0;color:var(--dh-color-sage-700)}.catalog-actions{justify-self:end;display:flex;align-items:center;gap:5px}.catalog-manage{width:30px;height:30px;border:1px solid rgba(110,132,107,.32);border-radius:50%;padding:0;background:rgba(255,255,255,.82);color:var(--dh-color-sage-700);font:inherit;font-size:16px;font-weight:var(--dh-font-weight-heavy);cursor:pointer}.catalog-assemble{min-height:31px;padding:0 10px;border:0;border-radius:999px;background:var(--dh-color-sage-600);color:#fff;font:inherit;font-size:10px;font-weight:var(--dh-font-weight-heavy);cursor:pointer}.catalog-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:0 0 12px}.catalog-filters .style-chips{grid-column:1/-1;margin:0 -2px;padding-bottom:2px}.catalog-filter{min-width:0;height:31px;padding:0 6px;border:1px solid rgba(110,132,107,.26);border-radius:9px;background:rgba(255,255,255,.92);color:var(--dh-fg-secondary);font:inherit;font-size:10px;font-weight:var(--dh-font-weight-semibold)}.catalog-result-count{grid-column:1/-1;margin:-1px 1px 0;color:var(--dh-fg-muted);font-size:9px}.catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px}.catalog-grid .component-card{min-width:0}.catalog-grid .component-visual{height:86px}.empty-state{padding:24px 10px;text-align:center;color:var(--dh-fg-secondary);font-size:12px}.toast{position:absolute;z-index:40;left:50%;bottom:78px;transform:translateX(-50%) translateY(8px);opacity:0;padding:9px 12px;border-radius:999px;background:rgba(29,36,31,.9);color:white;font-size:11px;font-weight:var(--dh-font-weight-semibold);pointer-events:none;transition:.2s ease}.toast.show{opacity:1;transform:translateX(-50%)}
-    /* 选择模式：删除模式只可选自有组件；拼装模式可选全部 canonical 家具 */
+    /* ---- 全部页筛选条：只展示已选标签，条件在半屏 sheet 里改 ---- */
+    .filter-bar{display:flex;align-items:center;gap:8px;margin:0 -2px 12px;padding:1px 2px}
+    .filter-open{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;min-height:30px;padding:0 11px;border:1px solid rgba(181,140,70,.32);border-radius:999px;background:#fdf7ea;color:#8a5f2e;font:inherit;font-size:11px;font-weight:var(--dh-font-weight-heavy);cursor:pointer}
+    .filter-open svg{width:14px;height:14px}.filter-open em{font-style:normal;min-width:15px;height:15px;display:grid;place-items:center;border-radius:999px;background:#be6959;color:#fff;font-size:9px}
+    .filter-tags{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}.filter-tags::-webkit-scrollbar{display:none}
+    .filter-tag{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;min-height:26px;padding:0 9px;border:1px solid #deb08c;border-radius:999px;background:#fbf3e1;color:#8a5f2e;font:inherit;font-size:10px;font-weight:var(--dh-font-weight-bold);white-space:nowrap;cursor:pointer}
+    .filter-tag i{font-style:normal;font-size:9px;opacity:.7}
+    .filter-hint{color:var(--dh-fg-muted);font-size:10px;font-weight:var(--dh-font-weight-semibold);white-space:nowrap;align-self:center}
+    .filter-clear{flex:0 0 auto;border:0;padding:4px 2px;background:transparent;color:var(--dh-color-sage-700);font:inherit;font-size:10px;font-weight:var(--dh-font-weight-heavy);cursor:pointer}
+    /* ---- 筛选 sheet ---- */
+    .fs-scroll{max-height:46vh;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}.fs-scroll::-webkit-scrollbar{display:none}
+    .fs-group{margin-bottom:14px}.fs-label{margin-bottom:8px;color:var(--dh-fg-secondary);font-size:11px;font-weight:var(--dh-font-weight-heavy)}
+    .fs-opts{display:flex;flex-wrap:wrap;gap:7px}
+    .fs-opt{display:inline-flex;align-items:center;gap:5px;min-height:30px;padding:0 11px;border:1px solid rgba(117,139,113,.22);border-radius:999px;background:rgba(255,255,255,.9);color:var(--dh-fg-secondary);font:inherit;font-size:11px;font-weight:var(--dh-font-weight-bold);cursor:pointer}
+    .fs-opt span{color:var(--dh-fg-muted);font-size:9px;font-weight:var(--dh-font-weight-semibold);font-variant-numeric:tabular-nums}
+    .fs-opt.is-on{border-color:#deb08c;background:#fbf3e1;color:#8a5f2e}.fs-opt.is-on span{color:#b58c46}
+    .fs-opt[disabled]{opacity:.34;cursor:not-allowed}
+    .fs-actions{display:flex;gap:10px;margin-top:6px;padding-top:12px;border-top:1px solid rgba(117,139,113,.14)}
+    .fs-reset{flex:0 0 88px;min-height:44px;border:1px solid rgba(117,139,113,.3);border-radius:13px;background:#fff;color:var(--dh-fg-secondary);font:inherit;font-size:13px;font-weight:var(--dh-font-weight-bold);cursor:pointer}.fs-reset[disabled]{opacity:.4;cursor:not-allowed}
+    .fs-apply{flex:1;min-height:44px;border:0;border-radius:13px;background:#be6959;color:#fff;font:inherit;font-size:13px;font-weight:var(--dh-font-weight-bold);cursor:pointer;box-shadow:0 8px 18px rgba(150,70,55,.28)}.fs-apply[disabled]{opacity:.45;box-shadow:none;cursor:not-allowed}
+    /* ---- 主页功能图标栏（参考酷家乐主入口）---- */
+    .fn-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:0 0 16px;padding:12px 4px;border-radius:16px;background:rgba(255,255,255,.86);border:1px solid rgba(117,139,113,.16);box-shadow:0 5px 14px rgba(69,89,67,.07)}
+    .fn-item{display:flex;flex-direction:column;align-items:center;gap:5px;border:0;padding:0;background:transparent;color:inherit;font:inherit;cursor:pointer}
+    .fn-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;overflow:hidden;background:linear-gradient(150deg,#fdf6e6,#f7ebd0)}
+    /* 图标是抠好的透明 PNG（3 倍图），底色与投影都由 CSS 画：调色只改这里，不用重新出图 */
+    .fn-icon img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 1.5px 2px rgba(92,72,52,.22))}
+    .fn-icon--cases{background:linear-gradient(150deg,#fdf0ec,#f8ddd5)}.fn-icon--floorplan{background:linear-gradient(150deg,#edf2f4,#d9e4ea)}
+    .fn-icon--furniture{background:linear-gradient(150deg,#fdf6e6,#f7ebd0)}.fn-icon--styles{background:linear-gradient(150deg,#f5f2ec,#e9e3d8)}
+    .fn-item b{font-size:11px;font-weight:var(--dh-font-weight-heavy);letter-spacing:.01em}
+
+    /* ---- 找案例列表 ---- */
+    .case-list{display:flex;flex-direction:column;gap:12px}
+    .case-tile{position:relative;height:132px;border:0;padding:0;border-radius:14px;background-size:cover;background-position:center;box-shadow:0 5px 14px rgba(69,89,67,.12);cursor:pointer;overflow:hidden;display:flex;align-items:flex-end}
+    .case-tile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,26,21,0) 46%,rgba(20,26,21,.66))}
+    .case-tile-foot{position:relative;z-index:1;width:100%;padding:10px 13px;text-align:left;color:#fff}.case-tile-foot b{display:block;font-size:13px;font-weight:var(--dh-font-weight-heavy);text-shadow:0 1px 4px rgba(0,0,0,.35)}.case-tile-foot span{font-size:10px;font-weight:var(--dh-font-weight-semibold);opacity:.92}.case-tile-foot i{font-style:normal}
+
+    /* ---- 风格图鉴：内容页，不列商品 ---- */
+    .sg-list{display:flex;flex-direction:column;gap:10px}
+    .sg-card{display:flex;align-items:center;gap:11px;padding:9px;border:1px solid rgba(117,139,113,.16);border-radius:14px;background:rgba(255,255,255,.92);color:inherit;font:inherit;text-align:left;cursor:pointer;box-shadow:0 4px 12px rgba(69,89,67,.07)}
+    .sg-cover{flex:0 0 62px;height:62px;border-radius:11px;background:#f7efe0 center/78% auto no-repeat;box-shadow:inset 0 0 0 1px rgba(150,112,58,.12)}
+    .sg-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+    .sg-body b{font-size:13px;font-weight:var(--dh-font-weight-heavy)}
+    .sg-desc{overflow:hidden;color:var(--dh-fg-secondary);font-size:10px;font-weight:var(--dh-font-weight-semibold);line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+    .sg-n{color:var(--dh-fg-muted);font-size:9.5px;font-weight:var(--dh-font-weight-bold);font-variant-numeric:tabular-nums}
+    .sg-card i{flex:none;color:var(--dh-color-sage-700);font-size:17px;font-style:normal}
+    .sg-more{margin-top:14px}.sg-more summary{padding:9px 2px;color:var(--dh-color-sage-800);font-size:11px;font-weight:var(--dh-font-weight-heavy);cursor:pointer}.sg-more summary::marker{color:var(--dh-color-sage-600)}.sg-more .sg-list{margin-top:8px}
+
+    /* ---- 风格详情页 ---- */
+    .sg-intro{margin:0 0 14px;color:var(--dh-fg-secondary);font-size:13px;font-weight:var(--dh-font-weight-bold);line-height:1.55}
+    .sd-count{margin:0 0 10px;color:var(--dh-fg-muted);font-size:11px;font-weight:var(--dh-font-weight-bold);font-variant-numeric:tabular-nums}
+    .sd-hero{margin-bottom:13px;padding:15px 15px 16px;border-radius:14px;box-shadow:0 4px 12px rgba(69,89,67,.08)}
+    .sd-hero b{display:block;margin-bottom:5px;font-size:19px;font-weight:var(--dh-font-weight-heavy);letter-spacing:.01em;color:#3f382f}
+    .sd-hero > span{display:block;color:#5d5347;font-size:11.5px;font-weight:var(--dh-font-weight-semibold);line-height:1.6}
+    .sd-facts{display:flex;flex-wrap:wrap;gap:7px 16px;margin-top:11px;padding-top:10px;border-top:1px solid rgba(63,56,47,.13)}
+    .sd-fact{display:flex;align-items:center;gap:6px}
+    .sd-fact-k{color:#6b6153;font-size:9.5px;font-weight:var(--dh-font-weight-heavy)}
+    .sd-fact-v{color:#3f382f;font-size:10.5px;font-weight:var(--dh-font-weight-bold)}
+    .sd-swatches{display:inline-flex;gap:3px}.sd-swatches i{width:13px;height:13px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(63,56,47,.18)}
+
+    /* ---- 整套案例：主页横滑卡 + 详情页 ---- */
+    .section-note{color:var(--dh-fg-muted);font-size:10px;font-weight:var(--dh-font-weight-semibold)}
+    .case-rail{display:flex;gap:10px;overflow-x:auto;overscroll-behavior-x:contain;margin:0 -2px;padding:3px 3px 6px;scrollbar-width:none}.case-rail::-webkit-scrollbar{display:none}
+    .case-card{flex:0 0 132px;min-width:0;border:0;padding:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
+    .case-cover{position:relative;display:block;height:82px;border-radius:11px;background-size:cover;background-position:center;box-shadow:var(--dh-shadow-soft);border:var(--dh-card-border)}
+    .case-count{position:absolute;right:5px;bottom:5px;padding:2px 7px;border-radius:999px;background:rgba(29,36,31,.62);color:#fff;font-size:8px;font-weight:var(--dh-font-weight-heavy);line-height:1.4}
+    .case-card b{display:block;margin:6px 1px 0;overflow:hidden;font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+    .case-blogger{display:block;margin:1px 1px 0;color:var(--dh-fg-muted);font-size:9px;font-weight:var(--dh-font-weight-semibold)}
+    .case-hero{position:relative;height:150px;margin-bottom:12px;border-radius:14px;background-size:cover;background-position:center;box-shadow:0 5px 14px rgba(69,89,67,.12);display:flex;align-items:flex-end}
+    .case-hero::after{content:"";position:absolute;inset:0;border-radius:14px;background:linear-gradient(180deg,rgba(20,26,21,0) 44%,rgba(20,26,21,.62))}
+    .case-hero-foot{position:relative;z-index:1;padding:11px 13px;color:#fff}.case-hero-foot b{display:block;font-size:14px;font-weight:var(--dh-font-weight-heavy);text-shadow:0 1px 4px rgba(0,0,0,.35)}.case-hero-foot span{font-size:10px;font-weight:var(--dh-font-weight-semibold);opacity:.92}
+    .case-summary{margin:0 0 14px;color:var(--dh-fg-secondary);font-size:11px;font-weight:var(--dh-font-weight-semibold);line-height:1.6}.case-summary b{color:var(--dh-color-sage-800)}
+    .case-group{margin-bottom:16px}.case-group-head{display:flex;align-items:center;gap:7px;margin-bottom:8px}.case-group-n{color:var(--dh-fg-muted);font-size:10px;font-weight:var(--dh-font-weight-bold)}
+    .component-card--readonly{opacity:.62;cursor:default}.case-placeholder{position:absolute;left:50%;top:50%;width:26px;height:26px;transform:translate(-50%,-50%);border-radius:6px;border:1.5px dashed rgba(150,112,58,.55)}
+    .case-readonly-note{display:block;margin:2px 1px 0;color:var(--dh-fg-muted);font-size:8px;font-weight:var(--dh-font-weight-semibold)}
+    .library-content.is-case{padding-bottom:10px}
+    .case-actions{position:sticky;bottom:0;z-index:5;display:flex;gap:9px;margin-top:8px;padding:12px 0 8px;background:linear-gradient(180deg,rgba(254,253,248,0),rgba(254,253,248,.97) 42%,#fefdf8)}
+    .case-save-all,.case-apply{flex:1;display:inline-flex;align-items:center;justify-content:center;min-height:42px;border-radius:13px;font:inherit;font-size:12px;font-weight:var(--dh-font-weight-bold);text-decoration:none;cursor:pointer}
+    .case-save-all{border:1px solid rgba(190,105,89,.45);background:#fff4ef;color:#be6959}.case-save-all[disabled]{opacity:.45;cursor:not-allowed}
+    .case-apply{border:0;background:#be6959;color:#fff;box-shadow:0 8px 18px rgba(150,70,55,.28)}
+    .catalog-toolbar{display:grid;grid-template-columns:64px 1fr 64px;align-items:center}.catalog-toolbar h2{margin:0;font-size:16px;font-weight:var(--dh-font-weight-heavy);text-align:center;white-space:nowrap}.catalog-toolbar .catalog-back{justify-self:start;font-size:30px;line-height:1;padding:0 10px 0 2px;margin:-4px 0;color:var(--dh-color-sage-700)}.catalog-manage{justify-self:end;white-space:nowrap;border:1px solid rgba(110,132,107,.32);border-radius:999px;padding:5px 13px;background:rgba(255,255,255,.82);color:var(--dh-color-sage-700);font:inherit;font-size:11px;font-weight:var(--dh-font-weight-heavy);cursor:pointer}.catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px}.catalog-grid .component-card{min-width:0}.catalog-grid .component-visual{height:86px}.empty-state{padding:24px 10px;text-align:center;color:var(--dh-fg-secondary);font-size:12px}.toast{position:absolute;z-index:40;left:50%;bottom:78px;transform:translateX(-50%) translateY(8px);opacity:0;padding:9px 12px;border-radius:999px;background:rgba(29,36,31,.9);color:white;font-size:11px;font-weight:var(--dh-font-weight-semibold);pointer-events:none;transition:.2s ease}.toast.show{opacity:1;transform:translateX(-50%)}
+    /* 选择模式：勾选框 + 平台资产禁用 */
     .component-card[data-selectable]{cursor:pointer}.select-check{position:absolute;z-index:4;right:4px;top:4px;width:20px;height:20px;border:2px solid #fff;border-radius:50%;background:rgba(29,36,31,.35);box-shadow:0 1px 4px rgba(44,59,45,.3);display:grid;place-items:center;color:#fff;font-size:12px;line-height:1}.component-card[data-selected="true"] .select-check{background:var(--dh-color-sage-600)}.component-card--locked{opacity:.4}.selecting .favorite-control{display:none}
-    .select-bar{position:absolute;z-index:45;left:16px;right:16px;bottom:26px;display:grid;grid-template-columns:76px 1fr;gap:10px}.select-bar[hidden]{display:none}.select-bar button{height:44px;border-radius:13px;font:inherit;font-size:13px;font-weight:var(--dh-font-weight-bold);cursor:pointer}.select-cancel{border:1px solid rgba(110,132,107,.32);background:rgba(255,255,255,.94);color:var(--dh-fg-secondary)}.select-confirm{border:0;background:#be6959;color:#fff;box-shadow:0 8px 18px rgba(150,70,55,.3)}.select-bar[data-mode="assemble"] .select-confirm{background:var(--dh-color-sage-600);box-shadow:0 8px 18px rgba(82,109,80,.25)}.select-confirm[disabled]{opacity:.45;box-shadow:none;cursor:not-allowed}
+    .select-bar{position:absolute;z-index:45;left:16px;right:16px;bottom:26px;display:flex;gap:10px}.select-bar[hidden]{display:none}.select-bar button{flex:1;height:42px;border-radius:13px;font:inherit;font-size:13px;font-weight:var(--dh-font-weight-bold);cursor:pointer}.select-cancel{border:1px solid rgba(110,132,107,.32);background:rgba(255,255,255,.94);color:var(--dh-fg-secondary)}.select-confirm{border:0;background:#be6959;color:#fff;box-shadow:0 8px 18px rgba(150,70,55,.3)}.select-confirm[disabled]{opacity:.45;box-shadow:none;cursor:not-allowed}
     #mainTabbar[hidden]{display:none}
     /* 查看弹窗 */
     .viewer{position:absolute;inset:0;z-index:60;display:flex;align-items:center;justify-content:center}.viewer[hidden]{display:none}.viewer-backdrop{position:absolute;inset:0;background:rgba(20,26,21,.5);opacity:0;transition:opacity .22s ease}.viewer.is-open .viewer-backdrop{opacity:1}
@@ -72,6 +153,10 @@
     .sheet-handle{width:40px;height:4px;margin:2px auto 12px;border-radius:999px;background:rgba(112,136,111,.35)}.sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}.sheet-head b{font-size:14px;font-weight:var(--dh-font-weight-heavy)}.sheet-close{width:28px;height:28px;border:0;background:transparent;color:var(--dh-fg-secondary);font-size:15px;cursor:pointer}.sheet-spacer{width:28px}
     .sheet-row{display:flex;align-items:center;gap:10px;box-sizing:border-box;width:100%;min-height:52px;padding:0 6px;border:0;background:transparent;color:var(--dh-fg-primary);font:inherit;font-size:14px;font-weight:var(--dh-font-weight-bold);text-align:left;text-decoration:none;cursor:pointer}.sheet-row .arrow{margin-left:auto;color:var(--dh-fg-muted);font-size:15px}.sheet-row+.sheet-row{border-top:1px solid rgba(29,36,31,.1)}
     .sheet-back{border:0;background:transparent;color:var(--dh-color-sage-700);font:inherit;font-size:15px;font-weight:var(--dh-font-weight-bold);cursor:pointer;padding:0 4px}
+    .library-shell button,.library-shell a{touch-action:manipulation}
+    .favorite-control{width:28px;height:28px;font-size:14px}.favorite-control::before{content:"";position:absolute;inset:-8px;border-radius:50%}
+    .filter-open,.filter-tag,.filter-clear,.fs-opt,.furniture-tab,.all-button,.catalog-back,.catalog-manage,.viewer-fav,.viewer-source,.viewer-delete,.sheet-close,.sheet-back,.select-bar button,.confirm-actions button,.case-save-all,.case-apply{min-height:44px}
+    .viewer-close{width:44px;height:44px;right:4px;top:4px}.sheet-close{width:44px;height:44px}.catalog-toolbar .catalog-back{min-width:44px;padding:0}.viewer-source{width:44px;height:44px}
     @media(max-width:420px){.preview-stage{min-height:100svh;padding:18px 10px}.library-app{padding:0 14px}.furniture-grid{gap:8px 6px}}
   </style>
 </head>
@@ -92,12 +177,13 @@
         <nav class="dh-tabbar dh-tabbar--main" id="mainTabbar" aria-label="主功能导航"><a class="dh-tab" href="../capture/index.html" aria-label="拍一张"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8.7 4.6c-.6 0-1.15.32-1.44.84l-.7 1.24H4.6A2.6 2.6 0 0 0 2 9.32v8.28a2.6 2.6 0 0 0 2.6 2.6h14.8a2.6 2.6 0 0 0 2.6-2.6V9.32a2.6 2.6 0 0 0-2.6-2.6h-1.96l-.7-1.24a1.65 1.65 0 0 0-1.44-.84H8.7Zm3.3 5.1a3.55 3.55 0 1 0 0 7.1 3.55 3.55 0 0 0 0-7.1Z"/></svg></span></a><a class="dh-tab" href="../discover/index.html" aria-label="刷一刷"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M6.4 3.2h11.2A3.4 3.4 0 0 1 21 6.6v10.8a3.4 3.4 0 0 1-3.4 3.4H6.4A3.4 3.4 0 0 1 3 17.4V6.6a3.4 3.4 0 0 1 3.4-3.4Zm3.5 5.05c-.5-.3-1.14.06-1.14.65v6.3c0 .59.64.95 1.14.65l5.2-3.15c.48-.29.48-1.01 0-1.3l-5.2-3.15Z"/></svg></span></a><a class="dh-tab dh-tab--active" href="./index.html" aria-label="灵感库" aria-current="page"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12 2.6a6.4 6.4 0 0 0-3.9 11.48c.46.36.74.9.82 1.48l.13.94h5.84l.13-.94c.08-.58.36-1.12.82-1.48A6.4 6.4 0 0 0 12 2.6Z"/><rect x="8.7" y="17.4" width="6.6" height="1.9" rx=".95"/><rect x="9.6" y="20" width="4.8" height="1.9" rx=".95"/></svg></span></a><a class="dh-tab" href="../my-favorites/index.html" aria-label="我的收藏"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7 3.6h10a2.2 2.2 0 0 1 2.2 2.2v13.9c0 .86-.94 1.38-1.66.92L12 17.2l-5.54 3.42c-.72.46-1.66-.06-1.66-.92V5.8A2.2 2.2 0 0 1 7 3.6Z"/></svg></span></a><a class="dh-tab" href="../my-home/index.html" aria-label="我的家"><span class="dh-tab-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10.7 3.3a2 2 0 0 1 2.6 0l6.8 5.86c.44.38.7.94.7 1.53v7.71a2 2 0 0 1-2 2h-2.8a1 1 0 0 1-1-1v-4.4a1 1 0 0 0-1-1h-2.4a1 1 0 0 0-1 1v4.4a1 1 0 0 1-1 1H6.2a2 2 0 0 1-2-2V10.7c0-.59.26-1.15.7-1.53L10.7 3.3Z"/></svg></span></a></nav>
         <div class="select-bar" id="selectBar" hidden>
           <button class="select-cancel" id="selectCancel" type="button">取消</button>
-          <button class="select-confirm" id="selectConfirm" type="button" disabled>确认删除</button>
+          <button class="select-confirm" id="confirmDelete" type="button" disabled>确认删除</button>
         </div>
         <div class="viewer" id="viewer" hidden>
           <div class="viewer-backdrop" data-viewer-close></div>
           <div class="viewer-card" role="dialog" aria-modal="true" aria-label="组件查看">
             <button class="viewer-close" id="viewerClose" type="button" aria-label="关闭">✕</button>
+            <div class="viewer-styles" id="viewerStyles" aria-label="风格标签"></div>
             <div class="viewer-stage" id="viewerStage"><span class="viewer-hint">拖动可 360° 查看</span></div>
             <div class="viewer-foot">
               <div class="viewer-name-row"><span class="viewer-name-wrap"><input class="viewer-name" id="viewerName" maxlength="16" aria-label="组件名称" /></span></div>
@@ -129,11 +215,10 @@
       </div>
     </section>
   </main>
-  <script type="importmap">{"imports":{"three":"/vendor/three.module.js","three/addons/":"/vendor/three-addons/"}}</script>
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
   <script type="module">
-    import { COMPONENT_FAMILIES, FURNITURE_CATEGORIES, getAssets, getAsset, getFavorites, toggleFavorite, removeUserAsset, addUserAsset } from '../shared/asset-library-data.js';
-    import { renderTemplatePreview, renderTemplatePreviews, disposeTemplatePreviews } from '../shared/template-preview-3d.js';
-    import { MAX_ASSEMBLY_ASSETS, encodeAssemblyAssetIds, filterFurnitureByTags, styleFacets } from '../shared/library-tag-flow.js';
+    import { COMPONENT_FAMILIES, FURNITURE_CATEGORIES, getAssets, getAsset, getFavorites, toggleFavorite, removeUserAsset, addUserAsset, sourceFeedHref, syncBackendUserAssets } from '../shared/asset-library-data.js?v=20260810c';
+    import { renderTemplatePreview, renderTemplatePreviews, disposeTemplatePreviews } from '../shared/template-preview-3d.js?v=20260810c';
 
     const home = document.querySelector('#libraryHome');
     const catalog = document.querySelector('#catalogView');
@@ -147,8 +232,76 @@
     let activeFurnitureCategory = 'all';
     let toastTimer = null;
     // 当前 catalog 上下文 + 选择模式状态（保持简洁：单一 state，渲染读它）
-    const view = { kind: '', category: '', favoriteOnly: false, filters: { color: '', material: '', style: '' } };
-    const select = { mode: '', ids: new Set() };
+    const view = { kind: '', category: '', favoriteOnly: false, caseId: '', styleId: '' };
+    // 全部页筛选：品类与风格两组，组内多选取并集、组间取交集（手机端标准筛选器语义）。
+    // 用筛选器而非 chip 栏，是因为手机端两排 chip 太挤，且 chip 栏无法在「全部」页切品类。
+    const filter = { categories: new Set(), styles: new Set() };
+    const filterEmpty = () => !filter.categories.size && !filter.styles.size;
+    const applyFilter = (assets, cats = filter.categories, styles = filter.styles) => assets.filter((asset) =>
+      (!cats.size || cats.has(asset.category)) && (!styles.size || (asset.styles || []).some((style) => styles.has(style))));
+
+    // 风格分面：完全由当前资产集算出，不硬编码任何风格名单——
+    // 风格 tag 体系归 Amber，她增删风格后这里自动跟着变，前端不做同义词合并等数据判断。
+    const styleFacets = (assets) => {
+      const count = new Map();
+      assets.forEach((asset) => (asset.styles || []).forEach((style) => count.set(style, (count.get(style) || 0) + 1)));
+      return [...count.entries()]
+        // 覆盖全集的风格等于没筛（如「家电」10 件全是现代），去掉避免给用户假选项
+        .filter(([, n]) => n < assets.length)
+        .map(([name, n]) => ({ name, n }))
+        .sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, 'zh'));
+    };
+    const select = { on: false, ids: new Set() };
+
+    // ---------- 整套案例（承接「刷一刷」的「查看同款小家」）----------
+    // 数据源就是我的家在用的那批场景 JSON，不另造数据；items[].id 即资产库的 ast_*，
+    // 所以案例里的组件能直接复用卡片渲染与收藏链路。
+    // tag 里不再写死面积：原来那个 ㎡ 是博主整套房子的名义面积（沿用自 banner 营销文案），
+    // 而案例还原的往往只是其中一个房间（奶油风标 78㎡，实际还原的客厅只有 19.4㎡）。
+    // 两个数并排显示会自相矛盾，改为一律按 scene.room 实算。
+    const CASE_INDEX = [
+      { videoId: 'vid_91fe552c5f7d', cover: '../../assets/scenes/vid_91fe552c5f7d.jpg', tag: '长厅公寓', blogger: '@云上的小路' },
+      { videoId: 'vid_40734d7f2e6c', cover: '../../assets/scenes/vid_40734d7f2e6c.jpg?v=approved-room', tag: '原木侘寂', blogger: '@鸡蛋灌饼的家' },
+      { videoId: 'vid_5f32a0ac954a', cover: '../../assets/scenes/vid_5f32a0ac954a.jpg', tag: '奶油风', blogger: '@栗子设计日记' },
+    ];
+    const roomSpec = (scene) => {
+      const room = scene?.room;
+      if (!room?.w || !room?.d) return '';
+      return `${(room.w * room.d).toFixed(1)}㎡ · ${room.w} × ${room.d} m`;
+    };
+    const SCENE_ROOT = '../../assets/demo-backend/scenes';
+    // 主页功能图标栏：灵感库能逛的四类内容各一个入口。件数在渲染时实时算，不写死。
+    // 图标是黏土质感的透明 PNG（生成图抠掉底色后归一化到 126px，即 42px 容器的 3 倍图），
+    // 圆角色块与投影都在 CSS 里，见 .fn-icon / .fn-icon--*。
+    const FN_ICON_ROOT = '../../assets/icons/fn';
+    const FN_ENTRIES = [
+      { id: 'cases', label: '找案例' },
+      { id: 'floorplan', label: '找户型' },
+      { id: 'furniture', label: '找家具' },
+      { id: 'styles', label: '找风格' },
+    ];
+    const fnCounts = () => ({
+      cases: `${CASE_INDEX.length} 套`,
+      floorplan: `${getAssets('floorplan').length} 个`,
+      furniture: `${getAssets('furniture').length} 件`,
+      styles: `${styleFacets(getAssets('furniture')).length} 种`,
+    });    const caseCache = new Map();
+    const caseMetaOf = (videoId) => CASE_INDEX.find((item) => item.videoId === videoId) || null;
+    // 场景 JSON 惰性拉取：主页只用得到组件件数，详情页才需要全量
+    const loadCase = (videoId) => {
+      if (!caseCache.has(videoId)) {
+        caseCache.set(videoId, fetch(`${SCENE_ROOT}/${videoId}.json`).then((response) => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.json();
+        }).catch((error) => { caseCache.delete(videoId); throw error; }));
+      }
+      return caseCache.get(videoId);
+    };
+    // 案例组件：能在资产库匹配到的走真实资产（可收藏），匹配不到的降级为只读占位
+    const caseItems = (scene) => (scene?.items || []).map((item) => {
+      const asset = getAsset(item.id);
+      return { id: item.id, name: item.name, tags: item.tags || [], asset, inLibrary: Boolean(asset) };
+    });
 
     // 仅供把当前浏览器的收藏选择固化为演示默认值；普通访问不会显示或触发。
     if (new URLSearchParams(location.search).get('exportFavorites') === '1') {
@@ -165,14 +318,15 @@
     const sourceBadge = (asset) => asset.sourceType === 'offline_photo' ? '<span class="source-badge">拍照生成</span>' : '';
     const visual = (asset) => {
       if (asset.kind === 'floorplan') return `<div class="component-visual visual--floorplan"><canvas data-template-preview="${asset.templateId}" aria-label="${asset.name} 3D 户型预览"></canvas></div>`;
-      if (asset.thumbnail) return `<div class="component-visual visual--photo"><img src="${asset.thumbnail}" alt="" loading="lazy" /></div>`; // 平台真实资产用照片
+      if (asset.thumbnail) { const type=asset.primitive||'cabinet'; return `<div class="component-visual visual--photo" style="--object:${asset.color};--accent:${asset.accent}"><img src="${asset.thumbnail}" alt="" loading="lazy" /><span class="thumbnail-fallback object object--${type}" aria-hidden="true"></span></div>`; }
       const type = asset.primitive || 'cabinet';
       return `<div class="component-visual visual--furniture" style="--object:${asset.color};--accent:${asset.accent}"><span class="object object--${type}"></span></div>`;
     };
+    document.addEventListener('error',(event)=>{const image=event.target;if(image instanceof HTMLImageElement&&image.closest('.visual--photo'))image.closest('.visual--photo').classList.add('is-broken');},true);
     // 选择模式下：用户组件带勾选框，平台资产变灰锁定
     const card = (asset, className = 'component-card') => {
-      if (select.mode) {
-        const locked = select.mode === 'delete' && !isUser(asset);
+      if (select.on) {
+        const locked = !isUser(asset);
         const selected = select.ids.has(asset.id);
         const check = locked ? '' : `<span class="select-check">${selected ? '✓' : ''}</span>`;
         return `<article class="${className}${locked ? ' component-card--locked' : ''}" data-asset="${asset.id}" ${locked ? '' : 'data-selectable'} data-selected="${selected}" tabindex="0">${check}${sourceBadge(asset)}${visual(asset)}<b>${asset.name}</b></article>`;
@@ -180,14 +334,13 @@
       return `<article class="${className}" data-asset="${asset.id}" tabindex="0">${favoriteButton(asset)}${sourceBadge(asset)}${visual(asset)}<b>${asset.name}</b></article>`;
     };
     const openCatalog = (kind, category = '') => { location.hash = `catalog=${kind}${category ? `:${encodeURIComponent(category)}` : ''}`; }; // 中文子类需编码
-    const facetValues = (assets, key) => [...new Set(assets.flatMap((asset) => asset[key] || []).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'zh-CN'));
-    const facetSelect = (label, filterKey, values) => `<select class="catalog-filter" data-filter="${filterKey}" aria-label="按${label}筛选"><option value="">${label} · 全部</option>${values.map((value) => `<option value="${value}"${view.filters[filterKey] === value ? ' selected' : ''}>${value}</option>`).join('')}</select>`;
-    const styleChips = (assets, active = '', limit = Infinity) => `<div class="style-chips" role="group" aria-label="按风格筛选"><button class="style-chip" data-style="" aria-pressed="${!active}">全部</button>${styleFacets(assets).slice(0, limit).map(({ value, count }) => `<button class="style-chip" data-style="${value}" aria-pressed="${active === value}">${value}<small>${count}</small></button>`).join('')}</div>`;
     // ---------- 顶部 banner 轮播（情绪引导卡 + 平台案例卡；真机用 <swiper circular>） ----------
     // 案例卡复用对应 1:1 重建场景的真实封面，确保入口预览与进入后的房间一致。
+    // tag 同样不写面积：原来的 45㎡/78㎡ 是博主整套房子的名义面积，与点进去后按 scene.room 实算的
+    // 房间面积（21.8㎡ / 19.4㎡）自相矛盾。与 CASE_INDEX 保持一致，只留风格名。
     const BANNER_CASES = [
-      { id: 'case-oak', videoId: 'vid_40734d7f2e6c', image: '../../assets/scenes/vid_40734d7f2e6c.jpg?v=approved-room', tag: '原木侘寂 · 45㎡', blogger: '@鸡蛋灌饼的家' },
-      { id: 'case-cream', videoId: 'vid_5f32a0ac954a', image: '../../assets/scenes/vid_5f32a0ac954a.jpg', tag: '奶油风 · 78㎡', blogger: '@栗子设计日记' },
+      { id: 'case-oak', videoId: 'vid_40734d7f2e6c', image: '../../assets/scenes/vid_40734d7f2e6c.jpg?v=approved-room', tag: '原木侘寂', blogger: '@鸡蛋灌饼的家' },
+      { id: 'case-cream', videoId: 'vid_5f32a0ac954a', image: '../../assets/scenes/vid_5f32a0ac954a.jpg', tag: '奶油风', blogger: '@栗子设计日记' },
     ];
     // 无缝循环：两端各加一张克隆，滑到克隆帧后在 transitionend 里瞬移回真实帧。向右滑=前进（第3张→第1张顺向切入）。
     let bannerPos = 1;        // 轨道位置：真实第 i 张在 pos=i+1
@@ -222,28 +375,26 @@
       let startX = null;
       viewport.addEventListener('pointerdown', (event) => { startX = event.clientX; bannerDragged = false; try { viewport.setPointerCapture(event.pointerId); } catch (_) {} });
       viewport.addEventListener('pointermove', (event) => { if (startX !== null && Math.abs(event.clientX - startX) > 10) bannerDragged = true; });
-      const endDrag = (event) => { if (startX === null) return; const dx = event.clientX - startX; const wasTap = !bannerDragged && Math.abs(dx) < 10; startX = null; if (dx < -40) { stepBanner(1); return; } if (dx > 40) { stepBanner(-1); return; } if (wasTap) { const el = document.elementFromPoint(event.clientX, event.clientY); const caseSlide = el && el.closest('[data-case]'); if (caseSlide && caseSlide.dataset.video) location.href = `../same-home/index.html?case=${encodeURIComponent(caseSlide.dataset.video)}`; } }; // 指针捕获会吞掉 click，故 tap 跳转在此处理（elementFromPoint 定位案例卡）；左划(dx<0)前进 / 右划(dx>0)后退
+      const endDrag = (event) => { if (startX === null) return; const dx = event.clientX - startX; const wasTap = !bannerDragged && Math.abs(dx) < 10; startX = null; if (dx < -40) { stepBanner(1); return; } if (dx > 40) { stepBanner(-1); return; } if (wasTap) { const el = document.elementFromPoint(event.clientX, event.clientY); const caseSlide = el && el.closest('[data-case]'); if (caseSlide && caseSlide.dataset.video) location.href = `../my-home/index.html?case=${encodeURIComponent(caseSlide.dataset.video)}`; } }; // 指针捕获会吞掉 click，故 tap 跳转在此处理（elementFromPoint 定位案例卡）；左划(dx<0)前进 / 右划(dx>0)后退
       viewport.addEventListener('pointerup', endDrag);
       viewport.addEventListener('pointercancel', () => { startX = null; });
       libraryBanner.querySelector('#heroDots').addEventListener('click', (event) => { const i = [...libraryBanner.querySelectorAll('#heroDots i')].indexOf(event.target); if (i >= 0 && !bannerAnimating && i + 1 !== bannerPos) { bannerPos = i + 1; bannerAnimating = true; paintBanner(true); } });
     };
     const renderHome = () => {
+      libraryContent.classList.remove('is-case');
       const previousTabs = home.querySelector('.furniture-tabs');
       const previousTabScrollLeft = previousTabs?.scrollLeft || 0;
       disposeTemplatePreviews(home);
-      const rails = ['floorplan'].map((kind) => { // 地板/墙纸类不在灵感库覆盖，改由「我的家」直接选（后端联调）；此处仅留户型类
-        const assets = getAssets(kind).slice(0, 5);
-        const cardClass = kind === 'floorplan' ? 'component-card component-card--floorplan' : 'component-card';
-        return `<section class="catalog-section"><div class="section-head"><span class="section-tag">${labelByKind[kind]}</span><button class="all-button" data-all="${kind}">全部</button></div><div class="component-rail">${assets.map((asset) => card(asset, cardClass)).join('')}</div></section>`;
-      }).join('');
+      // 主入口感：顶部 banner 承担案例大图，紧接着是功能图标栏（案例/户型/家具/风格四个入口），
+      // 内容流只留精选家具。案例与户型原来的横滑 rail 收进图标，页面短一大截。
+      const fnGrid = `<nav class="fn-grid" aria-label="灵感库功能入口">${FN_ENTRIES.map((entry) => `<button class="fn-item" data-fn="${entry.id}" aria-label="${entry.label}"><span class="fn-icon fn-icon--${entry.id}"><img src="${FN_ICON_ROOT}/${entry.id}.png" alt="" width="42" height="42" loading="lazy" decoding="async" /></span><b>${entry.label}</b></button>`).join('')}</nav>`;
+
       const isAllFurniture = activeFurnitureCategory === 'all';
-      const allFurniture = getAssets('furniture');
-      const furniture = (isAllFurniture ? allFurniture : getAssets('furniture', activeFurnitureCategory)).slice(0, 11);
+      const furniture = (isAllFurniture ? getAssets('furniture') : getAssets('furniture', activeFurnitureCategory)).slice(0, 11);
       const tabs = [`<button class="furniture-tab" data-category="all" role="tab" aria-selected="${isAllFurniture}">全部</button>`, ...FURNITURE_CATEGORIES.map((category) => `<button class="furniture-tab" data-category="${category.id}" role="tab" aria-selected="${category.id === activeFurnitureCategory}">${category.label}</button>`)].join('');
       const allData = isAllFurniture ? 'furniture' : `furniture:${activeFurnitureCategory}`;
       const allLabel = isAllFurniture ? '家具' : FURNITURE_CATEGORIES.find((item) => item.id === activeFurnitureCategory).label;
-      const styleFirst = `<section class="style-first"><div class="style-first__head"><div><b>先选风格，再拼家具</b><span>按后端风格标签筛选，可多选带入我的家</span></div><button class="assemble-button" data-start-assemble>去拼装</button></div>${styleChips(allFurniture, '', 7)}</section>`;
-      home.innerHTML = `${styleFirst}${rails}<section class="catalog-section"><div class="section-head"><span class="section-tag">家具类</span></div><div class="furniture-tabs" role="tablist" aria-label="家具子类">${tabs}</div><div class="furniture-grid">${furniture.map((asset) => card(asset, 'furniture-card')).join('')}<button class="furniture-card all-card" data-all="${allData}" aria-label="查看全部${allLabel}"><span>查看全部</span></button></div></section>`;
+      home.innerHTML = `${fnGrid}<section class="catalog-section"><div class="section-head"><span class="section-tag">精选家具</span><button class="all-button" data-all="furniture">全部</button></div><div class="furniture-tabs" role="tablist" aria-label="家具子类">${tabs}</div><div class="furniture-grid">${furniture.map((asset) => card(asset, 'furniture-card')).join('')}<button class="furniture-card all-card" data-all="${allData}" aria-label="查看全部${allLabel}"><span>查看全部</span></button></div></section>`;
       renderTemplatePreviews(home);
       const nextTabs = home.querySelector('.furniture-tabs');
       const selectedTab = nextTabs?.querySelector('[aria-selected="true"]');
@@ -254,43 +405,270 @@
       if (tabRect.left < railRect.left) nextTabs.scrollLeft += tabRect.left - railRect.left;
       if (tabRect.right > railRect.right) nextTabs.scrollLeft += tabRect.right - railRect.right;
     };
+    // 主页案例卡上的「N 件组件」：场景 JSON 异步到达后回填，失败就留空不报错
+    const paintCaseCounts = (root = catalog) => {
+      root.querySelectorAll('[data-case-count]').forEach((node) => {
+        loadCase(node.dataset.caseCount)
+          .then((scene) => {
+            const spec = roomSpec(scene);
+            node.textContent = `${(scene.items || []).length} 件组件${spec ? ` · ${spec}` : ''}`;
+          })
+          .catch(() => { node.textContent = ''; });
+      });
+    };
+
+    // ---------- 筛选器（底部半屏 sheet）----------
+    // 草稿态：sheet 里的勾选先落在 draft，点「查看 N 件」才提交到 filter，取消/关闭即丢弃。
+    const draft = { categories: new Set(), styles: new Set() };
+    const renderFilterSheet = () => {
+      const base = getAssets('furniture');
+      const hit = applyFilter(base, draft.categories, draft.styles);
+      // 每个选项的计数按「对面那组的当前选择」算，选出来必然非空；算出 0 的选项置灰不可点
+      const catRow = FURNITURE_CATEGORIES.map((category) => {
+        const n = applyFilter(base, new Set([category.id]), draft.styles).length;
+        const on = draft.categories.has(category.id);
+        return `<button class="fs-opt ${on ? 'is-on' : ''}" data-fs-cat="${category.id}" ${n ? '' : 'disabled'}>${category.label}<span>${n}</span></button>`;
+      }).join('');
+      const styleRow = styleFacets(base).map((facet) => {
+        const n = applyFilter(base, draft.categories, new Set([facet.name])).length;
+        const on = draft.styles.has(facet.name);
+        return `<button class="fs-opt ${on ? 'is-on' : ''}" data-fs-style="${facet.name}" ${n ? '' : 'disabled'}>${facet.name}<span>${n}</span></button>`;
+      }).join('');
+      sheetBody.innerHTML = `<div class="sheet-head"><span class="sheet-spacer" aria-hidden="true"></span><b>筛选</b><button class="sheet-close" data-sheet-close aria-label="关闭">✕</button></div>
+        <div class="fs-scroll">
+          <div class="fs-group"><div class="fs-label">品类</div><div class="fs-opts">${catRow}</div></div>
+          <div class="fs-group"><div class="fs-label">风格</div><div class="fs-opts">${styleRow}</div></div>
+        </div>
+        <div class="fs-actions"><button class="fs-reset" id="fsReset" type="button" ${draft.categories.size || draft.styles.size ? '' : 'disabled'}>重置</button><button class="fs-apply" id="fsApply" type="button" ${hit.length ? '' : 'disabled'}>查看 ${hit.length} 件</button></div>`;
+    };
+    const openFilterSheet = () => {
+      draft.categories = new Set(filter.categories);
+      draft.styles = new Set(filter.styles);
+      renderFilterSheet();
+      manageSheet.hidden = false;
+      requestAnimationFrame(() => manageSheet.classList.add('is-open'));
+    };
+    const applyFilterSheet = () => {
+      filter.categories = new Set(draft.categories);
+      filter.styles = new Set(draft.styles);
+      closeSheet();
+      renderCatalog();
+    };
+
+    // ---------- 风格图鉴 ----------
+    // ⚠️ 占位文案：先起草一版让页面跑起来，口径未定，后续由产品统一重写。
+    // 风格名单归 Amber，这里只是「有就配文案、没有就走兜底」，新增风格不会漏渲染。
+    const STYLE_COPY = {
+      现代: '干净利落的直线条，收纳藏起来，视觉不添乱',
+      北欧: '浅木色打底，留白多，暖而不腻',
+      复古: '深木与旧铜，有年代感的物件混搭',
+      工业风: '金属与裸色，灯具常常是主角',
+      自然风: '绿植和原生材质，像把户外搬进屋',
+      简约: '少即是多，只留必需品',
+      奶油风: '米白与燕麦色，柔光感的家',
+      极简: '近乎留白，只保留一两件焦点',
+      卡通: '圆润造型和跳色，带点玩心',
+      中式: '对称与木作，含蓄的东方感',
+      可爱风: '小尺寸、软轮廓，讨喜的细节',
+      卡通风: '明快配色，像走进插画里',
+      温馨风: '暖光和织物，回家就想窝着',
+    };
+    const styleCopyOf = (name) => STYLE_COPY[name] || `${name}的家具组件`;
+
+    // 配色与材质都是从该风格资产的 labels.colors / labels.materials 实时统计出来的，
+    // 不是给每个风格手写一套主题色——Amber 增删资产或改标签，这里自动跟着变。
+    // 只做「中文色名 → 十六进制」的显示映射；认不出的词跳过，不猜。
+    const COLOR_HEX = {
+      白色:'#f5f4f0', 米白:'#f0e8da', 米白色:'#f0e8da', 米色:'#e3d3b6', 米黄:'#ecd9ae',
+      浅木色:'#dcc0a0', 原木色:'#c79a63', 棕色:'#8a6647', 深棕色:'#5c4130', 深褐色:'#4a3325',
+      黑色:'#2f2f2f', 深灰色:'#6b6b68', 灰色:'#9a9a97', 浅灰:'#c7c7c4', 浅灰色:'#c7c7c4', 银色:'#c0c3c6',
+      绿色:'#6a8f5f', 浅绿色:'#a8c49a', 蓝色:'#5b7fa6', 浅蓝:'#a8c4d9',
+      黄色:'#e0b64a', 金色:'#c9a44c', 橙色:'#d98a4a', 红色:'#b5544c', 粉色:'#e3b3ba',
+    };
+    const topOf = (list, key, n) => {
+      const count = new Map();
+      list.forEach((asset) => (asset[key] || []).forEach((value) => count.set(value, (count.get(value) || 0) + 1)));
+      return [...count.entries()].sort((a, b) => b[1] - a[1]).slice(0, n).map(([value]) => value);
+    };
+    const stylePalette = (name) => topOf(styleAssets(name), 'colors', 6).map((word) => COLOR_HEX[word]).filter(Boolean).slice(0, 4);
+    const styleMaterials = (name) => topOf(styleAssets(name), 'materials', 3);
+    // 兑白：直接拿原色当卡片底会压住文字，混到 ~80% 白度只留色相
+    const tint = (hex, ratio = .8) => {
+      const n = parseInt(hex.slice(1), 16);
+      const mix = (c) => Math.round(c + (255 - c) * ratio);
+      return `rgb(${mix(n >> 16 & 255)},${mix(n >> 8 & 255)},${mix(n & 255)})`;
+    };
+    // 代表图：不做美术资源，从资产里挑。两个讲究：
+    // ①标签越少的资产越专一（只挂「北欧」的比同时挂「现代+北欧」的更能代表北欧）；
+    // ②跨风格去重，否则多风格资产会让几个风格共用同一张图（现代/自然风曾同用一张绿植）。
+    const coverCache = new Map();
+    const buildCovers = () => {
+      coverCache.clear();
+      const used = new Set();
+      styleFacets(getAssets('furniture')).forEach(({ name }) => {
+        const pick = getAssets('furniture')
+          .filter((asset) => asset.thumbnail && (asset.styles || []).includes(name))
+          .sort((a, b) => (a.styles || []).length - (b.styles || []).length)
+          .find((asset) => !used.has(asset.thumbnail));
+        if (pick) { used.add(pick.thumbnail); coverCache.set(name, pick.thumbnail); }
+      });
+    };
+    const styleCover = (name) => {
+      if (!coverCache.size) buildCovers();
+      return coverCache.get(name) || '';
+    };
+    const styleAssets = (name) => getAssets('furniture').filter((asset) => (asset.styles || []).includes(name));
+    const GALLERY_MIN = 3; // 显示阈值（不是改数据）：不足 3 件的风格收进「更多风格」，Amber 清理标签后自动变好
+
+    // 次级页公共外壳：隐藏 banner/tabbar，标题栏换成带返回的工具条
+    const enterSecondary = (title) => {
+      home.hidden = true; catalog.hidden = false; catalog.classList.remove('selecting');
+      screenEl.classList.remove('dh-topwhite');
+      libraryBanner.hidden = true; mainTabbar.hidden = true; selectBar.hidden = true;
+      libraryHeader.hidden = false; libraryHeader.classList.add('is-catalog');
+      libraryHeader.innerHTML = `<div class="catalog-toolbar"><button class="catalog-back" id="catalogBack" aria-label="返回">‹</button><h2>${title}</h2></div>`;
+      disposeTemplatePreviews(catalog);
+    };
+
+    // 找案例：整套案例列表（竖排大卡，件数异步回填）
+    const renderCases = () => {
+      libraryContent.classList.remove('is-case');
+      enterSecondary('同款小家');
+      catalog.innerHTML = `<p class="sg-intro">查看博主同款小家，可单件收藏，也可一键套用到我的家。</p><div class="case-list">${CASE_INDEX.map((item) => `<button class="case-tile" data-case-open="${item.videoId}" aria-label="查看案例 ${item.tag}" style="background-image:url('${item.cover}')"><span class="case-tile-foot"><b>${item.tag}</b><span>${item.blogger} · <i data-case-count="${item.videoId}">…</i></span></span></button>`).join('')}</div>`;
+      paintCaseCounts(catalog);
+    };
+
+    // 找风格：风格图鉴。它是内容页而不是筛选捷径——本页不列商品，只把人分流到「找家具」和「找案例」。
+    const renderStyles = () => {
+      libraryContent.classList.remove('is-case');
+      enterSecondary('风格图鉴');
+      const facets = styleFacets(getAssets('furniture'));
+      const main = facets.filter((facet) => facet.n >= GALLERY_MIN);
+      const tail = facets.filter((facet) => facet.n < GALLERY_MIN);
+      const cardOf = (facet) => `<button class="sg-card" data-style-open="${facet.name}" aria-label="查看${facet.name}"><span class="sg-cover" style="background-image:url('${styleCover(facet.name)}')"></span><span class="sg-body"><b>${facet.name}</b><span class="sg-desc">${styleCopyOf(facet.name)}</span><span class="sg-n">${facet.n} 件家具</span></span><i aria-hidden="true">›</i></button>`;
+      catalog.innerHTML = `<p class="sg-intro">先找到梦想中的风格，再挑选喜欢的家具。</p>
+        <div class="sg-list">${main.map(cardOf).join('')}</div>
+        ${tail.length ? `<details class="sg-more"><summary>更多风格</summary><div class="sg-list">${tail.map(cardOf).join('')}</div></details>` : ''}`;
+    };
+
+    // 风格详情页：讲清楚这个风格是什么，再给两个出口（该风格的家具 / 该风格的案例）
+    const renderStyleDetail = (name) => {
+      libraryContent.classList.remove('is-case');
+      enterSecondary(name);
+      // 只列该风格的全部家具。不列案例——案例往往混着多种风格，挂在单一风格下会误导。
+      const list = styleAssets(name);
+      const palette = stylePalette(name);
+      const materials = styleMaterials(name);
+      // 卡片底色用该风格自己的配色兑白后铺开，每个风格长得不一样；认不出颜色时退回原来的暖色
+      // 第三个色标取调色板末位而不是第 3 位：北欧与复古的前两色都是棕+米，
+      // 只用前三色两者会撞成同一张卡；末位才是拉开差异的那个（复古有绿、北欧有白）。
+      const heroBg = palette.length >= 2
+        ? `linear-gradient(125deg, ${tint(palette[0], .66)}, ${tint(palette[1], .58)} 58%, ${tint(palette[palette.length - 1], .5)})`
+        : 'linear-gradient(125deg,#fdf6e6,#f6e8cd 62%,#f2dfbc)';
+      // 配色与材质是风格详情页独有的信息，「找家具」的筛选结果页给不了
+      const facts = `${palette.length ? `<div class="sd-fact"><span class="sd-fact-k">常见配色</span><span class="sd-swatches">${palette.map((hex) => `<i style="background:${hex}"></i>`).join('')}</span></div>` : ''}${materials.length ? `<div class="sd-fact"><span class="sd-fact-k">常用材质</span><span class="sd-fact-v">${materials.join(' · ')}</span></div>` : ''}`;
+      catalog.innerHTML = `<section class="sd-hero" style="background:${heroBg}"><b>${name}</b><span>${styleCopyOf(name)}</span>${facts ? `<div class="sd-facts">${facts}</div>` : ''}</section>
+        <div class="sd-count">${list.length} 件家具</div>
+        <div class="catalog-grid">${list.map((asset) => card(asset)).join('')}</div>`;
+      renderTemplatePreviews(catalog);
+    };
+
+    // 整套收藏：已全收则不做取消（避免误触一键清空），只补齐未收藏的
+    const saveWholeCase = async () => {
+      if (!view.caseId) return;
+      let scene;
+      try { scene = await loadCase(view.caseId); } catch { return; }
+      const savable = caseItems(scene).filter((item) => item.inLibrary);
+      const favorites = getFavorites();
+      const pending = savable.filter((item) => !favorites.has(item.id));
+      if (!pending.length) { showToast('这套组件都已在收藏里'); return; }
+      pending.forEach((item) => toggleFavorite(item.id));
+      showToast(`已收藏 ${pending.length} 件，可在我的家调用`);
+      renderCase(view.caseId);
+    };
+
+    // 案例详情页：顶部封面 + 整套组件（按品类分组）+ 底部两个动作
+    const renderCase = async (videoId) => {
+      const meta = caseMetaOf(videoId);
+      enterSecondary('同款小家');
+      libraryContent.classList.add('is-case');
+      catalog.innerHTML = '<p class="empty-state">正在载入案例…</p>';
+      let scene;
+      try { scene = await loadCase(videoId); }
+      catch { catalog.innerHTML = '<p class="empty-state">案例暂时载入失败，返回重试～</p>'; return; }
+      if (view.caseId !== videoId) return; // 载入期间用户已经离开
+      const items = caseItems(scene);
+      const favorites = getFavorites();
+      const savable = items.filter((item) => item.inLibrary);
+      const allSaved = savable.length > 0 && savable.every((item) => favorites.has(item.id));
+      // 按品类分组：组内顺序沿用场景里的摆放顺序，读起来像一份清单
+      const groups = new Map();
+      items.forEach((item) => {
+        const label = item.asset?.category ? FURNITURE_CATEGORIES.find((c) => c.id === item.asset.category)?.label || '其他' : (item.tags[0] || '其他');
+        if (!groups.has(label)) groups.set(label, []);
+        groups.get(label).push(item);
+      });
+      const room = roomSpec(scene);
+      const groupHtml = [...groups.entries()].map(([label, list]) => `<div class="case-group"><div class="case-group-head"><span class="section-tag">${label}</span><span class="case-group-n">${list.length}</span></div><div class="catalog-grid">${list.map((item) => item.inLibrary
+        ? card(item.asset)
+        : `<div class="component-card component-card--readonly"><div class="component-visual visual--furniture"><i class="case-placeholder" aria-hidden="true"></i></div><b>${item.name}</b><span class="case-readonly-note">暂未入库</span></div>`).join('')}</div></div>`).join('');
+      catalog.innerHTML = `<section class="case-hero" style="background-image:url('${meta?.cover || ''}')"><div class="case-hero-foot"><b>${meta?.tag || scene.title || '整套案例'}</b><span>${meta?.blogger || ''}${room ? ` · ${room}` : ''}</span></div></section>
+        <p class="case-summary">这套空间共 <b>${items.length}</b> 件组件${savable.length < items.length ? `，其中 ${savable.length} 件可收藏` : ''}。</p>
+        ${groupHtml}
+        <div class="case-actions"><button class="case-save-all" id="caseSaveAll" type="button" ${savable.length ? '' : 'disabled'}>${allSaved ? '✓ 已全部收藏' : `全部收藏（${savable.length}）`}</button><a class="case-apply" href="../my-home/index.html?case=${encodeURIComponent(videoId)}">用这套布置我的家</a></div>`;
+      renderTemplatePreviews(catalog);
+    };
+
     const renderCatalog = () => {
-      const { kind, category, favoriteOnly } = view;
+      libraryContent.classList.remove('is-case');      const { kind, category, favoriteOnly } = view;
       let assets = getAssets(kind, category);
       if (favoriteOnly) assets = assets.filter((asset) => getFavorites().has(asset.id));
-      const facetSource = assets;
-      if (kind === 'furniture') {
-        const { color, material, style } = view.filters;
-        assets = filterFurnitureByTags(assets, { color, material, style });
-      }
+      // 筛选器只在家具全部页开放（户型/收藏页维度太少，开筛选器反而多一步）
+      const canFilter = kind === 'furniture' && !select.on && !favoriteOnly;
+      if (!canFilter) { filter.categories.clear(); filter.styles.clear(); }
+      const filtered = canFilter ? applyFilter(assets) : assets;
+      // 顶栏只展示已选标签，每个可单独 ✕ 掉；没选时只有一个「筛选」入口
+      const tagChips = [...filter.categories].map((id) => `<button class="filter-tag" data-untag-cat="${id}">${FURNITURE_CATEGORIES.find((c) => c.id === id)?.label || id}<i aria-hidden="true">✕</i></button>`)
+        .concat([...filter.styles].map((name) => `<button class="filter-tag" data-untag-style="${name}">${name}<i aria-hidden="true">✕</i></button>`)).join('');
+      const chips = canFilter
+        ? `<div class="filter-bar"><button class="filter-open" id="filterOpen" type="button" aria-label="打开筛选器"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3.5 6.5h17M6.5 12h11M10 17.5h4"/></svg>筛选${filterEmpty() ? '' : `<em>${filter.categories.size + filter.styles.size}</em>`}</button><div class="filter-tags">${tagChips || '<span class="filter-hint">全部 ' + assets.length + ' 件</span>'}</div>${filterEmpty() ? '' : '<button class="filter-clear" id="filterClear" type="button">清空</button>'}</div>`
+        : '';
       const title = favoriteOnly ? '已收藏' : `${labelByKind[kind]}${category ? ` · ${FURNITURE_CATEGORIES.find((item) => item.id === category)?.label || ''}` : ''}`;
       // 管理按钮：仅家具类细分品类的全部页；选择模式下隐藏管理按钮，底部出现「取消/确认删除」
-      const canManage = kind === 'furniture' && !favoriteOnly && !select.mode; // 家具类「全部」页也可管理（category 为空时同样允许）
-      const action = canManage ? '<div class="catalog-actions"><button class="catalog-assemble" data-start-assemble>选家具</button><button class="catalog-manage" id="manageOpen" aria-label="管理">···</button></div>' : '';
-      const toolbar = `<div class="catalog-toolbar"><button class="catalog-back" id="catalogBack" aria-label="返回">‹</button><h2>${title}</h2>${action}</div>`;
-      home.hidden = true; catalog.hidden = false; catalog.classList.toggle('selecting', Boolean(select.mode));
+      const canManage = kind === 'furniture' && !favoriteOnly && !select.on; // 家具类「全部」页也可管理（category 为空时同样允许）
+      const toolbar = `<div class="catalog-toolbar"><button class="catalog-back" id="catalogBack" aria-label="返回">‹</button><h2>${title}</h2>${canManage ? '<button class="catalog-manage" id="manageOpen">管理</button>' : ''}</div>`;
+      home.hidden = true; catalog.hidden = false; catalog.classList.toggle('selecting', select.on);
       screenEl.classList.remove('dh-topwhite'); // 次级页恢复原透明顶栏
       libraryBanner.hidden = true; // banner 仅主页展示
       // 次级页标题栏移到滚动区外（与主页「灵感库」标题同构，随内容滚动而固定），隐藏底部 tabbar
       libraryHeader.hidden = false; libraryHeader.classList.add('is-catalog'); libraryHeader.innerHTML = toolbar;
       mainTabbar.hidden = true;
       disposeTemplatePreviews(catalog);
-      const filters = kind === 'furniture' ? `<div class="catalog-filters" aria-label="家具标签筛选">${styleChips(facetSource, view.filters.style)}${facetSelect('颜色', 'color', facetValues(facetSource, 'colors'))}${facetSelect('材质', 'material', facetValues(facetSource, 'materials'))}<span class="catalog-result-count">找到 ${assets.length} 件标签匹配组件${select.mode === 'assemble' ? ` · 已选 ${select.ids.size}/${MAX_ASSEMBLY_ASSETS}` : ''}</span></div>` : '';
-      const emptyCopy = favoriteOnly && !Object.values(view.filters).some(Boolean) ? '还没有收藏组件。点击心形即可收藏。' : '没有符合当前标签组合的组件。';
-      catalog.innerHTML = `${filters}${assets.length ? `<div class="catalog-grid">${assets.map((asset) => card(asset)).join('')}</div>` : `<p class="empty-state">${emptyCopy}</p>`}`;
+      catalog.innerHTML = `${chips}${filtered.length ? `<div class="catalog-grid">${filtered.map((asset) => card(asset)).join('')}</div>` : '<p class="empty-state">还没有收藏组件。点击心形即可收藏。</p>'}`;
       renderTemplatePreviews(catalog);
-      selectBar.hidden = !select.mode;
-      selectBar.dataset.mode = select.mode;
-      selectConfirm.textContent = select.mode === 'assemble' ? `去拼装 · ${select.ids.size} 件` : `确认删除 · ${select.ids.size} 件`;
-      selectConfirm.disabled = select.ids.size === 0;
+      selectBar.hidden = !select.on;
+      confirmDelete.disabled = select.ids.size === 0;
     };
-    const rerender = () => { if (!catalog.hidden) renderCatalog(); else renderHome(); };
+    const rerender = () => { if (view.caseId) renderCase(view.caseId); else if (location.hash.startsWith('#style=')) renderStyleDetail(view.styleId); else if (!catalog.hidden) renderCatalog(); else renderHome(); };
     const route = () => {
-      if (select.mode) exitSelect(true);
+      if (select.on) exitSelect(true);
+      filter.categories.clear(); filter.styles.clear(); // 每次换页都从无筛选开始，避免带着上一页的条件进来
+      if (location.hash === '#cases') { view.caseId = ''; view.styleId = ''; renderCases(); libraryContent.scrollTop = 0; return; }
+      if (location.hash === '#styles') { view.caseId = ''; view.styleId = ''; renderStyles(); libraryContent.scrollTop = 0; return; }
+      const styleMatched = location.hash.match(/^#style=(.+)$/);
+      if (styleMatched) { // 风格详情页（内容页，不列商品）
+        view.caseId = ''; view.styleId = decodeURIComponent(styleMatched[1]);
+        renderStyleDetail(view.styleId); libraryContent.scrollTop = 0; return;
+      }
+      const caseMatched = location.hash.match(/^#case=(.+)$/);
+      if (caseMatched) { view.caseId = decodeURIComponent(caseMatched[1]); renderCase(view.caseId); libraryContent.scrollTop = 0; return; }
+      view.caseId = '';
       const matched = location.hash.match(/^#catalog=([^:]+)(?::(.+))?$/);
       if (!matched && location.hash !== '#favorites') { home.hidden = false; catalog.hidden = true; libraryBanner.hidden = false; libraryHeader.hidden = false; libraryHeader.classList.remove('is-catalog'); libraryHeader.innerHTML = '<h1 class="library-title">灵感库</h1>'; mainTabbar.hidden = false; screenEl.classList.add('dh-topwhite'); renderHome(); libraryContent.scrollTop = 0; requestAnimationFrame(() => { libraryContent.scrollTop = 0; }); return; } // 返回主页始终从顶部展示
       if (location.hash === '#favorites') { const favorites = getFavorites(); const first = [...favorites][0]; const asset = first ? getAssets().find((item) => item.id === first) : null; Object.assign(view, { kind: asset?.kind || 'furniture', category: '', favoriteOnly: true }); renderCatalog(); libraryContent.scrollTop = 0; return; }
-      Object.assign(view, { kind: matched[1], category: matched[2] ? decodeURIComponent(matched[2]) : '', favoriteOnly: false });
+      Object.assign(view, { kind: matched[1], category: '', favoriteOnly: false });
+      // 品类不再锁死在 hash 里，而是预置成筛选条件——进去之后照样能在筛选器里换
+      if (matched[1] === 'furniture' && matched[2]) filter.categories = new Set([decodeURIComponent(matched[2])]);
       renderCatalog();
       libraryContent.scrollTop = 0; // 进入全部页始终从顶部展示，不沿用主页滚动位置
     };
@@ -304,6 +682,7 @@
     const viewerDelete = document.getElementById('viewerDelete');
     const viewerSource = document.getElementById('viewerSource');
     const viewerFav = document.getElementById('viewerFav');
+    const viewerStyles = document.getElementById('viewerStyles');
     let viewer3D = null; // { dispose } · 小程序侧对应 WebGL canvas 适配层
     let viewerAssetId = null;
 
@@ -345,7 +724,7 @@
       if (asset.modelUrl) {
         const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
         const { DRACOLoader } = await import('three/addons/loaders/DRACOLoader.js');
-        const draco = new DRACOLoader(); draco.setDecoderPath('/vendor/three-addons/libs/draco/');
+        const draco = new DRACOLoader(); draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/libs/draco/');
         const loader = new GLTFLoader(); loader.setDRACOLoader(draco);
         return new Promise((resolve) => {
           loader.load(asset.modelUrl, (gltf) => {
@@ -397,12 +776,15 @@
       viewerName.value = asset.name;
       viewerName.readOnly = !editable;
       viewerDelete.hidden = !editable;
-      viewerSource.hidden = editable || asset.sourceType === 'offline_photo' || !asset.videoUrl; // 拍照资产没有虚构的视频跳转
+      viewerSource.hidden = asset.sourceType === 'offline_photo' || !asset.videoId; // 只有真实 video_id 才提供回溯，用户生成资产也保留来源。
       syncViewerFav();
       fitViewerName();
       const catLabel = asset.category ? FURNITURE_CATEGORIES.find((c) => c.id === asset.category)?.label || '' : '';
       const provenance = asset.sourceType === 'offline_photo' ? '线下拍照生成' : (editable ? '我的组件' : '平台组件');
-      viewerMeta.textContent = `${labelByKind[asset.kind]}${catLabel ? ` · ${catLabel}` : ''} · ${provenance}`;
+      const materials = (asset.materials || []).join(' / ');
+      const sizeLabel = asset.kind === 'furniture' ? (asset.sizeStatus === 'known' ? '实测尺寸' : '展示比例') : '';
+      viewerMeta.textContent = [labelByKind[asset.kind], catLabel, materials, sizeLabel, provenance].filter(Boolean).join(' · ');
+      viewerStyles.innerHTML = (asset.styles || []).map((style) => `<span class="vs-tag">${style}</span>`).join(''); // 无风格标签时 :empty 自动隐藏
       viewer.hidden = false;
       disposeTemplatePreviews(viewerStage);
       const showPhoto = () => {
@@ -445,10 +827,8 @@
     // 删除（仅用户组件）→ 先弹「删除后不可恢复」二次确认
     viewerDelete.addEventListener('click', () => { if (!viewerAssetId) return; openDelConfirm({ type: 'single', id: viewerAssetId }); });
     viewerSource.addEventListener('click', () => {
-      const asset = getAsset(viewerAssetId); if (!asset?.videoUrl) return;
-      const target = new URLSearchParams({ asset:viewerAssetId, video:asset.videoId || '' });
-      if (asset.videoSec != null && Number.isFinite(Number(asset.videoSec))) target.set('t', String(asset.videoSec));
-      location.href = `../discover/index.html#${target}`;
+      const href = sourceFeedHref(getAsset(viewerAssetId)); if (!href) return;
+      location.href = href;
     }); // 仅视频资产跳「刷一刷」准确来源
 
     // ---------- 删除二次确认弹窗 ----------
@@ -490,18 +870,12 @@
     function closeSheet() { manageSheet.classList.remove('is-open'); setTimeout(() => { manageSheet.hidden = true; }, 240); }
 
     // ---------- 删除选择模式 ----------
-    function enterSelect(mode) { select.mode = mode; select.ids.clear(); renderCatalog(); }
-    function exitSelect(silent = false) { select.mode = ''; select.ids.clear(); selectBar.hidden = true; if (!silent) renderCatalog(); }
+    function enterSelect() { select.on = true; select.ids.clear(); renderCatalog(); }
+    function exitSelect(silent = false) { select.on = false; select.ids.clear(); selectBar.hidden = true; if (!silent) renderCatalog(); }
     const selectBar = document.getElementById('selectBar');
-    const selectConfirm = document.getElementById('selectConfirm');
-    selectConfirm.addEventListener('click', () => {
+    const confirmDelete = document.getElementById('confirmDelete');
+    confirmDelete.addEventListener('click', () => {
       if (!select.ids.size) return;
-      if (select.mode === 'assemble') {
-        const target = new URL('../my-home/index.html', location.href);
-        target.searchParams.set('addAssets', encodeAssemblyAssetIds([...select.ids]));
-        location.href = target.href;
-        return;
-      }
       openDelConfirm({ type: 'batch', ids: [...select.ids] });
     });
 
@@ -513,16 +887,13 @@
       if (event.target.closest('[data-sheet-close]')) { closeSheet(); return; }
       if (event.target.closest('#sheetBack')) { renderSheet('main'); return; }
       if (event.target.closest('#sheetAdd')) { renderSheet('add'); return; }
-      if (event.target.closest('#sheetDelete')) { closeSheet(); enterSelect('delete'); return; }
+      if (event.target.closest('#sheetDelete')) { closeSheet(); enterSelect(); return; }
       if (event.target.closest('#manageOpen')) { openSheet('main'); return; }
       if (event.target.closest('#selectCancel')) { exitSelect(); return; }
-      const style = event.target.closest('[data-style]');
-      if (style) { view.filters.style = style.dataset.style; if (catalog.hidden) openCatalog('furniture'); else renderCatalog(); return; }
-      if (event.target.closest('[data-start-assemble]')) { if (catalog.hidden) openCatalog('furniture'); requestAnimationFrame(() => enterSelect('assemble')); return; }
       // 选择模式：点卡片切换选中
-      if (select.mode) {
+      if (select.on) {
         const selectable = event.target.closest('[data-selectable]');
-        if (selectable) { const id = selectable.dataset.asset; if (select.ids.has(id)) select.ids.delete(id); else if (select.ids.size < MAX_ASSEMBLY_ASSETS || select.mode === 'delete') select.ids.add(id); else showToast(`一次最多选 ${MAX_ASSEMBLY_ASSETS} 件`); renderCatalog(); return; }
+        if (selectable) { const id = selectable.dataset.asset; select.ids.has(id) ? select.ids.delete(id) : select.ids.add(id); renderCatalog(); return; }
         if (event.target.closest('.component-card--locked')) { showToast('平台组件库内容，暂不支持删除'); }
         return;
       }
@@ -530,23 +901,47 @@
       if (favorite) { event.stopPropagation(); toggle(favorite.dataset.favorite); return; }
       const all = event.target.closest('[data-all]');
       if (all) { const [kind, category] = all.dataset.all.split(':'); openCatalog(kind, category); return; }
+      const fnItem = event.target.closest('[data-fn]');
+      if (fnItem) {
+        const id = fnItem.dataset.fn;
+        location.hash = id === 'cases' ? 'cases' : id === 'styles' ? 'styles' : `catalog=${id}`;
+        return;
+      }
+      const styleOpen = event.target.closest('[data-style-open]');
+      if (styleOpen) { location.hash = `style=${encodeURIComponent(styleOpen.dataset.styleOpen)}`; return; }
+      const caseOpen = event.target.closest('[data-case-open]');
+      if (caseOpen) { location.hash = `case=${encodeURIComponent(caseOpen.dataset.caseOpen)}`; return; }
+      if (event.target.closest('#caseSaveAll')) { saveWholeCase(); return; }
+      if (event.target.closest('#filterOpen')) { openFilterSheet(); return; }
+      if (event.target.closest('#filterClear')) { filter.categories.clear(); filter.styles.clear(); renderCatalog(); return; }
+      const untagCat = event.target.closest('[data-untag-cat]');
+      if (untagCat) { filter.categories.delete(untagCat.dataset.untagCat); renderCatalog(); return; }
+      const untagStyle = event.target.closest('[data-untag-style]');
+      if (untagStyle) { filter.styles.delete(untagStyle.dataset.untagStyle); renderCatalog(); return; }
+      const fsCat = event.target.closest('[data-fs-cat]');
+      if (fsCat) { const id = fsCat.dataset.fsCat; draft.categories.has(id) ? draft.categories.delete(id) : draft.categories.add(id); renderFilterSheet(); return; }
+      const fsStyle = event.target.closest('[data-fs-style]');
+      if (fsStyle) { const name = fsStyle.dataset.fsStyle; draft.styles.has(name) ? draft.styles.delete(name) : draft.styles.add(name); renderFilterSheet(); return; }
+      if (event.target.closest('#fsReset')) { draft.categories.clear(); draft.styles.clear(); renderFilterSheet(); return; }
+      if (event.target.closest('#fsApply')) { applyFilterSheet(); return; }
       const tab = event.target.closest('[data-category]');
       if (tab) { activeFurnitureCategory = tab.dataset.category; renderHome(); return; }
-      if (event.target.closest('#catalogBack')) { const fromMyHome = new URLSearchParams(location.search).get('from') === 'myhome'; if (fromMyHome && view.kind === 'floorplan' && !view.favoriteOnly) { location.href = '../my-home/index.html'; return; } if (location.hash) location.hash = ''; else route(); return; } // 唯一例外：从「我的家」进来的户型全部页返回我的家；其余回灵感库主页
+      if (event.target.closest('#catalogBack')) {
+        // 逐级退回：家具列表 → 风格详情 → 风格图鉴 → 主页，不一路弹回首页
+        if (location.hash.startsWith('#style=')) { location.hash = 'styles'; return; }
+        if (view.caseId) { location.hash = 'cases'; return; } // 案例详情退回「同款小家」列表，与风格链路同构（banner 直接点进来的也先落到列表，再退主页）
+        if (['#cases','#styles'].includes(location.hash)) { location.hash = ''; return; } const fromMyHome = new URLSearchParams(location.search).get('from') === 'myhome'; if (fromMyHome && view.kind === 'floorplan' && !view.favoriteOnly) { location.href = '../my-home/index.html'; return; } if (location.hash) location.hash = ''; else route(); return; } // 唯一例外：从「我的家」进来的户型全部页返回我的家；其余回灵感库主页
       const caseSlide = event.target.closest('[data-case]');
-      if (caseSlide) { if (bannerDragged) { bannerDragged = false; return; } const videoId = caseSlide.dataset.video; if (videoId) location.href = `../same-home/index.html?case=${encodeURIComponent(videoId)}`; return; } // 进入独立的“同款小家”案例空间
+      if (caseSlide) { if (bannerDragged) { bannerDragged = false; return; } const videoId = caseSlide.dataset.video; if (videoId) location.hash = `case=${encodeURIComponent(videoId)}`; return; } // 先进灵感库案例详情页；要套用再从那里跳我的家
       const asset = event.target.closest('[data-asset]');
       if (asset) openViewer(asset.dataset.asset);
     });
     window.addEventListener('hashchange', route);
-    catalog.addEventListener('change', (event) => {
-      const filter = event.target.closest('[data-filter]');
-      if (!filter) return;
-      view.filters[filter.dataset.filter] = filter.value;
-      renderCatalog();
-    });
     renderBanner();
     route();
+    // 首屏先用缓存立即渲染，再用后端用户库覆盖刷新。
+    // 失败时保留上次成功同步的资产，不阻断灵感库浏览。
+    syncBackendUserAssets().then(rerender).catch((error) => console.warn('[DreamHome API] user library sync unavailable', error));
   </script>
 </body>
 </html>

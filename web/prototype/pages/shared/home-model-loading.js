@@ -1,4 +1,4 @@
-const MODEL_BACKED_SOURCE_TYPES = new Set(['video_rebuild', 'case_copy']);
+const MODEL_BACKED_SOURCE_TYPES = new Set(['video_rebuild', 'case_copy', 'space_assembly']);
 
 export function isModelBackedHome(project) {
   return MODEL_BACKED_SOURCE_TYPES.has(project?.source?.type);
@@ -17,4 +17,3 @@ export function inferRuntimePrimitive(item = {}) {
   if (/柜|架|收纳/.test(hints)) return 'cabinet';
   return 'plant';
 }
-

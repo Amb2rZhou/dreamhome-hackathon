@@ -7,12 +7,14 @@ import json
 import math
 import time
 import uuid
+from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 from .. import db, matching
+from ..config import settings
 from ..schemas_lib import (DetectBox, DetectResponse, MatchCandidate, SelectConfirmRequest,
                            SelectConfirmResponse, SelectRequest, SelectResponse,
                            VideoIndex, VideoOut)
@@ -45,6 +47,118 @@ class VideoCreate(BaseModel):
 @router.get("", response_model=list[VideoOut])
 async def list_videos():
     return db.list_videos()
+
+
+def _selection_document(select_id: str, selection: dict) -> dict:
+    document = dict(selection)
+    document["select_id"] = select_id
+    if isinstance(document.get("frame_size"), tuple):
+        document["frame_size"] = list(document["frame_size"])
+    if document.get("completion_path"):
+        document["completion_path"] = [list(point) for point in document["completion_path"]]
+    return document
+
+
+def _persist_selection(
+    select_id: str,
+    selection: dict,
+    *,
+    status: str = "ready",
+    error: str = "",
+) -> None:
+    db.upsert_selection_session(
+        select_id,
+        selection["video_id"],
+        _selection_document(select_id, selection),
+        user_id=selection.get("user_id", ""),
+        status=status,
+        error=error,
+    )
+
+
+def _load_selection(select_id: str) -> Optional[dict]:
+    selection = _SELECTS.get(select_id)
+    if selection:
+        return selection
+    stored = db.get_selection_session(select_id)
+    if not stored:
+        return None
+    selection = stored["document"]
+    if selection.get("frame_size"):
+        selection["frame_size"] = tuple(selection["frame_size"])
+    if selection.get("completion_path"):
+        selection["completion_path"] = [tuple(point) for point in selection["completion_path"]]
+    _SELECTS[select_id] = selection
+    return selection
+
+
+def _storage_url(path: str) -> str:
+    if not path:
+        return ""
+    try:
+        relative = Path(path).resolve().relative_to(Path(settings.STORAGE_DIR).resolve())
+    except (ValueError, OSError):
+        return ""
+    return f"{settings.PUBLIC_BASE_URL.rstrip('/')}/storage/{relative.as_posix()}"
+
+
+def _selection_task_payload(stored: dict) -> dict:
+    document = stored["document"]
+    status = stored["status"]
+    error = stored["error"]
+    job_id = document.get("job_id")
+    generation_status = None
+    if job_id:
+        generation = db.get_generation_job(job_id)
+        if generation:
+            generation_status = generation["job"].get("status")
+            if generation_status == "failed":
+                status = "retryable"
+                error = generation["job"].get("error") or error
+            elif generation_status == "succeeded":
+                status = "completed"
+    return {
+        "select_id": stored["select_id"],
+        "video_id": stored["video_id"],
+        "status": status,
+        "error": error,
+        "created_at": stored["created_at"],
+        "updated_at": stored["updated_at"],
+        "t": document.get("t", 0),
+        "bbox": document.get("bbox", []),
+        "polygon": document.get("polygon", []),
+        "labels": document.get("labels", {}),
+        "candidates": document.get("candidates", []),
+        "exact_match": document.get("exact_match"),
+        "client_task_id": document.get("client_task_id", ""),
+        "preview_url": _storage_url(document.get("source_crop", "")),
+        "job_id": job_id,
+        "asset_id": document.get("asset_id"),
+        "track_id": document.get("track_id"),
+        "generation_status": generation_status,
+    }
+
+
+@router.get("/selection-tasks")
+async def list_selection_tasks(user_id: str):
+    """Return durable, user-scoped lasso tasks for workshop refresh recovery."""
+    if not user_id.strip():
+        raise HTTPException(422, "user_id is required")
+    tasks = [
+        _selection_task_payload(stored)
+        for stored in db.list_selection_sessions(user_id.strip())
+    ]
+    return [task for task in tasks if task["status"] != "completed"]
+
+
+@router.get("/selection-tasks/{select_id}")
+async def get_selection_task(select_id: str, user_id: str):
+    if not user_id.strip():
+        raise HTTPException(422, "user_id is required")
+    stored = db.get_selection_session(select_id)
+    if not stored or stored["user_id"] != user_id.strip():
+        raise HTTPException(404, "selection task not found")
+    return _selection_task_payload(stored)
 
 
 @router.post("", response_model=VideoOut)
@@ -157,6 +271,8 @@ async def _parse_select_request(request: Request) -> tuple[SelectRequest, Option
                 frame_height=int(str(form.get("frame_height"))) if form.get("frame_height") else None,
                 category_hint=str(form.get("category_hint", "")),
                 track_id=str(form.get("track_id")) if form.get("track_id") else None,
+                user_id=str(form.get("user_id", "")),
+                client_task_id=str(form.get("client_task_id", "")),
             )
         except (TypeError, ValueError, json.JSONDecodeError) as exc:
             raise HTTPException(422, f"invalid multipart selection: {exc}") from exc
@@ -320,8 +436,13 @@ async def select(video_id: str, request: Request):
             "isolation_mode": isolation_mode,
             "category_hint": req.category_hint,
             "has_source_frame": has_source_frame,
+            "user_id": req.user_id,
+            "client_task_id": req.client_task_id,
+            "candidates": [candidate.model_dump(mode="json")],
+            "exact_match": candidate.model_dump(mode="json"),
             "created": time.time(),
         }
+        _persist_selection(sid, _SELECTS[sid])
         return SelectResponse(
             select_id=sid,
             labels=asset.get("labels") or {},
@@ -361,16 +482,24 @@ async def select(video_id: str, request: Request):
                      "isolation_mode": isolation_mode,
                      "track_id": req.track_id,
                      "has_source_frame": has_source_frame,
+                     "user_id": req.user_id,
+                     "client_task_id": req.client_task_id,
+                     "candidates": [candidate.model_dump(mode="json") for candidate in cands],
+                     "exact_match": None,
                      "created": time.time()}
+    _persist_selection(sid, _SELECTS[sid])
     return SelectResponse(select_id=sid, labels=labels, candidates=cands)
 
 
 @router.post("/{video_id}/select/confirm", response_model=SelectConfirmResponse)
 async def select_confirm(video_id: str, req: SelectConfirmRequest):
     """确认圈选结果：复用同款，或选择 fast/production 生成新资产。"""
-    sel = _SELECTS.get(req.select_id)
+    sel = _load_selection(req.select_id)
     if not sel or sel["video_id"] != video_id:
         raise HTTPException(404, "select session not found (expired?)")
+    if req.user_id:
+        sel["user_id"] = req.user_id
+        _persist_selection(req.select_id, sel)
 
     if req.use_asset_id and req.generate_new:
         raise HTTPException(400, "use_asset_id and generate_new are mutually exclusive")
@@ -401,10 +530,22 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
                 binding_review_status="approved",
                 binding_source="user_confirmed_reuse",
             )
+            library_attached = False
+            if req.user_id:
+                db.library_add(req.user_id, [exact_asset_id], "video_selection_reuse", {
+                    "video_id": video_id,
+                    "track_id": track_id,
+                    "t": sel["t"],
+                })
+                library_attached = True
+            _persist_selection(req.select_id, {
+                **sel, "asset_id": exact_asset_id, "track_id": track_id,
+            }, status="reused")
             return SelectConfirmResponse(
                 asset_id=exact_asset_id,
                 track_id=track_id,
                 quality_mode="reuse",
+                library_attached=library_attached,
             )
     elif exact_asset_id and req.reject_matched_asset:
         # The user inspected the matched GLB and explicitly said it is not the
@@ -444,6 +585,8 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
         track_id = db.insert_track(video_id, sel["labels"].get("category", ""),
                                    [{"t": sel["t"], "bbox": sel["bbox"]}],
                                    t_start=sel["t"], t_end=sel["t"], best_frame_t=sel["t"])
+    sel["track_id"] = track_id
+    _persist_selection(req.select_id, sel)
 
     if req.use_asset_id:
         db.bind_track_asset(
@@ -453,28 +596,48 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
             binding_source="user_confirmed_reuse",
         )
         _SELECTS.pop(req.select_id, None)
+        library_attached = False
+        if req.user_id:
+            db.library_add(req.user_id, [req.use_asset_id], "video_selection_reuse", {
+                "video_id": video_id,
+                "track_id": track_id,
+                "t": sel["t"],
+            })
+            library_attached = True
+        _persist_selection(req.select_id, {
+            **sel, "asset_id": req.use_asset_id, "track_id": track_id,
+        }, status="reused")
         return SelectConfirmResponse(asset_id=req.use_asset_id, track_id=track_id,
-                                     quality_mode="reuse")
+                                     quality_mode="reuse",
+                                     library_attached=library_attached)
 
     if not req.generate_new:
         raise HTTPException(400, "either use_asset_id or generate_new=true")
 
     if req.quality_mode == "production":
-        asset_id, job = start_selection_production(
-            video_id=video_id,
-            track_id=track_id,
-            t=sel["t"],
-            bbox=sel["bbox"],
-            polygon=sel["polygon"],
-            isolation_mode=sel["isolation_mode"],
-            cutout_path=sel["source_crop"],
-            labels=sel["labels"],
-            user_id=req.user_id,
-            completion_path=sel.get("completion_path") or [],
-        )
+        try:
+            asset_id, job = start_selection_production(
+                video_id=video_id,
+                track_id=track_id,
+                t=sel["t"],
+                bbox=sel["bbox"],
+                polygon=sel["polygon"],
+                isolation_mode=sel["isolation_mode"],
+                cutout_path=sel["source_crop"],
+                identity_reference_path=sel.get("recognition_context"),
+                labels=sel["labels"],
+                user_id=req.user_id,
+                completion_path=sel.get("completion_path") or [],
+            )
+        except Exception as exc:
+            _persist_selection(req.select_id, sel, status="retryable", error=str(exc))
+            raise HTTPException(503, f"selection production submission failed: {exc}") from exc
         # Do not consume the selection until the production job is accepted.
         # This keeps transient queue/provider failures safely retryable.
         _SELECTS.pop(req.select_id, None)
+        _persist_selection(req.select_id, {
+            **sel, "asset_id": asset_id, "job_id": job.job_id, "track_id": track_id,
+        }, status="submitted")
         return SelectConfirmResponse(
             asset_id=asset_id,
             job_id=job.job_id,
@@ -492,5 +655,8 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
     )
     db.bind_track_asset(track_id, asset_id, binding_source="generated_asset")
     _SELECTS.pop(req.select_id, None)
+    _persist_selection(req.select_id, {
+        **sel, "asset_id": asset_id, "job_id": job.job_id, "track_id": track_id,
+    }, status="submitted")
     return SelectConfirmResponse(asset_id=asset_id, job_id=job.job_id, track_id=track_id,
                                  quality_mode="fast")

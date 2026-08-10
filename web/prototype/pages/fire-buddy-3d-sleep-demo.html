@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>小火人 3D 睡姿 · 隔离预览</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,"PingFang SC",sans-serif;color:#583b2c;background:#f4e9dc}
+    *{box-sizing:border-box} body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px}
+    main{width:min(940px,100%)} h1{margin:0 0 6px;font-size:clamp(25px,4vw,38px)} p{margin:0 0 14px;color:#806456}
+    #stage{height:min(70vh,650px);min-height:440px;border:1px solid rgba(88,53,37,.12);border-radius:26px;overflow:hidden;background:radial-gradient(circle at 50% 32%,#fffdf8,#f1dfcb 75%);box-shadow:0 22px 62px rgba(83,53,38,.16)}
+    canvas{display:block;width:100%;height:100%;touch-action:none}
+    output{display:inline-flex;margin-top:10px;padding:7px 11px;border-radius:10px;background:rgba(255,255,255,.7);font-size:13px}
+  </style>
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+</head>
+<body>
+  <main>
+    <h1>小火人 · 3D 睡姿</h1>
+    <p>参考趴睡姿：脸朝镜头、火焰尖偏左、前爪贴地、后腿收在右侧，并保持慢速呼吸。</p>
+    <section id="stage" aria-label="小火人 3D 睡姿预览"></section>
+    <output>隔离模型 · 未接入“我的家”</output>
+  </main>
+  <script type="module">
+    import * as THREE from 'three';
+    import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+    import {createFireBuddy3DSleepAvatar} from './shared/fire-buddy-3d-sleep-avatar.js';
+
+    const stage=document.querySelector('#stage');
+    const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+    renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+    renderer.outputColorSpace=THREE.SRGBColorSpace;
+    renderer.shadowMap.enabled=true;
+    renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+    stage.append(renderer.domElement);
+    const scene=new THREE.Scene();
+    const camera=new THREE.PerspectiveCamera(35,1,.1,50);
+    camera.position.set(4.5,4.2,5.8);
+    const controls=new OrbitControls(camera,renderer.domElement);
+    controls.target.set(0,.55,0);controls.enableDamping=true;controls.minDistance=3.2;controls.maxDistance=10;
+    scene.add(new THREE.HemisphereLight('#fff9e9','#8d644b',2.8));
+    const key=new THREE.DirectionalLight('#fff1c8',4.2);key.position.set(-4,7,6);key.castShadow=true;scene.add(key);
+    const rim=new THREE.DirectionalLight('#ffd15c',2);rim.position.set(5,3,-5);scene.add(rim);
+    const floor=new THREE.Mesh(new THREE.CircleGeometry(3.7,96),new THREE.MeshStandardMaterial({color:'#d8b183',roughness:.82}));
+    floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
+    const avatar=createFireBuddy3DSleepAvatar({THREE,scale:.82,showZ:true});scene.add(avatar.root);
+    const clock=new THREE.Clock();let frame=0;
+    const animate=()=>{frame=requestAnimationFrame(animate);avatar.update(clock.getElapsedTime());controls.update();renderer.render(scene,camera)};
+    const resize=()=>{const width=stage.clientWidth,height=stage.clientHeight;renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix()};
+    const observer=new ResizeObserver(resize);observer.observe(stage);resize();animate();
+    const cleanup=()=>{cancelAnimationFrame(frame);observer.disconnect();controls.dispose();avatar.dispose();floor.geometry.dispose();floor.material.dispose();renderer.dispose()};
+    addEventListener('pagehide',cleanup,{once:true});
+  </script>
+</body>
+</html>

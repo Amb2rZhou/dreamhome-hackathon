@@ -101,6 +101,7 @@
     .result-body { flex:1; min-width:0; text-align:left; }
     .result-name { width:100%; margin:0; padding:6px 9px; border:1px solid rgba(199,143,42,.28); border-radius:10px; background:rgba(252,246,233,.95); color:var(--dh-fg-primary); font:inherit; font-size:13px; font-weight:var(--dh-font-weight-bold); box-sizing:border-box; }
     .result-meta { margin:6px 0 0 2px; font-size:10px; font-weight:var(--dh-font-weight-semibold); color:var(--dh-fg-muted); }
+    .style-pick.is-on { border-color:#deb08c; background:#fbf3e1; color:#8a5f2e; }
     .result-actions { display:flex; flex-direction:column; gap:9px; width:100%; max-width:264px; margin-top:14px; }
     .result-actions .primary-button { margin-top:0; height:44px; box-shadow:none; }
     .link-row { display:flex; flex-direction:column; gap:9px; }
@@ -157,7 +158,7 @@
 
             <!-- 阶段 B · 生成中 -->
             <section class="phase gen-phase" id="genPhase" aria-live="polite">
-              <video class="gen-video" id="genOrbit" src="../../assets/mascot/motion/working-hammer.webm" autoplay muted loop playsinline aria-label="包工球正在生成组件"></video>
+              <video class="gen-video" id="genOrbit" src="../../assets/mascot/motion/working-drawing.webm" autoplay muted loop playsinline aria-label="包工球正在粉刷并生成组件"></video>
               <h2 class="gen-title" id="genTitle">正在识别照片</h2>
               <p class="gen-copy" id="genCopy">包工球正在看你拍的家居照片</p>
               <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
@@ -196,7 +197,7 @@
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
     import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-    import { FURNITURE_CATEGORIES, CATEGORY_PRIMITIVE, CATEGORY_DIMENSIONS, addUserAsset } from '../shared/asset-library-data.js';
+    import { FURNITURE_CATEGORIES, addUserAsset, dreamHomeApiBase, getAsset, getAssets, getDreamHomeUserId, syncBackendUserAssets } from '../shared/asset-library-data.js?v=20260810d';
 
     const photoEmpty = document.getElementById('photoEmpty');
     const photoPreview = document.getElementById('photoPreview');
@@ -224,7 +225,7 @@
     const DEFAULT_CATEGORY = FURNITURE_CATEGORIES[0].id; // 默认选中首个真实分类（列表首位、可见即高亮）
     const ACTIVE_JOB_KEY = 'dreamhome.capture.active-job.v1';
     const ACTIVE_JOB_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
-    const state = { categories:[DEFAULT_CATEGORY], photoUrl:null, photoFile:null, hasPhoto:false, backendReady:false, photoColor:'#9a8163', pollTimer:null, pollFailures:0, job:null, generatedAssets:[] };
+    const state = { categories:[], photoUrl:null, photoFile:null, hasPhoto:false, backendReady:false, photoColor:'#9a8163', pollTimer:null, pollFailures:0, job:null, generatedAssets:[] };
     const dracoLoader = new DRACOLoader().setDecoderPath('/vendor/three-addons/libs/draco/');
     const generatedModelLoader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).setDRACOLoader(dracoLoader);
     const resultPreviewDisposers = [];
@@ -297,7 +298,7 @@
       photoEmpty.classList.add('is-hidden');
       photoReset.hidden = false;
       state.hasPhoto = true;
-      generateBtn.disabled = !state.backendReady;
+      syncGenerateBtn();
     }
     async function onMediaChosen(file) {
       if (!file) return;
@@ -325,6 +326,7 @@
     function resetPhoto() {
       if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
       state.photoUrl = null; state.photoFile = null; state.hasPhoto = false;
+      state.categories = []; syncCategoryTabs();
       photoPreview.hidden = true; photoPreview.removeAttribute('src');
       videoPreview.hidden = true; videoPreview.pause(); videoPreview.removeAttribute('src');
       photoEmpty.classList.remove('is-hidden');
@@ -344,18 +346,22 @@
     categoryTabs.addEventListener('click', (event) => {
       const tab = event.target.closest('[data-category]');
       if (!tab) return;
-      state.categories = [tab.dataset.category]; // 单选：选中即替换，始终恰好一个
+      state.categories = [tab.dataset.category]; // 单选：选中即替换
       syncCategoryTabs();
+      syncGenerateBtn();
     });
+
+    // 用户只选家具品类；风格、材质和颜色由后端结构化标签服务识别。
+    function syncGenerateBtn() {
+      generateBtn.disabled = !state.hasPhoto || !state.backendReady || !state.categories.length;
+    }
 
     function setPhase(name) { Object.entries(phases).forEach(([key, el]) => el.classList.toggle('is-active', key === name)); }
 
     // ---- 拍照 → 3D：正式后端异步任务 ----
     // 公网始终走 Vercel 同源代理，避免浏览器直连 ECS 的 mixed-content/CORS
     // 问题；本地开发则连接本地 FastAPI。
-    const API_BASE = ['127.0.0.1', 'localhost'].includes(location.hostname)
-      ? 'http://127.0.0.1:8000'
-      : '/dreamhome-api';
+    const API_BASE = dreamHomeApiBase();
     const STATUS_MAP = { queued:'queued', running:'processing', succeeded:'ready', failed:'failed' };
     const categoryLabel = (id) => (FURNITURE_CATEGORIES.find((item) => item.id === id) || {}).label || id;
     async function checkBackend() {
@@ -371,7 +377,8 @@
           && capabilities.completion?.ready === true
           && capabilities.single_object_check?.ready === true
           && capabilities.identity_check?.ready === true
-          && capabilities.material_postprocess?.ready === true;
+          && capabilities.material_postprocess?.ready === true
+          && capabilities.labels?.ready === true;
         if (!ready) throw new Error('pipeline not ready');
         state.backendReady = true;
         serviceStatus.dataset.state = 'ready';
@@ -381,7 +388,7 @@
         serviceStatus.dataset.state = 'failed';
         serviceStatus.textContent = '3D 服务暂不可用';
       }
-      generateBtn.disabled = !state.hasPhoto || !state.backendReady;
+      syncGenerateBtn();
     }
     checkBackend();
     window.addEventListener('focus', checkBackend);
@@ -390,7 +397,7 @@
       const form = new FormData();
       form.append('file', state.photoFile, state.photoFile.name || 'photo.jpg');
       form.append('texture', 'true');
-      form.append('meta', JSON.stringify({ category:categoryLabel(state.categories[0]) }));
+      form.append('meta', JSON.stringify({ category:categoryLabel(state.categories[0]), require_labels:true }));
       const response = await fetch(`${API_BASE}/api/photo-to-3d`, { method:'POST', body:form });
       if (!response.ok) {
         const detail = await response.json().catch(() => null);
@@ -420,49 +427,6 @@
       genCopy.textContent = status === 'failed' ? (error || '请检查照片或重新尝试') : copy[1];
       progressBar.style.width = `${progress}%`;
       genRetry.hidden = status !== 'failed';
-    }
-
-    function buildAssetFromJob(job, modelDimensions) {
-      const categoryId = state.categories[0];
-      const category = FURNITURE_CATEGORIES.find((item) => item.id === categoryId);
-      const dimensions = Array.isArray(job.estimated_size_m) && job.estimated_size_m.length === 3
-        ? job.estimated_size_m.map(Number)
-        : (() => {
-            const fallback = CATEGORY_DIMENSIONS[categoryId] || [1, .8, .6];
-            const longest = Math.max(...modelDimensions);
-            const targetLongest = Math.max(...fallback);
-            return longest > 0
-              ? modelDimensions.map((value) => value / longest * targetLongest)
-              : fallback;
-          })();
-      const modelUrl = /^https?:/i.test(job.model_url || '')
-        ? job.model_url
-        : `${API_BASE}${job.model_url || ''}`;
-      return {
-        id:`capture-${categoryId}-${job.job_id || Date.now()}`,
-        kind:'furniture',
-        name:`拍摄·${category.label}`,
-        category:categoryId,
-        primitive:CATEGORY_PRIMITIVE[categoryId] || 'cabinet',
-        color:state.photoColor,
-        accent:lighten(state.photoColor, .3),
-        dimensions,
-        sizePrior:{ w:dimensions[0], h:dimensions[1], d:dimensions[2] },
-        sizePriorVersion:2,
-        modelUrl,
-        rawModel:true,
-        modelValidated:true,
-        canonicalStatus:'raw_succeeded',
-        libraryAttached:false,
-        thumbnail:null,
-        backendCategory:job.category || null,
-        style:job.style || null,
-        material:job.material || null,
-        source:'user',
-        sourceType:'capture',
-        sourceUrl:null,
-        createdAt:new Date().toISOString(),
-      };
     }
 
     async function loadVerifiedGeneratedModel(modelUrl) {
@@ -576,23 +540,46 @@
       state.job = job;
       persistActiveJob(job);
       setPhase('gen');
-      genTitle.textContent = '正在验证真实 3D';
-      genCopy.textContent = '确认模型、纹理和比例可正常加载';
+      genTitle.textContent = '包工球正在验收组件';
+      genCopy.textContent = '确认模型可加载后，再写入你的资产库';
       progressBar.style.width = '100%';
+      genBack.disabled = true;
       try {
         const modelUrl = /^https?:/i.test(job.model_url || '')
           ? job.model_url
           : `${API_BASE}${job.model_url || ''}`;
         const verified = await loadVerifiedGeneratedModel(modelUrl);
-        const asset = buildAssetFromJob(job, verified.dimensions);
+        genTitle.textContent = '正在放进你的灵感库';
+        genCopy.textContent = '保存结构化标签和可组装的 3D 资产';
+        const categoryId = state.categories[0];
+        const commitResponse = await fetch(`${API_BASE}/api/photo-to-3d/${encodeURIComponent(job.job_id)}/commit`, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body:JSON.stringify({
+            user_id:getDreamHomeUserId(),
+            name:`拍摄·${categoryLabel(categoryId)}`,
+            category:categoryId,
+            styles:[], materials:[], colors:[],
+          }),
+        });
+        if (!commitResponse.ok) {
+          const detail = await commitResponse.json().catch(() => null);
+          throw new Error(detail?.detail || `资产入库失败（${commitResponse.status}）`);
+        }
+        const committed = await commitResponse.json();
+        await syncBackendUserAssets();
+        const asset = getAsset(committed.asset_id);
+        if (!asset) throw new Error('资产已生成，但同步到灵感库失败');
         state.generatedAssets = [asset];
-        addUserAsset(asset);
         toMyHome.href = `../my-home/index.html?addAsset=${encodeURIComponent(asset.id)}`;
         renderResult([asset], verified.gltf);
         setPhase('result');
-        showToast('真实 3D 已验证并保存到本机收藏');
+        clearActiveJob();
+        showToast('真实 3D 已进入灵感库、收藏和我的家');
       } catch (error) {
         updateGen('failed', 100, error.message || '真实 3D 无法加载，请重新生成');
+      } finally {
+        genBack.disabled = false;
       }
     }
     function restoreActiveGeneration() {
@@ -621,24 +608,31 @@
       disposeResultPreviews();
       resultList.innerHTML = assets.map((asset) => {
         const category = FURNITURE_CATEGORIES.find((item) => item.id === asset.category);
-        return `<div class="result-item"><div class="result-visual"><canvas class="result-model-viewer" data-model-preview="${asset.id}"></canvas><span class="result-model-hint">拖动查看</span></div><div class="result-body"><input class="result-name" maxlength="16" value="${asset.name}" data-name="${asset.id}" aria-label="组件名称" /><p class="result-meta">家具类 · ${category.label} · 真实 GLB · 本机收藏</p></div></div>`;
+        // 风格在生成前已选好，这里只回显，不再给第二处编辑入口
+        const styleText = (asset.styles || []).length ? ` · ${asset.styles.join(' / ')}` : '';
+        return `<div class="result-item"><div class="result-visual"><canvas class="result-model-viewer" data-model-preview="${asset.id}"></canvas><span class="result-model-hint">拖动查看</span></div><div class="result-body"><input class="result-name" maxlength="16" value="${asset.name}" data-name="${asset.id}" aria-label="组件名称" /><p class="result-meta">家具类 · ${category.label}${styleText} · 真实 GLB · 已入资产库</p></div></div>`;
       }).join('');
       const canvas = resultList.querySelector('[data-model-preview]');
       if (canvas && gltf?.scene) mountResultModel(canvas, gltf.scene, assets[0].name);
     }
 
     // 名称编辑：写回已入库的用户资产（同 id 覆盖）
-    resultList.addEventListener('change', (event) => {
+    resultList.addEventListener('change', async (event) => {
       const input = event.target.closest('[data-name]');
       if (!input) return;
       const asset = state.generatedAssets.find((item) => item.id === input.dataset.name);
       if (!asset) return;
       asset.name = input.value.trim() || asset.name; input.value = asset.name;
       addUserAsset(asset);
+      if (asset.backendManaged) {
+        fetch(`${API_BASE}/api/assets/${encodeURIComponent(asset.id)}`, {
+          method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:asset.name}),
+        }).catch(() => showToast('名称已在本机更新，后端同步稍后重试'));
+      }
     });
 
     // 前进按钮只负责跳转（已入库）；查看我的收藏直达首个组件所属细分标签全部页
-    generateBtn.addEventListener('click', () => { if (state.hasPhoto) startGeneration(); });
+    generateBtn.addEventListener('click', () => { if (state.hasPhoto && state.categories.length) startGeneration(); });
     genBack.addEventListener('click', () => { clearTimeout(state.pollTimer); setPhase('capture'); });
     genRetry.addEventListener('click', () => {
       if (state.photoFile) {

@@ -23,6 +23,8 @@ class Job(BaseModel):
     category: Optional[str] = None          # 品类，如 "布艺沙发"
     style: Optional[str] = None             # 风格
     material: Optional[str] = None
+    labels: Optional[dict] = None
+    require_labels: bool = False
     estimated_size_m: Optional[List[float]] = None  # [长,宽,高] 估计米
     error: Optional[str] = None
     provider: Optional[str] = None

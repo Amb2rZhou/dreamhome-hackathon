@@ -83,4 +83,19 @@ describe('feedRuntimeReducer', () => {
     expect(resumed.phase).toBe('browse')
     expect(isFeedRuntimeConsistent(resumed)).toBe(true)
   })
+
+  it('opens an asset source link at the exact frame in a paused session', () => {
+    const target = feedRuntimeReducer(
+      createFeedRuntimeState(0, 'video-a', 0),
+      { type: 'SET_TARGET', index: 1, videoId: 'home-1', time: 8.4 },
+    )
+
+    expect(target).toEqual({
+      index: 1,
+      videoId: 'home-1',
+      pausedFrame: { videoId: 'home-1', time: 8.4 },
+      phase: 'session',
+      overlay: 'none',
+    })
+  })
 })

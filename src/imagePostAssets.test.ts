@@ -17,6 +17,13 @@ describe('image post asset appearances', () => {
     expect(bed?.bbox).toEqual([0.08, 0.56, 0.76, 0.30])
   })
 
+  it('does not reuse the sofa appearance for the bed on slide nine', () => {
+    const sofaSlides = IMAGE_POST_HOTSPOTS
+      .filter((hotspot) => hotspot.assetId === 'ast_fe736b8ec699')
+      .map((hotspot) => hotspot.slideIndex)
+    expect(sofaSlides).toEqual([0, 1])
+  })
+
   it('merges persisted appearances without cloning canonical assets', () => {
     const merged = mergeImagePostAssetBindings([
       {
@@ -43,7 +50,7 @@ describe('image post asset appearances', () => {
     }))
     expect(merged.assets.filter((asset) => asset.id === 'ast_ad5525ea3cd7')).toHaveLength(1)
     expect(merged.assets.find((asset) => asset.id === 'ast_new')).toEqual(expect.objectContaining({
-      name: '新边桌', category: '茶几', modelUrl: '/dreamhome-api/storage/models/new.glb',
+      name: '新边桌', category: '茶几', modelUrl: 'http://127.0.0.1:8000/storage/models/new.glb',
     }))
   })
 })

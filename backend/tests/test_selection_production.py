@@ -15,8 +15,11 @@ class SelectionProductionTests(unittest.IsolatedAsyncioTestCase):
 
         with tempfile.TemporaryDirectory() as temp_dir:
             cutout = os.path.join(temp_dir, "cutout.png")
+            identity_reference = os.path.join(temp_dir, "identity-reference.png")
             with open(cutout, "wb") as image:
                 image.write(b"source-image")
+            with open(identity_reference, "wb") as image:
+                image.write(b"identity-image")
 
             async def fake_enhance(source, output, category="", selection_path=None):
                 with open(source, "rb") as src, open(output, "wb") as dst:
@@ -29,6 +32,7 @@ class SelectionProductionTests(unittest.IsolatedAsyncioTestCase):
 
             async def fake_identity(source, completed, target_name="", strict=False):
                 self.assertTrue(strict)
+                self.assertEqual(source, identity_reference)
                 self.assertEqual(target_name, "双人沙发(沙发)")
                 return True, "ok"
 
@@ -60,8 +64,8 @@ class SelectionProductionTests(unittest.IsolatedAsyncioTestCase):
                 patch.object(production.db, "update_asset",
                              side_effect=lambda asset_id, **fields: updates.append((asset_id, fields))),
                 patch.object(production.db, "library_add",
-                             side_effect=lambda user_id, asset_ids, via:
-                             library_calls.append((user_id, asset_ids, via))),
+                             side_effect=lambda user_id, asset_ids, via, context=None:
+                             library_calls.append((user_id, asset_ids, via, context))),
             ):
                 await production._produce(
                     job,
@@ -73,6 +77,7 @@ class SelectionProductionTests(unittest.IsolatedAsyncioTestCase):
                     cutout_path=cutout,
                     labels=labels,
                     user_id="user-1",
+                    identity_reference_path=identity_reference,
                 )
 
         self.assertEqual(job.status, JobStatus.succeeded)
@@ -80,7 +85,10 @@ class SelectionProductionTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(job.progress, 100)
         self.assertTrue(job.library_attached)
         self.assertEqual(job.model_url, "https://cdn.example/assets/result.glb")
-        self.assertEqual(library_calls, [("user-1", ["ast-1"], "feed-selection")])
+        self.assertEqual(library_calls, [(
+            "user-1", ["ast-1"], "feed-selection",
+            {"video_id": "vid-1", "track_id": "trk-1", "t": 12.4},
+        )])
         self.assertEqual(updates[-1][1]["status"], "ready")
 
     async def test_completion_failure_rejects_asset_without_library_write(self):

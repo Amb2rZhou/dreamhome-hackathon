@@ -20,7 +20,10 @@ router = APIRouter(prefix="/api/videos", tags=["frame_assets"])
 
 ANN_DIR = Path(__file__).resolve().parents[2] / "storage" / "annotations"
 
-_VID_RE = re.compile(r"^vid_[0-9a-f]+$")
+# Stable demo/import identifiers (for example ``home-1``) are valid video IDs
+# too.  Keep this deliberately narrower than a generic path segment so the ID
+# can still be used for annotation filenames without traversal or separators.
+_VID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$")
 
 T_TOL = 0.75          # 时间窗:|t - 数据点.t| <= 0.75s 视为该刻出现
 IOU_THRESHOLD = 0.35  # 圈选与已有资产 bbox 的 IoU 超过即判定"同一件"

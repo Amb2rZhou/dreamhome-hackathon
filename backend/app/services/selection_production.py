@@ -66,11 +66,13 @@ async def _produce(
     cutout_path: str,
     labels: dict[str, Any],
     user_id: str,
+    identity_reference_path: Optional[str] = None,
     polygon: Optional[list[list[float]]] = None,
     isolation_mode: str = "bbox",
     completion_path: Optional[list[tuple[int, int]]] = None,
     source_overrides: Optional[dict[str, Any]] = None,
     library_via: str = "feed-selection",
+    library_context: Optional[dict[str, Any]] = None,
 ) -> None:
     source = {
         "video_id": video_id,
@@ -129,7 +131,10 @@ async def _produce(
         job.stage = "identity_qc"
         job.progress = 50
         same, identity_reason = await check_consistency(
-            cutout_path, completed, target_name=desc, strict=True,
+            identity_reference_path or cutout_path,
+            completed,
+            target_name=desc,
+            strict=True,
         )
         if not same:
             raise SelectionProductionError(f"identity_qc: {identity_reason}")
@@ -159,7 +164,11 @@ async def _produce(
             status="ready",
         )
         if user_id:
-            db.library_add(user_id, [asset_id], library_via)
+            db.library_add(user_id, [asset_id], library_via, library_context or {
+                "video_id": video_id,
+                "track_id": track_id,
+                "t": t,
+            })
             job.library_attached = True
 
         job.status = JobStatus.succeeded
@@ -184,6 +193,7 @@ def start_selection_production(
     cutout_path: str,
     labels: dict[str, Any],
     user_id: str,
+    identity_reference_path: Optional[str] = None,
     completion_path: Optional[list[tuple[int, int]]] = None,
 ) -> tuple[str, Job]:
     """登记 canonical asset，并异步运行与批量生产一致的自动质量链。"""
@@ -215,11 +225,13 @@ def start_selection_production(
             t=t,
             bbox=bbox,
             cutout_path=cutout_path,
+            identity_reference_path=identity_reference_path,
             labels=labels,
             user_id=user_id,
             polygon=polygon,
             isolation_mode=isolation_mode,
             completion_path=completion_path,
+            library_context={"video_id": video_id, "track_id": track_id, "t": t},
         )
 
     styles = labels.get("styles") or []
@@ -251,6 +263,7 @@ def start_image_selection_production(
     cutout_path: str,
     labels: dict[str, Any],
     user_id: str,
+    identity_reference_path: Optional[str] = None,
     completion_path: Optional[list[tuple[int, int]]] = None,
 ) -> tuple[str, Job]:
     """Run a still-image selection through the canonical production gates.
@@ -287,6 +300,7 @@ def start_image_selection_production(
             t=float(slide_index),
             bbox=bbox,
             cutout_path=cutout_path,
+            identity_reference_path=identity_reference_path,
             labels=labels,
             user_id=user_id,
             polygon=polygon,
@@ -294,6 +308,7 @@ def start_image_selection_production(
             completion_path=completion_path,
             source_overrides=source,
             library_via="image-post-selection",
+            library_context={"image_post_id": post_id, "slide_index": slide_index},
         )
 
     styles = labels.get("styles") or []

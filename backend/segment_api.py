@@ -255,16 +255,28 @@ def parse_path(path_str: Optional[str]) -> Optional[list]:
 
 
 def bake_path_onto_image(im: Image.Image, pts: Optional[list]) -> Image.Image:
-    """把 path 以极淡灰色虚线叠到原图，降低对模型的视觉干扰。"""
+    """Keep the selected object untouched while muting surrounding context.
+
+    The old nearly-invisible outline let the image model reinterpret the whole
+    room.  A feathered focus mask makes the lasso an actual visual constraint:
+    pixels inside remain the authoritative identity reference, while the room
+    remains faintly visible only for occlusion/context reasoning.
+    """
     if not pts:
         return im
-    from PIL import ImageDraw
-    overlay = Image.new("RGBA", im.size, (0, 0, 0, 0))
-    draw = ImageDraw.Draw(overlay)
+    from PIL import ImageDraw, ImageEnhance, ImageFilter
     poly = [(p[0], p[1]) for p in pts]
-    # 极淡灰色虚线，几乎不可见，只作为位置提示
-    draw.polygon(poly, fill=None, outline=(128, 128, 128, 30), width=2)
-    out = Image.alpha_composite(im.convert("RGBA"), overlay)
+    focus = Image.new("L", im.size, 0)
+    ImageDraw.Draw(focus).polygon(poly, fill=255)
+    feather = max(2, round(min(im.size) * 0.012))
+    focus = focus.filter(ImageFilter.GaussianBlur(feather))
+    source = im.convert("RGBA")
+    muted = ImageEnhance.Color(source).enhance(0.25)
+    muted = Image.blend(muted, Image.new("RGBA", im.size, (244, 244, 244, 255)), 0.62)
+    out = Image.composite(source, muted, focus)
+    draw = ImageDraw.Draw(out)
+    line_width = max(3, round(min(im.size) * 0.006))
+    draw.line(poly + [poly[0]], fill=(220, 55, 35, 220), width=line_width, joint="curve")
     return out
 
 
@@ -285,6 +297,15 @@ INPAINT_PROMPT_NO_PATH = (
     "   家具台面/表面上的摆件(台灯、餐具、书本、花瓶、装饰品等)不属于家具本身,必须全部去除。"
     "7. 如果画面里根本没有一件完整可辨认的家具主体,不要凭空编造一件——尽量忠实还原可见部分。"
     "8. 最终输出透明背景。"
+)
+
+_STRUCTURE_LOCK = (
+    "红色圈选范围内已经可见的家具像素是身份基准,不得重画或重新设计。"
+    "先逐项锁定原图的外轮廓、高宽比例、开放格/门/抽屉/腿的数量和位置,"
+    "只补全确实被遮挡或未显示的部分。"
+    "开放格不得改成柜门,无腿家具不得增加柜腿,矮柜不得改成高柜,"
+    "不得为了生成一张更规整的商品图而改变可见结构。"
+    "如果某个隐藏结构没有足够证据,采用最少新增结构的保守补全。"
 )
 
 
@@ -328,7 +349,7 @@ async def inpaint(
     b64 = base64.b64encode(buf.getvalue()).decode("ascii")
     image_data_url = f"data:image/png;base64,{b64}"
 
-    prompt = INPAINT_SYSTEM_PROMPT if pts else INPAINT_PROMPT_NO_PATH
+    prompt = (_STRUCTURE_LOCK + INPAINT_SYSTEM_PROMPT) if pts else INPAINT_PROMPT_NO_PATH
     if category:
         prompt = (f"目标家具的品类是「{category}」,输出必须仍然是一件「{category}」,"
                   f"不得变成其他种类的家具。") + prompt

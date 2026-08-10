@@ -63,11 +63,14 @@ describe('ImageFeedCarousel', () => {
       />,
     )
 
+    fireEvent.load(screen.getByAltText('图文 Demo，第 1 张'))
     fireEvent.click(screen.getByRole('button', { name: '查看休闲椅3D' }))
     expect(onHotspotActivate).toHaveBeenCalledWith(hotspots[0])
     expect(screen.queryByRole('button', { name: '查看吊灯3D' })).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: '查看第 2 张' }))
+    expect(screen.queryByRole('button', { name: '查看吊灯3D' })).not.toBeInTheDocument()
+    fireEvent.load(screen.getByAltText('图文 Demo，第 2 张'))
     expect(screen.getByRole('button', { name: '查看吊灯3D' })).toBeInTheDocument()
   })
 
@@ -88,8 +91,34 @@ describe('ImageFeedCarousel', () => {
     )
 
     fireEvent.click(screen.getByRole('button', { name: '查看第 2 张' }))
+    fireEvent.load(screen.getByAltText('图文 Demo，第 2 张'))
     fireEvent.click(screen.getByRole('button', { name: '查看休闲椅3D' }))
 
     expect(onHotspotActivate).toHaveBeenCalledWith(expect.objectContaining({ assetId: 'ast_chair', slideIndex: 1 }))
+  })
+
+  it('does not show hotspots or enter selection before the image is ready', () => {
+    const onPause = vi.fn()
+    render(
+      <ImageFeedCarousel
+        images={['/slow.jpg']}
+        title="图文 Demo"
+        playing
+        onPause={onPause}
+        hotspots={[{ assetId: 'ast_chair', name: '休闲椅', slideIndex: 0, bbox: [0.4, 0.5, 0.2, 0.2] }]}
+      />,
+    )
+
+    const image = screen.getByAltText('图文 Demo，第 1 张')
+    expect(screen.queryByRole('button', { name: '查看休闲椅3D' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '圈选图片里的家具' })).not.toBeInTheDocument()
+    fireEvent.click(image)
+    expect(onPause).not.toHaveBeenCalled()
+
+    fireEvent.load(image)
+    expect(screen.getByRole('button', { name: '查看休闲椅3D' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '圈选图片里的家具' })).not.toBeInTheDocument()
+    fireEvent.click(image)
+    expect(onPause).toHaveBeenCalledOnce()
   })
 })

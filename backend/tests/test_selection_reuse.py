@@ -44,6 +44,7 @@ class SelectionReuseTests(unittest.TestCase):
             patch.object(videos.db, "get_asset", return_value=READY_ASSET),
             patch.object(videos.db, "get_track", return_value=track),
             patch.object(videos.db, "bind_track_asset") as bind,
+            patch.object(videos.db, "library_add") as library_add,
             patch.object(videos, "extract_labels", labels),
             patch.object(videos, "find_exact_asset", return_value={
                 "asset": READY_ASSET, "source": "track", "iou": 1.0,
@@ -65,13 +66,18 @@ class SelectionReuseTests(unittest.TestCase):
             confirmed = self.client.post(
                 "/api/videos/vid_test/select/confirm",
                 json={"select_id": body["select_id"], "generate_new": True,
-                      "quality_mode": "production"},
+                      "quality_mode": "production", "user_id": "local-profile-test"},
             )
             self.assertEqual(confirmed.status_code, 200, confirmed.text)
             result = confirmed.json()
             self.assertEqual(result["asset_id"], "ast_existing")
             self.assertEqual(result["quality_mode"], "reuse")
             self.assertIsNone(result["job_id"])
+            self.assertTrue(result["library_attached"])
+            library_add.assert_called_once_with(
+                "local-profile-test", ["ast_existing"], "video_selection_reuse",
+                {"video_id": "vid_test", "track_id": "trk_existing", "t": 3.0},
+            )
             bind.assert_called_once_with(
                 "trk_existing",
                 "ast_existing",
@@ -172,17 +178,63 @@ class SelectionReuseTests(unittest.TestCase):
                 side_effect=RuntimeError("temporary queue failure"),
             ),
         ):
-            with self.assertRaises(RuntimeError):
-                self.client.post(
-                    "/api/videos/vid_test/select/confirm",
-                    json={
-                        "select_id": "sel-retry",
-                        "generate_new": True,
-                        "quality_mode": "production",
-                    },
-                )
+            response = self.client.post(
+                "/api/videos/vid_test/select/confirm",
+                json={
+                    "select_id": "sel-retry",
+                    "generate_new": True,
+                    "quality_mode": "production",
+                },
+            )
 
+        self.assertEqual(response.status_code, 503, response.text)
         self.assertIn("sel-retry", videos._SELECTS)
+
+    def test_confirm_restores_durable_selection_after_process_restart(self):
+        videos._SELECTS.clear()
+        document = {
+            "video_id": "vid_test",
+            "t": 3.0,
+            "bbox": [0.1, 0.1, 0.5, 0.5],
+            "polygon": [[0.1, 0.1], [0.6, 0.1], [0.6, 0.6], [0.1, 0.6]],
+            "labels": READY_ASSET["labels"],
+            "track_id": "trk_existing",
+            "source_crop": "/tmp/context.jpg",
+            "recognition_context": "/tmp/recognition.jpg",
+            "completion_path": [[1, 1], [2, 1], [2, 2]],
+            "frame_size": [100, 80],
+            "isolation_mode": "polygon_context",
+            "has_source_frame": True,
+            "user_id": "local-profile-test",
+        }
+        track = {"track_id": "trk_existing", "video_id": "vid_test", "asset_id": None}
+        with (
+            patch.object(videos.db, "get_selection_session", return_value={
+                "document": document,
+                "status": "retryable",
+            }),
+            patch.object(videos.db, "get_track", return_value=track),
+            patch.object(videos.db, "upsert_selection_session") as persist,
+            patch.object(videos, "production_readiness", return_value={"ready": True}),
+            patch.object(
+                videos,
+                "start_selection_production",
+                return_value=("ast_restored", SimpleNamespace(job_id="job_restored")),
+            ),
+        ):
+            response = self.client.post(
+                "/api/videos/vid_test/select/confirm",
+                json={
+                    "select_id": "sel-durable",
+                    "generate_new": True,
+                    "quality_mode": "production",
+                    "user_id": "local-profile-test",
+                },
+            )
+
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["job_id"], "job_restored")
+        self.assertTrue(any(call.kwargs.get("status") == "submitted" for call in persist.mock_calls))
 
 
 if __name__ == "__main__":

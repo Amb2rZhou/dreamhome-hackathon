@@ -5,7 +5,14 @@ import { ImageFeedCarousel } from './ImageFeedCarousel'
 import { genSticker } from './stickerGen'
 import { captureBbox, captureImageBbox, captureImageSelectionGeometry, captureVideoSelectionUpload, saveTraceToBackend, loadTracesFromBackend, traceImageUrl, type ImageSelectionGeometry, type VideoSelectionUpload } from './segmentApi'
 import { falJobToComponent, getFalJob } from './falGenerationApi'
-import { confirmImagePostSelection, confirmVideoSelection, submitImagePostSelection, submitVideoSelection } from './videoSelectionApi'
+import {
+  confirmImagePostSelection,
+  confirmVideoSelection,
+  fetchPersistedVideoSelectionTask,
+  fetchPersistedVideoSelectionTasks,
+  submitImagePostSelection,
+  submitVideoSelection,
+} from './videoSelectionApi'
 import type { SelectionMatchCandidate } from './videoSelectionApi'
 import { AssetReuseDialog } from './AssetReuseDialog'
 import { labelsToCategory, reusableAssetToComponent } from './assetReuse'
@@ -16,6 +23,8 @@ import { FurnitureAssetThumbnail } from './FurnitureAssetThumbnail'
 import { VideoAssetsEntry } from './VideoAssetsEntry'
 import { workshopFromAppState } from './workshopModel'
 import { AVAILABLE_ASSETS_BY_VIDEO, assetsForVideoFrame, defaultAssetFrame, detectedFurnitureForVideoFrame } from './availableAssets.generated'
+import { fetchVideoBoundAssets, mergeVideoAssets, videoAssetsAtTime } from './videoAssetBindings'
+import { dreamHomeUserId } from './dreamHomeIdentity'
 import {
   IMAGE_POST_ASSETS,
   IMAGE_POST_HOTSPOTS,
@@ -134,6 +143,8 @@ type Action =
   | { type: 'CRAFT_FAILED'; id: string; error: string; stage?: string }
   | { type: 'CRAFT_WAITING'; id: string; error: string }
   | { type: 'CRAFT_BACKEND_SUBMITTED'; id: string; backendJobId: string; name: string; category: FurnitureCategory }
+  | { type: 'CRAFT_SELECTION_SAVED'; id: string; selectId: string }
+  | { type: 'RESTORE_CRAFT_TASKS'; batches: CraftBatch[] }
   | { type: 'RETRY_CRAFT'; id: string }
   | { type: 'SHOW_CRAFT_RESULT' }
   | { type: 'HIDE_CRAFT_RESULT' }
@@ -251,7 +262,7 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         feed: feedRuntimeReducer(state.feed, { type: 'SET_TARGET', index: action.index, videoId: action.videoId, time: action.time }),
-        videoPlaying: true,
+        videoPlaying: false,
         selected: [],
         activeObjectId: null,
         showFailHint: false,
@@ -513,9 +524,48 @@ function reducer(state: State, action: Action): State {
         })),
       }
     }
+    case 'CRAFT_SELECTION_SAVED': {
+      const saveSelection = (job: CraftJob) => job.id === action.id
+        ? { ...job, backendSelectionId: action.selectId }
+        : job
+      return {
+        ...state,
+        currentCraft: state.currentCraft ? saveSelection(state.currentCraft) : null,
+        craftQueue: state.craftQueue.map(saveSelection),
+        batches: state.batches.map((batch) => ({
+          ...batch,
+          jobs: batch.jobs.map(saveSelection),
+        })),
+      }
+    }
+    case 'RESTORE_CRAFT_TASKS': {
+      const existingIds = new Set(state.batches.flatMap((batch) => batch.jobs.map((job) => job.id)))
+      const batches = action.batches
+        .map((batch) => ({
+          ...batch,
+          jobs: batch.jobs.filter((job) => !existingIds.has(job.id)),
+        }))
+        .filter((batch) => batch.jobs.length > 0)
+      if (batches.length === 0) return state
+      const active = batches.flatMap((batch) => batch.jobs)
+        .filter((job) => job.status === 'crafting' && job.backendMode === 'fal' && job.backendJobId)
+      if (state.currentCraft || active.length === 0) {
+        return { ...state, batches: [...state.batches, ...batches] }
+      }
+      return {
+        ...state,
+        batches: [...state.batches, ...batches],
+        currentCraft: active[0],
+        craftQueue: [...state.craftQueue, ...active.slice(1)],
+        mascot: 'working',
+      }
+    }
     case 'RETRY_CRAFT': {
       const waitingJob = state.batches.flatMap((batch) => batch.jobs)
-        .find((job) => job.id === action.id && job.status === 'waiting')
+        .find((job) => job.id === action.id && (
+          job.status === 'waiting'
+          || (job.status === 'failed' && Boolean(job.backendSelectionId))
+        ))
       if (!waitingJob) return state
       const retryJob: CraftJob = {
         ...waitingJob,
@@ -631,6 +681,7 @@ interface FeedDeepLink {
   index: number
   videoId: string
   time: number
+  assetId: string
 }
 
 function readFeedDeepLink(): FeedDeepLink | null {
@@ -657,17 +708,25 @@ function readFeedDeepLink(): FeedDeepLink | null {
     index,
     videoId,
     time: Number.isFinite(time) ? Math.max(0, time) : defaultAssetFrame(videoId),
+    assetId,
   }
 }
 
 function App() {
+  const userIdRef = useRef(dreamHomeUserId())
   const initialFeedTargetRef = useRef<FeedDeepLink | null>(readFeedDeepLink())
   const [state, dispatch] = useReducer(reducer, initialState, (base) => {
     const target = initialFeedTargetRef.current
     if (!target) return base
     return {
       ...base,
-      feed: createFeedRuntimeState(target.index, target.videoId, target.time),
+      feed: feedRuntimeReducer(base.feed, {
+        type: 'SET_TARGET',
+        index: target.index,
+        videoId: target.videoId,
+        time: target.time,
+      }),
+      videoPlaying: false,
     }
   })
   const [favoriteAssetIds, setFavoriteAssetIds] = useState<string[]>(() => {
@@ -689,7 +748,9 @@ function App() {
   const [activeImageHotspotAssetId, setActiveImageHotspotAssetId] = useState<string | null>(null)
   const [imagePostHotspots, setImagePostHotspots] = useState(IMAGE_POST_HOTSPOTS)
   const [imagePostAssets, setImagePostAssets] = useState(IMAGE_POST_ASSETS)
+  const [backendVideoAssets, setBackendVideoAssets] = useState<Record<string, LibraryComponent[]>>({})
   const [readyVideoId, setReadyVideoId] = useState<string | null>(null)
+  const [playbackBlocked, setPlaybackBlocked] = useState(false)
   const reuseDecisionRef = useRef<((reuse: boolean) => void) | null>(null)
   // 教学只由冷启动气泡的“开始逛逛”启动；普通暂停不会擅自拉起新手引导。
   const [sessionGuideStage, setSessionGuideStage] = useState<SessionGuideStage>('idle')
@@ -701,10 +762,10 @@ function App() {
   const wheelLocked = useRef(false)
   const activeFeedVideo = FEED_VIDEOS[state.feed.index]
   const pausedFrame = state.feed.pausedFrame
-  const activeFrameAssets = useMemo(
-    () => assetsForVideoFrame(pausedFrame.videoId, pausedFrame.time),
-    [pausedFrame],
-  )
+  const activeFrameAssets = useMemo(() => mergeVideoAssets(
+    assetsForVideoFrame(pausedFrame.videoId, pausedFrame.time),
+    videoAssetsAtTime(backendVideoAssets[pausedFrame.videoId] ?? [], pausedFrame.time),
+  ), [backendVideoAssets, pausedFrame])
   const activeFrameDetectedLabels = useMemo(
     () => detectedFurnitureForVideoFrame(
       pausedFrame.videoId,
@@ -713,10 +774,10 @@ function App() {
     ),
     [activeFrameAssets, pausedFrame],
   )
-  const activeVideoAssets = useMemo(
-    () => AVAILABLE_ASSETS_BY_VIDEO[activeFeedVideo.id] ?? [],
-    [activeFeedVideo.id],
-  )
+  const activeVideoAssets = useMemo(() => mergeVideoAssets(
+    AVAILABLE_ASSETS_BY_VIDEO[activeFeedVideo.id] ?? [],
+    backendVideoAssets[activeFeedVideo.id] ?? [],
+  ), [activeFeedVideo.id, backendVideoAssets])
   const activeImageHotspotAsset = useMemo(
     () => imagePostAssets.find((asset) => asset.id === activeImageHotspotAssetId) ?? null,
     [activeImageHotspotAssetId, imagePostAssets],
@@ -733,9 +794,62 @@ function App() {
       console.warn('[DreamHome API] image-post bindings unavailable; keeping verified baseline', error)
     }
   }, [])
+  const refreshVideoBindings = useCallback(async (videoId: string) => {
+    try {
+      const assets = await fetchVideoBoundAssets(videoId)
+      setBackendVideoAssets((current) => ({ ...current, [videoId]: assets }))
+    } catch (error) {
+      // Keep the reviewed static catalog available when the API is briefly
+      // unreachable. A later feed visit or completed job retries this read.
+      console.warn('[DreamHome API] video bindings unavailable; keeping verified baseline', error)
+    }
+  }, [])
   useEffect(() => {
     void refreshImagePostBindings()
   }, [refreshImagePostBindings])
+  useEffect(() => {
+    let cancelled = false
+    void fetchPersistedVideoSelectionTasks(userIdRef.current).then((tasks) => {
+      if (cancelled || tasks.length === 0) return
+      const batches: CraftBatch[] = tasks.map((task) => {
+        const category = labelsToCategory(task.labels)
+        const isActive = task.status === 'submitted'
+          && (task.generation_status === 'queued' || task.generation_status === 'running')
+          && Boolean(task.job_id)
+        const job: CraftJob = {
+          id: task.client_task_id || `craft-restored-${task.select_id}`,
+          name: task.labels.sub || task.labels.category || '待分类家具',
+          category,
+          snapshot: task.preview_url || genSticker(category, CATEGORY_COLOR[category], 99),
+          color: CATEGORY_COLOR[category],
+          status: isActive ? 'crafting' : 'waiting',
+          backendMode: isActive ? 'fal' : 'waiting',
+          backendJobId: task.job_id || undefined,
+          backendSelectionId: task.select_id,
+          progress: isActive ? 10 : 0,
+          stage: isActive ? 'generate_3d' : 'waiting_backend',
+          error: task.error || undefined,
+        }
+        return {
+          id: `batch-restored-${task.select_id}`,
+          jobs: [job],
+          publicComponents: [],
+          createdAt: Math.round(task.created_at * 1000),
+          sourceFrame: { videoId: task.video_id, time: task.t },
+          notified: false,
+          dismissed: false,
+        }
+      })
+      dispatch({ type: 'RESTORE_CRAFT_TASKS', batches })
+    }).catch((error) => {
+      console.warn('[DreamHome API] saved selection tasks unavailable', error)
+    })
+    return () => { cancelled = true }
+  }, [])
+  useEffect(() => {
+    if (activeFeedVideo.mediaType === 'image-carousel') return
+    void refreshVideoBindings(activeFeedVideo.id)
+  }, [activeFeedVideo.id, activeFeedVideo.mediaType, refreshVideoBindings])
   useEffect(() => {
     setActiveImageHotspotAssetId(null)
   }, [activeFeedVideo.id])
@@ -833,15 +947,65 @@ function App() {
     return startDreamHomePerformanceMonitoring()
   }, [])
 
-  useEffect(() => {
-    const v = videoRef.current
-    if (!v) return
-    if (state.videoPlaying) {
-      v.play().catch(() => {})
-    } else {
-      v.pause()
+  const requestVideoPlayback = useCallback(async () => {
+    const video = videoRef.current
+    if (!video || !state.videoPlaying) return false
+    // Safari may drop these properties after a keyed source change. Reassert
+    // them immediately before play, including when retrying in a user gesture.
+    video.muted = true
+    video.playsInline = true
+    try {
+      await video.play()
+      setPlaybackBlocked(false)
+      return true
+    } catch {
+      setPlaybackBlocked(true)
+      return false
     }
-  }, [state.videoPlaying, state.feed.index])
+  }, [state.videoPlaying])
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+    setPlaybackBlocked(false)
+    if (!state.videoPlaying) {
+      video.pause()
+      return
+    }
+
+    void requestVideoPlayback()
+    const retryPlayback = () => { void requestVideoPlayback() }
+    const retryWhenVisible = () => {
+      if (document.visibilityState === 'visible') retryPlayback()
+    }
+    const markPlaying = () => setPlaybackBlocked(false)
+    const markUnexpectedPause = () => {
+      if (state.videoPlaying && !video.ended) setPlaybackBlocked(true)
+    }
+
+    video.addEventListener('loadeddata', retryPlayback)
+    video.addEventListener('canplay', retryPlayback)
+    video.addEventListener('playing', markPlaying)
+    video.addEventListener('pause', markUnexpectedPause)
+    window.addEventListener('pageshow', retryPlayback)
+    document.addEventListener('visibilitychange', retryWhenVisible)
+    // Low Power Mode can reject muted autoplay in Safari. Retry inside the
+    // first ordinary interaction and expose a play button if it stays blocked.
+    document.addEventListener('pointerdown', retryPlayback, { once: true })
+    document.addEventListener('touchend', retryPlayback, { once: true })
+    document.addEventListener('keydown', retryPlayback, { once: true })
+    return () => {
+      video.removeEventListener('loadeddata', retryPlayback)
+      video.removeEventListener('canplay', retryPlayback)
+      video.removeEventListener('playing', markPlaying)
+      video.removeEventListener('pause', markUnexpectedPause)
+      window.removeEventListener('pageshow', retryPlayback)
+      document.removeEventListener('visibilitychange', retryWhenVisible)
+      document.removeEventListener('pointerdown', retryPlayback)
+      document.removeEventListener('touchend', retryPlayback)
+      document.removeEventListener('keydown', retryPlayback)
+    }
+  }, [state.videoPlaying, state.feed.index, requestVideoPlayback])
 
   useEffect(() => {
     const next = FEED_VIDEOS[(state.feed.index + 1) % FEED_VIDEOS.length]
@@ -942,52 +1106,79 @@ function App() {
             const pendingSelection = craft.sourceSelectionId
               ? selectionRequestsRef.current.get(craft.sourceSelectionId)
               : null
-            if (!pendingSelection) throw new Error('原始帧和圈选已丢失，请保持页面打开后重试')
+            const persistedTask = !pendingSelection && craft.backendSelectionId
+              ? await fetchPersistedVideoSelectionTask(
+                  craft.backendSelectionId,
+                  userIdRef.current,
+                )
+              : null
+            if (!pendingSelection && !persistedTask) {
+              throw new Error('原始帧和圈选尚未保存，请重新圈选')
+            }
             const categoryHint = craft.name === '待分类家具' ? '' : craft.name
-            const selected = pendingSelection.mediaType === 'image-carousel'
+            const selectionMediaType = pendingSelection?.mediaType ?? 'video'
+            const selectionVideoId = pendingSelection?.videoId ?? persistedTask!.video_id
+            const selected = persistedTask
+              ? {
+                  select_id: persistedTask.select_id,
+                  labels: persistedTask.labels,
+                  candidates: persistedTask.candidates,
+                  exact_match: persistedTask.exact_match,
+                }
+              : pendingSelection!.mediaType === 'image-carousel'
               ? await (async () => {
-                  const geometry = await pendingSelection.imageGeometryPromise
+                  const geometry = await pendingSelection!.imageGeometryPromise
                   if (!geometry) throw new Error('图文圈选坐标准备失败，请重新圈选')
                   return submitImagePostSelection({
-                    postId: pendingSelection.videoId,
-                    slideIndex: Math.round(pendingSelection.time),
+                    postId: pendingSelection!.videoId,
+                    slideIndex: Math.round(pendingSelection!.time),
                     geometry,
                     categoryHint,
                   })
                 })()
               : await (async () => {
-                  const upload = await pendingSelection.uploadPromise
+                  const upload = await pendingSelection!.uploadPromise
                   if (!upload) throw new Error('原始帧准备失败，请保持页面打开后重试')
                   return submitVideoSelection({
-                    videoId: pendingSelection.videoId,
-                    time: pendingSelection.time,
+                    videoId: pendingSelection!.videoId,
+                    time: pendingSelection!.time,
                     upload,
                     categoryHint,
+                    userId: userIdRef.current,
+                    clientTaskId: craft.id,
                   })
                 })()
+            if (selectionMediaType === 'video') {
+              dispatch({ type: 'CRAFT_SELECTION_SAVED', id: craft.id, selectId: selected.select_id })
+            }
             const candidate = selected.exact_match ?? selected.candidates[0]
             // Even an exact backend match must be visually confirmed: the user
             // needs to inspect the canonical GLB from every angle before binding it.
             const shouldReuse = candidate ? await requestReuseDecision(candidate) : false
             if (cancelled) return
             if (candidate && shouldReuse) {
-              const reused = pendingSelection.mediaType === 'image-carousel'
+              const reused = selectionMediaType === 'image-carousel'
                 ? await confirmImagePostSelection({
-                    postId: pendingSelection.videoId,
+                    postId: selectionVideoId,
                     selectId: selected.select_id,
+                    userId: userIdRef.current,
                     useAssetId: candidate.asset.asset_id,
                     generateNew: false,
                   })
                 : await confirmVideoSelection({
-                    videoId: pendingSelection.videoId,
+                    videoId: selectionVideoId,
                     selectId: selected.select_id,
+                    userId: userIdRef.current,
                     useAssetId: candidate.asset.asset_id,
                     generateNew: false,
                   })
               if (!reused.asset_id) throw new Error('同款资产复用失败，请稍后重试')
               if (cancelled) return
-              if (pendingSelection.mediaType === 'image-carousel') {
+              setFavoriteAssetIds((current) => Array.from(new Set([...current, reused.asset_id!])))
+              if (selectionMediaType === 'image-carousel') {
                 await refreshImagePostBindings()
+              } else {
+                await refreshVideoBindings(selectionVideoId)
               }
               dispatch({
                 type: 'CRAFT_DONE',
@@ -997,15 +1188,17 @@ function App() {
               dispatch({ type: 'SHOW_TOAST', msg: '找到已有同款 3D，已直接复用，没有重复生成。' })
               return
             }
-            const submitted = pendingSelection.mediaType === 'image-carousel'
+            const submitted = selectionMediaType === 'image-carousel'
               ? await confirmImagePostSelection({
-                  postId: pendingSelection.videoId,
+                  postId: selectionVideoId,
                   selectId: selected.select_id,
+                  userId: userIdRef.current,
                   generateNew: true,
                 })
               : await confirmVideoSelection({
-                  videoId: pendingSelection.videoId,
+                  videoId: selectionVideoId,
                   selectId: selected.select_id,
+                  userId: userIdRef.current,
                   generateNew: true,
                   rejectMatchedAsset: Boolean(candidate),
                   qualityMode: 'production',
@@ -1043,11 +1236,24 @@ function App() {
             if (cancelled) return
             dispatch({ type: 'CRAFT_PROGRESS', id: craft.id, progress: job.progress ?? 0, stage: 'generate_3d' })
             if (job.status === 'succeeded') {
+              if (job.asset_id) {
+                setFavoriteAssetIds((current) => Array.from(new Set([...current, job.asset_id!])))
+              }
               const pendingSelection = craft.sourceSelectionId
                 ? selectionRequestsRef.current.get(craft.sourceSelectionId)
                 : null
               if (pendingSelection?.mediaType === 'image-carousel') {
                 await refreshImagePostBindings()
+                if (cancelled) return
+              } else if (pendingSelection?.videoId) {
+                await refreshVideoBindings(pendingSelection.videoId)
+                if (cancelled) return
+              } else if (craft.backendSelectionId) {
+                const persisted = await fetchPersistedVideoSelectionTask(
+                  craft.backendSelectionId,
+                  userIdRef.current,
+                )
+                await refreshVideoBindings(persisted.video_id)
                 if (cancelled) return
               }
               dispatch({
@@ -1100,7 +1306,7 @@ function App() {
       }, 15_000)
       return () => clearTimeout(t)
     }
-  }, [craft, refreshImagePostBindings, requestReuseDecision])
+  }, [craft, refreshImagePostBindings, refreshVideoBindings, requestReuseDecision])
 
   return (
     <div
@@ -1148,6 +1354,11 @@ function App() {
             title={activeFeedVideo.caption}
             audioSrc={activeFeedVideo.audioSrc}
             playing={state.videoPlaying && !activeImageHotspotAsset}
+            onPause={() => {
+              if (suppressPause.current || state.feed.overlay !== 'none') return
+              dispatch({ type: 'PAUSE', videoId: activeFeedVideo.id, time: imageSlideIndexRef.current })
+              setSessionGuideStage((current) => current === 'pause' ? 'recognize' : current)
+            }}
             onMediaReady={() => recordFeedMediaEvent(activeFeedVideo.id, 'loadeddata')}
             onIndexChange={(index) => { imageSlideIndexRef.current = index }}
             hotspots={activeFeedVideo.id === IMAGE_POST_ID ? imagePostHotspots : []}
@@ -1181,6 +1392,7 @@ function App() {
                 recordFeedMediaEvent(activeFeedVideo.id, 'loadeddata')
               }}
               onCanPlay={() => recordFeedMediaEvent(activeFeedVideo.id, 'canplay')}
+              onPlaying={() => setPlaybackBlocked(false)}
               onLoadedMetadata={(event) => {
                 const target = pendingFeedTargetRef.current
                 if (!target || target.videoId !== activeFeedVideo.id) return
@@ -1188,9 +1400,25 @@ function App() {
                   target.time,
                   Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : target.time,
                 )
-                pendingFeedTargetRef.current = null
+                // Keep an asset deep link pending until bindings arrive and
+                // the source drawer has actually opened. A plain time link
+                // can be cleared as soon as the seek is applied.
+                if (!target.assetId) pendingFeedTargetRef.current = null
               }}
             />
+            {playbackBlocked && state.videoPlaying && state.feed.overlay === 'none' && (
+              <button
+                type="button"
+                className="feed-video-playback-retry"
+                aria-label="播放视频"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  void requestVideoPlayback()
+                }}
+              >
+                <span aria-hidden="true">▶</span>
+              </button>
+            )}
           </>
         )}
 
@@ -1285,6 +1513,9 @@ function App() {
             pausedTime={pausedFrame.time}
             selectionRequests={selectionRequestsRef.current}
             frameAssets={activeFrameAssets}
+            sourceAssetId={pendingFeedTargetRef.current?.videoId === activeFeedVideo.id
+              ? pendingFeedTargetRef.current.assetId
+              : ''}
             detectedLabels={activeFrameDetectedLabels}
             favoriteAssetIds={favoriteAssetIds}
             onToggleFavoriteAsset={toggleFavoriteAsset}
@@ -1463,20 +1694,65 @@ const VIDEO_SCENES: Record<string, string> = {
 
 function SceneActions({ videoId }: { videoId: string }) {
   const sceneName = VIDEO_SCENES[videoId]
+  const favoritesKey = 'dreamhome.case-layout-favorites.v1'
+  const [saved, setSaved] = useState(false)
+  const [notice, setNotice] = useState('')
+
+  useEffect(() => {
+    if (!sceneName) return
+    try {
+      const ids = JSON.parse(window.localStorage.getItem(favoritesKey) || '[]')
+      setSaved(Array.isArray(ids) && ids.includes(videoId))
+    } catch {
+      setSaved(false)
+    }
+  }, [sceneName, videoId])
+
+  useEffect(() => {
+    if (!notice) return
+    const timer = window.setTimeout(() => setNotice(''), 2200)
+    return () => window.clearTimeout(timer)
+  }, [notice])
 
   if (!sceneName) return null
 
+  const toggleFavorite = () => {
+    let ids: string[] = []
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem(favoritesKey) || '[]')
+      ids = Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : []
+    } catch {
+      ids = []
+    }
+    const nextSaved = !ids.includes(videoId)
+    const next = nextSaved ? Array.from(new Set([...ids, videoId])) : ids.filter((id) => id !== videoId)
+    window.localStorage.setItem(favoritesKey, JSON.stringify(next))
+    setSaved(nextSaved)
+    setNotice(nextSaved ? `已收藏 ${sceneName}` : '已取消收藏布局')
+  }
+
   return (
-    <section className="scene-actions-inline" aria-label={`${sceneName}的同款小家`}>
-      <a
-        className="scene-action-inline scene-action-inline--primary"
-        href={`/prototype/pages/same-home/index.html?case=${encodeURIComponent(videoId)}`}
-        target="_top"
-        aria-label={`查看${sceneName}的 1:1 同款小家`}
-      >
-        查看同款小家
-      </a>
-    </section>
+    <>
+      <section className="scene-actions-inline" aria-label={`${sceneName}的同款小家`}>
+        <a
+          className="scene-action-inline scene-action-inline--primary"
+          href={`/prototype/pages/inspiration-library/index.html#case=${encodeURIComponent(videoId)}`}
+          target="_top"
+          aria-label={`查看${sceneName}的 1:1 同款小家`}
+        >
+          查看同款小家
+        </a>
+        <button
+          type="button"
+          className="scene-action-inline"
+          aria-pressed={saved}
+          onClick={toggleFavorite}
+        >
+          {saved ? '✓ 已收藏布局' : '收藏布局'}
+        </button>
+      </section>
+      {notice && <div className="scene-action-notice" role="status">{notice}</div>}
+    </>
   )
 }
 
@@ -1827,6 +2103,7 @@ function SessionLayer({
   pausedTime,
   selectionRequests,
   frameAssets,
+  sourceAssetId,
   detectedLabels,
   favoriteAssetIds,
   onToggleFavoriteAsset,
@@ -1843,6 +2120,7 @@ function SessionLayer({
   pausedTime: number
   selectionRequests: PendingSelectionRequests
   frameAssets: LibraryComponent[]
+  sourceAssetId: string
   detectedLabels: string[]
   favoriteAssetIds: string[]
   onToggleFavoriteAsset: (id: string) => void
@@ -1887,7 +2165,7 @@ function SessionLayer({
   const pickupPhaseRef = useRef<'idle' | 'pressing' | 'dragging' | 'dropping' | 'returning'>('idle')
   const pickupHoveringRef = useRef(false)
   const [isRecognizing, setIsRecognizing] = useState(false)
-  const [frameAssetsOpen, setFrameAssetsOpen] = useState(false)
+  const [frameAssetsOpen, setFrameAssetsOpen] = useState(Boolean(sourceAssetId))
   const [recognizeGuideVisible, setRecognizeGuideVisible] = useState(showRecognizeGuide)
   const recognizeGuideShownRef = useRef(false)
   const [dragGuideVisible, setDragGuideVisible] = useState(false)
@@ -1898,6 +2176,10 @@ function SessionLayer({
     showDragGuideRef.current = showDragGuide
     onDragGuideShownRef.current = onDragGuideShown
   }, [onDragGuideShown, showDragGuide])
+  useEffect(() => {
+    if (!sourceAssetId || !frameAssets.some((asset) => asset.id === sourceAssetId)) return
+    setFrameAssetsOpen(true)
+  }, [frameAssets, sourceAssetId])
 
   const selectedCount = state.selected.reduce((sum, obj) => sum + obj.items.length, 0)
   // The pickup card represents the user's explicit submission. Furniture
