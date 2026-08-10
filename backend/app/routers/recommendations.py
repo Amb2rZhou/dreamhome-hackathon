@@ -21,8 +21,12 @@ class RecommendationRequest(BaseModel):
     room: str = Field(default="", max_length=80)
     selectedItemId: str = Field(default="", max_length=120)
     targetCategory: str = Field(default="", max_length=80)
+    placedItemIds: list[str] = Field(default_factory=list, max_length=200)
+    categories: list[str] = Field(default_factory=list, max_length=40)
     styles: list[str] = Field(default_factory=list, max_length=20)
     colors: list[str] = Field(default_factory=list, max_length=20)
+    materials: list[str] = Field(default_factory=list, max_length=20)
+    sourceVideoId: str = Field(default="", max_length=120)
     seenItemIds: list[str] = Field(default_factory=list, max_length=200)
     limit: int = Field(default=6, ge=1, le=20)
 

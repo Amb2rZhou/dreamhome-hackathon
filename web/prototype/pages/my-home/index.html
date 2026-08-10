@@ -712,7 +712,7 @@
       {id:'plant-moss',name:'龟背竹绿植',category:'软装',sourceType:'photo',defaultScale:1,accent:'#779b72'},
       {id:'cabinet-sage',name:'鼠尾草边柜',category:'收纳',sourceType:'draw',defaultScale:1,accent:'#8da184'}
     ];
-    const state = { phase:'setup', project:null, selectedTemplateId:null, roomOverride:null, drawingFile:null, selectedRoomId:null, selectedPlacementId:null, activeAssetCategory:'全部', activeAssetStyle:'', styleRowOpen:false, drawerMode:'ai', drawerExpanded:false, drawerAiSeenIds:[], drawerAiBatchIds:[], assemblyAssetIds:[], selectedFloorPreset:'warm-long-plank', selectedWallColor:'#f3ecdc', selectedWindowStyle:'dark-grid', interaction:{mode:'orbit', pendingAssetId:null, pointerDown:null}, job:null, dirty:false, caseMode:false, friendMode:false, ownReadOnly:false, publishedMode:false, activeShareUrl:'', collectedCopy:null, detailAssetId:null, trialPlacementId:null, recommendation:{status:'idle',displayedIds:new Set(),timer:null,index:0}, assistantOpen:false, assistantIntent:'complete', assistantQuery:'', assistantTargetCategory:'', assistantDetailAssetId:'', assistantEntryKind:'passive', assistantHasAsked:false, assistantRecommendationOffset:0, assistantRemoteRecommendations:null, assistantSeenItemIds:[], assistantClarificationQuestion:'', assistantRecommendationLoading:false, assistantNudgeKind:'cold', assistantActiveCase:'', assistantColdShown:false, assistantPassiveIndex:0, assistantNudgeCount:0, assistantTrialAssetId:'', assistantTrialPlacementId:'', assistantTrialOriginalPlacementId:'' };
+    const state = { phase:'setup', project:null, selectedTemplateId:null, roomOverride:null, drawingFile:null, selectedRoomId:null, selectedPlacementId:null, activeAssetCategory:'全部', activeAssetStyle:'', styleRowOpen:false, drawerMode:'ai', drawerExpanded:false, drawerAiSeenIds:[], drawerAiBatchIds:[], drawerAiRemoteRecommendations:null, drawerAiLoading:false, drawerAiRequestKey:'', assemblyAssetIds:[], selectedFloorPreset:'warm-long-plank', selectedWallColor:'#f3ecdc', selectedWindowStyle:'dark-grid', interaction:{mode:'orbit', pendingAssetId:null, pointerDown:null}, job:null, dirty:false, caseMode:false, friendMode:false, ownReadOnly:false, publishedMode:false, activeShareUrl:'', collectedCopy:null, detailAssetId:null, trialPlacementId:null, recommendation:{status:'idle',displayedIds:new Set(),timer:null,index:0}, assistantOpen:false, assistantIntent:'complete', assistantQuery:'', assistantTargetCategory:'', assistantDetailAssetId:'', assistantEntryKind:'passive', assistantHasAsked:false, assistantRecommendationOffset:0, assistantRemoteRecommendations:null, assistantSeenItemIds:[], assistantClarificationQuestion:'', assistantRecommendationLoading:false, assistantNudgeKind:'cold', assistantActiveCase:'', assistantColdShown:false, assistantPassiveIndex:0, assistantNudgeCount:0, assistantTrialAssetId:'', assistantTrialPlacementId:'', assistantTrialOriginalPlacementId:'' };
     const runtimeAssets = new Map();
     const ui = Object.fromEntries(['videoSceneBox','videoSceneGrid','setupPhase','generationPhase','generationMascotStage','editorPhase','templateGrid','continueBox','homeGrid','confirmModal','drawingInput','uploadName','setupError','generateButton','generationTitle','generationCopy','progressBar','backToSetup','retryButton','sceneHost','homeCompanion','editorHomeName','editorHomeMeta','editorBack','shareButton','shareSheet','daylightButton','realTimeControl','realTimeSlider','realTimeOutput','transformConfirm','transformDelete','transformHeight','heightUp','heightDown','caseCollectAll','caseCollectOne','caseLayoutActions','caseSaveLayout','caseApplyLayout','caseEditButton','roomSelector','inspector','inspectorTitle','inspectorCopy','placementHint','modelLoadStatus','assetDrawer','drawerToggle','drawerSummary','drawerModes','categoryTabs','styleTabs','assetRail','assetDetail','assetDetailClose','assetDetailMedia','assetDetailName','assetDetailCopy','assetDetailTags','assetDetailCollect','assetDetailTry','aiLauncher','aiPanel','aiClose','aiChat','recommendGrid','aiInput','aiSend','aiQuick','trialActions','trialUndo','trialKeep','matchAssistantLauncher','matchAssistantNudge','matchAssistantNudgeTitle','matchAssistantNudgeCopy','matchAssistantScrim','matchAssistantPanel','matchAssistantClose','matchAssistantListView','matchAssistantIntents','matchAssistantPopular','matchAssistantConversation','matchAssistantQueryForm','matchAssistantQuery','matchAssistantContext','matchAssistantContextTitle','matchAssistantRefresh','matchAssistantCards','matchIntentSpaceImage','matchIntentReplaceImage','matchDetailView','toast','liveRegion','resetViewButton','rotateLeft','rotateRight','scaleDown','scaleUp','moveSelected','deleteSelected'].map((id) => [id, document.getElementById(id)]));
     ui.shareFriendRow = document.getElementById('shareFriendRow');
@@ -1190,7 +1190,7 @@
       const project=normalizeHomeProject({...projectData,placements,source:{...(projectData.source||{}),type:'space_assembly',assemblyId:sceneData.assembly_id},realScene:{...(projectData.realScene||{}),room:sceneData.room,balcony:sceneData.balcony||null,extras:sceneData.extras||[],cfg:sceneData.cfg||{}},decor:{floorPreset:'light-natural-oak',wallColor:projectData.finishes?.wall?.color||'#8D5D46',windowStyle:'dark-grid',timeValue:100},daylight:'day',createdAt:projectData.createdAt||now(),updatedAt:now()});
       return project;
     }
-    function enterProjectEditor(project,{loading=false,title=''}={}){state.project=normalizeHomeProject(project);state.drawerAiSeenIds=[];state.drawerAiBatchIds=[];state.drawerMode='ai';state.selectedRoomId=null;state.selectedPlacementId=null;state.selectedWindowSlotId=null;state.interaction.mode='orbit';state.phase=loading?'scene-loading':'editor';if(loading)pendingSceneTitle=title||state.project.name;updatePhases();initEditor();}
+    function enterProjectEditor(project,{loading=false,title=''}={}){state.project=normalizeHomeProject(project);state.drawerAiSeenIds=[];state.drawerAiBatchIds=[];state.drawerAiRemoteRecommendations=null;state.drawerAiLoading=false;state.drawerAiRequestKey='';state.drawerMode='ai';state.selectedRoomId=null;state.selectedPlacementId=null;state.selectedWindowSlotId=null;state.interaction.mode='orbit';state.phase=loading?'scene-loading':'editor';if(loading)pendingSceneTitle=title||state.project.name;updatePhases();initEditor();}
     async function openSpaceAssembly(assemblyId) {
       state.caseMode=false;state.friendMode=false;state.ownReadOnly=false;state.collectedCopy=null;
       disposeScene();pendingSceneStartedAt=performance.now();pendingSceneTitle='正在准备 Demo 草稿';state.phase='submitting';updatePhases();updateGeneration('queued',18);
@@ -1450,7 +1450,7 @@
       for(const item of ordered){if(picked.length>=3)break;if(!picked.includes(item))picked.push(item);}
       return {profile,reference,targets,recommendations:picked};
     }
-    function getDrawerAiRecommendations() {
+    function getLocalDrawerAiRecommendations() {
       const profile=recommendationProfile();
       const placedIds=new Set((state.project?.placements||[]).map((item)=>item.assetId));
       const popularIds=new Set(DEFAULT_FAVORITE_IDS);
@@ -1491,6 +1491,40 @@
         ? `我看到这是${roomName}，目前已经摆放了 ${profile.assets.length} 件家具，整体以${styles.join('和')||'现有'}风格${colors.length?`及${colors.join('和')}色调`:''}为主，所以优先推荐能够延续现有搭配，并补齐${missing.join('和')||'空间功能'}的家具。`
         : `我看到${roomName}目前还是空房，所以参考常用家具的热度和完整搭配所需的品类，为你推荐适合作为起步组合的家具。`;
       return {assets:picked,copy};
+    }
+    function drawerAiContext() {
+      const profile=recommendationProfile(),placements=state.project?.placements||[],room=state.project?.rooms?.find((item)=>item.id===state.selectedRoomId)||state.project?.rooms?.[0],sourceVideoId=state.project?.source?.videoId||state.project?.source?.caseVideoId||'';
+      const request={mode:placements.length?'space':'proactive',room:room?.type||room?.label||room?.name||'',placedItemIds:[...new Set(placements.map((item)=>item.assetId).filter(Boolean))],categories:[...profile.categories],styles:profile.styles.slice(0,8),colors:profile.colors.slice(0,8),materials:profile.materials.slice(0,8),sourceVideoId,seenItemIds:[...state.drawerAiSeenIds],selectedItemId:'',targetCategory:'',limit:6};
+      const key=JSON.stringify({...request,seenItemIds:[]});
+      return {request,key};
+    }
+    let drawerAiRecommendationRequestId=0;
+    async function requestDrawerAiRecommendations({force=false}={}) {
+      if(!state.project||state.drawerMode!=='ai')return;
+      const {request,key}=drawerAiContext();
+      if(!force&&(state.drawerAiLoading||state.drawerAiRequestKey===key))return;
+      const requestId=++drawerAiRecommendationRequestId,controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),3500);
+      state.drawerAiLoading=true;
+      try{
+        const response=await fetch(`${BACKEND}/api/recommendations`,{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify(request)});
+        if(!response.ok)throw new Error(`recommendations ${response.status}`);
+        const payload=await response.json();if(requestId!==drawerAiRecommendationRequestId)return;
+        const items=(Array.isArray(payload.items)?payload.items:[]).map((item)=>{const canonical=resolveAsset(item.id);return canonical?{...canonical,...item,id:canonical.id}:null;}).filter(Boolean);
+        if(!items.length)throw new Error('recommendations empty');
+        state.drawerAiRemoteRecommendations=items;state.drawerAiBatchIds=items.map((item)=>item.id);state.drawerAiSeenIds=Array.isArray(payload.nextSeenItemIds)?payload.nextSeenItemIds:[...new Set([...state.drawerAiSeenIds,...state.drawerAiBatchIds])];state.drawerAiRequestKey=key;
+      }catch(error){
+        if(requestId!==drawerAiRecommendationRequestId)return;
+        state.drawerAiRemoteRecommendations=null;state.drawerAiBatchIds=[];state.drawerAiRequestKey=key;
+      }finally{
+        clearTimeout(timeout);if(requestId===drawerAiRecommendationRequestId){state.drawerAiLoading=false;renderAssetDrawer();}
+      }
+    }
+    function getDrawerAiRecommendations() {
+      const remote=Array.isArray(state.drawerAiRemoteRecommendations)?state.drawerAiRemoteRecommendations:[];
+      if(!remote.length)return getLocalDrawerAiRecommendations();
+      const local=getLocalDrawerAiRecommendations();
+      state.drawerAiBatchIds=remote.map((asset)=>asset.id);
+      return {assets:remote,copy:local.copy};
     }
     function matchProfileCopy(profile) {
       if(!profile.assets.length)return '这里还是一张干净画布。我先从客厅最需要的主体家具和照明开始推荐。';
@@ -1660,6 +1694,7 @@
         ui.categoryTabs.innerHTML=`<div class="ai-drawer-context"><img src="../../../mascot-happy.png" alt="" aria-hidden="true" /><span class="ai-drawer-copy"><b>包工球为你挑了这些</b><span title="${escapeText(copy)}">${escapeText(copy)}</span></span><button class="ai-drawer-refresh" data-ai-refresh type="button" aria-label="换一批 AI 推荐">↻ 换一批</button></div>`;
         ui.assetRail.innerHTML=assets.length?assets.map((asset)=>{const style=assetMatchTags(asset).styles[0]||'百搭';return `<button class="asset-option" data-asset-id="${escapeText(asset.id)}" aria-label="放置 AI 推荐的${escapeText(asset.name)}"><div class="asset-preview"><i class="asset-style-badge">${escapeText(style)}</i>${asset.thumbnail?`<img src="${escapeText(asset.thumbnail)}" alt="" loading="lazy" onerror="this.remove()" />`:`<i class="asset-silhouette ${silhouetteType(asset)}"></i>`}</div><b>${escapeText(shortAssetName(asset.name))}</b><span>${assetCategoryLabel(asset)}</span></button>`;}).join(''):'<p class="asset-empty">暂时没有可推荐的家具</p>';
         ui.drawerSummary.textContent=state.drawerExpanded?'AI 推荐 · 根据当前空间实时排序':'AI 推荐 · 家具 · 地板 · 墙面';
+        const {key}=drawerAiContext();if(state.drawerExpanded&&!state.drawerAiLoading&&state.drawerAiRequestKey!==key)queueMicrotask(()=>requestDrawerAiRecommendations());
       } else if (state.drawerMode==='furniture') {
         const favoriteAssets=getDrawerAssets();
         // 风格 = 全局筛选。基于全体收藏算，切品类不影响它的可选性/存在性。
@@ -1983,7 +2018,7 @@
     ui.generateButton.addEventListener('click',goGenerate); ui.backToSetup.addEventListener('click',returnToSetup); ui.retryButton.addEventListener('click',startGeneration);
     ui.editorHomeName.addEventListener('change',()=>{ if(!state.project) return; const name=ui.editorHomeName.value.trim(); if(!name){ ui.editorHomeName.value=state.project.name; return; } state.project.name=name; ui.editorHomeName.value=name; if(state.project.source?.type==='video_rebuild')localStorage.setItem(sceneNameKey(state.project.source.videoId),name);saveSoon();tell('家的名称已更新'); });
     ui.editorHomeName.addEventListener('keydown',(event)=>{ if(event.key==='Enter'){ event.preventDefault(); ui.editorHomeName.blur(); } });
-    ui.drawerToggle.addEventListener('click',()=>{state.drawerExpanded=!state.drawerExpanded; renderAssetDrawer();}); ui.drawerModes?.addEventListener('click',(event)=>{const button=event.target.closest('[data-drawer-mode]');if(!button)return;state.drawerMode=button.dataset.drawerMode;state.activeAssetCategory='全部';state.activeAssetStyle='';state.styleRowOpen=false;renderAssetDrawer();}); ui.categoryTabs.addEventListener('click',(event)=>{if(event.target.closest('[data-ai-refresh]')){state.drawerAiSeenIds=[...new Set([...state.drawerAiSeenIds,...state.drawerAiBatchIds])];state.drawerAiBatchIds=[];renderAssetDrawer();return;}if(event.target.closest('[data-style-trigger]')){state.styleRowOpen=!state.styleRowOpen;renderAssetDrawer();return;}const button=event.target.closest('[data-category]');if(!button)return;state.activeAssetCategory=button.dataset.category;state.styleRowOpen=false;renderAssetDrawer();}); ui.styleTabs.addEventListener('click',(event)=>{const button=event.target.closest('[data-style]');if(!button)return;state.activeAssetStyle=button.dataset.style;state.styleRowOpen=false;renderAssetDrawer();}); ui.assetRail.addEventListener('click',(event)=>{const floor=event.target.closest('[data-floor-preset]');if(floor){sceneRuntime?.applyFloorPreset(floor.dataset.floorPreset);saveSoon();return;}const wallColor=event.target.closest('[data-wall-color]');if(wallColor){sceneRuntime?.applyWallColor(wallColor.dataset.wallColor);saveSoon();return;}const windowStyle=event.target.closest('[data-window-style]');if(windowStyle){sceneRuntime?.applyWindowStyle(windowStyle.dataset.windowStyle);saveSoon();return;}const asset=event.target.closest('[data-asset-id]');if(asset)sceneRuntime?.beginPlacement(asset.dataset.assetId);});
+    ui.drawerToggle.addEventListener('click',()=>{state.drawerExpanded=!state.drawerExpanded;renderAssetDrawer();if(state.drawerExpanded&&state.drawerMode==='ai')void requestDrawerAiRecommendations();}); ui.drawerModes?.addEventListener('click',(event)=>{const button=event.target.closest('[data-drawer-mode]');if(!button)return;state.drawerMode=button.dataset.drawerMode;state.activeAssetCategory='全部';state.activeAssetStyle='';state.styleRowOpen=false;renderAssetDrawer();if(state.drawerMode==='ai')void requestDrawerAiRecommendations();}); ui.categoryTabs.addEventListener('click',(event)=>{if(event.target.closest('[data-ai-refresh]')){state.drawerAiSeenIds=[...new Set([...state.drawerAiSeenIds,...state.drawerAiBatchIds])];void requestDrawerAiRecommendations({force:true});return;}if(event.target.closest('[data-style-trigger]')){state.styleRowOpen=!state.styleRowOpen;renderAssetDrawer();return;}const button=event.target.closest('[data-category]');if(!button)return;state.activeAssetCategory=button.dataset.category;state.styleRowOpen=false;renderAssetDrawer();}); ui.styleTabs.addEventListener('click',(event)=>{const button=event.target.closest('[data-style]');if(!button)return;state.activeAssetStyle=button.dataset.style;state.styleRowOpen=false;renderAssetDrawer();}); ui.assetRail.addEventListener('click',(event)=>{const floor=event.target.closest('[data-floor-preset]');if(floor){sceneRuntime?.applyFloorPreset(floor.dataset.floorPreset);saveSoon();return;}const wallColor=event.target.closest('[data-wall-color]');if(wallColor){sceneRuntime?.applyWallColor(wallColor.dataset.wallColor);saveSoon();return;}const windowStyle=event.target.closest('[data-window-style]');if(windowStyle){sceneRuntime?.applyWindowStyle(windowStyle.dataset.windowStyle);saveSoon();return;}const asset=event.target.closest('[data-asset-id]');if(asset)sceneRuntime?.beginPlacement(asset.dataset.assetId);});
     let resetViewClickTimer=null;
     ui.resetViewButton.addEventListener('click',()=>{clearTimeout(resetViewClickTimer);resetViewClickTimer=setTimeout(()=>{sceneRuntime?.resetView();tell('已回到默认视角');},240);});
     ui.resetViewButton.addEventListener('dblclick',(event)=>{event.preventDefault();clearTimeout(resetViewClickTimer);resetViewClickTimer=null;sceneRuntime?.topView();});
