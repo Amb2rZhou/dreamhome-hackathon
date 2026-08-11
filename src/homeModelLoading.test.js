@@ -35,5 +35,7 @@ describe('DreamHome model-backed scenes', () => {
     expect(source).toContain('fallback.visible=false');
     expect(source).toContain('真实组件加载失败，保持加载层并重试');
     expect(source).toContain('const MAX_MODEL_LOADS=Math.min(2');
+    expect(source).toContain("cache:'no-cache'");
+    expect(source).not.toContain("cache:'force-cache'");
   });
 });
