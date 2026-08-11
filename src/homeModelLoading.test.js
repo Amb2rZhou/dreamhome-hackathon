@@ -26,12 +26,10 @@ describe('DreamHome model-backed scenes', () => {
   it('keeps the blocking Bao Gong Qiu loader until every real model settles', () => {
     const source = readFileSync('web/prototype/pages/my-home/index.html', 'utf8');
 
-    expect(source).toContain("planning:'../../assets/mascot/motion/working-drawing.webm'");
-    expect(source).toContain("decorating:'../../assets/mascot/motion/assembly-loading.webm'");
     expect(source).toContain("planning:'../../assets/mascot/mascot-ui.png'");
-    expect(source).toContain("className:'generation-cutout-canvas'");
-    expect(source).toContain("classList.add('is-cutout-ready')");
-    expect(source).not.toContain('.generation-media.is-video-ready .generation-video');
+    expect(source).toContain("decorating:'../../assets/mascot/states/mascot-working-loading.png'");
+    expect(source).not.toContain('id="genVideo"');
+    expect(source).not.toContain("mountMascotVideoCutout(genVideo");
     expect(source).toContain("setGenerationAnimation(loadingScene?'decorating':'planning')");
     expect(source).toContain("phase:TARGETED_ENTRY?'scene-loading':'setup'");
     expect(source).not.toContain('SAFARI_OR_IOS_WEBKIT');
@@ -43,6 +41,9 @@ describe('DreamHome model-backed scenes', () => {
     expect(source).toContain('fallback.visible=false');
     expect(source).toContain('真实组件加载失败，保持加载层并重试');
     expect(source).toContain('const MAX_MODEL_LOADS=Math.min(2');
+    expect(source).toContain('const MAX_LIGHTWEIGHT_MODEL_LOADS=Math.min(4');
+    expect(source).toContain("const STATIC_MODEL_RELEASE = '20260811-cache-v2'");
+    expect(source).toContain('staticFallbackModelUrl:modelId?staticModelUrl(modelId)');
     expect(source).toContain("cache:'default'");
     expect(source).not.toContain("cache:'no-cache'");
     expect(source).not.toContain("cache:'force-cache'");
