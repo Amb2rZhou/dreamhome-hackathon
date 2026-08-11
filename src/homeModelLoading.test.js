@@ -56,5 +56,7 @@ describe('DreamHome model-backed scenes', () => {
     expect(defaults).toContain('"preserveApprovedPlacementScales": true');
     expect(page).toContain('state.project?.preserveApprovedPlacementScales===true');
     expect(page).toContain('const approved=placement.sourceScale||placement.scale');
+    expect(page).toContain("const openedReleaseHomeImmediately=Boolean(requestedHomeId&&QUERY.get('demo')==='1'");
+    expect(page).toContain('if(openedReleaseHomeImmediately)void openHome(requestedHomeId)');
   });
 });

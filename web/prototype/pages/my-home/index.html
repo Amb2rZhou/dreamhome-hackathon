@@ -2137,6 +2137,11 @@
     state.phase=TARGETED_ENTRY?'scene-loading':'setup';renderTemplates();renderSavedHomes();renderVideoScenes();updatePhases();
     const requestedAssetId=QUERY.get('addAsset'),sharedSlug=QUERY.get('shared')?.trim(),assetShareSlug=QUERY.get('assetShare')?.trim();
     const requestedHomeId=QUERY.get('home')?.trim();
+    // Judge links point at immutable release snapshots. Open them immediately;
+    // user-project hydration may continue in the background but must never
+    // block the first visible frame or replace the approved transforms.
+    const openedReleaseHomeImmediately=Boolean(requestedHomeId&&QUERY.get('demo')==='1'&&DEFAULT_HOMES.some((home)=>home.id===requestedHomeId));
+    if(openedReleaseHomeImmediately)void openHome(requestedHomeId);
     Promise.allSettled([homeSceneService.hydrate(),syncBackendUserAssets()]).then(async(results)=>{
       const projectResult=results[0];
       if(projectResult.status==='rejected')console.warn('[DreamHome] 后端项目暂不可用，继续使用本地布局',projectResult.reason);
@@ -2145,7 +2150,7 @@
         if(sharedSlug){await openPublishedHome(sharedSlug);return;}
         if(assetShareSlug){await openPublishedAssets(assetShareSlug);return;}
       }catch(error){console.warn('[DreamHome] 公共分享读取失败',error);tell(error.message||'分享内容暂时无法打开');return;}
-      if(requestedHomeId&&!requestedAssetId){if(FRIEND_SHARE_REQUEST&&!sourceShareMessage()){location.replace(`../chat/index.html?friend=${encodeURIComponent(FRIEND_SHARE_VIEWER_ID)}`);return;}await openHome(requestedHomeId);return;}
+      if(requestedHomeId&&!requestedAssetId){if(openedReleaseHomeImmediately)return;if(FRIEND_SHARE_REQUEST&&!sourceShareMessage()){location.replace(`../chat/index.html?friend=${encodeURIComponent(FRIEND_SHARE_VIEWER_ID)}`);return;}await openHome(requestedHomeId);return;}
       if(requestedAssetId){
         const home=homeSceneService.loadHomes()[0];
         if(home)await openHome(home.id,requestedAssetId);
