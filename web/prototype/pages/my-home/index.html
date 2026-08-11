@@ -1104,7 +1104,13 @@
       tell(`拼装清单已就位 · ${ids.length} 件，点家具后放入房间`);
     }
     async function openHome(id, requestedAssetId='', assemblyIds=[]) {
-      const home = homeSceneService.loadHomes().find((item) => item.id === id);
+      // Judge/demo links must always open the release snapshot. A stale synced
+      // project can legitimately have the same id, but it must not override the
+      // deterministic first-visit experience selected with `demo=1`.
+      const releaseHome = QUERY.get('demo') === '1'
+        ? DEFAULT_HOMES.find((item) => item.id === id)
+        : null;
+      const home = releaseHome || homeSceneService.loadHomes().find((item) => item.id === id);
       if (!home) return;
       state.friendMode=IS_FRIEND_SHARE_VISIT;state.ownReadOnly=!state.friendMode&&!REQUESTED_EDIT_MODE&&home.source?.type==='collected_home'&&home.readOnly===true;state.publishedMode=false;state.activeShareUrl='';state.caseMode=state.friendMode||state.ownReadOnly;state.collectedCopy=home.source?.type==='collected_home'?home:null;
       // A direct home link identifies an approved/saved project snapshot.  Do
