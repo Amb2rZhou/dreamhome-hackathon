@@ -260,9 +260,9 @@
     // 而案例还原的往往只是其中一个房间（奶油风标 78㎡，实际还原的客厅只有 19.4㎡）。
     // 两个数并排显示会自相矛盾，改为一律按 scene.room 实算。
     const CASE_INDEX = [
-      { videoId: 'vid_91fe552c5f7d', cover: '../../assets/scenes/vid_91fe552c5f7d.jpg', tag: '长厅公寓', blogger: '@云上的小路' },
+      { videoId: 'vid_91fe552c5f7d', cover: '../../assets/scenes/vid_91fe552c5f7d.jpg', tag: '48平长厅公寓', blogger: '@云上的小路', countLabel: '15 件组件 · 44.2㎡ · 4.8 × 9.2 m', href: '../my-home/index.html?home=video-vid_91fe552c5f7d&mode=edit&demo=1' },
       { videoId: 'vid_40734d7f2e6c', cover: '../../assets/scenes/vid_40734d7f2e6c.jpg?v=approved-room', tag: '原木侘寂', blogger: '@鸡蛋灌饼的家' },
-      { videoId: 'vid_5f32a0ac954a', cover: '../../assets/scenes/vid_5f32a0ac954a.jpg', tag: '奶油风', blogger: '@栗子设计日记' },
+      { videoId: 'asm_bedroom_3a2749b355d9', cover: '../../assets/scenes/templates/corner-bedroom.png?v=warm-bedroom', tag: '复古暖棕卧室', blogger: '@DreamHome理想家', countLabel: '12 件组件 · 19.4㎡ · 3.6 × 5.4 m', href: '../my-home/index.html?assembly=asm_bedroom_3a2749b355d9' },
     ];
     const roomSpec = (scene) => {
       const room = scene?.room;
@@ -408,6 +408,8 @@
     // 主页案例卡上的「N 件组件」：场景 JSON 异步到达后回填，失败就留空不报错
     const paintCaseCounts = (root = catalog) => {
       root.querySelectorAll('[data-case-count]').forEach((node) => {
+        const meta=caseMetaOf(node.dataset.caseCount);
+        if(meta?.countLabel){node.textContent=meta.countLabel;return;}
         loadCase(node.dataset.caseCount)
           .then((scene) => {
             const spec = roomSpec(scene);
@@ -534,7 +536,7 @@
     const renderCases = () => {
       libraryContent.classList.remove('is-case');
       enterSecondary('同款小家');
-      catalog.innerHTML = `<p class="sg-intro">查看博主同款小家，可单件收藏，也可一键套用到我的家。</p><div class="case-list">${CASE_INDEX.map((item) => `<button class="case-tile" data-case-open="${item.videoId}" aria-label="查看案例 ${item.tag}" style="background-image:url('${item.cover}')"><span class="case-tile-foot"><b>${item.tag}</b><span>${item.blogger} · <i data-case-count="${item.videoId}">…</i></span></span></button>`).join('')}</div>`;
+      catalog.innerHTML = `<p class="sg-intro">查看博主同款小家，可单件收藏，也可一键套用到我的家。</p><div class="case-list">${CASE_INDEX.map((item) => `<button class="case-tile" data-case-open="${item.videoId}" ${item.href?`data-case-href="${item.href}"`:''} aria-label="查看案例 ${item.tag}" style="background-image:url('${item.cover}')"><span class="case-tile-foot"><b>${item.tag}</b><span>${item.blogger} · <i data-case-count="${item.videoId}">…</i></span></span></button>`).join('')}</div>`;
       paintCaseCounts(catalog);
     };
 
@@ -910,7 +912,7 @@
       const styleOpen = event.target.closest('[data-style-open]');
       if (styleOpen) { location.hash = `style=${encodeURIComponent(styleOpen.dataset.styleOpen)}`; return; }
       const caseOpen = event.target.closest('[data-case-open]');
-      if (caseOpen) { location.hash = `case=${encodeURIComponent(caseOpen.dataset.caseOpen)}`; return; }
+      if (caseOpen) { if(caseOpen.dataset.caseHref){location.href=caseOpen.dataset.caseHref;return;} location.hash = `case=${encodeURIComponent(caseOpen.dataset.caseOpen)}`; return; }
       if (event.target.closest('#caseSaveAll')) { saveWholeCase(); return; }
       if (event.target.closest('#filterOpen')) { openFilterSheet(); return; }
       if (event.target.closest('#filterClear')) { filter.categories.clear(); filter.styles.clear(); renderCatalog(); return; }

@@ -552,7 +552,7 @@
     #editorHomeName:focus { background:rgba(255,253,247,.98); outline-color:rgba(216,161,61,.5); }
     .share-panel { background:#fffdf8; box-shadow:0 -12px 30px rgba(112,76,28,.18); }
     .share-handle { background:rgba(181,140,70,.35); }
-    .generation-media{position:relative;width:210px;height:168px;display:grid;place-items:center}.generation-fallback{position:relative;z-index:1;width:158px;height:158px;object-fit:contain;filter:drop-shadow(0 12px 14px rgba(116,84,43,.16));transform-origin:50% 86%;animation:bao-working 1.15s ease-in-out infinite}.generation-media::before{content:"";position:absolute;z-index:2;right:23px;top:35px;width:8px;height:8px;border-radius:50%;background:#f0b844;box-shadow:-13px 11px 0 -2px rgba(238,174,54,.82),7px 17px 0 -3px rgba(238,174,54,.64);animation:bao-spark 1.15s ease-in-out infinite}.generation-media::after{content:"";position:absolute;z-index:0;left:50%;bottom:9px;width:112px;height:14px;border-radius:50%;background:rgba(139,104,55,.12);filter:blur(5px);transform:translateX(-50%);animation:bao-shadow 1.15s ease-in-out infinite}.progress-bar{background-size:180% 100%;animation:progress-sheen 1.6s linear infinite}@keyframes bao-working{0%,100%{transform:translate3d(-2px,1px,0) rotate(-.6deg)}50%{transform:translate3d(3px,-3px,0) rotate(1deg)}}@keyframes bao-spark{0%,100%{opacity:.28;transform:scale(.72)}45%{opacity:1;transform:scale(1.08)}}@keyframes bao-shadow{0%,100%{opacity:.68;transform:translateX(-50%) scaleX(1)}50%{opacity:.42;transform:translateX(-50%) scaleX(.9)}}@keyframes progress-sheen{from{background-position:100% 0}to{background-position:-100% 0}}
+    .generation-media{position:relative;width:210px;height:168px;display:grid;place-items:center;background:transparent}.generation-motion-source{position:absolute;width:1px;height:1px;opacity:.001;pointer-events:none}.generation-motion{position:relative;z-index:2;width:158px;height:158px;object-fit:contain;filter:drop-shadow(0 12px 14px rgba(116,84,43,.16))}.generation-fallback{position:absolute;z-index:1;width:158px;height:158px;object-fit:contain;filter:drop-shadow(0 12px 14px rgba(116,84,43,.16));transform-origin:50% 86%;animation:bao-working 1.15s ease-in-out infinite}.generation-media.is-motion-ready .generation-fallback{visibility:hidden}.generation-media::before{content:"";position:absolute;z-index:3;right:23px;top:35px;width:8px;height:8px;border-radius:50%;background:#f0b844;box-shadow:-13px 11px 0 -2px rgba(238,174,54,.82),7px 17px 0 -3px rgba(238,174,54,.64);animation:bao-spark 1.15s ease-in-out infinite}.generation-media::after{content:"";position:absolute;z-index:0;left:50%;bottom:9px;width:112px;height:14px;border-radius:50%;background:rgba(139,104,55,.12);filter:blur(5px);transform:translateX(-50%);animation:bao-shadow 1.15s ease-in-out infinite}.progress-bar{background-size:180% 100%;animation:progress-sheen 1.6s linear infinite}@keyframes bao-working{0%,100%{transform:translate3d(-2px,1px,0) rotate(-.6deg)}50%{transform:translate3d(3px,-3px,0) rotate(1deg)}}@keyframes bao-spark{0%,100%{opacity:.28;transform:scale(.72)}45%{opacity:1;transform:scale(1.08)}}@keyframes bao-shadow{0%,100%{opacity:.68;transform:translateX(-50%) scaleX(1)}50%{opacity:.42;transform:translateX(-50%) scaleX(.9)}}@keyframes progress-sheen{from{background-position:100% 0}to{background-position:-100% 0}}
     .home-companion{position:absolute;z-index:11;right:18px;top:112px;display:none;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;color:#6f3d20;background:rgba(255,246,225,.92);box-shadow:0 8px 20px rgba(110,73,31,.2);font-size:11px;font-weight:750;pointer-events:none}.home-companion.is-visible{display:flex}.home-companion i{font-size:19px;font-style:normal;animation:fire-friend 1.25s ease-in-out infinite}@keyframes fire-friend{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.06)}}
     @media (prefers-reduced-motion:reduce){.generation-fallback,.generation-media::before,.generation-media::after,.progress-bar{animation:none}}
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior:auto!important; transition:none!important; animation:none!important; } }
@@ -575,7 +575,7 @@
             <p class="setup-error" id="setupError" role="alert"></p>
             <button class="primary-button" id="generateButton">生成我的家</button>
           </section>
-          <section class="screen-phase generation-phase" id="generationPhase" aria-live="polite" aria-busy="true"><div class="generation-media" id="generationMascotStage" data-status="processing" data-animation="decorating" role="img" aria-label="包工球正在粉刷墙壁并摆放家具"><img id="genFallback" class="generation-fallback" src="../../assets/mascot/states/mascot-working-loading.png" alt="" aria-hidden="true"></div><h2 id="generationTitle">包工球正在粉刷和摆放家具</h2><p id="generationCopy">正在准备你的 3D 空间，全部就绪后再进入</p><div class="progress-track"><div class="progress-bar" id="progressBar"></div></div><div class="generation-actions"><button class="secondary-button" id="backToSetup">返回选择</button><button class="secondary-button" id="retryButton" hidden>重新生成</button></div></section>
+          <section class="screen-phase generation-phase" id="generationPhase" aria-live="polite" aria-busy="true"><div class="generation-media" id="generationMascotStage" data-status="processing" data-animation="decorating" role="img" aria-label="包工球正在粉刷墙壁并摆放家具"><video id="genMotion" class="generation-motion-source" src="../../assets/mascot/motion/working-drawing.webm" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video><img id="genFallback" class="generation-fallback" src="../../assets/mascot/states/mascot-working-loading.png" alt="" aria-hidden="true"></div><h2 id="generationTitle">包工球正在粉刷和摆放家具</h2><p id="generationCopy">正在准备你的 3D 空间，全部就绪后再进入</p><div class="progress-track"><div class="progress-bar" id="progressBar"></div></div><div class="generation-actions"><button class="secondary-button" id="backToSetup">返回选择</button><button class="secondary-button" id="retryButton" hidden>重新生成</button></div></section>
           <section class="screen-phase editor-phase" id="editorPhase" aria-label="我的家 3D 场景">
             <div class="scene-host" id="sceneHost" aria-label="可交互的三维户型"></div>
             <div class="home-companion" id="homeCompanion" aria-live="polite"><i>🔥</i><span>小火人正在这个家里生活</span></div>
@@ -668,7 +668,7 @@
     import { RECOMMENDATION_THINKING_MESSAGES, buildRecommendationRequest, recommendFromCatalog, findCollectedHome, createCollectedHome } from '../shared/home-experience.js?v=20260810c';
     import { renderTemplatePreviews, disposeTemplatePreviews } from '../shared/template-preview-3d.js?v=20260810c';
     import { ROOM_PRESETS, clampRoom, presetRoom } from '../shared/room-presets.js?v=20260810c';
-    import { DEFAULT_HOMES } from '../shared/default-homes.generated.js?v=20260810c';
+    import { DEFAULT_HOMES } from '../shared/default-homes.generated.js?v=20260812a';
     import { restoreApprovedHomes } from '../shared/home-project-defaults.js?v=20260810c';
     import { inferRuntimePrimitive, isModelBackedHome } from '../shared/home-model-loading.js?v=20260810c';
     import { getFriends, addMessage, getConversation } from '../shared/social-demo-data.js?v=20260810d';
@@ -676,7 +676,7 @@
 
     const STORAGE_KEY = 'dreamhome.my-home.v1';
     const HOMES_KEY = 'dreamhome.my-home.homes.v1';
-    const DEFAULT_HOMES_MIGRATION_KEY = 'dreamhome.default-homes.20260807-approved-v3-recovery';
+    const DEFAULT_HOMES_MIGRATION_KEY = 'dreamhome.default-homes.20260812-approved-v4-bedroom';
     const MOCK_FAILURE = new URLSearchParams(location.search).has('mockFailure');
     const wall = (id, axis, at, from, to, role='partition') => ({id,axis,at,from,to,role});
     const TEMPLATES = [
@@ -729,14 +729,13 @@
     const ui = Object.fromEntries(['videoSceneBox','videoSceneGrid','setupPhase','generationPhase','generationMascotStage','editorPhase','templateGrid','continueBox','homeGrid','confirmModal','drawingInput','uploadName','setupError','generateButton','generationTitle','generationCopy','progressBar','backToSetup','retryButton','sceneHost','homeCompanion','editorHomeName','editorHomeMeta','editorBack','shareButton','shareSheet','daylightButton','realTimeControl','realTimeSlider','realTimeOutput','transformConfirm','transformDelete','transformHeight','heightUp','heightDown','caseCollectAll','caseCollectOne','caseLayoutActions','caseSaveLayout','caseApplyLayout','caseEditButton','roomSelector','inspector','inspectorTitle','inspectorCopy','placementHint','modelLoadStatus','assetDrawer','drawerToggle','drawerSummary','drawerModes','categoryTabs','styleTabs','assetRail','assetDetail','assetDetailClose','assetDetailMedia','assetDetailName','assetDetailCopy','assetDetailTags','assetDetailCollect','assetDetailTry','aiLauncher','aiPanel','aiClose','aiChat','recommendGrid','aiInput','aiSend','aiQuick','trialActions','trialUndo','trialKeep','matchAssistantLauncher','matchAssistantNudge','matchAssistantNudgeTitle','matchAssistantNudgeCopy','matchAssistantScrim','matchAssistantPanel','matchAssistantClose','matchAssistantListView','matchAssistantIntents','matchAssistantPopular','matchAssistantConversation','matchAssistantQueryForm','matchAssistantQuery','matchAssistantContext','matchAssistantContextTitle','matchAssistantRefresh','matchAssistantCards','matchIntentSpaceImage','matchIntentReplaceImage','matchDetailView','toast','liveRegion','resetViewButton','rotateLeft','rotateRight','scaleDown','scaleUp','moveSelected','deleteSelected'].map((id) => [id, document.getElementById(id)]));
     ui.shareFriendRow = document.getElementById('shareFriendRow');
     ui.friendHomeAction = document.getElementById('friendHomeAction');
-    const GENERATION_FALLBACKS={planning:'../../assets/mascot/mascot-ui.png',decorating:'../../assets/mascot/states/mascot-working-loading.png'};
     const genFallback=document.getElementById('genFallback');
+    const genMotion=document.getElementById('genMotion');
     function setGenerationAnimation(mode){
       const next=mode==='planning'?'planning':'decorating';
       if(ui.generationMascotStage.dataset.animation===next)return;
       ui.generationMascotStage.dataset.animation=next;
-      genFallback.src=GENERATION_FALLBACKS[next];
-      ui.generationMascotStage.setAttribute('aria-label',next==='planning'?'包工球正在查看户型图纸':'包工球正在粉刷墙壁并摆放家具');
+      ui.generationMascotStage.setAttribute('aria-label','包工球正在粉刷墙壁并摆放家具');
     }
     function mountMascotVideoCutout(video,{className='match-assistant-cutout-canvas',onReady=null}={}) {
       const canvas=document.createElement('canvas'),size=144,context=canvas.getContext('2d',{willReadFrequently:true});canvas.width=canvas.height=size;canvas.className=className;canvas.setAttribute('aria-hidden','true');video.insertAdjacentElement('afterend',canvas);
@@ -755,6 +754,7 @@
       };
       const start=()=>{if(started||video.readyState<2)return;started=true;draw();};video.defaultMuted=true;video.muted=true;video.addEventListener('loadeddata',start,{once:true});video.play().then(start).catch(()=>{});
     }
+    mountMascotVideoCutout(genMotion,{className:'generation-motion',onReady:()=>ui.generationMascotStage.classList.add('is-motion-ready')});
     document.querySelectorAll('.match-assistant-idle').forEach((video)=>mountMascotVideoCutout(video));
     let mascotDrag=null,mascotSuppressClick=false;
     function positionMatchAssistantNudge() {
@@ -841,11 +841,10 @@
           const store = JSON.parse(localStorage.getItem(HOMES_KEY) || 'null');
           let homes = store && Array.isArray(store.homes) ? store.homes : [];
           if (!store) homes = clone(DEFAULT_HOMES);
-          // v3 恢复迁移：旧版可能留下“已迁移”标记却保存空列表。补回两套内置场景，且不覆盖用户项目。
-          if (!localStorage.getItem(DEFAULT_HOMES_MIGRATION_KEY)) {
-            homes=restoreApprovedHomes(homes,DEFAULT_HOMES,['vid_5f32a0ac954a']);
-            localStorage.setItem(DEFAULT_HOMES_MIGRATION_KEY,'1');
-          }
+          // 每次读取都以发布快照刷新内置案例；restoreApprovedHomes 会保留所有用户项目。
+          // 这样首次访问、无痕窗口和已留下旧迁移标记的浏览器看到的内置案例完全一致。
+          homes=restoreApprovedHomes(homes,DEFAULT_HOMES,['vid_5f32a0ac954a']);
+          localStorage.setItem(DEFAULT_HOMES_MIGRATION_KEY,'1');
           // 把旧版单独保存的视频房间迁入统一项目列表，之后所有入口都复用同一编辑器和保存链路。
           const legacyVideoKeys=Array.from({length:localStorage.length},(_,index)=>localStorage.key(index)).filter(key=>key?.startsWith('dreamhome_video_project_')&&key.endsWith('_v1'));
           legacyVideoKeys.forEach((key)=>{const legacyVideo=JSON.parse(localStorage.getItem(key)||'null');const migrated=normalizeHomeProject(legacyVideo);if(migrated&&!homes.some((home)=>home.id===migrated.id))homes.push(migrated);if(migrated)localStorage.removeItem(key);});
@@ -1962,8 +1961,13 @@
         }
         const box=new THREE.Box3().setFromObject(model),center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3());
         model.position.set(-center.x,mount==='ceiling'?-box.max.y:-box.min.y,-center.z);
-        const target=validSizePrior(placement.customSize)||validSizePrior(asset.sizePrior);
-        if(target&&size.x&&size.y&&size.z){
+        const preserveApprovedScale=state.project?.preserveApprovedPlacementScales===true;
+        const target=preserveApprovedScale?null:(validSizePrior(placement.customSize)||validSizePrior(asset.sizePrior));
+        if(preserveApprovedScale){
+          const approved=placement.sourceScale||placement.scale||{x:1,y:1,z:1};
+          placement.scale={x:approved.x,y:approved.y,z:approved.z};
+          fallback.scale.set(approved.x,approved.y,approved.z);
+        }else if(target&&size.x&&size.y&&size.z){
           const normalized={x:target.w/size.x,y:target.h/size.y,z:target.d/size.z};
           let corrected=normalized;
           if(placement.modelScaleNormalized===true&&placement.modelBaseScale){

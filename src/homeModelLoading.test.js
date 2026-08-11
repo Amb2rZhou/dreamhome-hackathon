@@ -26,11 +26,10 @@ describe('DreamHome model-backed scenes', () => {
   it('keeps the blocking Bao Gong Qiu loader until every real model settles', () => {
     const source = readFileSync('web/prototype/pages/my-home/index.html', 'utf8');
 
-    expect(source).toContain("planning:'../../assets/mascot/mascot-ui.png'");
-    expect(source).toContain("decorating:'../../assets/mascot/states/mascot-working-loading.png'");
-    expect(source).not.toContain('id="genVideo"');
-    expect(source).not.toContain("mountMascotVideoCutout(genVideo");
-    expect(source).toContain("setGenerationAnimation(loadingScene?'decorating':'planning')");
+    expect(source).toContain('id="genMotion"');
+    expect(source).toContain('working-drawing.webm');
+    expect(source).toContain("mountMascotVideoCutout(genMotion");
+    expect(source).not.toContain('GENERATION_FALLBACKS');
     expect(source).toContain("phase:TARGETED_ENTRY?'scene-loading':'setup'");
     expect(source).not.toContain('SAFARI_OR_IOS_WEBKIT');
     expect(source).toContain('ui.editorPhase.inert=sceneLoading');
@@ -47,5 +46,15 @@ describe('DreamHome model-backed scenes', () => {
     expect(source).toContain("cache:'default'");
     expect(source).not.toContain("cache:'no-cache'");
     expect(source).not.toContain("cache:'force-cache'");
+  });
+
+  it('does not re-normalize the approved single-apartment snapshot', () => {
+    const page = readFileSync('web/prototype/pages/my-home/index.html', 'utf8');
+    const defaults = readFileSync('web/prototype/pages/shared/default-homes.generated.js', 'utf8');
+
+    expect(defaults).toContain('"id": "video-vid_40734d7f2e6c"');
+    expect(defaults).toContain('"preserveApprovedPlacementScales": true');
+    expect(page).toContain('state.project?.preserveApprovedPlacementScales===true');
+    expect(page).toContain('const approved=placement.sourceScale||placement.scale');
   });
 });

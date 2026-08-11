@@ -75,7 +75,7 @@ describe('Mia interaction with DreamHome data', () => {
     expect(home).not.toContain("if(home.source?.type==='video_rebuild'){await openVideoScene(home.source.videoId,home.name");
     expect(home).toContain("QUERY.get('demo') === '1'");
     expect(home).toContain('DEFAULT_HOMES.find((item) => item.id === id)');
-    expect(home).toContain("const target=validSizePrior(placement.customSize)||validSizePrior(asset.sizePrior)");
+    expect(home).toContain("validSizePrior(placement.customSize)||validSizePrior(asset.sizePrior)");
     expect(home).toContain("mount=placement.mount||asset.mount||'floor'");
   });
 
