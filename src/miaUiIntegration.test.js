@@ -72,6 +72,7 @@ describe('Mia interaction with DreamHome data', () => {
     expect(home).toContain("project?.source?.type==='space_assembly'&&!queryHomeUserId");
     expect(home).toContain('customSize:placement.customSize||estimated');
     expect(home).toContain("enterProjectEditor(home,{loading:isModelBackedHome(home),title:home.name})");
+    expect(home).not.toContain("if(home.source?.type==='video_rebuild'){await openVideoScene(home.source.videoId,home.name");
     expect(home).toContain("const target=validSizePrior(placement.customSize)||validSizePrior(asset.sizePrior)");
     expect(home).toContain("mount=placement.mount||asset.mount||'floor'");
   });

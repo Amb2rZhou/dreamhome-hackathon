@@ -1107,7 +1107,11 @@
       const home = homeSceneService.loadHomes().find((item) => item.id === id);
       if (!home) return;
       state.friendMode=IS_FRIEND_SHARE_VISIT;state.ownReadOnly=!state.friendMode&&!REQUESTED_EDIT_MODE&&home.source?.type==='collected_home'&&home.readOnly===true;state.publishedMode=false;state.activeShareUrl='';state.caseMode=state.friendMode||state.ownReadOnly;state.collectedCopy=home.source?.type==='collected_home'?home:null;
-      if(home.source?.type==='video_rebuild'){await openVideoScene(home.source.videoId,home.name,IS_FRIEND_SHARE_VISIT,requestedAssetId,assemblyIds);return;}
+      // A direct home link identifies an approved/saved project snapshot.  Do
+      // not rebuild it from the source video here: that discards the curated
+      // canonical asset list and every saved transform.  The separate
+      // data-video-scene entry remains the explicit "rebuild from video"
+      // action and still calls openVideoScene().
       enterProjectEditor(home,{loading:isModelBackedHome(home),title:home.name});
       if(requestedAssetId)beginRequestedAssetPlacement(requestedAssetId);
       else if(assemblyIds.length)activateAssemblyTray(assemblyIds);
