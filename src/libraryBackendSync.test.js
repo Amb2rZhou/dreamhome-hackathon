@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { addCanonicalAssetToLibrary, getAssets, getDreamHomeUserId, getFavorites, sourceFeedHref, syncBackendUserAssets } from '../web/prototype/pages/shared/asset-library-data.js'
+import { addCanonicalAssetToLibrary, addUserAsset, getAsset, getAssets, getDreamHomeUserId, getFavorites, sourceFeedHref, syncBackendUserAssets } from '../web/prototype/pages/shared/asset-library-data.js'
 
 describe('Mia library backend synchronization', () => {
   beforeEach(() => {
@@ -94,5 +94,29 @@ describe('Mia library backend synchronization', () => {
       user_id: 'amber-test',
     })
     expect(getFavorites().has(assetId)).toBe(true)
+  })
+
+  it('does not let a stale local row hide canonical media for the same asset id', () => {
+    const assetId = 'ast_4c747bd203f6'
+    const canonical = getAsset(assetId)
+
+    addUserAsset({
+      id: assetId,
+      kind: 'furniture',
+      name: '旧本地扶手椅',
+      category: '单椅',
+      modelUrl: '',
+      thumbnail: '',
+      styles: [],
+    })
+
+    expect(getAsset(assetId)).toEqual(expect.objectContaining({
+      id: assetId,
+      name: canonical.name,
+      modelUrl: canonical.modelUrl,
+      thumbnail: canonical.thumbnail,
+      styles: canonical.styles,
+    }))
+    expect(getAssets('furniture').filter((item) => item.id === assetId)).toHaveLength(1)
   })
 })

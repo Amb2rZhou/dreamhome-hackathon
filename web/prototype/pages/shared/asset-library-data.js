@@ -293,14 +293,28 @@ function userAssetById(id) {
 export function getAssets(kind, category) {
   // 用户刚生成的组件必须优先可见；收藏首页只展示有限数量，
   // 若放在平台资产之后会造成“生成成功但收藏里看不见”的错觉。
-  const combined = [...new Map(
-    COMPONENT_ASSETS.concat(getUserAssets()).map((item) => [item.id, item]),
-  ).values()];
+  const combined = [...new Set(
+    COMPONENT_ASSETS.concat(getUserAssets()).map((item) => item.id),
+  )].map((id) => getAsset(id)).filter(Boolean);
   return combined.filter((item) => item.kind === kind && (!category || item.category === category));
 }
 
 export function getAsset(id) {
-  return userAssetById(id) || ASSET_BY_ID.get(id);
+  const canonical = ASSET_BY_ID.get(id);
+  const userRecord = userAssetById(id);
+  if (!canonical) return userRecord;
+  if (!userRecord) return canonical;
+  // A browser may still hold an older local copy of an asset after that same
+  // id has become canonical. Canonical media, tags and dimensions are the
+  // source of truth; the local row only contributes user-scoped bookkeeping.
+  // Otherwise a stale row without modelUrl can shadow a valid GLB forever and
+  // leave an atomic scene load stuck below its total count.
+  return {
+    ...userRecord,
+    ...canonical,
+    visibility: userRecord.visibility ?? canonical.visibility,
+    backendManaged: userRecord.backendManaged ?? canonical.backendManaged,
+  };
 }
 
 export function sourceFeedHref(asset) {
