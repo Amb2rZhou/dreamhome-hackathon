@@ -195,11 +195,18 @@ async def gen3d(image_path: str, extra_image_paths: list[str] | None = None) -> 
             await asyncio.sleep(75)
             continue
         failed = False
+        transient_poll_errors = 0
         for _ in range(150):
             await asyncio.sleep(2)
             try:
                 res = await provider.poll(pjid)
-            except Exception:  # noqa: BLE001 worker 重启中
+                transient_poll_errors = 0
+            except Exception:  # noqa: BLE001 provider 网络短暂抖动
+                # Keep the same remote request alive. Re-submitting here can
+                # create a second paid generation for one user action.
+                transient_poll_errors += 1
+                if transient_poll_errors < 5:
+                    continue
                 failed = True
                 break
             if res.status == "succeeded":

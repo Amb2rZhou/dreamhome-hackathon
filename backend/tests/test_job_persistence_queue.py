@@ -1,7 +1,9 @@
 import asyncio
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from app import db, store
@@ -85,6 +87,56 @@ class DurableJobQueueTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(restored.status, JobStatus.succeeded)
         self.assertEqual(restored.model_url, "/storage/models/result.glb")
 
+    async def test_transient_provider_timeout_keeps_polling_same_paid_job(self):
+        class ConnectTimeout(Exception):
+            pass
+
+        class Result:
+            status = "succeeded"
+            progress = 100
+            model_url = "/storage/models/result.glb"
+            thumbnail_url = None
+
+        class Provider:
+            name = "fal"
+
+            def __init__(self):
+                self.polls = 0
+
+            async def submit(self, *_args, **_kwargs):
+                return "provider-existing"
+
+            async def poll(self, provider_job_id):
+                self.polls += 1
+                self.provider_job_id = provider_job_id
+                if self.polls == 1:
+                    raise ConnectTimeout("temporary")
+                return Result()
+
+        provider = Provider()
+        job = store.create_job("sketch", "/tmp/sketch.png")
+        store._TASKS[job.job_id].cancel()
+        await asyncio.gather(store._TASKS[job.job_id], return_exceptions=True)
+        store._TASKS.clear()
+
+        async def no_material_copy(url):
+            return url, {}
+
+        with (
+            patch.object(store, "get_provider", return_value=provider),
+            patch.dict(sys.modules, {
+                "app.services.glb_material": SimpleNamespace(
+                    materialize_postprocessed_glb=no_material_copy,
+                ),
+            }),
+            patch("app.store.asyncio.sleep", return_value=None),
+        ):
+            await store._run(job, "/tmp/sketch.png", True)
+
+        self.assertEqual(job.status, JobStatus.succeeded)
+        self.assertEqual(provider.polls, 2)
+        self.assertEqual(provider.provider_job_id, "provider-existing")
+
     async def test_workflow_metadata_can_set_initial_stage_without_duplicate_kwargs(self):
         blocker = asyncio.Event()
 
@@ -101,6 +153,24 @@ class DurableJobQueueTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(job.asset_id, "ast_test")
         blocker.set()
         await store._TASKS[job.job_id]
+        self.assertNotIn(job.job_id, store._WORKFLOW_RUNNERS)
+
+    async def test_restore_does_not_materialize_terminal_history(self):
+        for index in range(50):
+            job = store.create_job("photo", f"/tmp/terminal-{index}.png")
+            store._TASKS[job.job_id].cancel()
+            await asyncio.gather(store._TASKS[job.job_id], return_exceptions=True)
+            job.status = JobStatus.succeeded
+            store._persist(job)
+
+        store._JOBS.clear()
+        store._REQUESTS.clear()
+        store._WAITING.clear()
+        store._TASKS.clear()
+        await store.restore_persisted_jobs()
+
+        self.assertEqual(store._JOBS, {})
+        self.assertEqual(store._REQUESTS, {})
 
     async def test_running_atomic_job_is_rescheduled_after_restart(self):
         job = store.create_job("photo", "/tmp/photo.png")

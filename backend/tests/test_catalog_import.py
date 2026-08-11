@@ -29,7 +29,10 @@ class FakeDatabase:
 class CatalogImportTests(unittest.TestCase):
     def test_reads_complete_generated_catalog(self):
         items = load_generated_manifest(MANIFEST)
-        self.assertEqual(len(items), 190)
+        # The generated catalog now includes the 43 production-ready
+        # canonical assets that were previously absent from the 190-item
+        # release manifest.
+        self.assertEqual(len(items), 233)
         self.assertTrue(all(item.get("asset_id") for item in items))
 
     def test_maps_published_media_and_preserves_canonical_id(self):

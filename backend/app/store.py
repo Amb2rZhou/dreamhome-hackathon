@@ -27,6 +27,17 @@ class GenerationQueueFull(RuntimeError):
     pass
 
 
+def _is_transient_poll_error(exc: Exception) -> bool:
+    return (
+        isinstance(exc, (TimeoutError, ConnectionError))
+        or exc.__class__.__module__.startswith(("httpx", "httpcore"))
+        or exc.__class__.__name__ in {
+            "ConnectTimeout", "ReadTimeout", "WriteTimeout", "PoolTimeout",
+            "ConnectError", "ReadError", "WriteError", "RemoteProtocolError",
+        }
+    )
+
+
 def _job_document(job: Job) -> dict:
     if hasattr(job, "model_dump"):
         return job.model_dump(mode="json")
@@ -205,9 +216,24 @@ async def _run(job: Job, image_path: str, texture: bool) -> None:
             job.status = JobStatus.running
             _persist(job)
         provider_job_id = job.provider_job_id
+        transient_poll_errors = 0
         for _ in range(150):
             await asyncio.sleep(2)
-            result = await provider.poll(provider_job_id)
+            try:
+                result = await provider.poll(provider_job_id)
+                transient_poll_errors = 0
+            except Exception as exc:
+                # The provider job is already paid for and running remotely.
+                # A brief network timeout must not mark it failed or submit a
+                # duplicate paid job; keep polling the same provider id.
+                transient_poll_errors += 1
+                if _is_transient_poll_error(exc) and transient_poll_errors < 5:
+                    job.status = JobStatus.running
+                    job.stage = "generate_3d"
+                    job.error = None
+                    _persist(job)
+                    continue
+                raise
             job.progress = result.progress
             if result.status == "succeeded":
                 model_url = result.model_url
@@ -269,11 +295,18 @@ async def _run_workflow(job: Job, runner: Callable[[Job], Awaitable[None]]) -> N
         job.stage = "failed"
         job.error = f"{type(exc).__name__}: {exc}"
         _persist(job)
+    finally:
+        # A workflow closure captures selection metadata and file paths.  It is
+        # only needed while the job is executing; retaining every completed
+        # closure makes the long-running API process grow without bound.
+        _WORKFLOW_RUNNERS.pop(job.job_id, None)
 
 
 async def restore_persisted_jobs() -> None:
     """Load prior jobs and resume restart-safe atomic work."""
-    for stored in db.list_generation_jobs(include_terminal=True):
+    # Terminal jobs remain durable in SQLite and are loaded lazily by get_job.
+    # Only interrupted work belongs in the in-memory restart queue.
+    for stored in db.list_generation_jobs(include_terminal=False):
         job = _job_from_document(stored["job"])
         request = stored["request"]
         _JOBS[job.job_id] = job

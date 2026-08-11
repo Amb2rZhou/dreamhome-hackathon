@@ -215,12 +215,21 @@ def get_generation_job(job_id: str) -> Optional[dict]:
 
 
 def list_generation_jobs(*, include_terminal: bool = True) -> list[dict]:
-    rows = _rows("SELECT * FROM generation_jobs ORDER BY created_at")
+    # Production keeps durable history for readback, but restoring the queue
+    # must not deserialize every completed job.  The table can contain tens of
+    # thousands of terminal records; filtering them in Python caused Uvicorn
+    # to retain hundreds of MB and eventually be OOM-killed.
+    if include_terminal:
+        rows = _rows("SELECT * FROM generation_jobs ORDER BY created_at")
+    else:
+        rows = _rows(
+            "SELECT * FROM generation_jobs "
+            "WHERE json_extract(document_json, '$.status') NOT IN ('succeeded','failed') "
+            "ORDER BY created_at"
+        )
     result = []
     for row in rows:
         document = json.loads(row["document_json"])
-        if not include_terminal and document.get("status") in {"succeeded", "failed"}:
-            continue
         result.append({
             "job": document,
             "request": json.loads(row["request_json"] or "{}"),
