@@ -70,6 +70,10 @@ describe('Mia interaction with DreamHome data', () => {
     expect(home).toContain("type:'space_assembly'");
     expect(home).toContain('homeSceneService.saveProject(project)');
     expect(home).toContain("project?.source?.type==='space_assembly'&&!queryHomeUserId");
+    expect(home).toContain('customSize:placement.customSize||estimated');
+    expect(home).toContain("enterProjectEditor(home,{loading:isModelBackedHome(home),title:home.name})");
+    expect(home).toContain("const target=validSizePrior(placement.customSize)||validSizePrior(asset.sizePrior)");
+    expect(home).toContain("mount=placement.mount||asset.mount||'floor'");
   });
 
   it('opens the editor on lightweight AI recommendations without exposing the old mascot assistant', () => {
@@ -82,6 +86,8 @@ describe('Mia interaction with DreamHome data', () => {
     expect(home).toContain('commonMatchTags(tags.colors,profile.colors)');
     expect(home).toContain('commonMatchTags(tags.materials,profile.materials)');
     expect(home).toContain('data-ai-refresh');
+    expect(home).toContain('包工球帮你搭搭看');
+    expect(home).toContain('结合小屋现有的搭配，为你挑了几件合适的家具，放进去试试看吧。');
     expect(home).toContain('function canUseMatchAssistant() { return false; }');
   });
 

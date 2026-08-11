@@ -120,6 +120,12 @@ class SpaceAssemblyTests(unittest.TestCase):
         self.assertEqual(len(project["placements"]), 12)
         self.assertEqual(project["placements"][0]["homeId"], project["id"])
         self.assertTrue(all(item["roomId"] == "room_bedroom" for item in project["placements"]))
+        self.assertTrue(all(item["scale"] == {"x": 1.0, "y": 1.0, "z": 1.0} for item in project["placements"]))
+        self.assertTrue(all(item["sourceScale"] == {"x": 1.0, "y": 1.0, "z": 1.0} for item in project["placements"]))
+        self.assertEqual(
+            {item["mount"] for item in project["placements"]},
+            {"floor", "surface", "wall", "ceiling"},
+        )
 
     def test_scene_projection_matches_existing_editor_contract(self):
         response = self.client.get(
@@ -131,6 +137,7 @@ class SpaceAssemblyTests(unittest.TestCase):
         self.assertEqual(len(scene["items"]), 12)
         self.assertTrue(all(len(item["pos"]) == 3 for item in scene["items"]))
         self.assertTrue(all(len(item["scale"]) == 3 for item in scene["items"]))
+        self.assertTrue(all(item["scale"] == [1.0, 1.0, 1.0] for item in scene["items"]))
         self.assertTrue(all(item["glb"].endswith(".glb") for item in scene["items"]))
         self.assertTrue(all(item["labels"]["styles"] for item in scene["items"]))
         self.assertTrue(all(item["labels"]["materials"] for item in scene["items"]))

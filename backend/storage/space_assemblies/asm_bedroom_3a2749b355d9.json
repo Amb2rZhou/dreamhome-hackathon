@@ -80,7 +80,7 @@
       "mount": "floor",
       "position": {"x": 0.73, "y": 0.0, "z": 0.22},
       "rotation": {"x": 0.0, "y": 1.5707963268, "z": 0.0},
-      "scale": {"x": 2.15, "y": 2.16, "z": 1.86},
+      "scale": {"x": 1.0, "y": 1.0, "z": 1.0},
       "target_size_m": {"width": 2.15, "height": 0.85, "depth": 1.75},
       "visible": true
     },
@@ -92,7 +92,7 @@
       "mount": "floor",
       "position": {"x": -1.18, "y": 0.0, "z": -1.12},
       "rotation": {"x": 0.0, "y": 0.3490658504, "z": 0.0},
-      "scale": {"x": 1.61, "y": 1.81, "z": 1.59},
+      "scale": {"x": 1.0, "y": 1.0, "z": 1.0},
       "target_size_m": {"width": 0.95, "height": 0.85, "depth": 0.9},
       "visible": true
     },
@@ -104,7 +104,7 @@
       "mount": "floor",
       "position": {"x": 0.0, "y": 0.0, "z": -2.42},
       "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
-      "scale": {"x": 1.85, "y": 1.85, "z": 1.87},
+      "scale": {"x": 1.0, "y": 1.0, "z": 1.0},
       "target_size_m": {"width": 0.65, "height": 1.85, "depth": 0.42},
       "visible": true
     },
@@ -116,7 +116,7 @@
       "mount": "floor",
       "position": {"x": 0.0, "y": 0.01, "z": 0.35},
       "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
-      "scale": {"x": 3.2, "y": 3.0, "z": 4.86},
+      "scale": {"x": 1.0, "y": 1.0, "z": 1.0},
       "target_size_m": {"width": 3.2, "height": 0.02, "depth": 3.9},
       "visible": true
     },
@@ -128,7 +128,7 @@
       "mount": "floor",
       "position": {"x": -0.55, "y": 0.0, "z": 1.85},
       "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
-      "scale": {"x": 1.05, "y": 1.18, "z": 1.05},
+      "scale": {"x": 1.0, "y": 1.0, "z": 1.0},
       "target_size_m": {"width": 1.05, "height": 0.58, "depth": 1.05},
       "visible": true
     },
@@ -140,7 +140,7 @@
       "mount": "surface",
       "position": {"x": -0.77, "y": 0.59, "z": 1.78},
       "rotation": {"x": 0.0, "y": -0.1745329252, "z": 0.0},
-      "scale": {"x": 0.47, "y": 0.4, "z": 0.48},
+      "scale": {"x": 1.0, "y": 1.0, "z": 1.0},
       "target_size_m": {"width": 0.22, "height": 0.4, "depth": 0.22},
       "visible": true
     },
@@ -152,7 +152,7 @@
       "mount": "surface",
       "position": {"x": -0.37, "y": 0.59, "z": 1.88},
       "rotation": {"x": 0.0, "y": 0.2094395102, "z": 0.0},
-      "scale": {"x": 0.79, "y": 0.7, "z": 0.82},
+      "scale": {"x": 1.0, "y": 1.0, "z": 1.0},
       "target_size_m": {"width": 0.24, "height": 0.55, "depth": 0.24},
       "visible": true
     },
@@ -164,7 +164,7 @@
       "mount": "surface",
       "position": {"x": 0.02, "y": 1.86, "z": -2.42},
       "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
-      "scale": {"x": 0.46, "y": 0.55, "z": 0.59},
+      "scale": {"x": 1.0, "y": 1.0, "z": 1.0},
       "target_size_m": {"width": 0.4, "height": 0.55, "depth": 0.4},
       "visible": true
     },
@@ -176,7 +176,7 @@
       "mount": "ceiling",
       "position": {"x": 0.0, "y": 2.72, "z": -0.25},
       "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
-      "scale": {"x": 1.52, "y": 1.4, "z": 1.41},
+      "scale": {"x": 1.0, "y": 1.0, "z": 1.0},
       "target_size_m": {"width": 1.0, "height": 0.4, "depth": 1.0},
       "visible": true
     },
@@ -188,7 +188,7 @@
       "mount": "wall",
       "position": {"x": 1.72, "y": 1.55, "z": -0.25},
       "rotation": {"x": 0.0, "y": -1.5707963268, "z": 0.0},
-      "scale": {"x": 2.24, "y": 0.75, "z": 2.22},
+      "scale": {"x": 1.0, "y": 1.0, "z": 1.0},
       "target_size_m": {"width": 0.5, "height": 0.75, "depth": 0.5},
       "visible": true
     },
@@ -200,7 +200,7 @@
       "mount": "wall",
       "position": {"x": -1.76, "y": 1.35, "z": 0.15},
       "rotation": {"x": 0.0, "y": 1.5707963268, "z": 0.0},
-      "scale": {"x": 1.0, "y": 1.05, "z": 1.0},
+      "scale": {"x": 1.0, "y": 1.0, "z": 1.0},
       "target_size_m": {"width": 0.75, "height": 1.05, "depth": 0.03},
       "visible": true
     },
@@ -212,7 +212,7 @@
       "mount": "wall",
       "position": {"x": -0.58, "y": 1.55, "z": -2.66},
       "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
-      "scale": {"x": 0.68, "y": 0.65, "z": 0.05},
+      "scale": {"x": 1.0, "y": 1.0, "z": 1.0},
       "target_size_m": {"width": 0.5, "height": 0.65, "depth": 0.05},
       "visible": true
     }

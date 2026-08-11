@@ -116,7 +116,7 @@ export const adaptBackendAsset = (rec) => {
     rawModel: !!(rec.model_url), sizePrior: { w: dims[0], h: dims[1], d: dims[2] },
     sizePriorVersion: known ? 1 : 2,
     legacySizePrior: known ? null : { w: categoryDims[0], h: categoryDims[1], d: categoryDims[2] },
-    mount: 'floor',
+    mount: rec.labels?.mount || 'floor',
     sizeStatus: rec.size_status, thumbnail: backendMediaUrl(rec.thumbnail), videoId: rec.video_id,
     modelUrl: backendMediaUrl(rec.model_url) || null, frameUrl: backendMediaUrl(rec.frame_url) || null,
     videoUrl: backendMediaUrl(rec.video_url) || null, videoSec: rec.representative_sec ?? null,

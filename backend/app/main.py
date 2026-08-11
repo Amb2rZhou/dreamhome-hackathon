@@ -91,10 +91,20 @@ async def health():
     }
 
 
+# 内容寻址的模型和缩略图文件名不会原地变化。让浏览器长期缓存它们，
+# 避免好友分享每次重开都重新下载几十 MB 的 GLB；其他运行时文件仍维持默认策略。
+class DreamHomeStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope):
+        response = await super().get_response(path, scope)
+        if response.status_code == 200 and path.startswith(("models/", "thumbs/")):
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        return response
+
+
 # 静态托管上传/中间产物/结果，路径与 config.STORAGE_DIR 对应
 _storage = os.path.abspath(settings.STORAGE_DIR)
 os.makedirs(_storage, exist_ok=True)
-app.mount("/storage", StaticFiles(directory=_storage), name="storage")
+app.mount("/storage", DreamHomeStaticFiles(directory=_storage), name="storage")
 
 # 资产审核页(T7):浏览器开 /review
 _review = os.path.join(os.path.dirname(__file__), "..", "review")

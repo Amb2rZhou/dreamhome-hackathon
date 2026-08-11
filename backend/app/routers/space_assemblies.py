@@ -164,11 +164,10 @@ def get_scene_projection(assembly_id: str):
                     placement["position"]["z"],
                 ],
                 "rotYDeg": placement["rotation"]["y"] * 180 / 3.141592653589793,
-                "scale": [
-                    placement["scale"]["x"],
-                    placement["scale"]["y"],
-                    placement["scale"]["z"],
-                ],
+                # `sizePrior` is the authoritative meter-space size. GLB-local
+                # scale is calculated once by the editor after parsing its
+                # bounding box, so the transport scale must stay identity.
+                "scale": [1, 1, 1],
                 "mount": placement["mount"],
             }
             for placement in doc.get("placements", [])
@@ -213,9 +212,10 @@ def get_home_project_projection(assembly_id: str):
                 "roomId": placement["room_id"],
                 "position": placement["position"],
                 "rotation": placement["rotation"],
-                "scale": placement["scale"],
-                "sourceScale": placement["scale"],
+                "scale": {"x": 1, "y": 1, "z": 1},
+                "sourceScale": {"x": 1, "y": 1, "z": 1},
                 "customSize": placement.get("target_size_m"),
+                "mount": placement["mount"],
                 "visible": placement.get("visible", True),
             }
             for placement in doc.get("placements", [])
