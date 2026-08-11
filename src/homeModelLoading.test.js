@@ -29,6 +29,9 @@ describe('DreamHome model-backed scenes', () => {
     expect(source).toContain("planning:'../../assets/mascot/motion/working-drawing.webm'");
     expect(source).toContain("decorating:'../../assets/mascot/motion/assembly-loading.webm'");
     expect(source).toContain("planning:'../../assets/mascot/mascot-ui.png'");
+    expect(source).toContain("className:'generation-cutout-canvas'");
+    expect(source).toContain("classList.add('is-cutout-ready')");
+    expect(source).not.toContain('.generation-media.is-video-ready .generation-video');
     expect(source).toContain("setGenerationAnimation(loadingScene?'decorating':'planning')");
     expect(source).toContain("phase:TARGETED_ENTRY?'scene-loading':'setup'");
     expect(source).not.toContain('SAFARI_OR_IOS_WEBKIT');

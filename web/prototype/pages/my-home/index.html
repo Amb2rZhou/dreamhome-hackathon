@@ -552,7 +552,7 @@
     #editorHomeName:focus { background:rgba(255,253,247,.98); outline-color:rgba(216,161,61,.5); }
     .share-panel { background:#fffdf8; box-shadow:0 -12px 30px rgba(112,76,28,.18); }
     .share-handle { background:rgba(181,140,70,.35); }
-    .generation-media{position:relative;width:210px;height:158px;display:grid;place-items:center}.generation-video{position:absolute;z-index:2;inset:0;width:100%;height:100%;object-fit:contain;visibility:hidden}.generation-fallback{position:relative;z-index:1;width:132px;height:132px;object-fit:contain;filter:drop-shadow(0 12px 14px rgba(116,84,43,.18));transform-origin:50% 88%;animation:bao-loading 1.45s cubic-bezier(.45,0,.3,1) infinite}.generation-media.is-video-ready .generation-video{visibility:visible}.generation-media.is-video-ready .generation-fallback{display:none}.generation-media::after{content:"";position:absolute;z-index:0;left:50%;bottom:12px;width:104px;height:16px;border-radius:50%;background:rgba(139,104,55,.13);filter:blur(5px);transform:translateX(-50%);animation:bao-shadow 1.45s ease-in-out infinite}@keyframes bao-loading{0%,100%{transform:translateY(4px) rotate(-1.5deg) scale(.98)}50%{transform:translateY(-8px) rotate(1.5deg) scale(1.02)}}@keyframes bao-shadow{0%,100%{opacity:.72;transform:translateX(-50%) scaleX(1)}50%{opacity:.38;transform:translateX(-50%) scaleX(.78)}}
+    .generation-media{position:relative;width:210px;height:158px;display:grid;place-items:center}.generation-video{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.generation-cutout-canvas{position:absolute;z-index:2;width:158px;height:158px;object-fit:contain;visibility:hidden}.generation-fallback{position:relative;z-index:1;width:132px;height:132px;object-fit:contain;filter:drop-shadow(0 12px 14px rgba(116,84,43,.18));transform-origin:50% 88%;animation:bao-loading 1.45s cubic-bezier(.45,0,.3,1) infinite}.generation-media.is-cutout-ready .generation-cutout-canvas{visibility:visible}.generation-media.is-cutout-ready .generation-fallback{display:none}.generation-media::after{content:"";position:absolute;z-index:0;left:50%;bottom:12px;width:104px;height:16px;border-radius:50%;background:rgba(139,104,55,.13);filter:blur(5px);transform:translateX(-50%);animation:bao-shadow 1.45s ease-in-out infinite}@keyframes bao-loading{0%,100%{transform:translateY(4px) rotate(-1.5deg) scale(.98)}50%{transform:translateY(-8px) rotate(1.5deg) scale(1.02)}}@keyframes bao-shadow{0%,100%{opacity:.72;transform:translateX(-50%) scaleX(1)}50%{opacity:.38;transform:translateX(-50%) scaleX(.78)}}
     .home-companion{position:absolute;z-index:11;right:18px;top:112px;display:none;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;color:#6f3d20;background:rgba(255,246,225,.92);box-shadow:0 8px 20px rgba(110,73,31,.2);font-size:11px;font-weight:750;pointer-events:none}.home-companion.is-visible{display:flex}.home-companion i{font-size:19px;font-style:normal;animation:fire-friend 1.25s ease-in-out infinite}@keyframes fire-friend{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.06)}}
     @media (prefers-reduced-motion:reduce){.generation-fallback,.generation-media::after{animation:none}}
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior:auto!important; transition:none!important; animation:none!important; } }
@@ -733,23 +733,20 @@
     const GENERATION_ANIMATIONS={planning:'../../assets/mascot/motion/working-drawing.webm',decorating:'../../assets/mascot/motion/assembly-loading.webm'};
     const GENERATION_FALLBACKS={planning:'../../assets/mascot/mascot-ui.png',decorating:'../../assets/mascot/states/mascot-working.png'};
     const genFallback=document.getElementById('genFallback');
-    const syncGenerationMascot=()=>ui.generationMascotStage.classList.toggle('is-video-ready',genVideo.readyState>=2);
-    genVideo.addEventListener('loadeddata',syncGenerationMascot);
-    genVideo.addEventListener('error',()=>ui.generationMascotStage.classList.remove('is-video-ready'));
-    syncGenerationMascot();
+    genVideo.addEventListener('error',()=>ui.generationMascotStage.classList.remove('is-cutout-ready'));
     function setGenerationAnimation(mode){
       const next=mode==='planning'?'planning':'decorating';
       if(ui.generationMascotStage.dataset.animation===next)return;
       ui.generationMascotStage.dataset.animation=next;
-      ui.generationMascotStage.classList.remove('is-video-ready');
+      ui.generationMascotStage.classList.remove('is-cutout-ready');
       genFallback.src=GENERATION_FALLBACKS[next];
       genVideo.src=GENERATION_ANIMATIONS[next];
       genVideo.setAttribute('aria-label',next==='planning'?'包工球正在查看户型图纸':'包工球正在粉刷墙壁并摆放家具');
       genVideo.load();
       genVideo.play().catch(()=>{});
     }
-    function mountMascotVideoCutout(video) {
-      const canvas=document.createElement('canvas'),size=144,context=canvas.getContext('2d',{willReadFrequently:true});canvas.width=canvas.height=size;canvas.className='match-assistant-cutout-canvas';canvas.setAttribute('aria-hidden','true');video.insertAdjacentElement('afterend',canvas);
+    function mountMascotVideoCutout(video,{className='match-assistant-cutout-canvas',onReady=null}={}) {
+      const canvas=document.createElement('canvas'),size=144,context=canvas.getContext('2d',{willReadFrequently:true});canvas.width=canvas.height=size;canvas.className=className;canvas.setAttribute('aria-hidden','true');video.insertAdjacentElement('afterend',canvas);
       let started=false;const draw=()=>{
         if(video.readyState>=2){
           const sourceWidth=video.videoWidth||size,sourceHeight=video.videoHeight||size,scale=Math.min(size/sourceWidth,size/sourceHeight),drawWidth=sourceWidth*scale,drawHeight=sourceHeight*scale,drawX=(size-drawWidth)/2,drawY=(size-drawHeight)/2;
@@ -759,13 +756,14 @@
           for(let x=0;x<size;x+=1){seed(x);seed((size-1)*size+x);}for(let y=1;y<size-1;y+=1){seed(y*size);seed(y*size+size-1);}
           while(head<tail){const index=queue[head++],x=index%size,y=(index/size)|0;data[index*4+3]=0;const neighbors=[index-1,index+1,index-size,index+size];for(const next of neighbors){if(next<0||next>=size*size||visited[next])continue;const nx=next%size,ny=(next/size)|0;if(Math.abs(nx-x)+Math.abs(ny-y)!==1)continue;if(dark(next)){visited[next]=1;queue[tail++]=next;}}}
           for(let index=0;index<size*size;index+=1){if(visited[index]||!dark(index,132))continue;const x=index%size,y=(index/size)|0,edge=(x>0&&visited[index-1])||(x<size-1&&visited[index+1])||(y>0&&visited[index-size])||(y<size-1&&visited[index+size]);if(edge)data[index*4+3]=Math.min(data[index*4+3],72);}
-          context.putImageData(frame,0,0);canvas.dataset.cutoutReady='true';
+          context.putImageData(frame,0,0);canvas.dataset.cutoutReady='true';onReady?.(canvas);
         }
         if('requestVideoFrameCallback'in video)video.requestVideoFrameCallback(draw);else requestAnimationFrame(draw);
       };
       const start=()=>{if(started||video.readyState<2)return;started=true;draw();};video.defaultMuted=true;video.muted=true;video.addEventListener('loadeddata',start,{once:true});video.play().then(start).catch(()=>{});
     }
-    document.querySelectorAll('.match-assistant-idle').forEach(mountMascotVideoCutout);
+    mountMascotVideoCutout(genVideo,{className:'generation-cutout-canvas',onReady:()=>ui.generationMascotStage.classList.add('is-cutout-ready')});
+    document.querySelectorAll('.match-assistant-idle').forEach((video)=>mountMascotVideoCutout(video));
     let mascotDrag=null,mascotSuppressClick=false;
     function positionMatchAssistantNudge() {
       if(!ui.matchAssistantLauncher||!ui.matchAssistantNudge)return;
