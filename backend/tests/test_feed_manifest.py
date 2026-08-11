@@ -57,6 +57,7 @@ class FeedManifestTests(unittest.TestCase):
 
         self.assertEqual(first, second)
         self.assertFalse(first["source_policy"]["runtime_database_available"])
+        self.assertFalse(first["source_policy"]["runtime_tracks_available"])
         self.assertEqual(len(first["canonical_assets"]), 190)
         self.assertEqual(len(first["appearances"]), 195)
         self.assertEqual(len(first["tracks"]), 0)
@@ -73,6 +74,9 @@ class FeedManifestTests(unittest.TestCase):
                 self.assertTrue(asset["labels"].get("colors"))
                 self.assertTrue(asset["labels"].get("materials"))
                 self.assertTrue(asset["labels"].get("styles"))
+
+        report = validate_manifest(first)
+        self.assertEqual(report["summary"]["warnings"], 0)
 
     def test_validator_finds_all_required_quality_failures(self):
         manifest = {

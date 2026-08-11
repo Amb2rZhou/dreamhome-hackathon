@@ -1449,7 +1449,7 @@ function App() {
           />
         )}
 
-        {state.feed.phase === 'browse' && activeImageHotspotAsset && (
+        {activeImageHotspotAsset && (
           <FrameAssetsDrawer
             assets={[activeImageHotspotAsset]}
             favoriteIds={favoriteAssetIds}

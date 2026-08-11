@@ -432,6 +432,7 @@ def build_manifest(*, db_path: Path = DEFAULT_DB, catalog_path: Path = DEFAULT_C
             "canonical_precedence": ["runtime_database", "published_catalog"],
             "appearance_precedence": ["tracks", "frontend_compatibility"],
             "runtime_database_available": database["available"],
+            "runtime_tracks_available": bool(database["tracks"]),
             "runtime_database_path": database["path"],
         },
         "source_snapshot": _source_snapshot(source_paths),
@@ -520,7 +521,12 @@ def validate_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
             add("DUPLICATE_MAPPING", "error", "appearance", str(key),
                 f"the exact mapping occurs {count} times")
 
-    if untracked_compat:
+    # A checkout can legitimately carry the lightweight ignored SQLite file
+    # without the production track snapshot. In that mode compatibility
+    # appearances are the declared source of truth, not unverifiable residue.
+    # Keep warning when at least one runtime track exists, because then a
+    # partially migrated binding set is actionable.
+    if untracked_compat and tracks:
         add("UNTRACKED_COMPATIBILITY_APPEARANCES", "warning", "manifest", "appearances",
             f"{untracked_compat} frontend compatibility appearances cannot be verified against runtime tracks")
 
@@ -546,7 +552,7 @@ def validate_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
                 add("MISSING_ASSET", "error", "scene", scene["scene_id"], f"asset {asset_id} does not exist")
             elif assets[asset_id].get("status") != "ready":
                 add("NON_READY_ASSET", "error", "scene", scene["scene_id"], f"asset {asset_id} is not ready")
-            if track_id and track_id not in tracks:
+            if track_id and tracks and track_id not in tracks:
                 add("ORPHAN_MAPPING", "warning", "scene", scene["scene_id"],
                     f"track {track_id} is unavailable in the runtime snapshot")
 
