@@ -74,7 +74,15 @@ const apiBase = () => {
 export const dreamHomeApiBase = apiBase;
 const backendMediaUrl = (value = '') => {
   if (!value) return '';
-  if (/^https?:\/\//.test(value)) return value;
+  if (/^https?:\/\//.test(value)) {
+    try {
+      const parsed = new URL(value);
+      if (['localhost', '127.0.0.1', '0.0.0.0', '::1'].includes(parsed.hostname)) {
+        return `${apiBase()}${parsed.pathname}${parsed.search}${parsed.hash}`;
+      }
+    } catch (_) {}
+    return value;
+  }
   if (value.startsWith('/dreamhome-api/')) return `${apiBase()}${value.slice('/dreamhome-api'.length)}`;
   if (value.startsWith('/storage/')) return `${apiBase()}${value}`;
   return value;
@@ -296,7 +304,24 @@ export function getAssets(kind, category) {
   const combined = [...new Set(
     COMPONENT_ASSETS.concat(getUserAssets()).map((item) => item.id),
   )].map((id) => getAsset(id)).filter(Boolean);
-  return combined.filter((item) => item.kind === kind && (!category || item.category === category));
+  const filtered = combined.filter((item) => item.kind === kind && (!category || item.category === category));
+  if (kind !== 'furniture') return filtered;
+
+  // One canonical GLB can have several historical/provenance records. Keep
+  // those IDs addressable for old placements, but show the physical object
+  // only once in browsing surfaces. Prefer the user's favorited alias so its
+  // current collect state remains stable.
+  const favorites = getFavorites();
+  const visibleByModel = new Map();
+  filtered.forEach((item) => {
+    const media = backendMediaUrl(item.modelUrl || '').replace(/[?#].*$/, '');
+    const identity = media ? `model:${media}` : `asset:${item.id}`;
+    const current = visibleByModel.get(identity);
+    if (!current || (!favorites.has(current.id) && favorites.has(item.id))) {
+      visibleByModel.set(identity, item);
+    }
+  });
+  return [...visibleByModel.values()];
 }
 
 export function getAsset(id) {

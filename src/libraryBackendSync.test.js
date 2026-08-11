@@ -68,6 +68,34 @@ describe('Mia library backend synchronization', () => {
     expect(sourceFeedHref(component)).toBe('')
   })
 
+  it('rewrites stale localhost media URLs to the configured production backend', async () => {
+    window.__DREAMHOME_API_BASE_URL__ = 'https://api.dreamhouse.top'
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([{
+      asset_id: 'ast_old_local_media',
+      name: '旧地址吊灯',
+      status: 'ready',
+      labels: { category: '灯具' },
+      glb_url: 'http://localhost:8000/storage/models/lamp.glb',
+      thumb_url: 'http://127.0.0.1:8000/storage/thumbs/lamp.png',
+      source: {},
+    }]), { status: 200 })))
+
+    await syncBackendUserAssets()
+    expect(getAsset('ast_old_local_media')).toEqual(expect.objectContaining({
+      modelUrl: 'https://api.dreamhouse.top/storage/models/lamp.glb',
+      thumbnail: 'https://api.dreamhouse.top/storage/thumbs/lamp.png',
+    }))
+  })
+
+  it('shows identical canonical GLBs only once while keeping every id addressable', () => {
+    const repeatedModel = 'https://api.dreamhouse.top/storage/models/93bda84f8be87233a4c8ee70b64407f3.glb'
+    const visibleCopies = getAssets('furniture').filter((item) => item.modelUrl === repeatedModel)
+
+    expect(visibleCopies).toHaveLength(1)
+    expect(getAsset('ast_01fe85b3b338')).toBeTruthy()
+    expect(getAsset('ast_fb8074e10ff6')).toBeTruthy()
+  })
+
   it('attaches a friend furniture canonical id to the current backend user before local collection', async () => {
     window.__DREAMHOME_USER_ID__ = 'amber-test'
     const assetId = 'ast_7a6844fdf7e6'

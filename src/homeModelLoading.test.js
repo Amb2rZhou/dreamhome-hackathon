@@ -26,7 +26,12 @@ describe('DreamHome model-backed scenes', () => {
   it('keeps the blocking Bao Gong Qiu loader until every real model settles', () => {
     const source = readFileSync('web/prototype/pages/my-home/index.html', 'utf8');
 
-    expect(source).toContain('working-drawing.webm');
+    expect(source).toContain("planning:'../../assets/mascot/motion/working-drawing.webm'");
+    expect(source).toContain("decorating:'../../assets/mascot/motion/assembly-loading.webm'");
+    expect(source).toContain("planning:'../../assets/mascot/mascot-ui.png'");
+    expect(source).toContain("setGenerationAnimation(loadingScene?'decorating':'planning')");
+    expect(source).toContain("phase:TARGETED_ENTRY?'scene-loading':'setup'");
+    expect(source).not.toContain('SAFARI_OR_IOS_WEBKIT');
     expect(source).toContain('ui.editorPhase.inert=sceneLoading');
     expect(source).toContain('if(modelLoadProgress.total>0)return');
     expect(source).not.toContain('SCENE_PREVIEW_DEADLINE_MS');
