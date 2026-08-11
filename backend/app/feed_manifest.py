@@ -215,7 +215,7 @@ def _database_assets(rows: Iterable[dict[str, Any]], db_path: Path) -> list[dict
                 "thumbnail": row.get("thumb_url") or "",
             },
             "source": source,
-            "record_source": _rel(db_path),
+            "record_source": "runtime_database",
         })
     return result
 
@@ -423,7 +423,7 @@ def build_manifest(*, db_path: Path = DEFAULT_DB, catalog_path: Path = DEFAULT_C
     source_paths.extend(media_paths)
     source_paths.extend(Path(scene["source_path"]) if Path(scene["source_path"]).is_absolute()
                         else REPO_ROOT / scene["source_path"] for scene in scenes)
-    if database["available"]:
+    if database["available"] and db_path.resolve().is_relative_to(REPO_ROOT.resolve()):
         source_paths.append(db_path)
     manifest = {
         "schema_version": SCHEMA_VERSION,
@@ -433,7 +433,7 @@ def build_manifest(*, db_path: Path = DEFAULT_DB, catalog_path: Path = DEFAULT_C
             "appearance_precedence": ["tracks", "frontend_compatibility"],
             "runtime_database_available": database["available"],
             "runtime_tracks_available": bool(database["tracks"]),
-            "runtime_database_path": database["path"],
+            "runtime_database_path": "runtime_database" if database["available"] else database["path"],
         },
         "source_snapshot": _source_snapshot(source_paths),
         "videos": videos,

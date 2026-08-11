@@ -27,7 +27,7 @@ export function buildStructuredAssetCatalog(feed, reviews, detailedAssets = BACK
   const appearanceCount = new Map();
   for (const appearance of feed.appearances || []) appearanceCount.set(appearance.asset_id, (appearanceCount.get(appearance.asset_id) || 0) + 1);
 
-  const assets = (feed.canonical_assets || []).map((asset) => {
+  const assets = (feed.canonical_assets || []).filter((asset) => asset.status === 'ready').map((asset) => {
     const labels = asset.labels || {};
     const raw = {
       colors: cleanList(labels.colors),
@@ -62,7 +62,7 @@ export function buildStructuredAssetCatalog(feed, reviews, detailedAssets = BACK
           confidence: tagProvenance.confidence ?? null,
           human_review_status: tagProvenance.human_review_status || 'unreviewed',
           reviewed_at: tagProvenance.reviewed_at || null,
-          record_source: asset.record_source || '',
+          record_source: /dreamhome\.db$/.test(asset.record_source || '') ? 'runtime_database' : asset.record_source || '',
         },
       },
       dimensions: detail ? {
@@ -136,10 +136,14 @@ function buildCategoryCounts(assets) {
 }
 
 if (resolve(process.argv[1] || '') === fileURLToPath(import.meta.url)) {
-  const feed = JSON.parse(readFileSync(FEED_PATH, 'utf8'));
-  const reviews = JSON.parse(readFileSync(REVIEW_PATH, 'utf8'));
+  const option = (name, fallback) => { const index = process.argv.indexOf(name); return index >= 0 && process.argv[index + 1] ? resolve(process.argv[index + 1]) : fallback; };
+  const feedPath = option('--feed', FEED_PATH);
+  const reviewPath = option('--reviews', REVIEW_PATH);
+  const outputPath = option('--output', OUTPUT_PATH);
+  const feed = JSON.parse(readFileSync(feedPath, 'utf8'));
+  const reviews = JSON.parse(readFileSync(reviewPath, 'utf8'));
   const catalog = buildStructuredAssetCatalog(feed, reviews);
-  mkdirSync(dirname(OUTPUT_PATH), { recursive: true });
-  writeFileSync(OUTPUT_PATH, `${JSON.stringify(catalog, null, 2)}\n`);
-  console.log(JSON.stringify({ output: OUTPUT_PATH, summary: catalog.summary }, null, 2));
+  mkdirSync(dirname(outputPath), { recursive: true });
+  writeFileSync(outputPath, `${JSON.stringify(catalog, null, 2)}\n`);
+  console.log(JSON.stringify({ output: outputPath, summary: catalog.summary }, null, 2));
 }

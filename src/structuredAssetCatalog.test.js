@@ -8,6 +8,7 @@ const feed = {
   canonical_assets: [
     { asset_id: 'ast_a', name: '椅子', status: 'ready', labels: { category: '单椅', sub: '办公椅', colors: ['米白'], materials: ['木材'], styles: ['卡通风'] }, media: {}, source: {}, record_source: 'fixture' },
     { asset_id: 'ast_b', name: '沙发', status: 'ready', labels: { category: '沙发', sub: '三人沙发', colors: [], materials: [], styles: [] }, media: {}, source: {}, record_source: 'fixture' },
+    { asset_id: 'ast_pending', name: '生成中资产', status: 'generating', labels: { category: '柜子', colors: ['棕色'], materials: ['实木'], styles: ['现代'] }, media: {}, source: {}, record_source: 'fixture' },
   ],
 };
 
@@ -17,6 +18,7 @@ describe('structured asset catalog', () => {
     expect(catalog.assets).toHaveLength(2);
     expect(catalog.assets[0].asset_id).toBe('ast_a');
     expect(catalog.assets[0].appearance_count).toBe(2);
+    expect(catalog.assets.some((asset) => asset.asset_id === 'ast_pending')).toBe(false);
   });
 
   it('preserves raw tags and exposes normalized facets separately', () => {

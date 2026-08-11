@@ -44,7 +44,7 @@ describe('friend shared home visit', () => {
 
   it('starts every chat-card visit uncollected and reveals editing only after cloning', () => {
     expect(home).toContain('if(state.friendMode&&!IS_FRIEND_SHARE_VISIT)state.collectedCopy=existingCaseCopy()')
-    expect(home).toContain('if(IS_FRIEND_SHARE_VISIT&&state.collectedCopy){openCollectedCopy(state.collectedCopy,{edit:true});return;}')
+    expect(home).toContain('if(IS_FRIEND_SHARE_VISIT&&state.collectedCopy){const copy=state.collectedCopy;homeSceneService.deleteHome(copy.id)')
     expect(home).toContain('const existing=!IS_FRIEND_SHARE_VISIT&&existingCaseCopy()')
     expect(home).toContain("tell('已收藏到我的家',{label:'去编辑'")
     expect(home).toContain("mode=edit&userId=${encodeURIComponent(CURRENT_USER_ID)}")
@@ -59,8 +59,8 @@ describe('friend shared home visit', () => {
 
   it('uses the approved waving mascot and content-sized share toast', () => {
     expect(chat).toContain('../../assets/mascot/share-card-wave.png')
-    expect(chat).toContain('.home-mascot-slot { position:absolute; z-index:7; right:0; bottom:-16px;')
-    expect(home).toContain('.toast.is-share-success{display:inline-flex;width:auto;min-width:0;max-width:calc(100% - 32px)')
+    expect(chat).toContain('.home-mascot-slot { position:absolute; z-index:7; right:0; bottom:-8px;')
+    expect(home).toContain('.toast.is-share-success,.toast.is-compact-action{display:inline-flex;width:auto;min-width:0;max-width:calc(100% - 40px)')
   })
 
   it('mounts the visitor buddy only from a friend share card and leaves editing clean', () => {
