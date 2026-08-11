@@ -41,8 +41,33 @@ def _load_exported_json(path: Path, export_name: str) -> Any:
     match = re.search(rf"export\s+const\s+{re.escape(export_name)}[^=]*=\s*", text)
     if not match:
         raise ValueError(f"cannot find {export_name} in {path}")
-    value, _ = json.JSONDecoder().raw_decode(text, match.end())
-    return value
+    try:
+        value, _ = json.JSONDecoder().raw_decode(text, match.end())
+        return value
+    except json.JSONDecodeError:
+        # Generated modules may compose one checked-in JSON array with an
+        # imported canonical home (`[...LEGACY, DEFAULT_BEDROOM_HOME]`).  Use
+        # Node only for that JavaScript expression; the common pure-JSON path
+        # above stays dependency-free and deterministic.
+        node = shutil.which("node")
+        if not node:
+            raise
+        module_uri = path.resolve().as_uri()
+        script = (
+            f"import({json.dumps(module_uri)}).then(m => "
+            f"process.stdout.write(JSON.stringify(m[{json.dumps(export_name)}])))"
+        )
+        result = subprocess.run(
+            [node, "--input-type=module", "-e", script],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            raise ValueError(
+                f"cannot evaluate {export_name} in {path}: {result.stderr.strip()}"
+            )
+        return json.loads(result.stdout)
 
 
 def _json_value(value: Any, fallback: Any) -> Any:

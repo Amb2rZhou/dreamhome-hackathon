@@ -61,7 +61,7 @@ class FeedManifestTests(unittest.TestCase):
         self.assertEqual(len(first["canonical_assets"]), 233)
         self.assertEqual(len(first["appearances"]), 195)
         self.assertEqual(len(first["tracks"]), 0)
-        self.assertEqual(len(first["same_home_templates"]), 2)
+        self.assertEqual(len(first["same_home_templates"]), 3)
         self.assertEqual(len(first["scenes"]), 3)
         canonical_ids = {item["asset_id"] for item in first["canonical_assets"]}
         self.assertTrue({
