@@ -28,7 +28,8 @@ describe('DreamHome model-backed scenes', () => {
 
     expect(source).toContain('id="genMotion"');
     expect(source).toContain('working-drawing.webm');
-    expect(source).toContain("mountMascotVideoCutout(genMotion");
+    expect(source).toContain("genMotion.addEventListener('loadeddata',showGenerationMotion");
+    expect(source).not.toContain("mountMascotVideoCutout(genMotion");
     expect(source).not.toContain('GENERATION_FALLBACKS');
     expect(source).toContain("phase:TARGETED_ENTRY?'scene-loading':'setup'");
     expect(source).not.toContain('SAFARI_OR_IOS_WEBKIT');
@@ -56,7 +57,7 @@ describe('DreamHome model-backed scenes', () => {
     expect(defaults).toContain('"preserveApprovedPlacementScales": true');
     expect(page).toContain('state.project?.preserveApprovedPlacementScales===true');
     expect(page).toContain('const approved=placement.sourceScale||placement.scale');
-    expect(page).toContain("const openedReleaseHomeImmediately=Boolean(requestedHomeId&&QUERY.get('demo')==='1'");
+    expect(page).toContain('const openedReleaseHomeImmediately=Boolean(requestedHomeId&&!FRIEND_SHARE_REQUEST');
     expect(page).toContain('if(openedReleaseHomeImmediately)void openHome(requestedHomeId)');
   });
 });

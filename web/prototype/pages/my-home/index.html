@@ -552,7 +552,7 @@
     #editorHomeName:focus { background:rgba(255,253,247,.98); outline-color:rgba(216,161,61,.5); }
     .share-panel { background:#fffdf8; box-shadow:0 -12px 30px rgba(112,76,28,.18); }
     .share-handle { background:rgba(181,140,70,.35); }
-    .generation-media{position:relative;width:210px;height:168px;display:grid;place-items:center;background:transparent}.generation-motion-source{position:absolute;width:1px;height:1px;opacity:.001;pointer-events:none}.generation-motion{position:relative;z-index:2;width:158px;height:158px;object-fit:contain;filter:drop-shadow(0 12px 14px rgba(116,84,43,.16))}.generation-fallback{position:absolute;z-index:1;width:158px;height:158px;object-fit:contain;filter:drop-shadow(0 12px 14px rgba(116,84,43,.16));transform-origin:50% 86%;animation:bao-working 1.15s ease-in-out infinite}.generation-media.is-motion-ready .generation-fallback{visibility:hidden}.generation-media::before{content:"";position:absolute;z-index:3;right:23px;top:35px;width:8px;height:8px;border-radius:50%;background:#f0b844;box-shadow:-13px 11px 0 -2px rgba(238,174,54,.82),7px 17px 0 -3px rgba(238,174,54,.64);animation:bao-spark 1.15s ease-in-out infinite}.generation-media::after{content:"";position:absolute;z-index:0;left:50%;bottom:9px;width:112px;height:14px;border-radius:50%;background:rgba(139,104,55,.12);filter:blur(5px);transform:translateX(-50%);animation:bao-shadow 1.15s ease-in-out infinite}.progress-bar{background-size:180% 100%;animation:progress-sheen 1.6s linear infinite}@keyframes bao-working{0%,100%{transform:translate3d(-2px,1px,0) rotate(-.6deg)}50%{transform:translate3d(3px,-3px,0) rotate(1deg)}}@keyframes bao-spark{0%,100%{opacity:.28;transform:scale(.72)}45%{opacity:1;transform:scale(1.08)}}@keyframes bao-shadow{0%,100%{opacity:.68;transform:translateX(-50%) scaleX(1)}50%{opacity:.42;transform:translateX(-50%) scaleX(.9)}}@keyframes progress-sheen{from{background-position:100% 0}to{background-position:-100% 0}}
+    .generation-media{position:relative;width:210px;height:180px;display:grid;place-items:center;background:transparent}.generation-motion-source{position:relative;z-index:2;width:180px;height:180px;display:block;object-fit:contain;pointer-events:none;filter:drop-shadow(0 12px 14px rgba(116,84,43,.16))}.generation-fallback{position:absolute;z-index:1;width:158px;height:158px;object-fit:contain;filter:drop-shadow(0 12px 14px rgba(116,84,43,.16));transform-origin:50% 86%;animation:bao-working 1.15s ease-in-out infinite}.generation-media.is-motion-ready .generation-fallback{visibility:hidden}.generation-media.is-motion-failed .generation-motion-source{display:none}.generation-media::before{content:"";position:absolute;z-index:3;right:23px;top:35px;width:8px;height:8px;border-radius:50%;background:#f0b844;box-shadow:-13px 11px 0 -2px rgba(238,174,54,.82),7px 17px 0 -3px rgba(238,174,54,.64);animation:bao-spark 1.15s ease-in-out infinite}.generation-media::after{content:"";position:absolute;z-index:0;left:50%;bottom:9px;width:112px;height:14px;border-radius:50%;background:rgba(139,104,55,.12);filter:blur(5px);transform:translateX(-50%);animation:bao-shadow 1.15s ease-in-out infinite}.progress-bar{background-size:180% 100%;animation:progress-sheen 1.6s linear infinite}@keyframes bao-working{0%,100%{transform:translate3d(-2px,1px,0) rotate(-.6deg)}50%{transform:translate3d(3px,-3px,0) rotate(1deg)}}@keyframes bao-spark{0%,100%{opacity:.28;transform:scale(.72)}45%{opacity:1;transform:scale(1.08)}}@keyframes bao-shadow{0%,100%{opacity:.68;transform:translateX(-50%) scaleX(1)}50%{opacity:.42;transform:translateX(-50%) scaleX(.9)}}@keyframes progress-sheen{from{background-position:100% 0}to{background-position:-100% 0}}
     .home-companion{position:absolute;z-index:11;right:18px;top:112px;display:none;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;color:#6f3d20;background:rgba(255,246,225,.92);box-shadow:0 8px 20px rgba(110,73,31,.2);font-size:11px;font-weight:750;pointer-events:none}.home-companion.is-visible{display:flex}.home-companion i{font-size:19px;font-style:normal;animation:fire-friend 1.25s ease-in-out infinite}@keyframes fire-friend{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.06)}}
     @media (prefers-reduced-motion:reduce){.generation-fallback,.generation-media::before,.generation-media::after,.progress-bar{animation:none}}
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior:auto!important; transition:none!important; animation:none!important; } }
@@ -754,7 +754,11 @@
       };
       const start=()=>{if(started||video.readyState<2)return;started=true;draw();};video.defaultMuted=true;video.muted=true;video.addEventListener('loadeddata',start,{once:true});video.play().then(start).catch(()=>{});
     }
-    mountMascotVideoCutout(genMotion,{className:'generation-motion',onReady:()=>ui.generationMascotStage.classList.add('is-motion-ready')});
+    const showGenerationMotion=()=>ui.generationMascotStage.classList.add('is-motion-ready');
+    genMotion.addEventListener('loadeddata',showGenerationMotion,{once:true});
+    genMotion.addEventListener('playing',showGenerationMotion,{once:true});
+    genMotion.addEventListener('error',()=>ui.generationMascotStage.classList.add('is-motion-failed'),{once:true});
+    genMotion.play().then(showGenerationMotion).catch(()=>{});
     document.querySelectorAll('.match-assistant-idle').forEach((video)=>mountMascotVideoCutout(video));
     let mascotDrag=null,mascotSuppressClick=false;
     function positionMatchAssistantNudge() {
@@ -1103,10 +1107,10 @@
       tell(`拼装清单已就位 · ${ids.length} 件，点家具后放入房间`);
     }
     async function openHome(id, requestedAssetId='', assemblyIds=[]) {
-      // Judge/demo links must always open the release snapshot. A stale synced
-      // project can legitimately have the same id, but it must not override the
-      // deterministic first-visit experience selected with `demo=1`.
-      const releaseHome = QUERY.get('demo') === '1'
+      // Approved built-in homes are the public judge baseline. They must open
+      // deterministically from the normal dreamhouse.top flow without a hidden
+      // demo query flag; friend-share links keep their own immutable snapshot.
+      const releaseHome = !FRIEND_SHARE_REQUEST
         ? DEFAULT_HOMES.find((item) => item.id === id)
         : null;
       const home = releaseHome || homeSceneService.loadHomes().find((item) => item.id === id);
@@ -2137,10 +2141,10 @@
     state.phase=TARGETED_ENTRY?'scene-loading':'setup';renderTemplates();renderSavedHomes();renderVideoScenes();updatePhases();
     const requestedAssetId=QUERY.get('addAsset'),sharedSlug=QUERY.get('shared')?.trim(),assetShareSlug=QUERY.get('assetShare')?.trim();
     const requestedHomeId=QUERY.get('home')?.trim();
-    // Judge links point at immutable release snapshots. Open them immediately;
+    // Public judge navigation points at immutable release snapshots. Open them immediately;
     // user-project hydration may continue in the background but must never
     // block the first visible frame or replace the approved transforms.
-    const openedReleaseHomeImmediately=Boolean(requestedHomeId&&QUERY.get('demo')==='1'&&DEFAULT_HOMES.some((home)=>home.id===requestedHomeId));
+    const openedReleaseHomeImmediately=Boolean(requestedHomeId&&!FRIEND_SHARE_REQUEST&&DEFAULT_HOMES.some((home)=>home.id===requestedHomeId));
     if(openedReleaseHomeImmediately)void openHome(requestedHomeId);
     Promise.allSettled([homeSceneService.hydrate(),syncBackendUserAssets()]).then(async(results)=>{
       const projectResult=results[0];
