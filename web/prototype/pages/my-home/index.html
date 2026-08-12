@@ -880,7 +880,10 @@
       async syncProject(project) {
         if (project?.source?.type==='space_assembly'&&!queryHomeUserId) return null;
         if (!HOME_USER_ID) return null;
-        const response=await fetch(`${BACKEND}/api/home-projects/${encodeURIComponent(project.id)}?user_id=${encodeURIComponent(HOME_USER_ID)}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(project),keepalive:true});
+        // A captured 3D preview can push the project well beyond the browser's
+        // small keepalive request budget. A normal awaited request is reliable
+        // while the editor is open; pagehide still keeps the local copy safe.
+        const response=await fetch(`${BACKEND}/api/home-projects/${encodeURIComponent(project.id)}?user_id=${encodeURIComponent(HOME_USER_ID)}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(project)});
         if(!response.ok)throw new Error(`保存项目失败 (${response.status})`);
         return response.json();
       },
@@ -1228,6 +1231,18 @@
       const project=normalizeHomeProject({...projectData,placements,source:{...(projectData.source||{}),type:'space_assembly',assemblyId:sceneData.assembly_id},realScene:{...(projectData.realScene||{}),room:sceneData.room,balcony:sceneData.balcony||null,extras:sceneData.extras||[],cfg:sceneData.cfg||{}},decor:{floorPreset:'light-natural-oak',wallColor:projectData.finishes?.wall?.color||'#8D5D46',windowStyle:'dark-grid',timeValue:100},daylight:'day',createdAt:projectData.createdAt||now(),updatedAt:now()});
       return project;
     }
+    function recoverLocalAssemblyDraft(serverProject, assemblyId) {
+      const localProject=homeSceneService.loadHomes().find((home)=>home.id===serverProject.id&&home.source?.assemblyId===assemblyId);
+      if(!localProject||!Array.isArray(localProject.placements))return {project:serverProject,recovered:false};
+      const localById=new Map(localProject.placements.map((placement)=>[placement.id,placement]));
+      const sameAssets=serverProject.placements.every((placement)=>localById.get(placement.id)?.assetId===placement.assetId);
+      if(!sameAssets||localById.size!==serverProject.placements.length)return {project:serverProject,recovered:false};
+      const placements=serverProject.placements.map((placement)=>{
+        const local=localById.get(placement.id);
+        return {...placement,...local,id:placement.id,assetId:placement.assetId,homeId:serverProject.id};
+      });
+      return {project:normalizeHomeProject({...serverProject,...localProject,id:serverProject.id,source:serverProject.source,realScene:serverProject.realScene,envelope:serverProject.envelope,walls:serverProject.walls,rooms:serverProject.rooms,placements}),recovered:true};
+    }
     function enterProjectEditor(project,{loading=false,title=''}={}){state.project=normalizeHomeProject(project);state.drawerAiSeenIds=[];state.drawerAiBatchIds=[];state.drawerAiRemoteRecommendations=null;state.drawerAiLoading=false;state.drawerAiRequestKey='';state.drawerMode='ai';state.selectedRoomId=null;state.selectedPlacementId=null;state.selectedWindowSlotId=null;state.interaction.mode='orbit';state.phase=loading?'scene-loading':'editor';if(loading){pendingSceneStartedAt=performance.now();pendingSceneTitle=title||state.project.name;}updatePhases();initEditor();}
     async function openSpaceAssembly(assemblyId) {
       state.caseMode=false;state.friendMode=false;state.ownReadOnly=false;state.collectedCopy=null;
@@ -1236,11 +1251,16 @@
         const encoded=encodeURIComponent(assemblyId);
         const [sceneResponse,projectResponse]=await Promise.all([fetch(`${BACKEND}/api/space-assemblies/${encoded}/scene`),fetch(`${BACKEND}/api/space-assemblies/${encoded}/home-project`)]);
         if(!sceneResponse.ok||!projectResponse.ok)throw new Error(`Demo 载入失败 (${sceneResponse.status}/${projectResponse.status})`);
-        const project=projectFromSpaceAssembly(await sceneResponse.json(),await projectResponse.json());
+        const serverProject=projectFromSpaceAssembly(await sceneResponse.json(),await projectResponse.json());
+        // The editor always keeps an immediate local copy. If a previous save
+        // was interrupted, restore only matching canonical placements instead
+        // of replacing the user's transforms with the older server snapshot.
+        const {project,recovered}=recoverLocalAssemblyDraft(serverProject,assemblyId);
         homeSceneService.saveProject(project);
+        if(recovered&&queryHomeUserId)syncProjectInBackground(project);
         updateGeneration('processing',62);
         enterProjectEditor(project,{loading:true,title:project.name});
-        ui.editorHomeMeta.textContent='Demo 草稿 · 调整后会保存在当前浏览器';
+        ui.editorHomeMeta.textContent=recovered?'已恢复本机调整 · 正在同步':'Demo 草稿 · 调整后会保存在当前浏览器';
       } catch(error) {pendingSceneStartedAt=0;pendingSceneTitle='';state.phase='setup';updatePhases();tell(error.message);}
     }
     async function openVideoScene(videoId, title='视频户型重建', caseMode=false, requestedAssetId='', assemblyIds=[]) {

@@ -73,4 +73,12 @@ describe('DreamHome model-backed scenes', () => {
 
     expect(flower.position).toEqual({ x: sideTable.position.x, y: 0.65, z: sideTable.position.z });
   });
+
+  it('saves large previews normally and recovers an interrupted assembly draft', () => {
+    const source = readFileSync('web/prototype/pages/my-home/index.html', 'utf8');
+
+    expect(source).not.toContain('body:JSON.stringify(project),keepalive:true');
+    expect(source).toContain('function recoverLocalAssemblyDraft(serverProject, assemblyId)');
+    expect(source).toContain('if(recovered&&queryHomeUserId)syncProjectInBackground(project)');
+  });
 });
