@@ -49,6 +49,7 @@ describe('DreamHome model-backed scenes', () => {
     expect(source).not.toContain("cache:'force-cache'");
     expect(source).toContain('if(!TARGETED_ENTRY)scheduleVideoScenePreload(scenes)');
     expect(source).toContain('task.finally(()=>{if(modelBufferCache.get(absoluteUrl)===task)modelBufferCache.delete(absoluteUrl);})');
+    expect(source).toContain("dreamhome.default-demo-homes.v6-long-living-flower-surface");
   });
 
   it('does not re-normalize the approved single-apartment snapshot', () => {
@@ -61,5 +62,15 @@ describe('DreamHome model-backed scenes', () => {
     expect(page).toContain('const approved=placement.sourceScale||placement.scale');
     expect(page).toContain('const openedReleaseHomeImmediately=Boolean(requestedHomeId&&!FRIEND_SHARE_REQUEST');
     expect(page).toContain('if(openedReleaseHomeImmediately)void openHome(requestedHomeId)');
+  });
+
+  it('keeps the long-living-room flower arrangement on its side-table surface', () => {
+    const defaults = readFileSync('web/prototype/assets/demo-backend/default-homes.json', 'utf8');
+    const { homes } = JSON.parse(defaults);
+    const home = homes.find((item) => item.id === 'video-vid_91fe552c5f7d');
+    const flower = home.placements.find((item) => item.assetId === 'ast_79d7df1565e0');
+    const sideTable = home.placements.find((item) => item.assetId === 'ast_06c83d58cb62');
+
+    expect(flower.position).toEqual({ x: sideTable.position.x, y: 0.65, z: sideTable.position.z });
   });
 });
