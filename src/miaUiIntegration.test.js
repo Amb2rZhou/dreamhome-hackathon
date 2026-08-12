@@ -82,11 +82,16 @@ describe('Mia interaction with DreamHome data', () => {
 
   it('opens the warm bedroom case with a native assembly link and its own scene cover', () => {
     const library = readPage('inspiration-library');
+    const home = readPage('my-home');
 
-    expect(library).toContain("href: '/prototype/pages/my-home/index.html?assembly=asm_bedroom_3a2749b355d9'");
+    expect(library).toContain("href: '/prototype/pages/my-home/index.html?assembly=asm_bedroom_3a2749b355d9&from=cases'");
+    expect(library).toContain('home=video-vid_91fe552c5f7d&mode=edit&from=cases');
+    expect(library).toContain('&from=cases">用这套布置我的家</a>');
     expect(library).toContain("/prototype/assets/scenes/asm_bedroom_3a2749b355d9.jpg?v=bedroom-scene-20260812");
     expect(library).toContain('? `<a class="case-tile"');
     expect(library).toContain("if (caseOpen) { if(caseOpen.matches('a[href]')) return;");
+    expect(home).toContain("if(QUERY.get('from')==='cases'){location.href='../inspiration-library/index.html#cases';return;}");
+    expect(home).toContain(":'../inspiration-library/index.html#cases';return;");
   });
 
   it('opens the editor on lightweight AI recommendations without exposing the old mascot assistant', () => {

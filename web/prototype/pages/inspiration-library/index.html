@@ -260,9 +260,9 @@
     // 而案例还原的往往只是其中一个房间（奶油风标 78㎡，实际还原的客厅只有 19.4㎡）。
     // 两个数并排显示会自相矛盾，改为一律按 scene.room 实算。
     const CASE_INDEX = [
-      { videoId: 'vid_91fe552c5f7d', cover: '../../assets/scenes/vid_91fe552c5f7d.jpg', tag: '48平长厅公寓', blogger: '@云上的小路', countLabel: '15 件组件 · 44.2㎡ · 4.8 × 9.2 m', href: '../my-home/index.html?home=video-vid_91fe552c5f7d&mode=edit' },
+      { videoId: 'vid_91fe552c5f7d', cover: '../../assets/scenes/vid_91fe552c5f7d.jpg', tag: '48平长厅公寓', blogger: '@云上的小路', countLabel: '15 件组件 · 44.2㎡ · 4.8 × 9.2 m', href: '../my-home/index.html?home=video-vid_91fe552c5f7d&mode=edit&from=cases' },
       { videoId: 'vid_40734d7f2e6c', cover: '../../assets/scenes/vid_40734d7f2e6c.jpg?v=approved-room', tag: '原木侘寂', blogger: '@鸡蛋灌饼的家' },
-      { videoId: 'asm_bedroom_3a2749b355d9', cover: '/prototype/assets/scenes/asm_bedroom_3a2749b355d9.jpg?v=bedroom-scene-20260812', tag: '复古暖棕卧室', blogger: '@DreamHome理想家', countLabel: '12 件组件 · 19.4㎡ · 3.6 × 5.4 m', href: '/prototype/pages/my-home/index.html?assembly=asm_bedroom_3a2749b355d9' },
+      { videoId: 'asm_bedroom_3a2749b355d9', cover: '/prototype/assets/scenes/asm_bedroom_3a2749b355d9.jpg?v=bedroom-scene-20260812', tag: '复古暖棕卧室', blogger: '@DreamHome理想家', countLabel: '12 件组件 · 19.4㎡ · 3.6 × 5.4 m', href: '/prototype/pages/my-home/index.html?assembly=asm_bedroom_3a2749b355d9&from=cases' },
     ];
     const roomSpec = (scene) => {
       const room = scene?.room;
@@ -375,7 +375,7 @@
       let startX = null;
       viewport.addEventListener('pointerdown', (event) => { startX = event.clientX; bannerDragged = false; try { viewport.setPointerCapture(event.pointerId); } catch (_) {} });
       viewport.addEventListener('pointermove', (event) => { if (startX !== null && Math.abs(event.clientX - startX) > 10) bannerDragged = true; });
-      const endDrag = (event) => { if (startX === null) return; const dx = event.clientX - startX; const wasTap = !bannerDragged && Math.abs(dx) < 10; startX = null; if (dx < -40) { stepBanner(1); return; } if (dx > 40) { stepBanner(-1); return; } if (wasTap) { const el = document.elementFromPoint(event.clientX, event.clientY); const caseSlide = el && el.closest('[data-case]'); if (caseSlide && caseSlide.dataset.video) location.href = `../my-home/index.html?case=${encodeURIComponent(caseSlide.dataset.video)}`; } }; // 指针捕获会吞掉 click，故 tap 跳转在此处理（elementFromPoint 定位案例卡）；左划(dx<0)前进 / 右划(dx>0)后退
+      const endDrag = (event) => { if (startX === null) return; const dx = event.clientX - startX; const wasTap = !bannerDragged && Math.abs(dx) < 10; startX = null; if (dx < -40) { stepBanner(1); return; } if (dx > 40) { stepBanner(-1); return; } if (wasTap) { const el = document.elementFromPoint(event.clientX, event.clientY); const caseSlide = el && el.closest('[data-case]'); if (caseSlide && caseSlide.dataset.video) location.href = `../my-home/index.html?case=${encodeURIComponent(caseSlide.dataset.video)}&from=cases`; } }; // 指针捕获会吞掉 click，故 tap 跳转在此处理（elementFromPoint 定位案例卡）；左划(dx<0)前进 / 右划(dx>0)后退
       viewport.addEventListener('pointerup', endDrag);
       viewport.addEventListener('pointercancel', () => { startX = null; });
       libraryBanner.querySelector('#heroDots').addEventListener('click', (event) => { const i = [...libraryBanner.querySelectorAll('#heroDots i')].indexOf(event.target); if (i >= 0 && !bannerAnimating && i + 1 !== bannerPos) { bannerPos = i + 1; bannerAnimating = true; paintBanner(true); } });
@@ -619,7 +619,7 @@
       catalog.innerHTML = `<section class="case-hero" style="background-image:url('${meta?.cover || ''}')"><div class="case-hero-foot"><b>${meta?.tag || scene.title || '整套案例'}</b><span>${meta?.blogger || ''}${room ? ` · ${room}` : ''}</span></div></section>
         <p class="case-summary">这套空间共 <b>${items.length}</b> 件组件${savable.length < items.length ? `，其中 ${savable.length} 件可收藏` : ''}。</p>
         ${groupHtml}
-        <div class="case-actions"><button class="case-save-all" id="caseSaveAll" type="button" ${savable.length ? '' : 'disabled'}>${allSaved ? '✓ 已全部收藏' : `全部收藏（${savable.length}）`}</button><a class="case-apply" href="../my-home/index.html?case=${encodeURIComponent(videoId)}">用这套布置我的家</a></div>`;
+        <div class="case-actions"><button class="case-save-all" id="caseSaveAll" type="button" ${savable.length ? '' : 'disabled'}>${allSaved ? '✓ 已全部收藏' : `全部收藏（${savable.length}）`}</button><a class="case-apply" href="../my-home/index.html?case=${encodeURIComponent(videoId)}&from=cases">用这套布置我的家</a></div>`;
       renderTemplatePreviews(catalog);
     };
 
