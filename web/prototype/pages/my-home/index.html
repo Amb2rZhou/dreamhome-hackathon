@@ -1179,7 +1179,11 @@
         const savedVideoIds=new Set(homeSceneService.loadHomes().filter(home=>home.source?.type==='video_rebuild').map(home=>home.source.videoId));
         ui.homeGrid.insertAdjacentHTML('beforeend',scenes.filter(scene=>!savedVideoIds.has(scene.video_id)).map((scene)=>{const name=escapeText(displaySceneName(scene)),videoId=escapeText(scene.video_id);return `<button class="video-scene-card" data-video-scene="${videoId}" data-scene-title="${name}" aria-label="开始编辑 ${name}"><span class="video-scene-card__plan" aria-hidden="true"><img src="../../assets/scenes/${videoId}.jpg?v=2" alt="" loading="lazy" /></span><b>${name}</b></button>`;}).join(''));
         updateContinueGrid();
-        scheduleVideoScenePreload(scenes);
+        // Direct assembly/share entries already have a complete scene to load.
+        // Preloading the two home-page demos here competes for bandwidth and,
+        // on iOS Safari, enough decoded GLB memory to strand the target scene
+        // at its final model. Home-page browsing keeps the existing preload.
+        if(!TARGETED_ENTRY)scheduleVideoScenePreload(scenes);
       } catch(error) {
         updateContinueGrid();
       }
@@ -1943,7 +1947,7 @@
     function resetModelLoadProgress(project){modelLoadProgress.session+=1;modelLoadQueue.length=0;modelLoadProgress.total=isModelBackedHome(project)?project.placements.filter((placement)=>resolveAsset(placement.assetId)?.modelUrl).length:0;modelLoadProgress.done=0;modelLoadProgress.failed=0;updateModelLoadStatus();}
     function scheduleScenePreviewReveal(projectId){clearTimeout(scenePreviewTimer);if(modelLoadProgress.total>0)return;scenePreviewTimer=setTimeout(()=>{scenePreviewTimer=null;if(state.phase!=='scene-loading'||state.project?.id!==projectId)return;const elapsed=pendingSceneStartedAt?performance.now()-pendingSceneStartedAt:MIN_SCENE_LOADING_MS;document.documentElement.dataset.sceneVisibleMs=String(Math.round(elapsed));pendingSceneStartedAt=0;state.phase='editor';updatePhases();tell(`${pendingSceneTitle||'房间'}已载入`);pendingSceneTitle='';},MIN_SCENE_LOADING_MS);}
     async function downloadModelBuffer(url,attempts=1){let lastError;for(let attempt=0;attempt<attempts;attempt+=1){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),45000);try{const response=await fetch(url,{mode:'cors',cache:'default',signal:controller.signal});if(!response.ok)throw new Error(`HTTP ${response.status}`);return await response.arrayBuffer();}catch(error){lastError=error;if(attempt+1<attempts)await new Promise(resolve=>setTimeout(resolve,800*(attempt+1)));}finally{clearTimeout(timer);}}throw lastError;}
-    function fetchModelBuffer(url,attempts=1){const absoluteUrl=new URL(url,location.href).href;if(modelBufferCache.has(absoluteUrl))return modelBufferCache.get(absoluteUrl);const task=downloadModelBuffer(absoluteUrl,attempts).catch(error=>{modelBufferCache.delete(absoluteUrl);throw error;});modelBufferCache.set(absoluteUrl,task);return task;}
+    function fetchModelBuffer(url,attempts=1){const absoluteUrl=new URL(url,location.href).href;if(modelBufferCache.has(absoluteUrl))return modelBufferCache.get(absoluteUrl);const task=downloadModelBuffer(absoluteUrl,attempts);modelBufferCache.set(absoluteUrl,task);task.finally(()=>{if(modelBufferCache.get(absoluteUrl)===task)modelBufferCache.delete(absoluteUrl);}).catch(()=>{});return task;}
     function parseModel(buffer,url){return new Promise((resolve,reject)=>{let settled=false;const finish=(callback,value)=>{if(settled)return;settled=true;clearTimeout(timer);callback(value);},timer=setTimeout(()=>finish(reject,new Error('3D 模型解析超时')),45000);gltfLoader.parse(buffer,new URL('.',new URL(url,location.href)).href,(value)=>finish(resolve,value),(error)=>finish(reject,error));});}
     async function fetchAndParseModel(asset){// 候选链最后永远兜一层 models-v1（随仓库入库）：本地起不了后端时，fallbackModelUrl 会指向 127.0.0.1:8000 而被拒，
     // 此前就直接判失败、家具不显示——即便同一个模型就躺在 models-v1/ 里。去重后重复项会被自动丢弃。

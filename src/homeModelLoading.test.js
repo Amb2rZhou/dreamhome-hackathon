@@ -47,6 +47,8 @@ describe('DreamHome model-backed scenes', () => {
     expect(source).toContain("cache:'default'");
     expect(source).not.toContain("cache:'no-cache'");
     expect(source).not.toContain("cache:'force-cache'");
+    expect(source).toContain('if(!TARGETED_ENTRY)scheduleVideoScenePreload(scenes)');
+    expect(source).toContain('task.finally(()=>{if(modelBufferCache.get(absoluteUrl)===task)modelBufferCache.delete(absoluteUrl);})');
   });
 
   it('does not re-normalize the approved single-apartment snapshot', () => {
