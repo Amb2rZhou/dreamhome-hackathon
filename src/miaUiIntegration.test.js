@@ -80,6 +80,15 @@ describe('Mia interaction with DreamHome data', () => {
     expect(home).toContain("mount=placement.mount||asset.mount||'floor'");
   });
 
+  it('opens the warm bedroom case with a native assembly link and its own scene cover', () => {
+    const library = readPage('inspiration-library');
+
+    expect(library).toContain("href: '/prototype/pages/my-home/index.html?assembly=asm_bedroom_3a2749b355d9'");
+    expect(library).toContain("/prototype/assets/scenes/asm_bedroom_3a2749b355d9.jpg?v=bedroom-scene-20260812");
+    expect(library).toContain('? `<a class="case-tile"');
+    expect(library).toContain("if (caseOpen) { if(caseOpen.matches('a[href]')) return;");
+  });
+
   it('opens the editor on lightweight AI recommendations without exposing the old mascot assistant', () => {
     const home = readPage('my-home');
 

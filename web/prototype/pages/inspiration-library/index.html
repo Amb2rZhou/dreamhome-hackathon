@@ -88,7 +88,7 @@
 
     /* ---- 找案例列表 ---- */
     .case-list{display:flex;flex-direction:column;gap:12px}
-    .case-tile{position:relative;height:132px;border:0;padding:0;border-radius:14px;background-size:cover;background-position:center;box-shadow:0 5px 14px rgba(69,89,67,.12);cursor:pointer;overflow:hidden;display:flex;align-items:flex-end}
+    .case-tile{position:relative;height:132px;border:0;padding:0;border-radius:14px;background-size:cover;background-position:center;box-shadow:0 5px 14px rgba(69,89,67,.12);color:inherit;text-decoration:none;cursor:pointer;overflow:hidden;display:flex;align-items:flex-end}
     .case-tile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,26,21,0) 46%,rgba(20,26,21,.66))}
     .case-tile-foot{position:relative;z-index:1;width:100%;padding:10px 13px;text-align:left;color:#fff}.case-tile-foot b{display:block;font-size:13px;font-weight:var(--dh-font-weight-heavy);text-shadow:0 1px 4px rgba(0,0,0,.35)}.case-tile-foot span{font-size:10px;font-weight:var(--dh-font-weight-semibold);opacity:.92}.case-tile-foot i{font-style:normal}
 
@@ -262,7 +262,7 @@
     const CASE_INDEX = [
       { videoId: 'vid_91fe552c5f7d', cover: '../../assets/scenes/vid_91fe552c5f7d.jpg', tag: '48平长厅公寓', blogger: '@云上的小路', countLabel: '15 件组件 · 44.2㎡ · 4.8 × 9.2 m', href: '../my-home/index.html?home=video-vid_91fe552c5f7d&mode=edit' },
       { videoId: 'vid_40734d7f2e6c', cover: '../../assets/scenes/vid_40734d7f2e6c.jpg?v=approved-room', tag: '原木侘寂', blogger: '@鸡蛋灌饼的家' },
-      { videoId: 'asm_bedroom_3a2749b355d9', cover: '../../assets/scenes/asm_bedroom_3a2749b355d9.jpg?v=3d-scene', tag: '复古暖棕卧室', blogger: '@DreamHome理想家', countLabel: '12 件组件 · 19.4㎡ · 3.6 × 5.4 m', href: '../my-home/index.html?assembly=asm_bedroom_3a2749b355d9' },
+      { videoId: 'asm_bedroom_3a2749b355d9', cover: '/prototype/assets/scenes/asm_bedroom_3a2749b355d9.jpg?v=bedroom-scene-20260812', tag: '复古暖棕卧室', blogger: '@DreamHome理想家', countLabel: '12 件组件 · 19.4㎡ · 3.6 × 5.4 m', href: '/prototype/pages/my-home/index.html?assembly=asm_bedroom_3a2749b355d9' },
     ];
     const roomSpec = (scene) => {
       const room = scene?.room;
@@ -536,7 +536,9 @@
     const renderCases = () => {
       libraryContent.classList.remove('is-case');
       enterSecondary('同款小家');
-      catalog.innerHTML = `<p class="sg-intro">查看博主同款小家，可单件收藏，也可一键套用到我的家。</p><div class="case-list">${CASE_INDEX.map((item) => `<button class="case-tile" data-case-open="${item.videoId}" ${item.href?`data-case-href="${item.href}"`:''} aria-label="查看案例 ${item.tag}" style="background-image:url('${item.cover}')"><span class="case-tile-foot"><b>${item.tag}</b><span>${item.blogger} · <i data-case-count="${item.videoId}">…</i></span></span></button>`).join('')}</div>`;
+      catalog.innerHTML = `<p class="sg-intro">查看博主同款小家，可单件收藏，也可一键套用到我的家。</p><div class="case-list">${CASE_INDEX.map((item) => item.href
+        ? `<a class="case-tile" data-case-open="${item.videoId}" href="${item.href}" aria-label="查看案例 ${item.tag}" style="background-image:url('${item.cover}')"><span class="case-tile-foot"><b>${item.tag}</b><span>${item.blogger} · <i data-case-count="${item.videoId}">…</i></span></span></a>`
+        : `<button class="case-tile" type="button" data-case-open="${item.videoId}" aria-label="查看案例 ${item.tag}" style="background-image:url('${item.cover}')"><span class="case-tile-foot"><b>${item.tag}</b><span>${item.blogger} · <i data-case-count="${item.videoId}">…</i></span></span></button>`).join('')}</div>`;
       paintCaseCounts(catalog);
     };
 
@@ -912,7 +914,7 @@
       const styleOpen = event.target.closest('[data-style-open]');
       if (styleOpen) { location.hash = `style=${encodeURIComponent(styleOpen.dataset.styleOpen)}`; return; }
       const caseOpen = event.target.closest('[data-case-open]');
-      if (caseOpen) { if(caseOpen.dataset.caseHref){location.href=caseOpen.dataset.caseHref;return;} location.hash = `case=${encodeURIComponent(caseOpen.dataset.caseOpen)}`; return; }
+      if (caseOpen) { if(caseOpen.matches('a[href]')) return; location.hash = `case=${encodeURIComponent(caseOpen.dataset.caseOpen)}`; return; }
       if (event.target.closest('#caseSaveAll')) { saveWholeCase(); return; }
       if (event.target.closest('#filterOpen')) { openFilterSheet(); return; }
       if (event.target.closest('#filterClear')) { filter.categories.clear(); filter.styles.clear(); renderCatalog(); return; }
