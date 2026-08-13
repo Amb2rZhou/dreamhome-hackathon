@@ -59,7 +59,7 @@ describe('DreamHome model-backed scenes', () => {
     expect(defaults).toContain('"id": "video-vid_40734d7f2e6c"');
     expect(defaults).toContain('"preserveApprovedPlacementScales": true');
     expect(page).toContain('state.project?.preserveApprovedPlacementScales===true');
-    expect(page).toContain('const approved=placement.sourceScale||placement.scale');
+    expect(page).toContain('const approved=placement.scale||placement.sourceScale');
     expect(page).toContain('const openedReleaseHomeImmediately=Boolean(requestedHomeId&&!FRIEND_SHARE_REQUEST');
     expect(page).toContain('if(openedReleaseHomeImmediately)void openHome(requestedHomeId)');
   });
@@ -87,8 +87,11 @@ describe('DreamHome model-backed scenes', () => {
 
     expect(source).toContain('const scale=placement.scale||{x:1,y:1,z:1}');
     expect(source).toContain('savedProject=await savedResponse.json()');
-    expect(source).toContain('projectFromSpaceAssembly(sceneData,savedProject||assemblyProject)');
+    expect(source).toContain('projectFromSpaceAssembly(sceneData,savedProject||assemblyProject,{preserveSavedTransforms:Boolean(savedProject)})');
     expect(source).toContain('savedProject?{project:serverProject,recovered:false}:recoverLocalAssemblyDraft');
+    expect(source).toContain('state.projectHydrating=loading');
+    expect(source).toContain('if(state.projectHydrating||state.caseMode');
+    expect(source).toContain('state.projectHydrating=false;state.phase=\'editor\'');
     expect(source).toContain("window.addEventListener('pagehide',()=>{clearTimeout(saveTimer);cancelAssistantTrial({announce:false});if(state.dirty)persistProjectNow()")
   });
 });

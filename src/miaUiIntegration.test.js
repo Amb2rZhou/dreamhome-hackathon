@@ -64,7 +64,7 @@ describe('Mia interaction with DreamHome data', () => {
     const home = readPage('my-home');
 
     expect(home).toContain("const assemblyId=QUERY.get('assembly')");
-    expect(home).toContain('function projectFromSpaceAssembly(sceneData, projectData)');
+    expect(home).toContain('function projectFromSpaceAssembly(sceneData, projectData, {preserveSavedTransforms=false}={})');
     expect(home).toContain('/api/space-assemblies/${encoded}/scene');
     expect(home).toContain('/api/space-assemblies/${encoded}/home-project');
     expect(home).toContain("type:'space_assembly'");
