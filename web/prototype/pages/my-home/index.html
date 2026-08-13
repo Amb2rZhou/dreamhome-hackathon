@@ -1225,8 +1225,8 @@
       const placements=(projectData.placements||[]).map((placement)=>{
         const item=itemsByPlacementId.get(placement.id);
         const estimated=item?.sizePrior?{width:item.sizePrior.w,height:item.sizePrior.h,depth:item.sizePrior.d}:null;
-        const identity={x:1,y:1,z:1};
-        return {...placement,scale:identity,sourceScale:identity,customSize:placement.customSize||estimated,mount:placement.mount||item?.mount||item?.labels?.mount||'floor',modelScaleNormalized:false,sizeNormalizationVersion:0};
+        const scale=placement.scale||{x:1,y:1,z:1};
+        return {...placement,scale,sourceScale:placement.sourceScale||scale,customSize:placement.customSize||estimated,mount:placement.mount||item?.mount||item?.labels?.mount||'floor',modelScaleNormalized:placement.modelScaleNormalized??false,sizeNormalizationVersion:placement.sizeNormalizationVersion??0};
       });
       const project=normalizeHomeProject({...projectData,placements,source:{...(projectData.source||{}),type:'space_assembly',assemblyId:sceneData.assembly_id},realScene:{...(projectData.realScene||{}),room:sceneData.room,balcony:sceneData.balcony||null,extras:sceneData.extras||[],cfg:sceneData.cfg||{}},decor:{floorPreset:'light-natural-oak',wallColor:projectData.finishes?.wall?.color||'#8D5D46',windowStyle:'dark-grid',timeValue:100},daylight:'day',createdAt:projectData.createdAt||now(),updatedAt:now()});
       return project;
@@ -1251,11 +1251,21 @@
         const encoded=encodeURIComponent(assemblyId);
         const [sceneResponse,projectResponse]=await Promise.all([fetch(`${BACKEND}/api/space-assemblies/${encoded}/scene`),fetch(`${BACKEND}/api/space-assemblies/${encoded}/home-project`)]);
         if(!sceneResponse.ok||!projectResponse.ok)throw new Error(`Demo 载入失败 (${sceneResponse.status}/${projectResponse.status})`);
-        const serverProject=projectFromSpaceAssembly(await sceneResponse.json(),await projectResponse.json());
+        const sceneData=await sceneResponse.json(),assemblyProject=await projectResponse.json();
+        let savedProject=null;
+        if(queryHomeUserId&&assemblyProject?.id){
+          const savedResponse=await fetch(`${BACKEND}/api/home-projects/${encodeURIComponent(assemblyProject.id)}?user_id=${encodeURIComponent(queryHomeUserId)}`);
+          if(savedResponse.ok)savedProject=await savedResponse.json();
+          else if(savedResponse.status!==404)throw new Error(`已保存布局载入失败 (${savedResponse.status})`);
+        }
+        // An explicit user project is the source of truth. Opening a scene must
+        // never rebuild it from the assembly defaults or write old local data
+        // back over the server copy.
+        const serverProject=projectFromSpaceAssembly(sceneData,savedProject||assemblyProject);
         // The editor always keeps an immediate local copy. If a previous save
         // was interrupted, restore only matching canonical placements instead
         // of replacing the user's transforms with the older server snapshot.
-        const {project,recovered}=recoverLocalAssemblyDraft(serverProject,assemblyId);
+        const {project,recovered}=savedProject?{project:serverProject,recovered:false}:recoverLocalAssemblyDraft(serverProject,assemblyId);
         homeSceneService.saveProject(project);
         if(recovered&&queryHomeUserId)syncProjectInBackground(project);
         updateGeneration('processing',62);
@@ -2161,7 +2171,7 @@
     ui.matchDetailView.addEventListener('click',(event)=>{if(event.target.closest('[data-match-detail-back]')){closeMatchDetail();return;}const favorite=event.target.closest('[data-match-favorite]');if(favorite){toggleMatchFavorite(favorite.dataset.matchFavorite);return;}const place=event.target.closest('[data-match-place]');if(place)beginRecommendedPlacement(place.dataset.matchPlace);});
     ui.daylightButton.addEventListener('click',()=>{ if(!state.project||state.project.source?.type==='video_rebuild') return; const next = state.project.daylight === 'night' ? 'day' : 'night'; state.project.daylight = next; ui.daylightButton.textContent = next === 'night' ? '🌙' : '☀'; saveSoon(); tell(next === 'night' ? '已切换到黑夜' : '已切换到白天'); }); ui.realTimeSlider.addEventListener('input',()=>applyRealTimeProgress(ui.realTimeSlider.value));ui.realTimeSlider.addEventListener('change',()=>{applyRealTimeProgress(ui.realTimeSlider.value,true);if(state.project?.decor){state.project.decor.timeValue=Number(ui.realTimeSlider.value);saveSoon();}}); ui.rotateLeft.addEventListener('click',()=>rotateSelected(-1)); ui.rotateRight.addEventListener('click',()=>rotateSelected(1)); ui.scaleDown.addEventListener('click',()=>scaleSelected(1/1.15)); ui.scaleUp.addEventListener('click',()=>scaleSelected(1.15)); ui.moveSelected.addEventListener('click',()=> sceneRuntime?.beginMove()); ui.deleteSelected.addEventListener('click',deleteSelected);ui.heightUp.addEventListener('click',()=>sceneRuntime?.movePlacementHeight(.1));ui.heightDown.addEventListener('click',()=>sceneRuntime?.movePlacementHeight(-.1));
     ui.editorBack.addEventListener('click',returnToSetup); ui.shareButton.addEventListener('click',openShareSheet); ui.shareSheet.addEventListener('click',async(event)=>{ if(event.target.closest('[data-share-close]')){ closeShareSheet(); return; } const friend=event.target.closest('[data-friend-id]');if(friend){await sendHomeToFriend(friend.dataset.friendId);return;}const button=event.target.closest('[data-share]'); if(button){ closeShareSheet();try{tell(await shareCurrentHome(button.dataset.share));}catch(error){if(error?.name!=='AbortError')tell('分享没有完成，请重试');} } });
-    document.addEventListener('keydown',(event)=>{if(event.key==='Escape'&&state.assistantDetailAssetId){closeMatchDetail();return;}if(event.key==='Escape'&&state.assistantOpen){closeMatchAssistant();return;}if(event.key==='Escape' && state.interaction.mode!=='orbit') exitInteraction();}); window.addEventListener('pagehide',()=>{clearTimeout(saveTimer);cancelAssistantTrial({announce:false});persistProjectNow();disposeMatchDetailPreview();});window.addEventListener('beforeunload',()=>{clearTimeout(saveTimer);cancelAssistantTrial({announce:false});persistProjectNow();disposeMatchDetailPreview();disposeScene();});
+    document.addEventListener('keydown',(event)=>{if(event.key==='Escape'&&state.assistantDetailAssetId){closeMatchDetail();return;}if(event.key==='Escape'&&state.assistantOpen){closeMatchAssistant();return;}if(event.key==='Escape' && state.interaction.mode!=='orbit') exitInteraction();}); window.addEventListener('pagehide',()=>{clearTimeout(saveTimer);cancelAssistantTrial({announce:false});if(state.dirty)persistProjectNow();disposeMatchDetailPreview();});window.addEventListener('beforeunload',()=>{clearTimeout(saveTimer);cancelAssistantTrial({announce:false});if(state.dirty)persistProjectNow();disposeMatchDetailPreview();disposeScene();});
     state.phase=TARGETED_ENTRY?'scene-loading':'setup';renderTemplates();renderSavedHomes();renderVideoScenes();updatePhases();
     const requestedAssetId=QUERY.get('addAsset'),sharedSlug=QUERY.get('shared')?.trim(),assetShareSlug=QUERY.get('assetShare')?.trim();
     const requestedHomeId=QUERY.get('home')?.trim();

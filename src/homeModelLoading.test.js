@@ -81,4 +81,14 @@ describe('DreamHome model-backed scenes', () => {
     expect(source).toContain('function recoverLocalAssemblyDraft(serverProject, assemblyId)');
     expect(source).toContain('if(recovered&&queryHomeUserId)syncProjectInBackground(project)');
   });
+
+  it('loads an explicitly saved assembly project without resetting or locally overriding its transforms', () => {
+    const source = readFileSync('web/prototype/pages/my-home/index.html', 'utf8');
+
+    expect(source).toContain('const scale=placement.scale||{x:1,y:1,z:1}');
+    expect(source).toContain('savedProject=await savedResponse.json()');
+    expect(source).toContain('projectFromSpaceAssembly(sceneData,savedProject||assemblyProject)');
+    expect(source).toContain('savedProject?{project:serverProject,recovered:false}:recoverLocalAssemblyDraft');
+    expect(source).toContain("window.addEventListener('pagehide',()=>{clearTimeout(saveTimer);cancelAssistantTrial({announce:false});if(state.dirty)persistProjectNow()")
+  });
 });
