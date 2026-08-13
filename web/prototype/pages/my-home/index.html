@@ -899,12 +899,18 @@
         if(!listResponse.ok)throw new Error(`读取项目失败 (${listResponse.status})`);
         const summaries=await listResponse.json();
         const serverHomes=(await Promise.all((Array.isArray(summaries)?summaries:[]).map(async(summary)=>{const response=await fetch(`${BACKEND}/api/home-projects/${encodeURIComponent(summary.project_id||summary.id)}`);return response.ok?normalizeHomeProject(await response.json()):null;}))).filter(Boolean);
-        const localHomes=this.loadHomes(),merged=new Map();
-        [...serverHomes,...localHomes].forEach((home)=>{const current=merged.get(home.id),incomingTime=Date.parse(home.updatedAt||home.createdAt||0)||0,currentTime=Date.parse(current?.updatedAt||current?.createdAt||0)||0;if(!current||incomingTime>currentTime)merged.set(home.id,home);});
+        const localHomes=this.loadHomes(),merged=new Map(localHomes.map(home=>[home.id,home]));
+        // Existing server projects are authoritative during startup hydration.
+        // Browser timestamps are not trustworthy across devices and restored
+        // built-in snapshots must never overwrite a layout edited elsewhere.
+        serverHomes.forEach(home=>merged.set(home.id,home));
         const homes=[...merged.values()].sort((a,b)=>String(b.updatedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.createdAt||'')));
         localStorage.setItem(HOMES_KEY,JSON.stringify({version:2,homes}));
         const serverById=new Map(serverHomes.map(home=>[home.id,home]));
-        await Promise.all(homes.filter(home=>{const server=serverById.get(home.id);return !server||(Date.parse(home.updatedAt||0)||0)>(Date.parse(server.updatedAt||0)||0);}).map(home=>this.syncProject(home)));
+        const defaultIds=new Set(DEFAULT_HOMES.map(home=>home.id));
+        // Only genuinely local user projects that do not exist on the server
+        // may be uploaded here. Explicit editor saves use persistProjectNow().
+        await Promise.all(localHomes.filter(home=>!serverById.has(home.id)&&!defaultIds.has(home.id)).map(home=>this.syncProject(home)));
         return homes;
       }
     };
@@ -1170,7 +1176,8 @@
         localStorage.removeItem(sceneBaselineKey(videoId));
         localStorage.removeItem(sceneNameKey(videoId));
       }
-      approvedHomes.forEach(syncProjectInBackground);
+      // Seeding is local UI initialization only. Published demo snapshots are
+      // never written back merely because a judge opened a fresh browser.
       localStorage.setItem(DEFAULT_DEMO_SEED_KEY,'1');
       return true;
     }

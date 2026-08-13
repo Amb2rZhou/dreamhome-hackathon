@@ -94,4 +94,12 @@ describe('DreamHome model-backed scenes', () => {
     expect(source).toContain('state.projectHydrating=false;state.phase=\'editor\'');
     expect(source).toContain("window.addEventListener('pagehide',()=>{clearTimeout(saveTimer);cancelAssistantTrial({announce:false});if(state.dirty)persistProjectNow()")
   });
+
+  it('treats existing server layouts as authoritative on a fresh browser', () => {
+    const source = readFileSync('web/prototype/pages/my-home/index.html', 'utf8');
+
+    expect(source).toContain('serverHomes.forEach(home=>merged.set(home.id,home))');
+    expect(source).toContain('!serverById.has(home.id)&&!defaultIds.has(home.id)');
+    expect(source).not.toContain('approvedHomes.forEach(syncProjectInBackground)');
+  });
 });
