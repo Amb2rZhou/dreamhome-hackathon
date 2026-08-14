@@ -97,6 +97,22 @@ describe('ImageFeedCarousel', () => {
     expect(onHotspotActivate).toHaveBeenCalledWith(expect.objectContaining({ assetId: 'ast_chair', slideIndex: 1 }))
   })
 
+  it('removes browse affordances while the paused selection layer is active', () => {
+    render(
+      <ImageFeedCarousel
+        images={['/one.jpg', '/two.jpg']}
+        title="图文 Demo"
+        playing={false}
+        selectionActive
+        hotspots={[{ assetId: 'ast_chair', name: '休闲椅', slideIndex: 0, bbox: [0.4, 0.5, 0.2, 0.2] }]}
+      />,
+    )
+
+    fireEvent.load(screen.getByAltText('图文 Demo，第 1 张'))
+    expect(screen.queryByRole('button', { name: '查看休闲椅3D' })).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('图片页码')).not.toBeInTheDocument()
+  })
+
   it('does not show hotspots or enter selection before the image is ready', () => {
     const onPause = vi.fn()
     render(

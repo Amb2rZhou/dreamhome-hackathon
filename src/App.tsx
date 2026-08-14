@@ -141,7 +141,7 @@ type Action =
   | { type: 'CRAFT_DONE'; id: string; component: LibraryComponent }
   | { type: 'CRAFT_PROGRESS'; id: string; progress: number; stage?: string }
   | { type: 'CRAFT_FAILED'; id: string; error: string; stage?: string }
-  | { type: 'CRAFT_WAITING'; id: string; error: string }
+  | { type: 'CRAFT_WAITING'; id: string; error: string; selectId?: string }
   | { type: 'CRAFT_BACKEND_SUBMITTED'; id: string; backendJobId: string; name: string; category: FurnitureCategory }
   | { type: 'CRAFT_SELECTION_SAVED'; id: string; selectId: string }
   | { type: 'RESTORE_CRAFT_TASKS'; batches: CraftBatch[] }
@@ -485,6 +485,7 @@ function reducer(state: State, action: Action): State {
         backendMode: 'waiting',
         error: action.error,
         stage: 'waiting_backend',
+        backendSelectionId: action.selectId ?? state.currentCraft.backendSelectionId,
       }
       const batches = state.batches.map((batch) => ({
         ...batch,
@@ -757,6 +758,7 @@ function App() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const imageSlideIndexRef = useRef(0)
   const selectionRequestsRef = useRef<PendingSelectionRequests>(new Map())
+  const selectionSubmissionsRef = useRef(new Set<string>())
   const feedTouchStartY = useRef<number | null>(null)
   const suppressPause = useRef(false)
   const wheelLocked = useRef(false)
@@ -811,23 +813,28 @@ function App() {
     let cancelled = false
     void fetchPersistedVideoSelectionTasks(userIdRef.current).then((tasks) => {
       if (cancelled || tasks.length === 0) return
-      const batches: CraftBatch[] = tasks.map((task) => {
+      // Resume only jobs that the backend confirms are still running. Old
+      // drafts, failed submissions, and incomplete selections must not
+      // silently reappear as waiting work after every refresh.
+      const resumableTasks = tasks.filter((task) => (
+        task.status === 'submitted'
+        && (task.generation_status === 'queued' || task.generation_status === 'running')
+        && Boolean(task.job_id)
+      ))
+      const batches: CraftBatch[] = resumableTasks.map((task) => {
         const category = labelsToCategory(task.labels)
-        const isActive = task.status === 'submitted'
-          && (task.generation_status === 'queued' || task.generation_status === 'running')
-          && Boolean(task.job_id)
         const job: CraftJob = {
           id: task.client_task_id || `craft-restored-${task.select_id}`,
           name: task.labels.sub || task.labels.category || '待分类家具',
           category,
           snapshot: task.preview_url || genSticker(category, CATEGORY_COLOR[category], 99),
           color: CATEGORY_COLOR[category],
-          status: isActive ? 'crafting' : 'waiting',
-          backendMode: isActive ? 'fal' : 'waiting',
+          status: 'crafting',
+          backendMode: 'fal',
           backendJobId: task.job_id || undefined,
           backendSelectionId: task.select_id,
-          progress: isActive ? 10 : 0,
-          stage: isActive ? 'generate_3d' : 'waiting_backend',
+          progress: 10,
+          stage: 'generate_3d',
           error: task.error || undefined,
         }
         return {
@@ -1100,8 +1107,11 @@ function App() {
         return () => window.clearTimeout(timer)
       }
       if (craft.backendMode === 'retry') {
+        if (selectionSubmissionsRef.current.has(craft.id)) return
+        selectionSubmissionsRef.current.add(craft.id)
         let cancelled = false
         const submit = async () => {
+          let selectedId = craft.backendSelectionId
           try {
             const pendingSelection = craft.sourceSelectionId
               ? selectionRequestsRef.current.get(craft.sourceSelectionId)
@@ -1149,7 +1159,7 @@ function App() {
                   })
                 })()
             if (selectionMediaType === 'video') {
-              dispatch({ type: 'CRAFT_SELECTION_SAVED', id: craft.id, selectId: selected.select_id })
+              selectedId = selected.select_id
             }
             const candidate = selected.exact_match ?? selected.candidates[0]
             // Even an exact backend match must be visually confirmed: the user
@@ -1221,7 +1231,10 @@ function App() {
               type: 'CRAFT_WAITING',
               id: craft.id,
               error: error instanceof Error ? error.message : '3D 生成服务暂时不可用',
+              selectId: selectedId,
             })
+          } finally {
+            selectionSubmissionsRef.current.delete(craft.id)
           }
         }
         void submit()
@@ -1363,6 +1376,7 @@ function App() {
             onIndexChange={(index) => { imageSlideIndexRef.current = index }}
             hotspots={activeFeedVideo.id === IMAGE_POST_ID ? imagePostHotspots : []}
             onHotspotActivate={(hotspot) => setActiveImageHotspotAssetId(hotspot.assetId)}
+            selectionActive={state.feed.phase === 'session'}
           />
         ) : (
           <>

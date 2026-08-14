@@ -48,4 +48,25 @@ describe('DreamHome model-backed scenes', () => {
     expect(source).not.toContain("cache:'no-cache'");
     expect(source).not.toContain("cache:'force-cache'");
   });
+
+  it('migrates unchanged bad defaults without overwriting user-edited placements', () => {
+    const source = readFileSync('web/prototype/pages/my-home/index.html', 'utf8');
+    const scene = JSON.parse(readFileSync('web/prototype/assets/demo-backend/scenes/vid_91fe552c5f7d.json', 'utf8'));
+    const byId = new Map(scene.items.map((item) => [item.id, item]));
+    const sofa = byId.get('ast_e8e7b81eba5c');
+    const tallPlant = byId.get('ast_55361e0c8415');
+    const sofaDepthAlongZ = sofa.sizePrior.w;
+    const zClearance = Math.abs(sofa.pos[2] - tallPlant.pos[2]) - (sofaDepthAlongZ + tallPlant.sizePrior.d) / 2;
+
+    expect(scene.layoutVersion).toBe('20260811-long-room-v2');
+    expect(scene.items).toHaveLength(15);
+    expect(byId.has('ast_1ddb5e7e233c')).toBe(true);
+    expect(byId.has('ast_98ec879aca7a')).toBe(true);
+    expect(byId.has('ast_c0274a819f34')).toBe(false);
+    expect(byId.has('ast_5229f072c636')).toBe(false);
+    expect(zClearance).toBeGreaterThan(0);
+    expect(source).toContain('sameScenePlacementTransform(prior,previousDefault)');
+    expect(source).toContain('saved.source.sceneAssetSignature!==sceneAssetSignature');
+    expect(source).toContain('if(layoutChanged&&sameScenePlacementTransform(prior,previousDefault))return placement');
+  });
 });

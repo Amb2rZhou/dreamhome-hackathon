@@ -1,7 +1,9 @@
 .workshop-overlay {
   position: absolute;
   inset: 0;
-  z-index: 84;
+  /* Keep modal chrome above image hotspots (125), carousel progress (130),
+     selection affordances, and mascot guidance. */
+  z-index: 320;
   display: flex;
   align-items: flex-end;
   padding: 0;

@@ -13,6 +13,7 @@ type Props = {
   onIndexChange?: (index: number) => void
   hotspots?: ImagePostHotspot[]
   onHotspotActivate?: (hotspot: ImagePostHotspot) => void
+  selectionActive?: boolean
 }
 
 export function ImageFeedCarousel({
@@ -25,6 +26,7 @@ export function ImageFeedCarousel({
   onIndexChange,
   hotspots = [],
   onHotspotActivate,
+  selectionActive = false,
 }: Props) {
   const [index, setIndex] = useState(0)
   const [loadedImage, setLoadedImage] = useState<string | null>(null)
@@ -120,7 +122,7 @@ export function ImageFeedCarousel({
             onMediaReady?.()
           }}
         />
-        {imageReady && visibleHotspots.length > 0 && (
+        {imageReady && !selectionActive && visibleHotspots.length > 0 && (
           <div className="image-feed-hotspots" aria-label={`本图可查看 ${visibleHotspots.length} 件 3D 家具`}>
             {visibleHotspots.map((hotspot) => {
               const [x, y, width, height] = hotspot.bbox
@@ -148,7 +150,7 @@ export function ImageFeedCarousel({
           </div>
         )}
       </div>
-      <div className="image-feed-dots" aria-label="图片页码">
+      {!selectionActive && <div className="image-feed-dots" aria-label="图片页码">
         {images.map((image, dotIndex) => (
           <button
             key={`${image}-${dotIndex}`}
@@ -162,8 +164,8 @@ export function ImageFeedCarousel({
             }}
           />
         ))}
-      </div>
-      {audioSrc && (
+      </div>}
+      {audioSrc && !selectionActive && (
         <>
           <button
             type="button"

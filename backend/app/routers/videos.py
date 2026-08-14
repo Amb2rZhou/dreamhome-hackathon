@@ -113,8 +113,8 @@ def _selection_task_payload(stored: dict) -> dict:
         if generation:
             generation_status = generation["job"].get("status")
             if generation_status == "failed":
-                status = "retryable"
                 error = generation["job"].get("error") or error
+                status = "rejected" if _is_terminal_selection_error(error) else "retryable"
             elif generation_status == "succeeded":
                 status = "completed"
     return {
@@ -137,6 +137,29 @@ def _selection_task_payload(stored: dict) -> dict:
         "track_id": document.get("track_id"),
         "generation_status": generation_status,
     }
+
+
+def _is_terminal_selection_error(error: str) -> bool:
+    """Errors that cannot improve by resubmitting the same crop."""
+    normalized = (error or "").lower()
+    return any(marker in normalized for marker in (
+        "input_qc:",
+        "single_object_qc:",
+        "identity_qc:",
+        "selection touches multiple frame edges",
+        "category is unsupported",
+        "specialist/planar asset path",
+    ))
+
+
+def _select_response_from_stored(stored: dict) -> SelectResponse:
+    document = stored["document"]
+    return SelectResponse(
+        select_id=stored["select_id"],
+        labels=document.get("labels") or {},
+        candidates=document.get("candidates") or [],
+        exact_match=document.get("exact_match"),
+    )
 
 
 @router.get("/selection-tasks")
@@ -392,6 +415,13 @@ def _save_selection_images(frame_data_uri: Optional[str], frame_bytes: Optional[
 async def select(video_id: str, request: Request):
     """圈选：原始完整帧 + 选择几何 → 上下文识别 → 同款候选。"""
     req, frame_bytes = await _parse_select_request(request)
+    existing = db.get_selection_session_by_client_task(
+        req.user_id.strip(), req.client_task_id.strip(),
+    )
+    if existing:
+        if existing["video_id"] != video_id:
+            raise HTTPException(409, "client task is already bound to another video")
+        return _select_response_from_stored(existing)
     has_source_frame = frame_bytes is not None or bool(req.frame_data_uri)
     if not db.get_video(video_id):
         if not has_source_frame:
@@ -500,6 +530,18 @@ async def select_confirm(video_id: str, req: SelectConfirmRequest):
     if req.user_id:
         sel["user_id"] = req.user_id
         _persist_selection(req.select_id, sel)
+
+    # Confirmation is idempotent. Once a production job has been accepted,
+    # every repeated click/request returns that same canonical asset and job.
+    # It must never enqueue a second paid generation for the same selection.
+    if sel.get("job_id") and sel.get("asset_id") and sel.get("track_id"):
+        return SelectConfirmResponse(
+            asset_id=sel["asset_id"],
+            job_id=sel["job_id"],
+            track_id=sel["track_id"],
+            quality_mode="production",
+            library_attached=False,
+        )
 
     if req.use_asset_id and req.generate_new:
         raise HTTPException(400, "use_asset_id and generate_new are mutually exclusive")

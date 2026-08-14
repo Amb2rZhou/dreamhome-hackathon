@@ -236,6 +236,93 @@ class SelectionReuseTests(unittest.TestCase):
         self.assertEqual(response.json()["job_id"], "job_restored")
         self.assertTrue(any(call.kwargs.get("status") == "submitted" for call in persist.mock_calls))
 
+    def test_select_reuses_existing_client_task_without_provider_work(self):
+        stored = {
+            "select_id": "sel-existing",
+            "video_id": "vid_test",
+            "user_id": "local-profile-test",
+            "status": "ready",
+            "document": {
+                "labels": READY_ASSET["labels"],
+                "candidates": [],
+                "exact_match": None,
+            },
+        }
+        with (
+            patch.object(videos.db, "get_selection_session_by_client_task", return_value=stored),
+            patch.object(videos.db, "get_video", side_effect=AssertionError("video lookup must not run")),
+            patch.object(videos, "extract_labels", AsyncMock(
+                side_effect=AssertionError("labels provider must not run")
+            )),
+        ):
+            response = self.client.post(
+                "/api/videos/vid_test/select",
+                json={
+                    "t": 3.0,
+                    "bbox": [0.1, 0.1, 0.5, 0.5],
+                    "user_id": "local-profile-test",
+                    "client_task_id": "craft-one",
+                },
+            )
+
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["select_id"], "sel-existing")
+
+    def test_confirm_reuses_already_submitted_job(self):
+        videos._SELECTS["sel-submitted"] = {
+            "video_id": "vid_test",
+            "user_id": "local-profile-test",
+            "asset_id": "ast_pending",
+            "job_id": "job_pending",
+            "track_id": "trk_pending",
+        }
+        with patch.object(
+            videos,
+            "start_selection_production",
+            side_effect=AssertionError("a second production job must not start"),
+        ):
+            response = self.client.post(
+                "/api/videos/vid_test/select/confirm",
+                json={
+                    "select_id": "sel-submitted",
+                    "generate_new": True,
+                    "quality_mode": "production",
+                    "user_id": "local-profile-test",
+                },
+            )
+
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["asset_id"], "ast_pending")
+        self.assertEqual(response.json()["job_id"], "job_pending")
+
+    def test_deterministic_quality_failure_is_not_retryable(self):
+        stored = {
+            "select_id": "sel-small",
+            "video_id": "vid_test",
+            "user_id": "local-profile-test",
+            "status": "submitted",
+            "error": "",
+            "created_at": "2026-08-14T00:00:00Z",
+            "updated_at": "2026-08-14T00:00:00Z",
+            "document": {
+                "client_task_id": "craft-small",
+                "labels": READY_ASSET["labels"],
+                "job_id": "job-small",
+            },
+        }
+        failed = {
+            "job": {
+                "status": "failed",
+                "error": "SelectionProductionError: input_qc: 大小(124x153)",
+            },
+            "asset": None,
+        }
+        with patch.object(videos.db, "get_generation_job", return_value=failed):
+            payload = videos._selection_task_payload(stored)
+
+        self.assertEqual(payload["status"], "rejected")
+        self.assertIn("input_qc", payload["error"])
+
 
 if __name__ == "__main__":
     unittest.main()

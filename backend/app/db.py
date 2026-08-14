@@ -295,6 +295,36 @@ def get_selection_session(select_id: str) -> Optional[dict]:
     }
 
 
+def get_selection_session_by_client_task(user_id: str, client_task_id: str) -> Optional[dict]:
+    """Return the durable selection created for one browser craft task.
+
+    ``client_task_id`` is the idempotency key for the select -> confirm flow.
+    Older clients may submit the same task more than once while React state is
+    changing; returning the newest durable row prevents duplicate provider jobs.
+    """
+    if not user_id or not client_task_id:
+        return None
+    rows = _rows(
+        "SELECT * FROM selection_sessions WHERE user_id=? "
+        "AND json_extract(document_json, '$.client_task_id')=? "
+        "AND status!='dismissed' ORDER BY created_at DESC LIMIT 1",
+        (user_id, client_task_id),
+    )
+    if not rows:
+        return None
+    row = rows[0]
+    return {
+        "select_id": row["select_id"],
+        "video_id": row["video_id"],
+        "user_id": row["user_id"],
+        "status": row["status"],
+        "document": json.loads(row["document_json"] or "{}"),
+        "error": row["error"],
+        "created_at": row["created_at"],
+        "updated_at": row["updated_at"],
+    }
+
+
 def list_selection_sessions(user_id: str, *, include_consumed: bool = False) -> list[dict]:
     where = "user_id=?"
     params: tuple = (user_id,)
